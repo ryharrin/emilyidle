@@ -23,3 +23,16 @@ body {
 .muted {
   opacity: 0.75;
 }
+
+#import-save-text {
+  width: 100%;
+  max-width: 32rem;
+  resize: vertical;
+  font: inherit;
+}
+
+#save-status {
+  min-height: 1.2em;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}

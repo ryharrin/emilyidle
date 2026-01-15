@@ -3,6 +3,8 @@ import "./style.css";
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "./game/format";
 import {
   clearLocalStorageSave,
+  decodeSaveString,
+  encodeSaveString,
   loadSaveFromLocalStorage,
   persistSaveToLocalStorage,
 } from "./game/persistence";
@@ -50,6 +52,26 @@ app.innerHTML = `
         Buy basic watch (<span id="basic-watch-price"></span>)
       </button>
     </section>
+
+    <section aria-label="Save">
+      <h2>Save</h2>
+      <div class="controls">
+        <button id="export-save" type="button">Export</button>
+      </div>
+
+      <div class="controls">
+        <label for="import-save-text">Import data</label>
+        <textarea
+          id="import-save-text"
+          rows="3"
+          placeholder="Paste exported data here"
+          aria-describedby="save-status"
+        ></textarea>
+        <button id="import-save" type="button">Import</button>
+      </div>
+
+      <p id="save-status" role="status" aria-live="polite"></p>
+    </section>
   </main>
 `;
 
@@ -66,6 +88,11 @@ const incomeEl = requireElement<HTMLElement>(app, "#income");
 const basicWatchCountEl = requireElement<HTMLElement>(app, "#basic-watch-count");
 const basicWatchPriceEl = requireElement<HTMLElement>(app, "#basic-watch-price");
 const buyBasicWatchButton = requireElement<HTMLButtonElement>(app, "#buy-basic-watch");
+
+const exportSaveButton = requireElement<HTMLButtonElement>(app, "#export-save");
+const importSaveButton = requireElement<HTMLButtonElement>(app, "#import-save");
+const importSaveText = requireElement<HTMLTextAreaElement>(app, "#import-save-text");
+const saveStatusEl = requireElement<HTMLElement>(app, "#save-status");
 
 let state: GameState = createInitialState();
 
@@ -88,18 +115,69 @@ if (loadResult.ok) {
 let saveDirty = false;
 let lastSavedAtMs = 0;
 
+function setSaveStatus(message: string): void {
+  saveStatusEl.textContent = message;
+}
+
 function persistNow(reason: string): void {
   const nowMs = Date.now();
   const result = persistSaveToLocalStorage(state, nowMs);
 
   if (!result.ok) {
     console.warn(`Autosave failed (${reason}). ${result.error}`);
+    setSaveStatus(`Save failed: ${result.error}`);
     return;
   }
 
   lastSavedAtMs = nowMs;
   saveDirty = false;
 }
+
+exportSaveButton.addEventListener("click", async () => {
+  const saveString = encodeSaveString(state, Date.now());
+
+  importSaveText.value = saveString;
+  importSaveText.focus();
+  importSaveText.select();
+
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(saveString);
+      setSaveStatus("Exported and copied to clipboard.");
+      return;
+    } catch {
+      setSaveStatus("Exported. Copy the text manually.");
+      return;
+    }
+  }
+
+  setSaveStatus("Exported. Copy the text manually.");
+});
+
+importSaveButton.addEventListener("click", () => {
+  const raw = importSaveText.value.trim();
+  if (!raw) {
+    setSaveStatus("Paste an exported save string to import.");
+    return;
+  }
+
+  const decoded = decodeSaveString(raw);
+  if (!decoded.ok) {
+    console.warn(`Import failed. ${decoded.error}`);
+    setSaveStatus(`Import failed: ${decoded.error}`);
+    return;
+  }
+
+  state = decoded.save.state;
+  lastFrameAtMs = null;
+  accumulatorMs = 0;
+
+  saveDirty = true;
+  persistNow("import");
+  render(state);
+
+  setSaveStatus(`Imported save from ${decoded.save.savedAt}.`);
+});
 
 buyBasicWatchButton.addEventListener("click", () => {
   const next = buyBasicWatch(state);
