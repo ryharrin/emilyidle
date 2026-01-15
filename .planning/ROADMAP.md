@@ -31,7 +31,7 @@ None
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Pick stack + repo scaffolding (Vite, TS, formatting)
+- [x] 01-01: Pick stack + repo scaffolding (Vite, TS, formatting)
 - [ ] 01-02: Game loop core (tick, currency, buy action, rendering)
 - [ ] 01-03: Persistence (localStorage), import/export save
 
@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Not started | - |
+| 1. Foundation | 1/3 | In progress | 2026-01-14 |
 | 2. Collection Loop | 0/3 | Not started | - |
 | 3. Catalog & Images | 0/3 | Not started | - |
 | 4. Workshop Prestige | 0/3 | Not started | - |
