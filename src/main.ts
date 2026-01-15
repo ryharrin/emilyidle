@@ -115,6 +115,9 @@ if (loadResult.ok) {
 let saveDirty = false;
 let lastSavedAtMs = 0;
 
+let lastFrameAtMs: number | null = null;
+let accumulatorMs = 0;
+
 function setSaveStatus(message: string): void {
   saveStatusEl.textContent = message;
 }
@@ -203,9 +206,6 @@ window.addEventListener("pagehide", () => {
     persistNow("pagehide");
   }
 });
-
-let lastFrameAtMs: number | null = null;
-let accumulatorMs = 0;
 
 function render(current: GameState) {
   const basicWatchPriceCents = getBasicWatchPriceCents(current);
