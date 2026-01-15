@@ -1,0 +1,9 @@
+node_modules
+.DS_Store
+.vite
+dist
+*.log
+
+# editor
+.vscode
+.idea
