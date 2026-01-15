@@ -2,6 +2,11 @@ import "./style.css";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "./game/format";
 import {
+  clearLocalStorageSave,
+  loadSaveFromLocalStorage,
+  persistSaveToLocalStorage,
+} from "./game/persistence";
+import {
   buyBasicWatch,
   canBuyBasicWatch,
   createInitialState,
@@ -11,6 +16,7 @@ import type { GameState } from "./game/state";
 import { SIM_TICK_MS, step } from "./game/sim";
 
 const MAX_FRAME_DELTA_MS = 250;
+const AUTO_SAVE_INTERVAL_MS = 2_000;
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) {
@@ -20,7 +26,7 @@ if (!app) {
 app.innerHTML = `
   <main class="container">
     <h1>Watch Idle</h1>
-    <p class="muted">Phase 1: ticking economy (no saving yet).</p>
+    <p class="muted">Phase 1: ticking economy + saving.</p>
 
     <section aria-label="Vault stats">
       <dl>
@@ -63,8 +69,61 @@ const buyBasicWatchButton = requireElement<HTMLButtonElement>(app, "#buy-basic-w
 
 let state: GameState = createInitialState();
 
+const loadResult = loadSaveFromLocalStorage();
+if (loadResult.ok) {
+  state = loadResult.save.state;
+  console.info(
+    `Loaded save v${loadResult.save.version} from ${loadResult.save.savedAt} (last simulated at ${new Date(loadResult.save.lastSimulatedAtMs).toISOString()})`,
+  );
+} else if ("empty" in loadResult) {
+  console.info("No save found; starting new game.");
+} else {
+  console.warn(`Save was invalid; resetting state. ${loadResult.error}`);
+  const clearResult = clearLocalStorageSave();
+  if (!clearResult.ok) {
+    console.warn(`Failed to clear invalid save. ${clearResult.error}`);
+  }
+}
+
+let saveDirty = false;
+let lastSavedAtMs = 0;
+
+function persistNow(reason: string): void {
+  const nowMs = Date.now();
+  const result = persistSaveToLocalStorage(state, nowMs);
+
+  if (!result.ok) {
+    console.warn(`Autosave failed (${reason}). ${result.error}`);
+    return;
+  }
+
+  lastSavedAtMs = nowMs;
+  saveDirty = false;
+}
+
 buyBasicWatchButton.addEventListener("click", () => {
-  state = buyBasicWatch(state);
+  const next = buyBasicWatch(state);
+
+  if (next !== state) {
+    state = next;
+    saveDirty = true;
+    persistNow("purchase");
+    return;
+  }
+
+  state = next;
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden" && saveDirty) {
+    persistNow("visibilitychange:hidden");
+  }
+});
+
+window.addEventListener("pagehide", () => {
+  if (saveDirty) {
+    persistNow("pagehide");
+  }
 });
 
 let lastFrameAtMs: number | null = null;
@@ -81,6 +140,8 @@ function render(current: GameState) {
 }
 
 function frame(nowMs: number) {
+  let stepped = false;
+
   if (lastFrameAtMs !== null) {
     const rawElapsedMs = nowMs - lastFrameAtMs;
     const elapsedMs = Math.max(0, Math.min(rawElapsedMs, MAX_FRAME_DELTA_MS));
@@ -88,12 +149,21 @@ function frame(nowMs: number) {
     accumulatorMs += elapsedMs;
 
     while (accumulatorMs >= SIM_TICK_MS) {
+      stepped = true;
       state = step(state, SIM_TICK_MS);
       accumulatorMs -= SIM_TICK_MS;
     }
   }
 
   lastFrameAtMs = nowMs;
+
+  if (stepped) {
+    saveDirty = true;
+  }
+
+  if (saveDirty && Date.now() - lastSavedAtMs >= AUTO_SAVE_INTERVAL_MS) {
+    persistNow("interval");
+  }
 
   render(state);
   requestAnimationFrame(frame);
