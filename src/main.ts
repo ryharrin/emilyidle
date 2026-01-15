@@ -1,8 +1,13 @@
 import "./style.css";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "./game/format";
+import {
+  buyBasicWatch,
+  canBuyBasicWatch,
+  createInitialState,
+  getBasicWatchPriceCents,
+} from "./game/state";
 import type { GameState } from "./game/state";
-import { createInitialState } from "./game/state";
 import { SIM_TICK_MS, step } from "./game/sim";
 
 const MAX_FRAME_DELTA_MS = 250;
@@ -27,7 +32,17 @@ app.innerHTML = `
           <dt>Income</dt>
           <dd id="income"></dd>
         </div>
+        <div>
+          <dt>Basic watches</dt>
+          <dd id="basic-watch-count"></dd>
+        </div>
       </dl>
+    </section>
+
+    <section aria-label="Actions">
+      <button id="buy-basic-watch" type="button">
+        Buy basic watch (<span id="basic-watch-price"></span>)
+      </button>
     </section>
   </main>
 `;
@@ -42,15 +57,27 @@ function requireElement<T extends Element>(root: ParentNode, selector: string): 
 
 const currencyEl = requireElement<HTMLElement>(app, "#currency");
 const incomeEl = requireElement<HTMLElement>(app, "#income");
+const basicWatchCountEl = requireElement<HTMLElement>(app, "#basic-watch-count");
+const basicWatchPriceEl = requireElement<HTMLElement>(app, "#basic-watch-price");
+const buyBasicWatchButton = requireElement<HTMLButtonElement>(app, "#buy-basic-watch");
 
 let state: GameState = createInitialState();
+
+buyBasicWatchButton.addEventListener("click", () => {
+  state = buyBasicWatch(state);
+});
 
 let lastFrameAtMs: number | null = null;
 let accumulatorMs = 0;
 
 function render(current: GameState) {
+  const basicWatchPriceCents = getBasicWatchPriceCents(current);
+
   currencyEl.textContent = formatMoneyFromCents(current.currencyCents);
   incomeEl.textContent = formatRateFromCentsPerSec(current.incomeRateCentsPerSec);
+  basicWatchCountEl.textContent = String(current.itemCount);
+  basicWatchPriceEl.textContent = formatMoneyFromCents(basicWatchPriceCents);
+  buyBasicWatchButton.disabled = !canBuyBasicWatch(current);
 }
 
 function frame(nowMs: number) {
