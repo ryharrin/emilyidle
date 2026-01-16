@@ -1,0 +1,1 @@
+- Used the exact `/tmp/catalog-entries.ts` dataset as the canonical source for `src/game/catalog.ts`.

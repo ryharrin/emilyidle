@@ -1,0 +1,5 @@
+- Removed unused workshop lifetime fields from state and persistence handling.
+- `sanitizeState` now persists `workshopUpgrades` to keep upgrades across saves.
+- Automation is gated by the `automation-blueprints` workshop upgrade and bulk-buys affordable items on tick.
+- Added navigation anchors and an automation toggle for quicker section jumps.
+- Workshop tests use seeded localStorage saves via `page.addInitScript` for automation UI coverage.

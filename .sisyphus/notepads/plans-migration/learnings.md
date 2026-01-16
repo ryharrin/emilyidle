@@ -1,0 +1,2 @@
+- Replaced `src/game/catalog.ts` with `/tmp/catalog-entries.ts` content to restore valid TypeScript catalog data.
+- 2026-01-16T08:18:04-08:00: Synced `src/game/catalog.ts` with `/tmp/catalog-entries.ts` byte-for-byte.

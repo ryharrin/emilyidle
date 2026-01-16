@@ -1,23 +1,26 @@
-import type { GameState } from "./state";
+import type { GameState, PersistedGameState } from "./state";
+import { createStateFromSave } from "./state";
 
 const SAVE_KEY = "watch-idle:save";
-const CURRENT_SAVE_VERSION = 1 as const;
+const CURRENT_SAVE_VERSION = 2 as const;
 
-type SaveV1 = {
+type SaveV2 = {
   version: typeof CURRENT_SAVE_VERSION;
   savedAt: string;
   lastSimulatedAtMs: number;
   state: GameState;
 };
 
-export type SaveDecodeResult = { ok: true; save: SaveV1 } | { ok: false; error: string };
+export type SaveDecodeResult = { ok: true; save: SaveV2 } | { ok: false; error: string };
 
 export type SaveLoadResult =
-  | { ok: true; save: SaveV1 }
+  | { ok: true; save: SaveV2 }
   | { ok: false; empty: true }
   | { ok: false; error: string };
 
 export type SavePersistResult = { ok: true } | { ok: false; error: string };
+
+type SaveParseResult = { ok: true; save: SaveV2 } | { ok: false; error: string };
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
@@ -31,22 +34,50 @@ function sanitizeState(value: unknown): GameState | null {
   const record = value as Record<string, unknown>;
 
   const currencyCents = record.currencyCents;
-  const incomeRateCentsPerSec = record.incomeRateCentsPerSec;
-  const itemCount = record.itemCount;
-
-  if (
-    !isFiniteNumber(currencyCents) ||
-    !isFiniteNumber(incomeRateCentsPerSec) ||
-    !isFiniteNumber(itemCount)
-  ) {
+  if (!isFiniteNumber(currencyCents)) {
     return null;
   }
 
-  return {
+  const persisted: PersistedGameState = {
     currencyCents: Math.max(0, currencyCents),
-    incomeRateCentsPerSec: Math.max(0, incomeRateCentsPerSec),
-    itemCount: Math.max(0, Math.floor(itemCount)),
+    items:
+      typeof record.items === "object" && record.items !== null
+        ? (record.items as Record<string, number>)
+        : {},
+    upgrades:
+      typeof record.upgrades === "object" && record.upgrades !== null
+        ? (record.upgrades as Record<string, number>)
+        : {},
+    unlockedMilestones: Array.isArray(record.unlockedMilestones)
+      ? record.unlockedMilestones.filter((entry): entry is string => typeof entry === "string")
+      : [],
+    workshopBlueprints: isFiniteNumber(record.workshopBlueprints) ? record.workshopBlueprints : 0,
+    workshopPrestigeCount: isFiniteNumber(record.workshopPrestigeCount)
+      ? record.workshopPrestigeCount
+      : 0,
+    workshopUpgrades:
+      typeof record.workshopUpgrades === "object" && record.workshopUpgrades !== null
+        ? (record.workshopUpgrades as Record<string, boolean>)
+        : {},
+    maisonHeritage: isFiniteNumber(record.maisonHeritage) ? record.maisonHeritage : 0,
+    maisonReputation: isFiniteNumber(record.maisonReputation) ? record.maisonReputation : 0,
+    maisonUpgrades:
+      typeof record.maisonUpgrades === "object" && record.maisonUpgrades !== null
+        ? (record.maisonUpgrades as Record<string, boolean>)
+        : {},
+    achievementUnlocks: Array.isArray(record.achievementUnlocks)
+      ? record.achievementUnlocks.filter((entry): entry is string => typeof entry === "string")
+      : [],
+    eventStates:
+      typeof record.eventStates === "object" && record.eventStates !== null
+        ? (record.eventStates as Record<
+            string,
+            { activeUntilMs: number; nextAvailableAtMs: number }
+          >)
+        : {},
   };
+
+  return createStateFromSave(persisted);
 }
 
 export function encodeSaveString(
@@ -54,7 +85,7 @@ export function encodeSaveString(
   lastSimulatedAtMs: number,
   savedAt: Date = new Date(),
 ): string {
-  const save: SaveV1 = {
+  const save: SaveV2 = {
     version: CURRENT_SAVE_VERSION,
     savedAt: savedAt.toISOString(),
     lastSimulatedAtMs,
@@ -64,7 +95,7 @@ export function encodeSaveString(
   return JSON.stringify(save);
 }
 
-export function decodeSaveString(raw: string): SaveDecodeResult {
+function decodeSavePayload(raw: string): SaveParseResult {
   let parsed: unknown;
 
   try {
@@ -81,12 +112,10 @@ export function decodeSaveString(raw: string): SaveDecodeResult {
   }
 
   const record = parsed as Record<string, unknown>;
+  const version = record.version;
 
-  if (record.version !== CURRENT_SAVE_VERSION) {
-    return {
-      ok: false,
-      error: `Unsupported save version: ${String(record.version)}`,
-    };
+  if (version !== 1 && version !== CURRENT_SAVE_VERSION) {
+    return { ok: false, error: `Unsupported save version: ${String(version)}` };
   }
 
   const savedAt = record.savedAt;
@@ -97,6 +126,23 @@ export function decodeSaveString(raw: string): SaveDecodeResult {
   const lastSimulatedAtMs = record.lastSimulatedAtMs;
   if (!isFiniteNumber(lastSimulatedAtMs) || lastSimulatedAtMs < 0) {
     return { ok: false, error: "Invalid save payload: invalid lastSimulatedAtMs" };
+  }
+
+  if (version === 1) {
+    const legacyState = sanitizeState(record.state);
+    if (!legacyState) {
+      return { ok: false, error: "Invalid save payload: invalid state" };
+    }
+
+    return {
+      ok: true,
+      save: {
+        version: CURRENT_SAVE_VERSION,
+        savedAt,
+        lastSimulatedAtMs,
+        state: legacyState,
+      },
+    };
   }
 
   const state = sanitizeState(record.state);
@@ -115,6 +161,10 @@ export function decodeSaveString(raw: string): SaveDecodeResult {
   };
 }
 
+export function decodeSaveString(raw: string): SaveDecodeResult {
+  return decodeSavePayload(raw);
+}
+
 export function loadSaveFromLocalStorage(): SaveLoadResult {
   let raw: string | null;
 
@@ -131,7 +181,7 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
     return { ok: false, empty: true };
   }
 
-  const decoded = decodeSaveString(raw);
+  const decoded = decodeSavePayload(raw);
   if (!decoded.ok) {
     return { ok: false, error: decoded.error };
   }
