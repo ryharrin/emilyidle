@@ -308,7 +308,7 @@ export default function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">Collection loop</p>
-          <h1>Watch Idle</h1>
+          <h1>Emily Idle</h1>
           <p className="muted">Build your vault, unlock new lines, and stack bonuses.</p>
           <nav className="page-nav" aria-label="Primary">
             <a className="page-nav-link" href="#collection">

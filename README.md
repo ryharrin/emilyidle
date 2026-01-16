@@ -1,4 +1,4 @@
-# Watch Idle
+# Emily Idle
 
 A browser-based idle/incremental game themed around luxury watch collecting. Build a vault, unlock a catalog of real-world references (with licensed imagery), and progress through Collection → Workshop → Maison prestige layers.
 

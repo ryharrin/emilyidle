@@ -1,7 +1,8 @@
 import type { GameState, PersistedGameState } from "./state";
 import { createStateFromSave } from "./state";
 
-const SAVE_KEY = "watch-idle:save";
+const SAVE_KEY = "emily-idle:save";
+const LEGACY_SAVE_KEY = "watch-idle:save";
 const CURRENT_SAVE_VERSION = 2 as const;
 
 type SaveV2 = {
@@ -178,12 +179,35 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
   }
 
   if (raw === null) {
+    try {
+      raw = localStorage.getItem(LEGACY_SAVE_KEY);
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Could not read localStorage: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  }
+
+  if (raw === null) {
     return { ok: false, empty: true };
   }
 
   const decoded = decodeSavePayload(raw);
   if (!decoded.ok) {
     return { ok: false, error: decoded.error };
+  }
+
+  if (raw !== null) {
+    try {
+      localStorage.setItem(SAVE_KEY, raw);
+      localStorage.removeItem(LEGACY_SAVE_KEY);
+    } catch (error) {
+      return {
+        ok: false,
+        error: `Could not write localStorage: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   }
 
   return { ok: true, save: decoded.save };
@@ -198,6 +222,7 @@ export function persistSaveToLocalStorage(
 
   try {
     localStorage.setItem(SAVE_KEY, encoded);
+    localStorage.removeItem(LEGACY_SAVE_KEY);
     return { ok: true };
   } catch (error) {
     return {
@@ -210,6 +235,7 @@ export function persistSaveToLocalStorage(
 export function clearLocalStorageSave(): SavePersistResult {
   try {
     localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(LEGACY_SAVE_KEY);
     return { ok: true };
   } catch (error) {
     return {

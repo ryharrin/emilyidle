@@ -119,7 +119,7 @@ test.describe("collection loop", () => {
           lastSimulatedAtMs,
           state,
         };
-        window.localStorage.setItem("watch-idle:save", JSON.stringify(payload));
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
       },
       { state: seededState, lastSimulatedAtMs: Date.now() },
     );
@@ -156,7 +156,7 @@ test.describe("collection loop", () => {
           lastSimulatedAtMs,
           state,
         };
-        window.localStorage.setItem("watch-idle:save", JSON.stringify(payload));
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
       },
       { state: seededState, lastSimulatedAtMs: Date.now() },
     );
@@ -210,7 +210,7 @@ test.describe("collection loop", () => {
           lastSimulatedAtMs,
           state,
         };
-        window.localStorage.setItem("watch-idle:save", JSON.stringify(payload));
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
       },
       { state: seededState, lastSimulatedAtMs: Date.now() },
     );
@@ -256,7 +256,7 @@ test.describe("collection loop", () => {
           lastSimulatedAtMs,
           state,
         };
-        window.localStorage.setItem("watch-idle:save", JSON.stringify(payload));
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
       },
       { state: seededState, lastSimulatedAtMs: Date.now() },
     );
