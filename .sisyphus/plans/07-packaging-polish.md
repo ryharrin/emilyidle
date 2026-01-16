@@ -4,16 +4,16 @@ Purpose: Make the game pleasant to run locally and robust: stable saves/migratio
 
 ## Source context
 
-- `.planning/ROADMAP.md`
-- `.planning/codebase/CONCERNS.md`
-- `.planning/codebase/STRUCTURE.md`
+- `.sisyphus/plans/06-balance-content.md`
+- `.sisyphus/plans/07-packaging-polish.md`
+- `.sisyphus/plans/10-theme-enjoyment.md`
 
 ## Tasks
 
 ### 07-01 — Build output, local run instructions, perf + accessibility polish
 
 - [ ] Add clear local run instructions (dev/build/preview)
-  - **Files**: `README.md` (if desired), or `.planning/PROJECT.md` update
+  - **Files**: `README.md` (if desired), or `.sisyphus/plans/07-packaging-polish.md` update
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: YES
 
@@ -23,12 +23,12 @@ Purpose: Make the game pleasant to run locally and robust: stable saves/migratio
   - **Parallelizable**: NO
 
 - [ ] Performance polish (avoid unnecessary DOM writes; keep sim stable)
-  - **Files**: `src/main.ts`, `src/game/sim.ts`
+  - **Files**: `src/App.tsx`, `src/game/sim.ts`
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: YES
 
 - [ ] Accessibility + UX polish (keyboard focus, readable formatting)
-  - **Files**: `index.html`, `src/style.css`, `src/main.ts`
+  - **Files**: `index.html`, `src/style.css`, `src/App.tsx`
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: YES
 

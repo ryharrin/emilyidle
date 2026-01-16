@@ -4,8 +4,9 @@ Purpose: Add the second prestige layer (“Maison”) that resets Workshop + Col
 
 ## Source context
 
-- `.planning/PROJECT.md`
-- `.planning/ROADMAP.md`
+- `.sisyphus/plans/04-workshop-prestige.md`
+- `.sisyphus/plans/05-maison-prestige.md`
+- `.sisyphus/plans/06-balance-content.md`
 - `src/game/persistence.ts`
 
 ## Tasks
@@ -25,12 +26,12 @@ Purpose: Add the second prestige layer (“Maison”) that resets Workshop + Col
 ### 05-02 — Maison systems (product lines, permanent expansion unlocks)
 
 - [ ] Add Maison meta-progression systems (new product lines / multipliers)
-  - **Files**: `src/game/state.ts`, `src/main.ts`
+  - **Files**: `src/game/state.ts`, `src/App.tsx`
   - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: NO
 
 - [ ] Add UI to surface Maison goals and long-term progression
-  - **Files**: `src/main.ts`, `src/style.css`
+  - **Files**: `src/App.tsx`, `src/style.css`
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: YES
 

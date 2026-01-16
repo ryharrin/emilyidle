@@ -1,2 +1,3 @@
-- Replaced `src/game/catalog.ts` with `/tmp/catalog-entries.ts` content to restore valid TypeScript catalog data.
-- 2026-01-16T08:18:04-08:00: Synced `src/game/catalog.ts` with `/tmp/catalog-entries.ts` byte-for-byte.
+- Rebrand sweep: key strings live in `index.html` (`<title>`), `src/App.tsx` (hero heading), and `README.md` (H1).
+- LocalStorage save key is centralized as `SAVE_KEY` in `src/game/persistence.ts`; e2e tests seed saves using hardcoded key in `tests/collection-loop.spec.ts`.
+- `dist/` is present locally but ignored by `.gitignore`; treat as build output, not a source of truth.

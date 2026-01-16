@@ -4,15 +4,16 @@ Purpose: Tune pacing/softcaps and add enough mid/late content that all three lay
 
 ## Source context
 
-- `.planning/ROADMAP.md`
-- `.planning/codebase/TESTING.md`
+- `.sisyphus/plans/02-collection-loop.md`
+- `.sisyphus/plans/04-workshop-prestige.md`
+- `.sisyphus/plans/05-maison-prestige.md`
 
 ## Tasks
 
 ### 06-01 — Balance pass (curves, thresholds, softcaps, pacing)
 
 - [ ] Establish target pacing goals (time-to-first-prestige, etc.)
-  - **Files**: `.planning/ROADMAP.md` (reference), `src/game/state.ts` (constants)
+  - **Files**: `.sisyphus/plans/02-collection-loop.md` (reference), `src/game/state.ts` (constants)
   - **Verification**: `pnpm run test:unit`
   - **Parallelizable**: NO
 
@@ -24,12 +25,12 @@ Purpose: Tune pacing/softcaps and add enough mid/late content that all three lay
 ### 06-02 — Content pass (achievements, events, milestone goals)
 
 - [ ] Add achievements (small initial set) with persistence
-  - **Files**: `src/game/state.ts`, `src/game/persistence.ts`, `src/main.ts`
+  - **Files**: `src/game/state.ts`, `src/game/persistence.ts`, `src/App.tsx`
   - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: YES
 
 - [ ] Add simple events/milestones to reduce idle monotony
-  - **Files**: `src/game/sim.ts`, `src/main.ts`
+  - **Files**: `src/game/sim.ts`, `src/App.tsx`
   - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: NO
 

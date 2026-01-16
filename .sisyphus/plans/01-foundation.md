@@ -4,12 +4,9 @@ Purpose: Establish a stable Vite + TypeScript baseline, implement a minimal play
 
 ## Source context
 
-- `.planning/PROJECT.md`
-- `.planning/ROADMAP.md`
-- `.planning/STATE.md`
-- `.planning/phases/01-foundation/01-01-PLAN.md`
-- `.planning/phases/01-foundation/01-02-PLAN.md`
-- `.planning/phases/01-foundation/01-03-PLAN.md`
+- `.sisyphus/plans/01-foundation.md`
+- `.sisyphus/plans/02-collection-loop.md`
+- `.sisyphus/plans/03-catalog-images.md`
 
 ## Tasks
 
@@ -28,30 +25,30 @@ Purpose: Establish a stable Vite + TypeScript baseline, implement a minimal play
 ### 01-02 — Minimal playable loop
 
 - [x] Wire deterministic simulation runtime (fixed timestep + accumulator)
-  - **Files**: `src/main.ts`, `src/game/sim.ts`, `src/game/state.ts`
+  - **Files**: `src/main.tsx`, `src/game/sim.ts`, `src/game/state.ts`
   - **Verification**: `pnpm run typecheck`; `pnpm run build`; manual: currency increases steadily in browser
   - **Parallelizable**: NO
 
 - [x] Render core stats + add a buy action that increases income
-  - **Files**: `src/main.ts`, `src/game/state.ts`, `src/game/format.ts`
+  - **Files**: `src/App.tsx`, `src/game/state.ts`, `src/game/format.ts`
   - **Verification**: `pnpm run build`; manual: buy disabled when unaffordable; purchase increases income rate
   - **Parallelizable**: YES
 
 ### 01-03 — Persistence
 
 - [x] Implement persistence layer with versioned save format
-  - **Files**: `src/game/persistence.ts`, `src/game/state.ts`, `src/main.ts`
+  - **Files**: `src/game/persistence.ts`, `src/game/state.ts`, `src/App.tsx`
   - **Verification**: manual: reload retains progress; corrupt save resets safely
   - **Parallelizable**: NO
 
 - [x] Add export/import save (copy/paste)
-  - **Files**: `src/main.ts`, `src/game/persistence.ts`
+  - **Files**: `src/App.tsx`, `src/game/persistence.ts`
   - **Verification**: manual: export → clear storage → import restores
   - **Parallelizable**: YES
 
 - [x] Human verification checkpoint (Phase 1)
   - **Files**: (none)
-  - **Verification**: `pnpm run dev` and complete the manual checklist in `.planning/phases/01-foundation/01-03-PLAN.md`
+  - **Verification**: `pnpm run dev`; verify currency increases and saves persist
   - **Parallelizable**: NO
 
 ## Plan-wide verification
@@ -62,4 +59,4 @@ Purpose: Establish a stable Vite + TypeScript baseline, implement a minimal play
 
 ## Notes / assumptions
 
-- Roadmap marks Phase 1 complete; `.planning/STATE.md` mentions pending human verification for 01-03. This plan treats Phase 1 as completed to match the repo’s roadmap state.
+- Planning lives under `.sisyphus/` (legacy `.planning/` removed).

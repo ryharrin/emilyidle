@@ -4,17 +4,17 @@ Purpose: Add a real-image catalog (Rolex / Jaeger‑LeCoultre / Audemars Piguet)
 
 ## Source context
 
-- `.planning/PROJECT.md`
-- `.planning/ROADMAP.md`
-- `.planning/codebase/INTEGRATIONS.md`
-- `.planning/codebase/CONCERNS.md`
+- `.sisyphus/plans/02-collection-loop.md`
+- `.sisyphus/plans/03-catalog-images.md`
+- `.sisyphus/plans/08-collection-integration.md`
+- `.sisyphus/plans/10-theme-enjoyment.md`
 
 ## Tasks
 
 ### 03-00 — UI framework migration
 
 - [ ] Migrate UI to React (or similar) with Vite integration
-  - **Files**: `package.json`, `vite.config.ts`, `src/main.tsx`, `src/App.tsx`, `src/components/*`, `src/style.css`
+  - **Files**: `package.json`, `vite.config.ts`, `src/App.tsx`, `src/components/*`, `src/style.css`
   - **Verification**: `pnpm run dev`; `pnpm run build`; `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: NO
 
@@ -26,14 +26,14 @@ Purpose: Add a real-image catalog (Rolex / Jaeger‑LeCoultre / Audemars Piguet)
   - **Parallelizable**: NO
 
 - [ ] Implement filtering/search UI for catalog
-  - **Files**: `src/main.ts`, `src/style.css`
+  - **Files**: `src/App.tsx`, `src/style.css`
   - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: YES
 
 ### 03-02 — Image pipeline (curate list, store sources, render)
 
 - [ ] Decide image storage approach (local assets vs remote URLs)
-  - **Files**: `.planning/codebase/CONCERNS.md` (reference), `src/game/catalog.ts` (metadata fields)
+  - **Files**: `.sisyphus/plans/08-collection-integration.md` (reference), `src/game/catalog.ts` (metadata fields)
   - **Verification**: document decision in plan notes; `pnpm run test:e2e`
   - **Parallelizable**: NO
 
@@ -43,19 +43,19 @@ Purpose: Add a real-image catalog (Rolex / Jaeger‑LeCoultre / Audemars Piguet)
   - **Parallelizable**: YES
 
 - [ ] Render images in catalog UI (with graceful fallback)
-  - **Files**: `src/main.ts`, `src/style.css`
+  - **Files**: `src/App.tsx`, `src/style.css`
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: YES
 
 ### 03-03 — Attribution UI + “sources” view
 
 - [ ] Add per-item attribution display
-  - **Files**: `src/main.ts`
+  - **Files**: `src/App.tsx`
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: YES
 
 - [ ] Add a “Sources / Licenses” view (list all images + licenses)
-  - **Files**: `src/main.ts`
+  - **Files**: `src/App.tsx`
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: NO
 

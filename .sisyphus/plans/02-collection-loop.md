@@ -4,13 +4,11 @@ Purpose: Make collecting/upgrading feel good and scalable; introduce clearer com
 
 ## Source context
 
-- `.planning/PROJECT.md`
-- `.planning/ROADMAP.md`
-- `.planning/codebase/ARCHITECTURE.md`
-- `.planning/codebase/CONVENTIONS.md`
+- `.sisyphus/plans/01-foundation.md`
+- `.sisyphus/plans/02-collection-loop.md`
 - `src/game/state.ts`
 - `src/game/sim.ts`
-- `src/main.ts`
+- `src/App.tsx`
 
 ## Tasks
 
@@ -22,19 +20,19 @@ Purpose: Make collecting/upgrading feel good and scalable; introduce clearer com
   - **Parallelizable**: NO
 
 - [x] Implement pricing curves + affordability UX (bulk buy optional)
-  - **Files**: `src/game/state.ts`, `src/main.ts`, `src/game/format.ts`
+  - **Files**: `src/game/state.ts`, `src/App.tsx`, `src/game/format.ts`
   - **Verification**: manual: buttons disable/enabled correctly; buy updates immediately; no negative currency
   - **Parallelizable**: YES
 
 - [x] Add basic UI structure for the collection screen (list, details, actions)
-  - **Files**: `src/main.ts`, `index.html`, `src/style.css`
+  - **Files**: `src/App.tsx`, `index.html`, `src/style.css`
   - **Verification**: manual: layout remains usable as item count grows
   - **Parallelizable**: NO
 
 ### 02-02 — Upgrades and softcaps (diminishing returns)
 
 - [x] Add upgrade system (simple, deterministic)
-  - **Files**: `src/game/state.ts`, `src/game/sim.ts`, `src/main.ts`
+  - **Files**: `src/game/state.ts`, `src/game/sim.ts`, `src/App.tsx`
   - **Verification**: manual: upgrades change rate; gated by affordability
   - **Parallelizable**: NO
 
@@ -51,7 +49,7 @@ Purpose: Make collecting/upgrading feel good and scalable; introduce clearer com
   - **Parallelizable**: NO
 
 - [x] Add set bonuses + milestone unlocks (small initial set)
-  - **Files**: `src/game/state.ts`, `src/main.ts`
+  - **Files**: `src/game/state.ts`, `src/App.tsx`
   - **Verification**: manual: milestones unlock at thresholds; state persists after reload
   - **Parallelizable**: YES
 
