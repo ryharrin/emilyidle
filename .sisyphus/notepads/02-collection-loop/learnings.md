@@ -17,3 +17,9 @@
 - Catalog UI pulls from `getCatalogEntries()` in `src/game/state.ts`.
 - Catalog entries are filtered via text search + brand selection with memoization.
 - Sources/Licenses panel lists source + license links for each image.
+
+## 2026-01-16 Task: catalog-discovery-wiring
+
+- Added `discoveredCatalogEntries` to save/load flow via `createStateFromSave` + `sanitizeState`.
+- Discovery helpers live in `src/game/state.ts` and sync during `buyItem`, `buyUpgrade`, and `step()`.
+- Catalog tests must set the View filter to `All references` for predictable search/brand filtering.

@@ -76,6 +76,12 @@ function sanitizeState(value: unknown): GameState | null {
             { activeUntilMs: number; nextAvailableAtMs: number }
           >)
         : {},
+    discoveredCatalogEntries: Array.isArray(record.discoveredCatalogEntries)
+      ? record.discoveredCatalogEntries.filter(
+          (entry): entry is string => typeof entry === "string",
+        )
+      : [],
+    enjoymentCents: isFiniteNumber(record.enjoymentCents) ? Math.max(0, record.enjoymentCents) : 0,
   };
 
   return createStateFromSave(persisted);

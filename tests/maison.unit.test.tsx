@@ -19,22 +19,19 @@ import {
 } from "../src/game/state";
 
 describe("maison prestige", () => {
-  it("calculates prestige gain from collection value and blueprints", () => {
+  it("calculates prestige gain from enjoyment and blueprints", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
       workshopBlueprints: 8,
-      items: {
-        ...baseState.items,
-        tourbillon: 20,
-      },
+      enjoymentCents: 4_000_000,
     };
 
     expect(getMaisonPrestigeGain(baseState)).toBe(0);
     expect(getMaisonPrestigeGain(seededState)).toBe(3);
   });
 
-  it("unlocks achievements for collection value and prestige", () => {
+  it("unlocks achievements for Sentimental value and prestige", () => {
     const baseState = createInitialState();
     const upgradedState = applyAchievementUnlocks({
       ...baseState,
@@ -78,6 +75,7 @@ describe("maison prestige", () => {
     const seededState = {
       ...baseState,
       currencyCents: 125_000,
+      enjoymentCents: 240_000,
       items: {
         ...baseState.items,
         starter: 5,
@@ -104,6 +102,7 @@ describe("maison prestige", () => {
     const nextState = prestigeMaison(seededState);
 
     expect(nextState.currencyCents).toBe(0);
+    expect(nextState.enjoymentCents).toBe(0);
     expect(nextState.workshopBlueprints).toBe(0);
     expect(nextState.workshopPrestigeCount).toBe(0);
     expect(nextState.maisonHeritage).toBe(6);

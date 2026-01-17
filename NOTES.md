@@ -1,0 +1,17 @@
+- Come up with a different currency for sentimental value, like "memories" or "nostalgia points".
+- Add a way to interact with your selected watch beyond just viewing it in the catalog, such as a mini-game
+- Implement a feature where certain watches can unlock special abilities or bonuses in the idle game.
+- Introduce a storyline or lore that unfolds as players collect more watches, adding depth to the game.
+- Have a tabbed interface in the catalog to separate owned watches from unowned ones.
+- Have a tabbed interface for the main game to separate different gameplay aspects (e.g., production, upgrades, prestige).
+- Add sound effects or background music that can be toggled on/off to enhance the gaming experience
+- Add more brands and models to the watch catalog to increase variety and appeal to different tastes.
+- Add a statistics dashboard showing detailed metrics about the player's progress, watch collection, and gameplay habits.
+- Add achievements or badges for collecting certain sets of watches or reaching specific milestones in the game.
+- Add more detailed tooltips or info boxes for watches in the catalog, providing historical context or interesting facts about each model.
+- Consider different names for the prestige mechanics that fit the watch theme better, related to collecting watches
+- Use real trusted dealer names.
+- Add Emily's birthday as an in-game event or milestone. 4/27/89
+- Add a way to sort/filter the watch catalog by different criteria (e.g., brand, era, type).
+- Add more women's watches to the catalog to appeal to a broader audience.
+

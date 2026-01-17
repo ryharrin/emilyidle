@@ -93,6 +93,17 @@ strong {
   padding: 12px 16px;
   border-radius: 12px;
   background: #1b1e26;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats div::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  pointer-events: none;
 }
 
 .stats dt {
@@ -204,6 +215,36 @@ button:not(:disabled):hover {
   border-radius: 18px;
   padding: 20px;
   border: 1px solid #242833;
+}
+
+.panel-teaser {
+  opacity: 0.9;
+  border-style: dashed;
+}
+
+.panel-teaser-content {
+  display: grid;
+  gap: 12px;
+}
+
+.teaser-progress {
+  display: grid;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #9da3ad;
+}
+
+.teaser-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #0f1115;
+  border: 1px solid #2a2f3b;
+  overflow: hidden;
+}
+
+.teaser-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.12), rgba(72, 175, 255, 0.5));
 }
 
 .panel-header {

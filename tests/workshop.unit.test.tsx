@@ -11,14 +11,11 @@ import {
 } from "../src/game/state";
 
 describe("workshop prestige", () => {
-  it("calculates prestige gain from collection value", () => {
+  it("calculates prestige gain from enjoyment", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
-      items: {
-        ...baseState.items,
-        tourbillon: 25,
-      },
+      enjoymentCents: 3_200_000,
     };
 
     expect(getWorkshopPrestigeGain(baseState)).toBe(0);
@@ -30,6 +27,7 @@ describe("workshop prestige", () => {
     const seededState = {
       ...baseState,
       currencyCents: 45_000,
+      enjoymentCents: 120_000,
       items: {
         ...baseState.items,
         starter: 4,
@@ -47,6 +45,7 @@ describe("workshop prestige", () => {
     const nextState = prestigeWorkshop(seededState, 2);
 
     expect(nextState.currencyCents).toBe(0);
+    expect(nextState.enjoymentCents).toBe(0);
     expect(nextState.unlockedMilestones).toEqual(["collector-shelf"]);
     expect(nextState.workshopBlueprints).toBe(5);
     expect(nextState.workshopPrestigeCount).toBe(2);

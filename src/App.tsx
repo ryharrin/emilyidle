@@ -25,15 +25,20 @@ import {
   createInitialState,
   getAchievements,
   getActiveSetBonuses,
+  getCatalogDiscovery,
   getCatalogEntries,
   getAutoBuyEnabled,
   getCollectionValueCents,
   getEffectiveIncomeRateCentsPerSec,
+  getEnjoymentCents,
+  getEnjoymentRateCentsPerSec,
+  getEnjoymentThresholdLabel,
   getEventIncomeMultiplier,
   getEventStatusLabel,
   getEvents,
   getItemPriceCents,
   getMaisonPrestigeGain,
+  getMaisonPrestigeThresholdCents,
   getMaisonUpgrades,
   getMaxAffordableItemCount,
   getMilestoneRequirementLabel,
@@ -44,13 +49,18 @@ import {
   getUpgradePriceCents,
   getWatchItems,
   getWorkshopPrestigeGain,
+  getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
   isEventActive,
   isItemUnlocked,
+  isMaisonRevealReady,
   isUpgradeUnlocked,
+  isWorkshopRevealReady,
   prestigeMaison,
   prestigeWorkshop,
+  shouldShowUnlockTag,
 } from "./game/state";
+import { getCatalogEntryTags, getCatalogImageUrl } from "./game/catalog";
 import type { GameState } from "./game/state";
 import { SIM_TICK_MS, step } from "./game/sim";
 
@@ -63,6 +73,7 @@ export default function App() {
   const [importText, setImportText] = useState("");
   const [catalogSearch, setCatalogSearch] = useState("");
   const [catalogBrand, setCatalogBrand] = useState("All");
+  const [showDiscoveredOnly, setShowDiscoveredOnly] = useState(true);
   const [workshopResetArmed, setWorkshopResetArmed] = useState(false);
   const [maisonResetArmed, setMaisonResetArmed] = useState(false);
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
@@ -219,10 +230,15 @@ export default function App() {
   };
 
   const stats = useMemo(() => {
+    const cashRate = getEffectiveIncomeRateCentsPerSec(state);
+    const enjoymentRate = getEnjoymentRateCentsPerSec(state);
+
     return {
-      currency: formatMoneyFromCents(state.currencyCents),
-      income: formatRateFromCentsPerSec(getEffectiveIncomeRateCentsPerSec(state)),
-      collectionValue: formatMoneyFromCents(getCollectionValueCents(state)),
+      cash: formatMoneyFromCents(state.currencyCents),
+      cashRate: formatRateFromCentsPerSec(cashRate),
+      enjoyment: formatMoneyFromCents(getEnjoymentCents(state)),
+      enjoymentRate: formatRateFromCentsPerSec(enjoymentRate),
+      sentimentalValue: formatMoneyFromCents(getCollectionValueCents(state)),
       softcap: formatSoftcapEfficiency(getSoftcapEfficiency(state)),
     };
   }, [state]);
@@ -236,11 +252,27 @@ export default function App() {
   const workshopUpgrades = useMemo(() => getWorkshopUpgrades(), []);
   const maisonUpgrades = useMemo(() => getMaisonUpgrades(), []);
   const catalogEntries = useMemo(() => getCatalogEntries(), []);
+  const discoveredCatalogIds = useMemo(() => getCatalogDiscovery(state), [state]);
   const activeBonuses = useMemo(() => getActiveSetBonuses(state), [state]);
   const workshopPrestigeGain = useMemo(() => getWorkshopPrestigeGain(state), [state]);
   const maisonPrestigeGain = useMemo(() => getMaisonPrestigeGain(state), [state]);
   const canPrestigeWorkshop = useMemo(() => canWorkshopPrestige(state), [state]);
   const canPrestigeMaison = useMemo(() => maisonPrestigeGain > 0, [maisonPrestigeGain]);
+  const showWorkshopPanel = canPrestigeWorkshop || state.workshopPrestigeCount > 0;
+  const showWorkshopTeaser = !showWorkshopPanel && isWorkshopRevealReady(state);
+  const showWorkshopSection = showWorkshopPanel || showWorkshopTeaser;
+  const showMaisonPanel =
+    canPrestigeMaison || state.maisonHeritage > 0 || state.maisonReputation > 0;
+  const showMaisonTeaser = !showMaisonPanel && isMaisonRevealReady(state);
+  const showMaisonSection = showMaisonPanel || showMaisonTeaser;
+  const workshopRevealProgress = Math.min(
+    1,
+    state.enjoymentCents / getWorkshopPrestigeThresholdCents(),
+  );
+  const maisonRevealProgress = Math.min(
+    1,
+    state.enjoymentCents / getMaisonPrestigeThresholdCents(),
+  );
   const nowMs = useMemo(() => Date.now(), [state]);
   const currentEventMultiplier = useMemo(
     () => getEventIncomeMultiplier(state, nowMs),
@@ -252,15 +284,27 @@ export default function App() {
   const filteredCatalogEntries = useMemo(() => {
     const query = catalogSearch.trim().toLowerCase();
     return catalogEntries.filter((entry) => {
+      if (showDiscoveredOnly && !discoveredCatalogIds.includes(entry.id)) {
+        return false;
+      }
       const matchesBrand = catalogBrand === "All" || entry.brand === catalogBrand;
+      const tags = getCatalogEntryTags(entry).join(" ");
       const matchesQuery =
         query.length === 0 ||
-        `${entry.brand} ${entry.model} ${entry.description} ${entry.year} ${entry.tags.join(" ")}`
+        `${entry.brand} ${entry.model} ${entry.description} ${entry.year} ${tags}`
           .toLowerCase()
           .includes(query);
       return matchesBrand && matchesQuery;
     });
-  }, [catalogEntries, catalogBrand, catalogSearch]);
+  }, [catalogEntries, catalogBrand, catalogSearch, discoveredCatalogIds, showDiscoveredOnly]);
+
+  const discoveredCatalogEntries = useMemo(() => {
+    if (discoveredCatalogIds.length === 0) {
+      return [] as typeof catalogEntries;
+    }
+    const discovered = new Set(discoveredCatalogIds);
+    return catalogEntries.filter((entry) => discovered.has(entry.id));
+  }, [catalogEntries, discoveredCatalogIds]);
 
   const autoBuyUnlocked = useMemo(() => getAutoBuyEnabled(state), [state]);
   const autoBuyEnabled = autoBuyUnlocked && autoBuyToggle;
@@ -332,15 +376,23 @@ export default function App() {
           <dl>
             <div>
               <dt>Vault cash</dt>
-              <dd id="currency">{stats.currency}</dd>
+              <dd id="currency">{stats.cash}</dd>
             </div>
             <div>
-              <dt>Income</dt>
-              <dd id="income">{stats.income}</dd>
+              <dt>Cash / sec</dt>
+              <dd id="income">{stats.cashRate}</dd>
             </div>
             <div>
-              <dt>Collection value</dt>
-              <dd id="collection-value">{stats.collectionValue}</dd>
+              <dt>Enjoyment</dt>
+              <dd id="enjoyment">{stats.enjoyment}</dd>
+            </div>
+            <div>
+              <dt>Enjoyment / sec</dt>
+              <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
+            </div>
+            <div>
+              <dt>Sentimental value</dt>
+              <dd id="collection-value">{stats.sentimentalValue}</dd>
             </div>
             <div>
               <dt>Softcap</dt>
@@ -353,7 +405,7 @@ export default function App() {
       <section className="collection" aria-label="Collection" id="collection">
         <div>
           <h2>Collection</h2>
-          <p className="muted">Acquire pieces to unlock the next tier.</p>
+          <p className="muted">Acquire pieces to grow cash and enjoyment.</p>
           <div className="automation-toggle" role="group" aria-label="Automation controls">
             <p className="automation-label">Automation</p>
             {autoBuyUnlocked ? (
@@ -387,8 +439,8 @@ export default function App() {
                     <div>{owned} owned</div>
                   </div>
                   <p>
-                    {formatRateFromCentsPerSec(item.incomeCentsPerSec)} each · Value{" "}
-                    {formatMoneyFromCents(item.collectionValueCents)}
+                    {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash each · Sentimental
+                    value {formatMoneyFromCents(item.collectionValueCents)}
                   </p>
                   <div className="card-actions">
                     <button
@@ -406,11 +458,13 @@ export default function App() {
                     >
                       Buy {bulkQty} ({formatMoneyFromCents(bulkPrice)})
                     </button>
-                    {!unlocked && (
-                      <div className="unlock-tag">
-                        Unlocks with {getMilestoneRequirementLabel(item.unlockMilestoneId!)}
-                      </div>
-                    )}
+                    {!unlocked &&
+                      item.unlockMilestoneId &&
+                      shouldShowUnlockTag(state, item.unlockMilestoneId) && (
+                        <div className="unlock-tag">
+                          Unlocking soon · {getMilestoneRequirementLabel(item.unlockMilestoneId)}
+                        </div>
+                      )}
                   </div>
                 </div>
               );
@@ -418,250 +472,300 @@ export default function App() {
           </div>
         </div>
         <aside className="side-panel">
-          <div
-            className="panel workshop-panel"
-            aria-label="Workshop"
-            data-testid="workshop-panel"
-            id="workshop"
-          >
-            <header className="panel-header">
-              <div>
-                <p className="eyebrow">Reset loop</p>
-                <h3>Workshop</h3>
-                <p className="muted">Trade collection value for Blueprints and permanent boosts.</p>
-              </div>
-              <div className="results-count" data-testid="workshop-balance">
-                {state.workshopBlueprints.toLocaleString()} Blueprints
-              </div>
-            </header>
-            <div className="workshop-reset" data-testid="workshop-reset">
-              <div>
-                <p className="workshop-label">Reset threshold</p>
-                <p className="workshop-value">$800,000 collection value</p>
-              </div>
-              <div>
-                <p className="workshop-label">Current gain</p>
-                <p className="workshop-value">+{workshopPrestigeGain} Blueprints</p>
-              </div>
-            </div>
-            <div className="workshop-cta" role="group" aria-label="Reset vault">
-              {workshopResetArmed ? (
-                <div className="workshop-confirm">
-                  <button
-                    type="button"
-                    aria-label="Confirm reset"
-                    disabled={!canPrestigeWorkshop}
-                    onClick={() => {
-                      if (!canPrestigeWorkshop) {
-                        return;
-                      }
-                      handlePurchase(prestigeWorkshop(state, workshopPrestigeGain));
-                      setWorkshopResetArmed(false);
-                    }}
-                  >
-                    Confirm reset
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() => setWorkshopResetArmed(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!canPrestigeWorkshop}
-                  onClick={() => setWorkshopResetArmed(true)}
-                >
-                  Reset vault
-                </button>
-              )}
-              <p className="muted" aria-live="polite">
-                {workshopResetArmed
-                  ? "Confirming will reset progress and grant Blueprints."
-                  : canPrestigeWorkshop
-                    ? "Resetting trades your vault for Blueprints and permanent boosts."
-                    : "Requires reaching the reset threshold."}
-              </p>
-            </div>
-            <div className="workshop-upgrades" aria-label="Workshop upgrades">
-              <h4>Upgrades</h4>
-              <div className="card-stack">
-                {workshopUpgrades.map((upgrade) => {
-                  const owned = state.workshopUpgrades[upgrade.id] ?? false;
-                  const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
-                  const effectLabel = (() => {
-                    if (upgrade.incomeMultiplier) {
-                      return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% income`;
-                    }
-                    if (upgrade.softcapMultiplier) {
-                      return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                    }
-                    if (upgrade.softcapExponentBonus) {
-                      return `Softcap exponent +${upgrade.softcapExponentBonus}`;
-                    }
-                    if (upgrade.unlocks?.autoBuyEnabled) {
-                      return "Unlocks automation";
-                    }
-                    return "Permanent upgrade";
-                  })();
-
-                  return (
-                    <div
-                      className="card workshop-upgrade-card"
-                      key={upgrade.id}
-                      data-testid="workshop-upgrade-card"
-                    >
-                      <div className="card-header">
-                        <div>
-                          <h3>{upgrade.name}</h3>
-                          <p>{upgrade.description}</p>
-                        </div>
-                        <div>{owned ? "Owned" : `${upgrade.blueprintCost} Blueprints`}</div>
-                      </div>
-                      <p>{effectLabel}</p>
-                      <div className="card-actions">
+          {showWorkshopSection && (
+            <div
+              className={`panel workshop-panel ${showWorkshopPanel ? "" : "panel-teaser"}`}
+              aria-label="Workshop"
+              data-testid="workshop-panel"
+              id="workshop"
+            >
+              {showWorkshopPanel ? (
+                <>
+                  <header className="panel-header">
+                    <div>
+                      <p className="eyebrow">Reset loop</p>
+                      <h3>Workshop</h3>
+                      <p className="muted">Trade enjoyment for Blueprints and permanent boosts.</p>
+                    </div>
+                    <div className="results-count" data-testid="workshop-balance">
+                      {state.workshopBlueprints.toLocaleString()} Blueprints
+                    </div>
+                  </header>
+                  <div className="workshop-reset" data-testid="workshop-reset">
+                    <div>
+                      <p className="workshop-label">Reset threshold</p>
+                      <p className="workshop-value">
+                        {getEnjoymentThresholdLabel(getWorkshopPrestigeThresholdCents())}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="workshop-label">Current gain</p>
+                      <p className="workshop-value">+{workshopPrestigeGain} Blueprints</p>
+                    </div>
+                  </div>
+                  <div className="workshop-cta" role="group" aria-label="Reset vault">
+                    {workshopResetArmed ? (
+                      <div className="workshop-confirm">
+                        <button
+                          type="button"
+                          aria-label="Confirm reset"
+                          disabled={!canPrestigeWorkshop}
+                          onClick={() => {
+                            if (!canPrestigeWorkshop) {
+                              return;
+                            }
+                            handlePurchase(prestigeWorkshop(state, workshopPrestigeGain));
+                            setWorkshopResetArmed(false);
+                          }}
+                        >
+                          Confirm reset
+                        </button>
                         <button
                           type="button"
                           className="secondary"
-                          disabled={owned || !canAfford}
-                          onClick={() => handlePurchase(buyWorkshopUpgrade(state, upgrade.id))}
+                          onClick={() => setWorkshopResetArmed(false)}
                         >
-                          {owned ? "Installed" : `Buy (${upgrade.blueprintCost} Blueprints)`}
+                          Cancel
                         </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-          <div
-            className="panel maison-panel"
-            aria-label="Maison"
-            data-testid="maison-panel"
-            id="maison"
-          >
-            <header className="panel-header">
-              <div>
-                <p className="eyebrow">Meta progression</p>
-                <h3>Maison</h3>
-                <p className="muted">Prestige the workshop to earn Heritage and grow your house.</p>
-              </div>
-              <div className="results-count" data-testid="maison-balance">
-                {state.maisonHeritage.toLocaleString()} Heritage ·{" "}
-                {state.maisonReputation.toLocaleString()} Reputation
-              </div>
-            </header>
-            <div className="workshop-reset maison-reset" data-testid="maison-reset">
-              <div>
-                <p className="workshop-label">Reset threshold</p>
-                <p className="workshop-value">$4,000,000 collection value</p>
-              </div>
-              <div>
-                <p className="workshop-label">Current gain</p>
-                <p className="workshop-value">+{maisonPrestigeGain} Heritage</p>
-              </div>
-            </div>
-            <div className="workshop-cta" role="group" aria-label="Reset workshop">
-              {maisonResetArmed ? (
-                <div className="workshop-confirm">
-                  <button
-                    type="button"
-                    aria-label="Confirm reset"
-                    disabled={!canPrestigeMaison}
-                    onClick={() => {
-                      if (!canPrestigeMaison) {
-                        return;
-                      }
-                      handlePurchase(prestigeMaison(state));
-                      setMaisonResetArmed(false);
-                    }}
-                  >
-                    Confirm prestige
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() => setMaisonResetArmed(false)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!canPrestigeMaison}
-                  onClick={() => setMaisonResetArmed(true)}
-                >
-                  Prestige workshop
-                </button>
-              )}
-              <p className="muted" aria-live="polite">
-                {maisonResetArmed
-                  ? "Confirming will reset Workshop progress and grant Heritage."
-                  : canPrestigeMaison
-                    ? "Prestiging resets Workshop + Collection for Maison currency."
-                    : "Requires reaching the Maison threshold."}
-              </p>
-            </div>
-            <div className="workshop-upgrades" aria-label="Maison upgrades">
-              <h4>Maison upgrades</h4>
-              <div className="card-stack">
-                {maisonUpgrades.map((upgrade) => {
-                  const owned = state.maisonUpgrades[upgrade.id] ?? false;
-                  const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
-                  const costLabel =
-                    upgrade.currency === "heritage"
-                      ? `${upgrade.cost} Heritage`
-                      : `${upgrade.cost} Reputation`;
-                  const effectLabel = (() => {
-                    if (upgrade.incomeMultiplier) {
-                      return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% income`;
-                    }
-                    if (upgrade.collectionBonusMultiplier) {
-                      return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% collection bonuses`;
-                    }
-                    if (upgrade.softcapMultiplier) {
-                      return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                    }
-                    return "Permanent upgrade";
-                  })();
+                    ) : (
+                      <button
+                        type="button"
+                        className="secondary"
+                        disabled={!canPrestigeWorkshop}
+                        onClick={() => setWorkshopResetArmed(true)}
+                      >
+                        Reset vault
+                      </button>
+                    )}
+                    <p className="muted" aria-live="polite">
+                      {workshopResetArmed
+                        ? "Confirming will reset progress and grant Blueprints."
+                        : canPrestigeWorkshop
+                          ? "Resetting trades your enjoyment for Blueprints and permanent boosts."
+                          : "Requires reaching the enjoyment threshold."}
+                    </p>
+                  </div>
+                  <div className="workshop-upgrades" aria-label="Workshop upgrades">
+                    <h4>Upgrades</h4>
+                    <div className="card-stack">
+                      {workshopUpgrades.map((upgrade) => {
+                        const owned = state.workshopUpgrades[upgrade.id] ?? false;
+                        const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
+                        const effectLabel = (() => {
+                          if (upgrade.incomeMultiplier) {
+                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                          }
+                          if (upgrade.softcapMultiplier) {
+                            return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
+                          }
+                          if (upgrade.softcapExponentBonus) {
+                            return `Softcap exponent +${upgrade.softcapExponentBonus}`;
+                          }
+                          if (upgrade.unlocks?.autoBuyEnabled) {
+                            return "Unlocks automation";
+                          }
+                          return "Permanent upgrade";
+                        })();
 
-                  return (
-                    <div
-                      className="card workshop-upgrade-card"
-                      key={upgrade.id}
-                      data-testid="maison-upgrade-card"
-                    >
-                      <div className="card-header">
-                        <div>
-                          <h3>{upgrade.name}</h3>
-                          <p>{upgrade.description}</p>
-                        </div>
-                        <div>{owned ? "Owned" : costLabel}</div>
-                      </div>
-                      <p>{effectLabel}</p>
-                      <div className="card-actions">
+                        return (
+                          <div
+                            className="card workshop-upgrade-card"
+                            key={upgrade.id}
+                            data-testid="workshop-upgrade-card"
+                          >
+                            <div className="card-header">
+                              <div>
+                                <h3>{upgrade.name}</h3>
+                                <p>{upgrade.description}</p>
+                              </div>
+                              <div>{owned ? "Owned" : `${upgrade.blueprintCost} Blueprints`}</div>
+                            </div>
+                            <p>{effectLabel}</p>
+                            <div className="card-actions">
+                              <button
+                                type="button"
+                                className="secondary"
+                                disabled={owned || !canAfford}
+                                onClick={() =>
+                                  handlePurchase(buyWorkshopUpgrade(state, upgrade.id))
+                                }
+                              >
+                                {owned ? "Installed" : `Buy (${upgrade.blueprintCost} Blueprints)`}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="panel-teaser-content" data-testid="workshop-teaser">
+                  <p className="eyebrow">Reset loop</p>
+                  <h3>Workshop</h3>
+                  <p className="muted">Your vault is close to yielding Blueprints.</p>
+                  <div className="teaser-progress">
+                    <div className="teaser-track">
+                      <div
+                        className="teaser-fill"
+                        style={{ width: `${Math.round(workshopRevealProgress * 100)}%` }}
+                      ></div>
+                    </div>
+                    <span>{Math.round(workshopRevealProgress * 100)}% to first reset</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {showMaisonSection && (
+            <div
+              className={`panel maison-panel ${showMaisonPanel ? "" : "panel-teaser"}`}
+              aria-label="Maison"
+              data-testid="maison-panel"
+              id="maison"
+            >
+              {showMaisonPanel ? (
+                <>
+                  <header className="panel-header">
+                    <div>
+                      <p className="eyebrow">Meta progression</p>
+                      <h3>Maison</h3>
+                      <p className="muted">
+                        Prestige the workshop to earn Heritage and strengthen long-term enjoyment.
+                      </p>
+                    </div>
+                    <div className="results-count" data-testid="maison-balance">
+                      {state.maisonHeritage.toLocaleString()} Heritage ·{" "}
+                      {state.maisonReputation.toLocaleString()} Reputation
+                    </div>
+                  </header>
+                  <div className="workshop-reset maison-reset" data-testid="maison-reset">
+                    <div>
+                      <p className="workshop-label">Reset threshold</p>
+                      <p className="workshop-value">
+                        {getEnjoymentThresholdLabel(getMaisonPrestigeThresholdCents())}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="workshop-label">Current gain</p>
+                      <p className="workshop-value">+{maisonPrestigeGain} Heritage</p>
+                    </div>
+                  </div>
+                  <div className="workshop-cta" role="group" aria-label="Reset workshop">
+                    {maisonResetArmed ? (
+                      <div className="workshop-confirm">
+                        <button
+                          type="button"
+                          aria-label="Confirm reset"
+                          disabled={!canPrestigeMaison}
+                          onClick={() => {
+                            if (!canPrestigeMaison) {
+                              return;
+                            }
+                            handlePurchase(prestigeMaison(state));
+                            setMaisonResetArmed(false);
+                          }}
+                        >
+                          Confirm prestige
+                        </button>
                         <button
                           type="button"
                           className="secondary"
-                          disabled={owned || !canAfford}
-                          onClick={() => handlePurchase(buyMaisonUpgrade(state, upgrade.id))}
+                          onClick={() => setMaisonResetArmed(false)}
                         >
-                          {owned ? "Installed" : `Buy (${costLabel})`}
+                          Cancel
                         </button>
                       </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="secondary"
+                        disabled={!canPrestigeMaison}
+                        onClick={() => setMaisonResetArmed(true)}
+                      >
+                        Prestige workshop
+                      </button>
+                    )}
+                    <p className="muted" aria-live="polite">
+                      {maisonResetArmed
+                        ? "Confirming will reset Workshop progress and grant Heritage."
+                        : canPrestigeMaison
+                          ? "Prestiging converts your enjoyment engine into Maison legacy."
+                          : "Requires reaching the enjoyment threshold."}
+                    </p>
+                  </div>
+                  <div className="workshop-upgrades" aria-label="Maison upgrades">
+                    <h4>Maison upgrades</h4>
+                    <div className="card-stack">
+                      {maisonUpgrades.map((upgrade) => {
+                        const owned = state.maisonUpgrades[upgrade.id] ?? false;
+                        const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
+                        const costLabel =
+                          upgrade.currency === "heritage"
+                            ? `${upgrade.cost} Heritage`
+                            : `${upgrade.cost} Reputation`;
+                        const effectLabel = (() => {
+                          if (upgrade.incomeMultiplier) {
+                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                          }
+                          if (upgrade.collectionBonusMultiplier) {
+                            return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+                          }
+                          if (upgrade.softcapMultiplier) {
+                            return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
+                          }
+                          return "Permanent upgrade";
+                        })();
+
+                        return (
+                          <div
+                            className="card workshop-upgrade-card"
+                            key={upgrade.id}
+                            data-testid="maison-upgrade-card"
+                          >
+                            <div className="card-header">
+                              <div>
+                                <h3>{upgrade.name}</h3>
+                                <p>{upgrade.description}</p>
+                              </div>
+                              <div>{owned ? "Owned" : costLabel}</div>
+                            </div>
+                            <p>{effectLabel}</p>
+                            <div className="card-actions">
+                              <button
+                                type="button"
+                                className="secondary"
+                                disabled={owned || !canAfford}
+                                onClick={() => handlePurchase(buyMaisonUpgrade(state, upgrade.id))}
+                              >
+                                {owned ? "Installed" : `Buy (${costLabel})`}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                </>
+              ) : (
+                <div className="panel-teaser-content" data-testid="maison-teaser">
+                  <p className="eyebrow">Meta progression</p>
+                  <h3>Maison</h3>
+                  <p className="muted">Your house is almost ready for legacy prestige.</p>
+                  <div className="teaser-progress">
+                    <div className="teaser-track">
+                      <div
+                        className="teaser-fill"
+                        style={{ width: `${Math.round(maisonRevealProgress * 100)}%` }}
+                      ></div>
+                    </div>
+                    <span>{Math.round(maisonRevealProgress * 100)}% to Maison reset</span>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          )}
           <div className="panel">
             <h3>Upgrades</h3>
             <div id="upgrade-list" className="card-stack">
@@ -679,7 +783,7 @@ export default function App() {
                       </div>
                       <div>Level {level}</div>
                     </div>
-                    <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% income per level</p>
+                    <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% cash per level</p>
                     <div className="card-actions">
                       <button
                         type="button"
@@ -688,11 +792,14 @@ export default function App() {
                       >
                         Upgrade ({formatMoneyFromCents(price)})
                       </button>
-                      {!unlocked && (
-                        <div className="unlock-tag">
-                          Unlocks with {getMilestoneRequirementLabel(upgrade.unlockMilestoneId!)}
-                        </div>
-                      )}
+                      {!unlocked &&
+                        upgrade.unlockMilestoneId &&
+                        shouldShowUnlockTag(state, upgrade.unlockMilestoneId) && (
+                          <div className="unlock-tag">
+                            Unlocking soon ·{" "}
+                            {getMilestoneRequirementLabel(upgrade.unlockMilestoneId)}
+                          </div>
+                        )}
                     </div>
                   </div>
                 );
@@ -790,7 +897,7 @@ export default function App() {
             <p className="muted">Explore reference pieces and track licensing sources.</p>
           </div>
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-            {filteredCatalogEntries.length} results
+            {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
           </div>
         </header>
         <div className="catalog-filters" role="search" data-testid="catalog-filters">
@@ -820,49 +927,70 @@ export default function App() {
               ))}
             </select>
           </div>
+          <div className="filter-field">
+            <label htmlFor="catalog-owned">View</label>
+            <select
+              id="catalog-owned"
+              data-testid="catalog-owned"
+              value={showDiscoveredOnly ? "discovered" : "all"}
+              onChange={(event) => setShowDiscoveredOnly(event.target.value === "discovered")}
+            >
+              <option value="discovered">Discovered only</option>
+              <option value="all">All references</option>
+            </select>
+          </div>
         </div>
         <div className="catalog-grid" data-testid="catalog-grid">
-          {filteredCatalogEntries.map((entry) => (
-            <article key={entry.id} className="catalog-card" data-testid="catalog-card">
-              <div className="catalog-media">
-                <img
-                  src={entry.image.url}
-                  alt={`${entry.brand} ${entry.model}`}
-                  loading="lazy"
-                  onError={(event) => {
-                    const target = event.currentTarget;
-                    const placeholder =
-                      "data:image/svg+xml;utf8," +
-                      encodeURIComponent(
-                        `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                          `<rect width='100%' height='100%' fill='#131720'/>` +
-                          `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                          `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                          `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                          `</svg>`,
-                      );
+          {filteredCatalogEntries.map((entry) => {
+            const discovered = discoveredCatalogIds.includes(entry.id);
+            const tags = getCatalogEntryTags(entry);
+            return (
+              <article
+                key={entry.id}
+                className={`catalog-card ${discovered ? "catalog-discovered" : "catalog-locked"}`}
+                data-testid="catalog-card"
+              >
+                <div className="catalog-media">
+                  <img
+                    src={getCatalogImageUrl(entry)}
+                    alt={`${entry.brand} ${entry.model}`}
+                    loading="lazy"
+                    onError={(event) => {
+                      const target = event.currentTarget;
+                      const placeholder =
+                        "data:image/svg+xml;utf8," +
+                        encodeURIComponent(
+                          `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
+                            `<rect width='100%' height='100%' fill='#131720'/>` +
+                            `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
+                            `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
+                            `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
+                            `</svg>`,
+                        );
 
-                    if (target.dataset.fallback !== "true") {
-                      target.dataset.fallback = "true";
-                      target.src = placeholder;
-                    }
-                  }}
-                />
-              </div>
-              <div className="catalog-content">
-                <div className="catalog-title">
-                  <div>
-                    <p className="catalog-brand">{entry.brand}</p>
-                    <h3>{entry.model}</h3>
-                  </div>
-                  <p className="catalog-year">{entry.year}</p>
+                      if (target.dataset.fallback !== "true") {
+                        target.dataset.fallback = "true";
+                        target.src = placeholder;
+                      }
+                    }}
+                  />
+                  {!discovered && <span className="catalog-badge">Undiscovered</span>}
                 </div>
-                <p>{entry.description}</p>
-                <p className="catalog-tags">{entry.tags.join(" · ")}</p>
-                <p className="catalog-attribution">{entry.image.attribution}</p>
-              </div>
-            </article>
-          ))}
+                <div className="catalog-content">
+                  <div className="catalog-title">
+                    <div>
+                      <p className="catalog-brand">{entry.brand}</p>
+                      <h3>{entry.model}</h3>
+                    </div>
+                    <p className="catalog-year">{entry.year}</p>
+                  </div>
+                  <p>{entry.description}</p>
+                  <p className="catalog-tags">{tags.join(" · ")}</p>
+                  <p className="catalog-attribution">{entry.image.attribution}</p>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 

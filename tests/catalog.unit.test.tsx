@@ -19,7 +19,9 @@ describe("catalog filters", () => {
 
     const [searchInput] = screen.getAllByTestId(/catalog-search/);
     const [catalogGrid] = screen.getAllByTestId(/catalog-grid/);
+    const [viewSelect] = screen.getAllByTestId(/catalog-owned/);
 
+    await user.selectOptions(viewSelect, "all");
     await user.type(searchInput, "reverso");
 
     const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
@@ -36,7 +38,9 @@ describe("catalog filters", () => {
 
     const [brandSelect] = screen.getAllByTestId(/catalog-brand/);
     const [catalogGrid] = screen.getAllByTestId(/catalog-grid/);
+    const [viewSelect] = screen.getAllByTestId(/catalog-owned/);
 
+    await user.selectOptions(viewSelect, "all");
     await user.selectOptions(brandSelect, "Rolex");
 
     const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
@@ -54,7 +58,9 @@ describe("catalog filters", () => {
     const [searchInput] = screen.getAllByTestId(/catalog-search/);
     const [resultsCount] = screen.getAllByTestId(/catalog-results-count/);
     const [catalogGrid] = screen.getAllByTestId(/catalog-grid/);
+    const [viewSelect] = screen.getAllByTestId(/catalog-owned/);
 
+    await user.selectOptions(viewSelect, "all");
     await user.selectOptions(brandSelect, "Jaeger-LeCoultre");
     await user.type(searchInput, "reverso");
 

@@ -2,7 +2,10 @@ import type { GameState } from "./state";
 import {
   applyAchievementUnlocks,
   applyEventState,
+  discoverCatalogEntries,
+  getCatalogEntryIdsForItems,
   getCollectionValueCents,
+  getEnjoymentRateCentsPerSec,
   getEventIncomeMultiplier,
   getEffectiveIncomeRateCentsPerSec,
 } from "./state";
@@ -19,8 +22,15 @@ export function step(state: GameState, dtMs: number, nowMs = Date.now()): GameSt
   const incomeRate = getEffectiveIncomeRateCentsPerSec(withEvents, eventMultiplier);
   const earnedCents = (incomeRate * clampedDtMs) / 1_000;
 
-  return applyAchievementUnlocks({
+  const enjoymentRate = getEnjoymentRateCentsPerSec(withEvents) * eventMultiplier;
+  const earnedEnjoyment = (enjoymentRate * clampedDtMs) / 1_000;
+
+  const withIncome = {
     ...withEvents,
     currencyCents: withEvents.currencyCents + earnedCents,
-  });
+    enjoymentCents: withEvents.enjoymentCents + earnedEnjoyment,
+  };
+
+  const withDiscovery = discoverCatalogEntries(withIncome, getCatalogEntryIdsForItems(withIncome));
+  return applyAchievementUnlocks(withDiscovery);
 }

@@ -33,6 +33,8 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.income)).toHaveText(/\$/);
     await expect(page.locator(selectors.collectionValue)).toHaveText(/\$/);
     await expect(page.locator(selectors.softcap)).toHaveText(/% efficiency/);
+    await expect(page.locator("#enjoyment")).toHaveText(/\$/);
+    await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
 
     await expect(page.locator(selectors.collectionCards)).toHaveCount(4);
     await expect(page.locator(selectors.upgradeCards)).toHaveCount(3);
@@ -98,6 +100,7 @@ test.describe("collection loop", () => {
 
     const seededState = {
       currencyCents: 0,
+      enjoymentCents: 800_000,
       items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
@@ -109,6 +112,18 @@ test.describe("collection loop", () => {
         "heritage-templates": false,
         "automation-blueprints": false,
       },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
     };
 
     await page.addInitScript(
@@ -135,6 +150,7 @@ test.describe("collection loop", () => {
 
     const seededState = {
       currencyCents: 0,
+      enjoymentCents: 0,
       items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
@@ -146,6 +162,18 @@ test.describe("collection loop", () => {
         "heritage-templates": false,
         "automation-blueprints": true,
       },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
     };
 
     await page.addInitScript(
@@ -178,6 +206,7 @@ test.describe("collection loop", () => {
 
     const seededState = {
       currencyCents: 0,
+      enjoymentCents: 4_000_000,
       items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
@@ -200,6 +229,7 @@ test.describe("collection loop", () => {
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
+      discoveredCatalogEntries: [],
     };
 
     await page.addInitScript(
@@ -224,6 +254,7 @@ test.describe("collection loop", () => {
   test("achievements and events panels render", async ({ page }) => {
     const seededState = {
       currencyCents: 0,
+      enjoymentCents: 0,
       items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 8 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
@@ -246,6 +277,7 @@ test.describe("collection loop", () => {
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
+      discoveredCatalogEntries: [],
     };
 
     await page.addInitScript(

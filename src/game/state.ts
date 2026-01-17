@@ -105,7 +105,8 @@ export type EventDefinition = {
   incomeMultiplier: number;
 };
 
-import { CATALOG_ENTRIES, type CatalogEntry } from "./catalog";
+import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "./catalog";
+import { formatMoneyFromCents } from "./format";
 
 export type SetBonusDefinition = {
   id: SetBonusId;
@@ -115,8 +116,11 @@ export type SetBonusDefinition = {
   incomeMultiplier: number;
 };
 
+export type CatalogEntryId = CatalogEntry["id"];
+
 export type GameState = {
   currencyCents: number;
+  enjoymentCents: number;
   items: Record<WatchItemId, number>;
   upgrades: Record<UpgradeId, number>;
   unlockedMilestones: MilestoneId[];
@@ -128,10 +132,12 @@ export type GameState = {
   maisonUpgrades: Record<MaisonUpgradeId, boolean>;
   achievementUnlocks: AchievementId[];
   eventStates: Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }>;
+  discoveredCatalogEntries: CatalogEntryId[];
 };
 
 export type PersistedGameState = {
   currencyCents: number;
+  enjoymentCents?: number;
   items?: Record<string, number>;
   upgrades?: Record<string, number>;
   unlockedMilestones?: string[];
@@ -143,6 +149,7 @@ export type PersistedGameState = {
   maisonUpgrades?: Record<string, boolean>;
   achievementUnlocks?: string[];
   eventStates?: Record<string, { activeUntilMs: number; nextAvailableAtMs: number }>;
+  discoveredCatalogEntries?: string[];
 };
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
@@ -296,7 +303,7 @@ const MILESTONES: ReadonlyArray<MilestoneDefinition> = [
   {
     id: "showcase",
     name: "Vault showcase",
-    description: "Reach $25k collection value to unlock chronographs.",
+    description: "Reach $25k Sentimental value to unlock chronographs.",
     requirement: { type: "collectionValue", thresholdCents: 25_000 },
     unlocks: { items: ["chronograph"], upgrades: ["guild-contracts"] },
   },
@@ -343,7 +350,7 @@ const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
   {
     id: "six-figure-vault",
     name: "Six-figure vault",
-    description: "Reach $120k in collection value.",
+    description: "Reach $120k in Sentimental value.",
     requirement: { type: "collectionValue", thresholdCents: 120_000 },
   },
   {
@@ -371,6 +378,10 @@ const EVENTS: ReadonlyArray<EventDefinition> = [
     incomeMultiplier: 1.6,
   },
 ];
+
+const WORKSHOP_PRESTIGE_THRESHOLD_CENTS = 800_000;
+const MAISON_PRESTIGE_THRESHOLD_CENTS = 4_000_000;
+const REVEAL_THRESHOLD_RATIO = 0.7;
 
 const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
 const UPGRADE_LOOKUP = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
@@ -414,9 +425,66 @@ export function getCatalogEntries(): ReadonlyArray<CatalogEntry> {
   return CATALOG_ENTRIES;
 }
 
+export function getCatalogDiscovery(state: GameState): CatalogEntryId[] {
+  return state.discoveredCatalogEntries;
+}
+
+export function discoverCatalogEntries(state: GameState, ids: CatalogEntryId[]): GameState {
+  if (ids.length === 0) {
+    return state;
+  }
+
+  const discovered = new Set(state.discoveredCatalogEntries);
+  let changed = false;
+
+  for (const id of ids) {
+    if (!discovered.has(id) && CATALOG_ENTRIES.some((entry) => entry.id === id)) {
+      discovered.add(id);
+      changed = true;
+    }
+  }
+
+  if (!changed) {
+    return state;
+  }
+
+  return {
+    ...state,
+    discoveredCatalogEntries: Array.from(discovered),
+  };
+}
+
+export function getDiscoveredCatalogEntries(state: GameState): CatalogEntry[] {
+  if (state.discoveredCatalogEntries.length === 0) {
+    return [];
+  }
+
+  const discovered = new Set(state.discoveredCatalogEntries);
+  return CATALOG_ENTRIES.filter((entry) => discovered.has(entry.id));
+}
+
+export function getCatalogEntryIdsForItems(state: GameState): CatalogEntryId[] {
+  const ownedItems = WATCH_ITEMS.filter((item) => getItemCount(state, item.id) > 0);
+
+  if (ownedItems.length === 0) {
+    return [];
+  }
+
+  const queryTerms = ownedItems.flatMap((item) => [item.id, item.name]);
+
+  return CATALOG_ENTRIES.filter((entry) => {
+    const entryTags = getCatalogEntryTags(entry);
+    const haystack = `${entry.brand} ${entry.model} ${entry.description} ${entryTags.join(" ")}`
+      .toLowerCase()
+      .trim();
+    return queryTerms.some((term) => haystack.includes(term.toLowerCase()));
+  }).map((entry) => entry.id);
+}
+
 export function createInitialState(): GameState {
   return {
     currencyCents: 0,
+    enjoymentCents: 0,
     items: createItemCounts(),
     upgrades: createUpgradeLevels(),
     unlockedMilestones: [],
@@ -428,6 +496,7 @@ export function createInitialState(): GameState {
     maisonUpgrades: createMaisonUpgradeStates(),
     achievementUnlocks: [],
     eventStates: createEventStates(),
+    discoveredCatalogEntries: [],
   };
 }
 
@@ -463,53 +532,12 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const workshopPrestigeCount = Number.isFinite(saved.workshopPrestigeCount ?? 0)
     ? Math.max(0, Math.floor(saved.workshopPrestigeCount ?? 0))
     : 0;
-  const workshopUpgrades = createWorkshopUpgradeStates();
-
-  if (saved.workshopUpgrades) {
-    for (const [key, value] of Object.entries(saved.workshopUpgrades)) {
-      if (key in workshopUpgrades) {
-        workshopUpgrades[key as WorkshopUpgradeId] = value === true;
-      }
-    }
-  }
-
-  const maisonUpgrades = createMaisonUpgradeStates();
-
-  if (saved.maisonUpgrades) {
-    for (const [key, value] of Object.entries(saved.maisonUpgrades)) {
-      if (key in maisonUpgrades) {
-        maisonUpgrades[key as MaisonUpgradeId] = value === true;
-      }
-    }
-  }
-
-  const achievementUnlocks = Array.isArray(saved.achievementUnlocks)
-    ? saved.achievementUnlocks.filter((entry): entry is AchievementId =>
-        ACHIEVEMENTS.some((achievement) => achievement.id === entry),
-      )
-    : [];
-
-  const eventStates = createEventStates();
-  if (saved.eventStates) {
-    for (const [key, value] of Object.entries(saved.eventStates)) {
-      if (key in eventStates && value) {
-        const record = value as { activeUntilMs?: number; nextAvailableAtMs?: number };
-        const activeUntilMs = Number.isFinite(record.activeUntilMs)
-          ? (record.activeUntilMs ?? 0)
-          : 0;
-        const nextAvailableAtMs = Number.isFinite(record.nextAvailableAtMs)
-          ? (record.nextAvailableAtMs ?? 0)
-          : 0;
-        eventStates[key as EventId] = {
-          activeUntilMs: Math.max(0, Math.floor(activeUntilMs)),
-          nextAvailableAtMs: Math.max(0, Math.floor(nextAvailableAtMs)),
-        };
-      }
-    }
-  }
-
+  const enjoymentCents = Number.isFinite(saved.enjoymentCents ?? 0)
+    ? Math.max(0, Math.floor(saved.enjoymentCents ?? 0))
+    : 0;
   return applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
+    enjoymentCents,
     items,
     upgrades,
     unlockedMilestones,
@@ -525,6 +553,7 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     maisonUpgrades,
     achievementUnlocks,
     eventStates,
+    discoveredCatalogEntries,
   });
 }
 
@@ -532,6 +561,7 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
   const nextState: GameState = {
     ...state,
     currencyCents: 0,
+    enjoymentCents: 0,
     items: createItemCounts(),
     upgrades: createUpgradeLevels(),
     workshopBlueprints: state.workshopBlueprints + Math.max(0, Math.floor(earnedPrestigeCurrency)),
@@ -543,8 +573,8 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
 }
 
 export function getWorkshopPrestigeGain(state: GameState): number {
-  const collectionValue = getCollectionValueCents(state);
-  return Math.max(0, Math.floor((collectionValue / 800_000) ** 0.5));
+  const enjoyment = getEnjoymentCents(state);
+  return Math.max(0, Math.floor((enjoyment / WORKSHOP_PRESTIGE_THRESHOLD_CENTS) ** 0.5));
 }
 
 export function canWorkshopPrestige(state: GameState): boolean {
@@ -556,6 +586,7 @@ export function prestigeMaison(state: GameState): GameState {
   const nextState: GameState = {
     ...state,
     currencyCents: 0,
+    enjoymentCents: 0,
     items: createItemCounts(),
     upgrades: createUpgradeLevels(),
     workshopBlueprints: 0,
@@ -570,8 +601,8 @@ export function prestigeMaison(state: GameState): GameState {
 }
 
 export function getMaisonPrestigeGain(state: GameState): number {
-  const collectionValue = getCollectionValueCents(state);
-  const combined = collectionValue / 4_000_000 + state.workshopBlueprints;
+  const enjoyment = getEnjoymentCents(state);
+  const combined = enjoyment / MAISON_PRESTIGE_THRESHOLD_CENTS + state.workshopBlueprints;
   return Math.max(0, Math.floor(combined ** 0.5));
 }
 
@@ -595,6 +626,42 @@ export function getAutoBuyEnabled(state: GameState): boolean {
   return hasWorkshopUpgrade(state, "automation-blueprints");
 }
 
+export function getWorkshopPrestigeThresholdCents(): number {
+  return WORKSHOP_PRESTIGE_THRESHOLD_CENTS;
+}
+
+export function getMaisonPrestigeThresholdCents(): number {
+  return MAISON_PRESTIGE_THRESHOLD_CENTS;
+}
+
+export function isWorkshopRevealReady(state: GameState): boolean {
+  return state.enjoymentCents >= WORKSHOP_PRESTIGE_THRESHOLD_CENTS * REVEAL_THRESHOLD_RATIO;
+}
+
+export function isMaisonRevealReady(state: GameState): boolean {
+  return state.enjoymentCents >= MAISON_PRESTIGE_THRESHOLD_CENTS * REVEAL_THRESHOLD_RATIO;
+}
+
+export function getUnlockVisibilityRatio(state: GameState, milestoneId: MilestoneId): number {
+  const milestone = MILESTONE_LOOKUP.get(milestoneId);
+  if (!milestone) {
+    return 0;
+  }
+
+  if (milestone.requirement.type === "totalItems") {
+    const owned = getTotalItemCount(state);
+    return milestone.requirement.threshold > 0 ? owned / milestone.requirement.threshold : 0;
+  }
+
+  return milestone.requirement.thresholdCents > 0
+    ? getCollectionValueCents(state) / milestone.requirement.thresholdCents
+    : 0;
+}
+
+export function shouldShowUnlockTag(state: GameState, milestoneId: MilestoneId): boolean {
+  return getUnlockVisibilityRatio(state, milestoneId) >= REVEAL_THRESHOLD_RATIO;
+}
+
 export function hasMaisonUpgrade(state: GameState, id: MaisonUpgradeId): boolean {
   return state.maisonUpgrades[id] ?? false;
 }
@@ -608,6 +675,31 @@ export function getCollectionValueCents(state: GameState): number {
     (total, item) => total + getItemCount(state, item.id) * item.collectionValueCents,
     0,
   );
+}
+
+export function getEnjoymentCents(state: GameState): number {
+  return state.enjoymentCents;
+}
+
+export function getEnjoymentRateCentsPerSec(state: GameState): number {
+  return getCollectionValueCents(state) / 100;
+}
+
+export function getEnjoymentThresholdLabel(cents: number): string {
+  return `${formatMoneyFromCents(cents)} enjoyment`;
+}
+
+export function getMilestoneRequirementLabel(milestoneId: MilestoneId): string {
+  const milestone = MILESTONE_LOOKUP.get(milestoneId);
+  if (!milestone) {
+    return "";
+  }
+
+  if (milestone.requirement.type === "totalItems") {
+    return `Own ${milestone.requirement.threshold} total items`;
+  }
+
+  return `Reach ${formatMoneyFromCents(milestone.requirement.thresholdCents)} sentimental value`;
 }
 
 export function getCollectionBonusMultiplier(state: GameState): number {
@@ -842,7 +934,8 @@ export function buyItem(state: GameState, id: WatchItemId, quantity = 1): GameSt
     },
   };
 
-  return applyAchievementUnlocks(applyMilestoneUnlocks(nextState));
+  const withDiscovery = discoverCatalogEntries(nextState, getCatalogEntryIdsForItems(nextState));
+  return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
 }
 
 export function buyUpgrade(state: GameState, id: UpgradeId): GameState {
@@ -864,7 +957,8 @@ export function buyUpgrade(state: GameState, id: UpgradeId): GameState {
     },
   };
 
-  return applyAchievementUnlocks(applyMilestoneUnlocks(nextState));
+  const withDiscovery = discoverCatalogEntries(nextState, getCatalogEntryIdsForItems(nextState));
+  return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
 }
 
 export function applyMilestoneUnlocks(state: GameState): GameState {
@@ -911,19 +1005,6 @@ export function applyAchievementUnlocks(state: GameState): GameState {
       (achievement) => achievement.id,
     ),
   };
-}
-
-export function getMilestoneRequirementLabel(milestoneId: MilestoneId): string {
-  const milestone = MILESTONE_LOOKUP.get(milestoneId);
-  if (!milestone) {
-    return "";
-  }
-
-  if (milestone.requirement.type === "totalItems") {
-    return `Own ${milestone.requirement.threshold} total items`;
-  }
-
-  return `Reach $${(milestone.requirement.thresholdCents / 100).toLocaleString()} collection value`;
 }
 
 export function getWorkshopIncomeMultiplier(state: GameState): number {
