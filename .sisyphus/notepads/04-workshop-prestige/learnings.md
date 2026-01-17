@@ -3,3 +3,4 @@
 - Automation is gated by the `automation-blueprints` workshop upgrade and bulk-buys affordable items on tick.
 - Added navigation anchors and an automation toggle for quicker section jumps.
 - Workshop tests use seeded localStorage saves via `page.addInitScript` for automation UI coverage.
+- LSP diagnostics can flag role/aria suggestions even for simple text edits; re-run `lsp_diagnostics` to confirm cleanliness before testing.

@@ -14,6 +14,14 @@ describe("catalog filters", () => {
     cleanup();
   });
 
+  it("renders catalog tier bonuses", () => {
+    const [panel] = screen.getAllByTestId("catalog-tier-panel");
+    const cards = within(panel).getAllByTestId("catalog-tier-card");
+
+    expect(cards).toHaveLength(4);
+    expect(panel.textContent).toContain("Tier bonuses");
+  });
+
   it("filters catalog by search text", async () => {
     const user = userEvent.setup();
 

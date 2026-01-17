@@ -40,6 +40,8 @@ describe("workshop prestige", () => {
       unlockedMilestones: ["collector-shelf"] as MilestoneId[],
       workshopBlueprints: 3,
       workshopPrestigeCount: 1,
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
     };
 
     const nextState = prestigeWorkshop(seededState, 2);

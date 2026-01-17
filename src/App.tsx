@@ -14,19 +14,26 @@ import {
 } from "./game/persistence";
 import {
   buyItem,
+  buyMaisonLine,
   buyMaisonUpgrade,
   buyUpgrade,
   buyWorkshopUpgrade,
   canBuyItem,
+  canBuyMaisonLine,
   canBuyMaisonUpgrade,
   canBuyUpgrade,
   canBuyWorkshopUpgrade,
+  canMaisonPrestige,
   canWorkshopPrestige,
   createInitialState,
   getAchievements,
   getActiveSetBonuses,
   getCatalogDiscovery,
   getCatalogEntries,
+  getCatalogTierBonuses,
+  getCatalogTierDefinitions,
+  getCatalogTierProgress,
+  getCatalogTierUnlocks,
   getAutoBuyEnabled,
   getCollectionValueCents,
   getEffectiveIncomeRateCentsPerSec,
@@ -37,8 +44,10 @@ import {
   getEventStatusLabel,
   getEvents,
   getItemPriceCents,
+  getMaisonLines,
   getMaisonPrestigeGain,
   getMaisonPrestigeThresholdCents,
+  getMaisonReputationGain,
   getMaisonUpgrades,
   getMaxAffordableItemCount,
   getMilestoneRequirementLabel,
@@ -257,7 +266,7 @@ export default function App() {
   const workshopPrestigeGain = useMemo(() => getWorkshopPrestigeGain(state), [state]);
   const maisonPrestigeGain = useMemo(() => getMaisonPrestigeGain(state), [state]);
   const canPrestigeWorkshop = useMemo(() => canWorkshopPrestige(state), [state]);
-  const canPrestigeMaison = useMemo(() => maisonPrestigeGain > 0, [maisonPrestigeGain]);
+  const canPrestigeMaison = useMemo(() => canMaisonPrestige(state), [state]);
   const showWorkshopPanel =
     canPrestigeWorkshop || state.workshopPrestigeCount > 0 || state.workshopBlueprints > 0;
   const showWorkshopTeaser = !showWorkshopPanel && isWorkshopRevealReady(state);
@@ -310,6 +319,21 @@ export default function App() {
 
   const autoBuyUnlocked = useMemo(() => getAutoBuyEnabled(state), [state]);
   const autoBuyEnabled = autoBuyUnlocked && autoBuyToggle;
+  const maisonLines = useMemo(() => getMaisonLines(), []);
+  const maisonReputationGain = useMemo(() => getMaisonReputationGain(state), [state]);
+  const catalogTierDefinitions = useMemo(() => getCatalogTierDefinitions(), []);
+  const catalogTierProgress = useMemo(() => getCatalogTierProgress(state), [state]);
+  const catalogTierUnlocks = useMemo(() => getCatalogTierUnlocks(state), [state]);
+  const catalogTierBonuses = useMemo(() => getCatalogTierBonuses(state), [state]);
+  const catalogTierBonusMultiplier = useMemo(
+    () => catalogTierBonuses.reduce((total, bonus) => total * bonus.incomeMultiplier, 1),
+    [catalogTierBonuses],
+  );
+
+  const showMaisonLines = useMemo(
+    () => state.maisonHeritage > 0 || state.maisonReputation > 0 || canPrestigeMaison,
+    [state.maisonHeritage, state.maisonReputation, canPrestigeMaison],
+  );
 
   useEffect(() => {
     if (!autoBuyUnlocked) {
@@ -356,7 +380,7 @@ export default function App() {
           <p className="eyebrow">Collection loop</p>
           <h1>Emily Idle</h1>
           <p className="muted">Build your vault, unlock new lines, and stack bonuses.</p>
-          <nav className="page-nav" aria-label="Primary">
+          <nav className="page-nav" aria-label="Primary navigation">
             <a className="page-nav-link" href="#collection">
               Collection
             </a>
@@ -374,7 +398,10 @@ export default function App() {
             </a>
           </nav>
         </div>
-        <section aria-label="Vault stats" className="stats">
+        <section className="stats" aria-labelledby="vault-stats-title">
+          <h2 id="vault-stats-title" className="visually-hidden">
+            Vault stats
+          </h2>
           <dl>
             <div>
               <dt>Vault cash</dt>
@@ -404,24 +431,125 @@ export default function App() {
         </section>
       </header>
 
-      <section className="collection" aria-label="Collection" id="collection">
+      <section className="collection" id="collection">
         <div>
           <h2>Collection</h2>
           <p className="muted">Acquire pieces to grow cash and enjoyment.</p>
-          <div className="automation-toggle" role="group" aria-label="Automation controls">
-            <p className="automation-label">Automation</p>
-            {autoBuyUnlocked ? (
-              <button
-                type="button"
-                className={autoBuyEnabled ? "" : "secondary"}
-                onClick={() => setAutoBuyToggle((value) => !value)}
-              >
-                {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
-              </button>
-            ) : (
-              <p className="muted">Unlock automation with Workshop blueprints.</p>
-            )}
+          <div className="collection-setup" data-testid="collection-setup">
+            <fieldset className="automation-toggle" data-testid="automation-controls">
+              <legend className="automation-label">Automation controls</legend>
+              {autoBuyUnlocked ? (
+                <button
+                  type="button"
+                  className={autoBuyEnabled ? "" : "secondary"}
+                  onClick={() => setAutoBuyToggle((value) => !value)}
+                >
+                  {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
+                </button>
+              ) : (
+                <p className="muted">Unlock automation with Workshop blueprints.</p>
+              )}
+            </fieldset>
+            <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
+              <header className="panel-header">
+                <div>
+                  <p className="eyebrow">Catalog bonuses</p>
+                  <h3>Tier bonuses</h3>
+                  <p className="muted">Unlock archive tiers by discovering references.</p>
+                </div>
+                <div className="results-count" data-testid="catalog-tier-count">
+                  {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                </div>
+              </header>
+              <div className="card-stack" data-testid="catalog-tier-list">
+                {catalogTierDefinitions.map((tier) => {
+                  const unlocked = catalogTierUnlocks.includes(tier.id);
+                  const progress = catalogTierProgress[tier.id];
+                  return (
+                    <div
+                      className={`card catalog-tier-card ${unlocked ? "catalog-tier-unlocked" : ""}`}
+                      key={tier.id}
+                      data-testid="catalog-tier-card"
+                    >
+                      <div className="card-header">
+                        <div>
+                          <h4>{tier.name}</h4>
+                          <p>{tier.description}</p>
+                        </div>
+                        <div>{unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}</div>
+                      </div>
+                      <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
+                {catalogTierBonuses.length > 0
+                  ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
+                  : "Discover references to unlock tier bonuses."}
+              </p>
+            </div>
           </div>
+          {showMaisonLines && (
+            <div className="panel maison-lines" data-testid="maison-lines">
+              <header className="panel-header">
+                <div>
+                  <p className="eyebrow">Maison expansion</p>
+                  <h3>Maison lines</h3>
+                  <p className="muted">Invest Heritage or Reputation to expand your house.</p>
+                </div>
+                <div className="results-count" data-testid="maison-lines-count">
+                  {Object.values(state.maisonLines).filter(Boolean).length} / {maisonLines.length}{" "}
+                  active
+                </div>
+              </header>
+              <div className="card-stack" data-testid="maison-lines-list">
+                {maisonLines.map((line) => {
+                  const owned = state.maisonLines[line.id] ?? false;
+                  const canAfford = canBuyMaisonLine(state, line.id);
+                  const costLabel =
+                    line.currency === "heritage"
+                      ? `${line.cost} Heritage`
+                      : `${line.cost} Reputation`;
+                  const effectLabel = (() => {
+                    if (line.incomeMultiplier) {
+                      return `+${Math.round((line.incomeMultiplier - 1) * 100)}% cash`;
+                    }
+                    if (line.collectionBonusMultiplier) {
+                      return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+                    }
+                    if (line.workshopBlueprintBonus) {
+                      return `+${line.workshopBlueprintBonus} Workshop blueprint per reset`;
+                    }
+                    return "Maison line";
+                  })();
+
+                  return (
+                    <div className="card" key={line.id} data-testid="maison-line-card">
+                      <div className="card-header">
+                        <div>
+                          <h4>{line.name}</h4>
+                          <p>{line.description}</p>
+                        </div>
+                        <div>{owned ? "Active" : costLabel}</div>
+                      </div>
+                      <p>{effectLabel}</p>
+                      <div className="card-actions">
+                        <button
+                          type="button"
+                          className="secondary"
+                          disabled={owned || !canAfford}
+                          onClick={() => handlePurchase(buyMaisonLine(state, line.id))}
+                        >
+                          {owned ? "Live" : `Activate (${costLabel})`}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div id="collection-list" className="card-stack">
             {watchItems.map((item) => {
               const owned = state.items[item.id] ?? 0;
@@ -475,18 +603,18 @@ export default function App() {
         </div>
         <aside className="side-panel">
           {showWorkshopSection && (
-            <div
+            <section
               className={`panel workshop-panel ${showWorkshopPanel ? "" : "panel-teaser"}`}
-              aria-label="Workshop"
               data-testid="workshop-panel"
               id="workshop"
+              aria-labelledby="workshop-title"
             >
               {showWorkshopPanel ? (
                 <>
                   <header className="panel-header">
                     <div>
                       <p className="eyebrow">Reset loop</p>
-                      <h3>Workshop</h3>
+                      <h3 id="workshop-title">Workshop</h3>
                       <p className="muted">Trade enjoyment for Blueprints and permanent boosts.</p>
                     </div>
                     <div className="results-count" data-testid="workshop-balance">
@@ -505,12 +633,12 @@ export default function App() {
                       <p className="workshop-value">+{workshopPrestigeGain} Blueprints</p>
                     </div>
                   </div>
-                  <div className="workshop-cta" role="group" aria-label="Reset vault">
+                  <fieldset className="workshop-cta">
+                    <legend className="visually-hidden">Reset vault</legend>
                     {workshopResetArmed ? (
                       <div className="workshop-confirm">
                         <button
                           type="button"
-                          aria-label="Confirm reset"
                           disabled={!canPrestigeWorkshop}
                           onClick={() => {
                             if (!canPrestigeWorkshop) {
@@ -547,8 +675,8 @@ export default function App() {
                           ? "Resetting trades your enjoyment for Blueprints and permanent boosts."
                           : "Requires reaching the enjoyment threshold."}
                     </p>
-                  </div>
-                  <div className="workshop-upgrades" aria-label="Workshop upgrades">
+                  </fieldset>
+                  <div className="workshop-upgrades">
                     <h4>Upgrades</h4>
                     <div className="card-stack">
                       {workshopUpgrades.map((upgrade) => {
@@ -618,21 +746,21 @@ export default function App() {
                   </div>
                 </div>
               )}
-            </div>
+            </section>
           )}
           {showMaisonSection && (
-            <div
+            <section
               className={`panel maison-panel ${showMaisonPanel ? "" : "panel-teaser"}`}
-              aria-label="Maison"
               data-testid="maison-panel"
               id="maison"
+              aria-labelledby="maison-title"
             >
               {showMaisonPanel ? (
                 <>
                   <header className="panel-header">
                     <div>
                       <p className="eyebrow">Meta progression</p>
-                      <h3>Maison</h3>
+                      <h3 id="maison-title">Maison</h3>
                       <p className="muted">
                         Prestige the workshop to earn Heritage and strengthen long-term enjoyment.
                       </p>
@@ -653,13 +781,20 @@ export default function App() {
                       <p className="workshop-label">Current gain</p>
                       <p className="workshop-value">+{maisonPrestigeGain} Heritage</p>
                     </div>
+                    <div>
+                      <p className="workshop-label">Legacy credit</p>
+                      <p className="workshop-value">+{maisonReputationGain} Reputation</p>
+                    </div>
                   </div>
-                  <div className="workshop-cta" role="group" aria-label="Reset workshop">
+                  <p className="muted maison-reset-detail">
+                    Resets Collection + Workshop progress. Maison lines remain active.
+                  </p>
+                  <fieldset className="workshop-cta">
+                    <legend className="visually-hidden">Reset workshop</legend>
                     {maisonResetArmed ? (
                       <div className="workshop-confirm">
                         <button
                           type="button"
-                          aria-label="Confirm reset"
                           disabled={!canPrestigeMaison}
                           onClick={() => {
                             if (!canPrestigeMaison) {
@@ -691,13 +826,13 @@ export default function App() {
                     )}
                     <p className="muted" aria-live="polite">
                       {maisonResetArmed
-                        ? "Confirming will reset Workshop progress and grant Heritage."
+                        ? "Confirming resets Collection + Workshop and grants Heritage & Reputation."
                         : canPrestigeMaison
                           ? "Prestiging converts your enjoyment engine into Maison legacy."
                           : "Requires reaching the enjoyment threshold."}
                     </p>
-                  </div>
-                  <div className="workshop-upgrades" aria-label="Maison upgrades">
+                  </fieldset>
+                  <div className="workshop-upgrades">
                     <h4>Maison upgrades</h4>
                     <div className="card-stack">
                       {maisonUpgrades.map((upgrade) => {
@@ -754,7 +889,7 @@ export default function App() {
                 <div className="panel-teaser-content" data-testid="maison-teaser">
                   <p className="eyebrow">Meta progression</p>
                   <h3>Maison</h3>
-                  <p className="muted">Your house is almost ready for legacy prestige.</p>
+                  <p className="muted">Your maison is almost ready for legacy prestige.</p>
                   <div className="teaser-progress">
                     <div className="teaser-track">
                       <div
@@ -766,7 +901,7 @@ export default function App() {
                   </div>
                 </div>
               )}
-            </div>
+            </section>
           )}
           <div className="panel">
             <h3>Upgrades</h3>
@@ -891,7 +1026,7 @@ export default function App() {
         </aside>
       </section>
 
-      <section aria-label="Catalog" className="panel catalog-panel" id="catalog">
+      <section className="panel catalog-panel" id="catalog">
         <header className="panel-header">
           <div>
             <p className="eyebrow">Archive</p>
@@ -902,7 +1037,7 @@ export default function App() {
             {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
           </div>
         </header>
-        <div className="catalog-filters" role="search" data-testid="catalog-filters">
+        <search className="catalog-filters" data-testid="catalog-filters">
           <div className="filter-field">
             <label htmlFor="catalog-search">Search</label>
             <input
@@ -941,7 +1076,7 @@ export default function App() {
               <option value="all">All references</option>
             </select>
           </div>
-        </div>
+        </search>
         <div className="catalog-grid" data-testid="catalog-grid">
           {filteredCatalogEntries.map((entry) => {
             const discovered = discoveredCatalogIds.includes(entry.id);
@@ -996,11 +1131,7 @@ export default function App() {
         </div>
       </section>
 
-      <section
-        aria-label="Sources and licenses"
-        className="panel catalog-sources"
-        data-testid="catalog-sources"
-      >
+      <section className="panel catalog-sources" data-testid="catalog-sources">
         <h2>Sources &amp; Licenses</h2>
         <p className="muted">
           Every image in the archive lists its original source and license for compliance.
@@ -1028,7 +1159,7 @@ export default function App() {
         </ul>
       </section>
 
-      <section aria-label="Save" className="panel" id="save">
+      <section className="panel" id="save">
         <h2>Save</h2>
         <div className="controls">
           <button type="button" onClick={handleExport}>

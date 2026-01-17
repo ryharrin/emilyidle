@@ -58,6 +58,19 @@ export type MaisonUpgradeDefinition = {
   collectionBonusMultiplier?: number;
 };
 
+export type MaisonLineId = "atelier-line" | "heritage-line" | "complication-line";
+
+export type MaisonLineDefinition = {
+  id: MaisonLineId;
+  name: string;
+  description: string;
+  currency: MaisonCurrency;
+  cost: number;
+  incomeMultiplier?: number;
+  collectionBonusMultiplier?: number;
+  workshopBlueprintBonus?: number;
+};
+
 export type MilestoneRequirement =
   | { type: "totalItems"; threshold: number }
   | { type: "collectionValue"; thresholdCents: number };
@@ -93,6 +106,8 @@ export type AchievementDefinition = {
 
 export type EventId = "auction-weekend";
 
+export type CatalogTierId = "starter" | "classic" | "chronograph" | "tourbillon";
+
 export type EventTrigger = { type: "collectionValue"; thresholdCents: number };
 
 export type EventDefinition = {
@@ -102,6 +117,14 @@ export type EventDefinition = {
   trigger: EventTrigger;
   durationMs: number;
   cooldownMs: number;
+  incomeMultiplier: number;
+};
+
+export type CatalogTierBonusDefinition = {
+  id: CatalogTierId;
+  name: string;
+  description: string;
+  requiredCount: number;
   incomeMultiplier: number;
 };
 
@@ -130,9 +153,11 @@ export type GameState = {
   maisonHeritage: number;
   maisonReputation: number;
   maisonUpgrades: Record<MaisonUpgradeId, boolean>;
+  maisonLines: Record<MaisonLineId, boolean>;
   achievementUnlocks: AchievementId[];
   eventStates: Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }>;
   discoveredCatalogEntries: CatalogEntryId[];
+  catalogTierUnlocks: CatalogTierId[];
 };
 
 export type PersistedGameState = {
@@ -147,9 +172,11 @@ export type PersistedGameState = {
   maisonHeritage?: number;
   maisonReputation?: number;
   maisonUpgrades?: Record<string, boolean>;
+  maisonLines?: Record<string, boolean>;
   achievementUnlocks?: string[];
   eventStates?: Record<string, { activeUntilMs: number; nextAvailableAtMs: number }>;
   discoveredCatalogEntries?: string[];
+  catalogTierUnlocks?: string[];
 };
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
@@ -214,11 +241,69 @@ const MAISON_UPGRADES: ReadonlyArray<MaisonUpgradeDefinition> = [
   },
 ];
 
+const MAISON_LINES: ReadonlyArray<MaisonLineDefinition> = [
+  {
+    id: "atelier-line",
+    name: "Atelier line",
+    description: "Unify the atelier workflow for steady cash gains.",
+    currency: "heritage",
+    cost: 5,
+    incomeMultiplier: 1.1,
+  },
+  {
+    id: "heritage-line",
+    name: "Heritage line",
+    description: "Signature heritage releases amplify collection prestige.",
+    currency: "heritage",
+    cost: 9,
+    collectionBonusMultiplier: 1.1,
+  },
+  {
+    id: "complication-line",
+    name: "Complication line",
+    description: "Introduce high complications to boost blueprint yields.",
+    currency: "reputation",
+    cost: 6,
+    workshopBlueprintBonus: 1,
+  },
+];
+
 const COLLECTION_BONUS_STEPS: Array<{ thresholdCents: number; multiplier: number }> = [
   { thresholdCents: 7_500, multiplier: 1.02 },
   { thresholdCents: 35_000, multiplier: 1.05 },
   { thresholdCents: 150_000, multiplier: 1.1 },
   { thresholdCents: 700_000, multiplier: 1.2 },
+];
+
+const CATALOG_TIER_BONUSES: CatalogTierBonusDefinition[] = [
+  {
+    id: "starter",
+    name: "Starter archive",
+    description: "Archive 3 starter references to boost cash flow.",
+    requiredCount: 3,
+    incomeMultiplier: 1.03,
+  },
+  {
+    id: "classic",
+    name: "Classic index",
+    description: "Discover 4 classic icons to amplify vault earnings.",
+    requiredCount: 4,
+    incomeMultiplier: 1.05,
+  },
+  {
+    id: "chronograph",
+    name: "Chronograph dossier",
+    description: "Collect 3 chronograph references for a lasting cash lift.",
+    requiredCount: 3,
+    incomeMultiplier: 1.07,
+  },
+  {
+    id: "tourbillon",
+    name: "Tourbillon registry",
+    description: "Secure 2 tourbillon references for elite income.",
+    requiredCount: 2,
+    incomeMultiplier: 1.1,
+  },
 ];
 
 const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
@@ -388,6 +473,7 @@ const UPGRADE_LOOKUP = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]))
 const MILESTONE_LOOKUP = new Map(MILESTONES.map((milestone) => [milestone.id, milestone]));
 const WORKSHOP_UPGRADE_LOOKUP = new Map(WORKSHOP_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const MAISON_UPGRADE_LOOKUP = new Map(MAISON_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
+const MAISON_LINE_LOOKUP = new Map(MAISON_LINES.map((line) => [line.id, line]));
 
 export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
   return WATCH_ITEMS;
@@ -421,8 +507,16 @@ export function getMaisonUpgrades(): ReadonlyArray<MaisonUpgradeDefinition> {
   return MAISON_UPGRADES;
 }
 
+export function getMaisonLines(): ReadonlyArray<MaisonLineDefinition> {
+  return MAISON_LINES;
+}
+
 export function getCatalogEntries(): ReadonlyArray<CatalogEntry> {
   return CATALOG_ENTRIES;
+}
+
+export function getCatalogTierDefinitions(): ReadonlyArray<CatalogTierBonusDefinition> {
+  return CATALOG_TIER_BONUSES;
 }
 
 export function getCatalogDiscovery(state: GameState): CatalogEntryId[] {
@@ -448,10 +542,12 @@ export function discoverCatalogEntries(state: GameState, ids: CatalogEntryId[]):
     return state;
   }
 
-  return {
+  const nextState = {
     ...state,
     discoveredCatalogEntries: Array.from(discovered),
   };
+
+  return updateCatalogTierUnlocks(nextState);
 }
 
 export function getDiscoveredCatalogEntries(state: GameState): CatalogEntry[] {
@@ -461,6 +557,64 @@ export function getDiscoveredCatalogEntries(state: GameState): CatalogEntry[] {
 
   const discovered = new Set(state.discoveredCatalogEntries);
   return CATALOG_ENTRIES.filter((entry) => discovered.has(entry.id));
+}
+
+export function getCatalogTierProgress(state: GameState): Record<CatalogTierId, number> {
+  const progress: Record<CatalogTierId, number> = {
+    starter: 0,
+    classic: 0,
+    chronograph: 0,
+    tourbillon: 0,
+  };
+
+  for (const entry of getDiscoveredCatalogEntries(state)) {
+    const tags = getCatalogEntryTags(entry);
+    for (const tier of CATALOG_TIER_BONUSES) {
+      if (tags.includes(tier.id)) {
+        progress[tier.id] += 1;
+      }
+    }
+  }
+
+  return progress;
+}
+
+export function updateCatalogTierUnlocks(state: GameState): GameState {
+  const progress = getCatalogTierProgress(state);
+  const unlocks = new Set(state.catalogTierUnlocks);
+  let changed = false;
+
+  for (const bonus of CATALOG_TIER_BONUSES) {
+    if (!unlocks.has(bonus.id) && progress[bonus.id] >= bonus.requiredCount) {
+      unlocks.add(bonus.id);
+      changed = true;
+    }
+  }
+
+  if (!changed) {
+    return state;
+  }
+
+  return {
+    ...state,
+    catalogTierUnlocks: Array.from(unlocks),
+  };
+}
+
+export function getCatalogTierUnlocks(state: GameState): CatalogTierId[] {
+  return state.catalogTierUnlocks;
+}
+
+export function getCatalogTierBonuses(state: GameState): CatalogTierBonusDefinition[] {
+  const unlocked = new Set(state.catalogTierUnlocks);
+  return CATALOG_TIER_BONUSES.filter((bonus) => unlocked.has(bonus.id));
+}
+
+export function getCatalogTierIncomeMultiplier(state: GameState): number {
+  return getCatalogTierBonuses(state).reduce(
+    (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
+    1,
+  );
 }
 
 export function getCatalogEntryIdsForItems(state: GameState): CatalogEntryId[] {
@@ -494,9 +648,11 @@ export function createInitialState(): GameState {
     maisonHeritage: 0,
     maisonReputation: 0,
     maisonUpgrades: createMaisonUpgradeStates(),
+    maisonLines: createMaisonLineStates(),
     achievementUnlocks: [],
     eventStates: createEventStates(),
     discoveredCatalogEntries: [],
+    catalogTierUnlocks: [],
   };
 }
 
@@ -505,6 +661,7 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const upgrades = createUpgradeLevels();
   const workshopUpgrades = createWorkshopUpgradeStates();
   const maisonUpgrades = createMaisonUpgradeStates();
+  const maisonLines = createMaisonLineStates();
   const eventStates = createEventStates();
 
   if (saved.items) {
@@ -535,6 +692,14 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     for (const [key, value] of Object.entries(saved.maisonUpgrades)) {
       if (key in maisonUpgrades) {
         maisonUpgrades[key as MaisonUpgradeId] = Boolean(value);
+      }
+    }
+  }
+
+  if (saved.maisonLines) {
+    for (const [key, value] of Object.entries(saved.maisonLines)) {
+      if (key in maisonLines) {
+        maisonLines[key as MaisonLineId] = Boolean(value);
       }
     }
   }
@@ -578,7 +743,12 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
         CATALOG_ENTRIES.some((catalogEntry) => catalogEntry.id === entry),
       )
     : [];
-  return applyMilestoneUnlocks({
+  const catalogTierUnlocks = Array.isArray(saved.catalogTierUnlocks)
+    ? saved.catalogTierUnlocks.filter((entry): entry is CatalogTierId =>
+        CATALOG_TIER_BONUSES.some((bonus) => bonus.id === entry),
+      )
+    : [];
+  const restoredState = applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
     enjoymentCents,
     items,
@@ -594,10 +764,14 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       ? Math.max(0, Math.floor(saved.maisonReputation ?? 0))
       : 0,
     maisonUpgrades,
+    maisonLines,
     achievementUnlocks,
     eventStates,
     discoveredCatalogEntries,
+    catalogTierUnlocks,
   });
+
+  return updateCatalogTierUnlocks(restoredState);
 }
 
 export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): GameState {
@@ -617,7 +791,8 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
 
 export function getWorkshopPrestigeGain(state: GameState): number {
   const enjoyment = getEnjoymentCents(state);
-  return Math.max(0, Math.floor((enjoyment / WORKSHOP_PRESTIGE_THRESHOLD_CENTS) ** 0.5));
+  const baseGain = Math.max(0, Math.floor((enjoyment / WORKSHOP_PRESTIGE_THRESHOLD_CENTS) ** 0.5));
+  return baseGain + getMaisonLineBlueprintBonus(state);
 }
 
 export function canWorkshopPrestige(state: GameState): boolean {
@@ -625,7 +800,8 @@ export function canWorkshopPrestige(state: GameState): boolean {
 }
 
 export function prestigeMaison(state: GameState): GameState {
-  const maisonGain = getMaisonPrestigeGain(state);
+  const heritageGain = getMaisonPrestigeGain(state);
+  const reputationGain = getMaisonReputationGain(state);
   const nextState: GameState = {
     ...state,
     currencyCents: 0,
@@ -635,9 +811,10 @@ export function prestigeMaison(state: GameState): GameState {
     workshopBlueprints: 0,
     workshopPrestigeCount: 0,
     workshopUpgrades: createWorkshopUpgradeStates(),
-    maisonHeritage: state.maisonHeritage + maisonGain,
-    maisonReputation: state.maisonReputation,
+    maisonHeritage: state.maisonHeritage + heritageGain,
+    maisonReputation: state.maisonReputation + reputationGain,
     maisonUpgrades: { ...state.maisonUpgrades },
+    maisonLines: { ...state.maisonLines },
   };
 
   return applyMilestoneUnlocks(applyAchievementUnlocks(nextState));
@@ -649,8 +826,22 @@ export function getMaisonPrestigeGain(state: GameState): number {
   return Math.max(0, Math.floor(combined ** 0.5));
 }
 
+export function getMaisonReputationGain(state: GameState): number {
+  return Math.max(0, Math.floor(state.workshopPrestigeCount / 2));
+}
+
+export function getMaisonLineBlueprintBonus(state: GameState): number {
+  return MAISON_LINES.reduce((bonus, line) => {
+    if (!line.workshopBlueprintBonus || !hasMaisonLine(state, line.id)) {
+      return bonus;
+    }
+
+    return bonus + line.workshopBlueprintBonus;
+  }, 0);
+}
+
 export function canMaisonPrestige(state: GameState): boolean {
-  return getMaisonPrestigeGain(state) > 0;
+  return getMaisonPrestigeGain(state) > 0 || getMaisonReputationGain(state) > 0;
 }
 
 export function getItemCount(state: GameState, id: WatchItemId): number {
@@ -667,6 +858,43 @@ export function hasWorkshopUpgrade(state: GameState, id: WorkshopUpgradeId): boo
 
 export function getAutoBuyEnabled(state: GameState): boolean {
   return hasWorkshopUpgrade(state, "automation-blueprints");
+}
+
+export function canBuyMaisonLine(state: GameState, id: MaisonLineId): boolean {
+  const line = MAISON_LINE_LOOKUP.get(id);
+  if (!line) {
+    return false;
+  }
+
+  if (hasMaisonLine(state, id)) {
+    return false;
+  }
+
+  if (line.currency === "heritage") {
+    return state.maisonHeritage >= line.cost;
+  }
+
+  return state.maisonReputation >= line.cost;
+}
+
+export function buyMaisonLine(state: GameState, id: MaisonLineId): GameState {
+  const line = MAISON_LINE_LOOKUP.get(id);
+  if (!line || !canBuyMaisonLine(state, id)) {
+    return state;
+  }
+
+  const heritageCost = line.currency === "heritage" ? line.cost : 0;
+  const reputationCost = line.currency === "reputation" ? line.cost : 0;
+
+  return {
+    ...state,
+    maisonHeritage: state.maisonHeritage - heritageCost,
+    maisonReputation: state.maisonReputation - reputationCost,
+    maisonLines: {
+      ...state.maisonLines,
+      [id]: true,
+    },
+  };
 }
 
 export function getWorkshopPrestigeThresholdCents(): number {
@@ -707,6 +935,10 @@ export function shouldShowUnlockTag(state: GameState, milestoneId: MilestoneId):
 
 export function hasMaisonUpgrade(state: GameState, id: MaisonUpgradeId): boolean {
   return state.maisonUpgrades[id] ?? false;
+}
+
+export function hasMaisonLine(state: GameState, id: MaisonLineId): boolean {
+  return state.maisonLines[id] ?? false;
 }
 
 export function getTotalItemCount(state: GameState): number {
@@ -787,6 +1019,7 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
   const collectionMultiplier = getCollectionBonusMultiplier(state);
   const workshopMultiplier = getWorkshopIncomeMultiplier(state);
   const maisonMultiplier = getMaisonIncomeMultiplier(state);
+  const catalogTierMultiplier = getCatalogTierIncomeMultiplier(state);
 
   return (
     (BASE_INCOME_CENTS_PER_SEC + itemIncome) *
@@ -794,7 +1027,8 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
     setBonusMultiplier *
     collectionMultiplier *
     workshopMultiplier *
-    maisonMultiplier
+    maisonMultiplier *
+    catalogTierMultiplier
   );
 }
 
@@ -1061,23 +1295,39 @@ export function getWorkshopIncomeMultiplier(state: GameState): number {
 }
 
 export function getMaisonIncomeMultiplier(state: GameState): number {
-  return MAISON_UPGRADES.reduce((multiplier, upgrade) => {
+  const upgradeMultiplier = MAISON_UPGRADES.reduce((multiplier, upgrade) => {
     if (!upgrade.incomeMultiplier || !hasMaisonUpgrade(state, upgrade.id)) {
       return multiplier;
     }
 
     return multiplier * upgrade.incomeMultiplier;
   }, 1);
+
+  return MAISON_LINES.reduce((multiplier, line) => {
+    if (!line.incomeMultiplier || !hasMaisonLine(state, line.id)) {
+      return multiplier;
+    }
+
+    return multiplier * line.incomeMultiplier;
+  }, upgradeMultiplier);
 }
 
 export function getMaisonCollectionBonusMultiplier(state: GameState): number {
-  return MAISON_UPGRADES.reduce((multiplier, upgrade) => {
+  const upgradeMultiplier = MAISON_UPGRADES.reduce((multiplier, upgrade) => {
     if (!upgrade.collectionBonusMultiplier || !hasMaisonUpgrade(state, upgrade.id)) {
       return multiplier;
     }
 
     return multiplier * upgrade.collectionBonusMultiplier;
   }, 1);
+
+  return MAISON_LINES.reduce((multiplier, line) => {
+    if (!line.collectionBonusMultiplier || !hasMaisonLine(state, line.id)) {
+      return multiplier;
+    }
+
+    return multiplier * line.collectionBonusMultiplier;
+  }, upgradeMultiplier);
 }
 
 export function getWorkshopSoftcapValue(state: GameState): number {
@@ -1192,6 +1442,13 @@ function createMaisonUpgradeStates(): Record<MaisonUpgradeId, boolean> {
   return MAISON_UPGRADES.reduce(
     (states, upgrade) => ({ ...states, [upgrade.id]: false }),
     {} as Record<MaisonUpgradeId, boolean>,
+  );
+}
+
+function createMaisonLineStates(): Record<MaisonLineId, boolean> {
+  return MAISON_LINES.reduce(
+    (states, line) => ({ ...states, [line.id]: false }),
+    {} as Record<MaisonLineId, boolean>,
   );
 }
 

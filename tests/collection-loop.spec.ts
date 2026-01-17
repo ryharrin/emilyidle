@@ -11,12 +11,14 @@ const selectors = {
   setBonusCards: "#set-bonus-list .card",
   workshopPanel: '[data-testid="workshop-panel"]',
   workshopGain: '[data-testid="workshop-reset"] .workshop-value',
-  workshopResetButton: '[aria-label="Reset vault"] button',
+  workshopResetButton: '[data-testid="workshop-panel"] .workshop-cta button',
   maisonPanel: '[data-testid="maison-panel"]',
   maisonGain: '[data-testid="maison-reset"] .workshop-value',
-  maisonResetButton: '[aria-label="Reset workshop"] button',
+  maisonResetButton: '[data-testid="maison-panel"] .workshop-cta button',
   maisonUpgradeCards: '[data-testid="maison-upgrade-card"]',
-  automationToggle: '[aria-label="Automation controls"]',
+  maisonLines: '[data-testid="maison-lines"]',
+  maisonLineCards: '[data-testid="maison-line-card"]',
+  automationToggle: '[data-testid="automation-controls"]',
   exportSave: "#export-save",
   importSave: "#import-save",
   importText: "#import-save-text",
@@ -114,11 +116,17 @@ test.describe("collection loop", () => {
         "heritage-loom": false,
         "global-vitrine": false,
       },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
       achievementUnlocks: [],
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
     };
 
     await page.addInitScript(
@@ -165,11 +173,17 @@ test.describe("collection loop", () => {
         "heritage-loom": false,
         "global-vitrine": false,
       },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
       achievementUnlocks: [],
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
     };
 
     await page.addInitScript(
@@ -216,11 +230,17 @@ test.describe("collection loop", () => {
         "heritage-loom": false,
         "global-vitrine": false,
       },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
       achievementUnlocks: [],
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
     };
 
     await page.addInitScript(
@@ -238,7 +258,8 @@ test.describe("collection loop", () => {
 
     await page.goto("/");
     await expect(page.locator(selectors.maisonPanel)).toBeVisible();
-    await expect(page.locator(selectors.maisonGain).last()).toContainText("+2 Heritage");
+    await expect(page.locator(selectors.maisonGain).nth(1)).toContainText("+2 Heritage");
+    await expect(page.locator(selectors.maisonGain).nth(2)).toContainText("+0 Reputation");
     await expect(page.locator(selectors.maisonResetButton).first()).toBeEnabled();
     await expect(page.locator(selectors.maisonUpgradeCards)).toHaveCount(3);
   });
@@ -265,11 +286,17 @@ test.describe("collection loop", () => {
         "heritage-loom": false,
         "global-vitrine": false,
       },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
       achievementUnlocks: [],
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
     };
 
     await page.addInitScript(
@@ -290,6 +317,6 @@ test.describe("collection loop", () => {
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
     await expect(page.getByText("Workshop reforged")).toBeVisible();
     await expect(page.getByText(/Auction weekend/)).toBeVisible();
-    await expect(page.getByText(/Income x/)).toBeVisible();
+    await expect(page.getByText(/Income x/).first()).toBeVisible();
   });
 });

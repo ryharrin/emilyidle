@@ -126,6 +126,12 @@ strong {
   margin-bottom: 32px;
 }
 
+.collection-setup {
+  display: grid;
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
 .automation-toggle {
   display: flex;
   flex-wrap: wrap;
@@ -135,7 +141,6 @@ strong {
   border-radius: 14px;
   border: 1px solid #242833;
   background: #151821;
-  margin: 16px 0 20px;
 }
 
 .automation-label {
@@ -215,6 +220,25 @@ button:not(:disabled):hover {
   border-radius: 18px;
   padding: 20px;
   border: 1px solid #242833;
+}
+
+.catalog-tier-panel {
+  border-color: #2d3240;
+}
+
+.catalog-tier-card {
+  border-color: #2d3240;
+  background: #171b24;
+}
+
+.catalog-tier-card h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.catalog-tier-unlocked {
+  border-color: rgba(72, 175, 255, 0.5);
+  box-shadow: 0 0 0 1px rgba(72, 175, 255, 0.2);
 }
 
 .panel-teaser {
@@ -508,6 +532,10 @@ button:not(:disabled):hover {
   gap: 12px;
 }
 
+.maison-reset-detail {
+  margin: 0 0 12px;
+}
+
 .workshop-upgrades h4 {
   margin: 0;
   text-transform: uppercase;
@@ -519,6 +547,18 @@ button:not(:disabled):hover {
 .workshop-upgrade-card {
   background: #1b1f29;
   border-color: #2d3240;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .controls {

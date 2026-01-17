@@ -66,6 +66,10 @@ function sanitizeState(value: unknown): GameState | null {
       typeof record.maisonUpgrades === "object" && record.maisonUpgrades !== null
         ? (record.maisonUpgrades as Record<string, boolean>)
         : {},
+    maisonLines:
+      typeof record.maisonLines === "object" && record.maisonLines !== null
+        ? (record.maisonLines as Record<string, boolean>)
+        : {},
     achievementUnlocks: Array.isArray(record.achievementUnlocks)
       ? record.achievementUnlocks.filter((entry): entry is string => typeof entry === "string")
       : [],
