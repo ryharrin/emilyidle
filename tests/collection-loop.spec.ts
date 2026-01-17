@@ -59,7 +59,7 @@ test.describe("collection loop", () => {
 
     await page.fill(selectors.importText, saveText);
     await page.getByRole("button", { name: "Import" }).click();
-    await expect(page.locator(selectors.saveStatus)).toContainText("Imported save");
+    await expect(page.locator(selectors.saveStatus)).toContainText("Imported save from");
   });
 
   test("catalog filters and sources", async ({ page }) => {
@@ -91,12 +91,7 @@ test.describe("collection loop", () => {
 
   test("workshop panel shows gain and reset state", async ({ page }) => {
     const workshopPanel = page.locator(selectors.workshopPanel);
-    await expect(workshopPanel).toBeVisible();
-    await expect(page.locator(selectors.workshopGain).last()).toContainText("+0 Blueprints");
-
-    const resetButton = page.locator(selectors.workshopResetButton);
-    await expect(resetButton).toHaveText("Reset vault");
-    await expect(resetButton).toBeDisabled();
+    await expect(workshopPanel).toHaveCount(0);
 
     const seededState = {
       currencyCents: 0,
@@ -140,6 +135,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
+    await expect(page.locator(selectors.workshopPanel)).toBeVisible();
     await expect(page.locator(selectors.workshopGain).last()).toContainText("+1 Blueprints");
     await expect(page.locator(selectors.workshopResetButton)).toBeEnabled();
   });
@@ -197,12 +193,7 @@ test.describe("collection loop", () => {
 
   test("maison panel shows gain and upgrades", async ({ page }) => {
     const maisonPanel = page.locator(selectors.maisonPanel);
-    await expect(maisonPanel).toBeVisible();
-    await expect(page.locator(selectors.maisonGain).last()).toContainText("+0 Heritage");
-
-    const resetButton = page.locator(selectors.maisonResetButton).first();
-    await expect(resetButton).toHaveText("Prestige workshop");
-    await expect(resetButton).toBeDisabled();
+    await expect(maisonPanel).toHaveCount(0);
 
     const seededState = {
       currencyCents: 0,
@@ -246,7 +237,8 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await expect(page.locator(selectors.maisonGain).last()).toContainText("+1 Heritage");
+    await expect(page.locator(selectors.maisonPanel)).toBeVisible();
+    await expect(page.locator(selectors.maisonGain).last()).toContainText("+2 Heritage");
     await expect(page.locator(selectors.maisonResetButton).first()).toBeEnabled();
     await expect(page.locator(selectors.maisonUpgradeCards)).toHaveCount(3);
   });

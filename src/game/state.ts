@@ -503,6 +503,9 @@ export function createInitialState(): GameState {
 export function createStateFromSave(saved: PersistedGameState): GameState {
   const items = createItemCounts();
   const upgrades = createUpgradeLevels();
+  const workshopUpgrades = createWorkshopUpgradeStates();
+  const maisonUpgrades = createMaisonUpgradeStates();
+  const eventStates = createEventStates();
 
   if (saved.items) {
     for (const [key, value] of Object.entries(saved.items)) {
@@ -516,6 +519,36 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     for (const [key, value] of Object.entries(saved.upgrades)) {
       if (key in upgrades && Number.isFinite(value)) {
         upgrades[key as UpgradeId] = Math.max(0, Math.floor(value));
+      }
+    }
+  }
+
+  if (saved.workshopUpgrades) {
+    for (const [key, value] of Object.entries(saved.workshopUpgrades)) {
+      if (key in workshopUpgrades) {
+        workshopUpgrades[key as WorkshopUpgradeId] = Boolean(value);
+      }
+    }
+  }
+
+  if (saved.maisonUpgrades) {
+    for (const [key, value] of Object.entries(saved.maisonUpgrades)) {
+      if (key in maisonUpgrades) {
+        maisonUpgrades[key as MaisonUpgradeId] = Boolean(value);
+      }
+    }
+  }
+
+  if (saved.eventStates) {
+    for (const [key, value] of Object.entries(saved.eventStates)) {
+      const stateValue = value as { activeUntilMs: number; nextAvailableAtMs: number };
+      if (key in eventStates && Number.isFinite(stateValue?.activeUntilMs)) {
+        eventStates[key as EventId] = {
+          activeUntilMs: Math.max(0, Math.floor(stateValue.activeUntilMs)),
+          nextAvailableAtMs: Number.isFinite(stateValue.nextAvailableAtMs)
+            ? Math.max(0, Math.floor(stateValue.nextAvailableAtMs))
+            : 0,
+        };
       }
     }
   }
@@ -535,6 +568,16 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const enjoymentCents = Number.isFinite(saved.enjoymentCents ?? 0)
     ? Math.max(0, Math.floor(saved.enjoymentCents ?? 0))
     : 0;
+  const achievementUnlocks = Array.isArray(saved.achievementUnlocks)
+    ? saved.achievementUnlocks.filter((entry): entry is AchievementId =>
+        ACHIEVEMENTS.some((achievement) => achievement.id === entry),
+      )
+    : [];
+  const discoveredCatalogEntries = Array.isArray(saved.discoveredCatalogEntries)
+    ? saved.discoveredCatalogEntries.filter((entry): entry is CatalogEntryId =>
+        CATALOG_ENTRIES.some((catalogEntry) => catalogEntry.id === entry),
+      )
+    : [];
   return applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
     enjoymentCents,

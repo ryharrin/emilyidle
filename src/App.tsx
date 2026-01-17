@@ -258,7 +258,8 @@ export default function App() {
   const maisonPrestigeGain = useMemo(() => getMaisonPrestigeGain(state), [state]);
   const canPrestigeWorkshop = useMemo(() => canWorkshopPrestige(state), [state]);
   const canPrestigeMaison = useMemo(() => maisonPrestigeGain > 0, [maisonPrestigeGain]);
-  const showWorkshopPanel = canPrestigeWorkshop || state.workshopPrestigeCount > 0;
+  const showWorkshopPanel =
+    canPrestigeWorkshop || state.workshopPrestigeCount > 0 || state.workshopBlueprints > 0;
   const showWorkshopTeaser = !showWorkshopPanel && isWorkshopRevealReady(state);
   const showWorkshopSection = showWorkshopPanel || showWorkshopTeaser;
   const showMaisonPanel =
@@ -283,10 +284,11 @@ export default function App() {
   }, [catalogEntries]);
   const filteredCatalogEntries = useMemo(() => {
     const query = catalogSearch.trim().toLowerCase();
-    return catalogEntries.filter((entry) => {
-      if (showDiscoveredOnly && !discoveredCatalogIds.includes(entry.id)) {
-        return false;
-      }
+    const visibleEntries =
+      showDiscoveredOnly && discoveredCatalogIds.length > 0
+        ? catalogEntries.filter((entry) => discoveredCatalogIds.includes(entry.id))
+        : catalogEntries;
+    return visibleEntries.filter((entry) => {
       const matchesBrand = catalogBrand === "All" || entry.brand === catalogBrand;
       const tags = getCatalogEntryTags(entry).join(" ");
       const matchesQuery =
@@ -300,7 +302,7 @@ export default function App() {
 
   const discoveredCatalogEntries = useMemo(() => {
     if (discoveredCatalogIds.length === 0) {
-      return [] as typeof catalogEntries;
+      return catalogEntries;
     }
     const discovered = new Set(discoveredCatalogIds);
     return catalogEntries.filter((entry) => discovered.has(entry.id));
