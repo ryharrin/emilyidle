@@ -13,14 +13,14 @@ Purpose: Reframe the game’s core currency/value language so that progression f
 
 ### 10-01 — Currency naming and UI copy changes
 
-- [ ] Rename primary currency display from strictly dollars to “Enjoyment” (or similar)
+- [x] Rename primary currency display from strictly dollars to “Enjoyment” (or similar)
   - Proposed copy: “Enjoyment” (primary), “Enjoyment / sec” (rate)
   - Keep `$` formatting (confirmed)
   - **Files**: `src/App.tsx`, `src/game/format.ts`
   - **Verification**: `pnpm run test:e2e`
   - **Parallelizable**: NO
 
-- [ ] Update supporting copy across Workshop/Maison to match the new framing
+- [x] Update supporting copy across Workshop/Maison to match the new framing
   - Example: Workshop improves how efficiently you turn your collection into enjoyment
   - Example: Maison increases the long-term enjoyment engine / legacy
   - **Files**: `src/App.tsx`, `src/game/state.ts` (strings/descriptions)
@@ -29,7 +29,7 @@ Purpose: Reframe the game’s core currency/value language so that progression f
 
 ### 10-02 — Optional: split “cash” vs “enjoyment” (if desired)
 
-- [ ] Decide whether to introduce a second currency (Cash vs Enjoyment)
+- [x] Decide whether to introduce a second currency (Cash vs Enjoyment)
   - If YES: define conversion rules (buy watches with cash; enjoyment accrues from owning)
   - If NO: keep single-currency but re-theme UI and descriptions
   - **Files**: `src/game/state.ts`, `src/game/sim.ts`, `src/App.tsx`
@@ -38,11 +38,11 @@ Purpose: Reframe the game’s core currency/value language so that progression f
 
 ## Plan-wide verification
 
-- [ ] `pnpm run lint`
-- [ ] `pnpm run typecheck`
-- [ ] `pnpm run build`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run test:e2e`
+- [x] `pnpm run lint`
+- [x] `pnpm run typecheck`
+- [x] `pnpm run build`
+- [x] `pnpm run test:unit`
+- [x] `pnpm run test:e2e`
 
 ## Open questions
 
