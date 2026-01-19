@@ -55,3 +55,5 @@ Planned Features:
 - Improve the prestige mechanics to make them more meaningful and integrated into the overall gameplay loop.
 - Add more detailed information about the watches, their specs, and historical context.
 - Introduce a crafting system where players can combine certain watches or parts to create new, unique watches with special attributes.
+- Set up github pages for hosting the game online.
+- Deploy the game to github pages for easy access and sharing.
