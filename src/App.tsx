@@ -13,6 +13,7 @@ import {
   persistSaveToLocalStorage,
 } from "./game/persistence";
 import {
+  activateManualEvent,
   buyItem,
   buyMaisonLine,
   buyMaisonUpgrade,
@@ -43,6 +44,7 @@ import {
   getEventIncomeMultiplier,
   getEventStatusLabel,
   getEvents,
+  getItemCount,
   getItemPriceCents,
   getMaisonLines,
   getMaisonPrestigeGain,
@@ -75,17 +77,141 @@ import { SIM_TICK_MS, step } from "./game/sim";
 
 const MAX_FRAME_DELTA_MS = 250;
 const AUTO_SAVE_INTERVAL_MS = 2_000;
+const AUDIO_SETTINGS_KEY = "emily-idle:audio";
+
+type AudioSettings = {
+  sfxEnabled: boolean;
+  bgmEnabled: boolean;
+};
+
+const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
+  sfxEnabled: false,
+  bgmEnabled: false,
+};
+
+const loadAudioSettings = (): AudioSettings => {
+  if (typeof window === "undefined") {
+    return DEFAULT_AUDIO_SETTINGS;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(AUDIO_SETTINGS_KEY);
+    if (!raw) {
+      return DEFAULT_AUDIO_SETTINGS;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      return DEFAULT_AUDIO_SETTINGS;
+    }
+
+    const sfxEnabled = typeof parsed.sfxEnabled === "boolean" ? parsed.sfxEnabled : false;
+    const bgmEnabled = typeof parsed.bgmEnabled === "boolean" ? parsed.bgmEnabled : false;
+
+    return { sfxEnabled, bgmEnabled };
+  } catch {
+    return DEFAULT_AUDIO_SETTINGS;
+  }
+};
 
 export default function App() {
   const [state, setState] = useState<GameState>(() => createInitialState());
+  const [windActiveItemId, setWindActiveItemId] = useState<null | string>(null);
+  const [windProgress, setWindProgress] = useState(0);
   const [saveStatus, setSaveStatus] = useState("");
   const [importText, setImportText] = useState("");
   const [catalogSearch, setCatalogSearch] = useState("");
   const [catalogBrand, setCatalogBrand] = useState("All");
-  const [showDiscoveredOnly, setShowDiscoveredOnly] = useState(true);
+  const [catalogStyle, setCatalogStyle] = useState<"all" | "womens">("all");
+  const [catalogSort, setCatalogSort] = useState<"default" | "brand" | "year" | "tier">("default");
+  const [catalogEra, setCatalogEra] = useState<
+    "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown"
+  >("all");
+  const [catalogType, setCatalogType] = useState<"all" | "gmt" | "chronograph" | "dress" | "diver">(
+    "all",
+  );
+  const [catalogTab, setCatalogTab] = useState<"unowned" | "owned">("unowned");
   const [workshopResetArmed, setWorkshopResetArmed] = useState(false);
   const [maisonResetArmed, setMaisonResetArmed] = useState(false);
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
+
+  const tabs = useMemo(
+    () =>
+      [
+        { id: "collection", label: "Vault" },
+        { id: "workshop", label: "Atelier" },
+        { id: "maison", label: "Maison" },
+        { id: "catalog", label: "Catalog" },
+        { id: "stats", label: "Stats" },
+        { id: "save", label: "Save" },
+      ] as const,
+    [],
+  );
+  type TabId = (typeof tabs)[number]["id"];
+
+  const [activeTab, setActiveTab] = useState<TabId>("collection");
+  const [focusedTab, setFocusedTab] = useState<TabId>("collection");
+  const tabRefs = useRef(new Map<TabId, HTMLButtonElement>());
+
+  const focusTabById = (tabId: TabId) => {
+    tabRefs.current.get(tabId)?.focus();
+  };
+
+  const moveTabFocus = (direction: -1 | 1) => {
+    const currentIndex = tabs.findIndex((tab) => tab.id === focusedTab);
+    const nextIndex = (currentIndex + direction + tabs.length) % tabs.length;
+    const nextId = tabs[nextIndex].id;
+    setFocusedTab(nextId);
+    focusTabById(nextId);
+  };
+
+  const focusEdgeTab = (edge: "first" | "last") => {
+    const nextId = edge === "first" ? tabs[0].id : tabs[tabs.length - 1].id;
+    setFocusedTab(nextId);
+    focusTabById(nextId);
+  };
+
+  const activateTab = (tabId: TabId) => {
+    setActiveTab(tabId);
+    setFocusedTab(tabId);
+  };
+
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    switch (event.key) {
+      case "ArrowLeft":
+      case "ArrowUp": {
+        event.preventDefault();
+        moveTabFocus(-1);
+        return;
+      }
+      case "ArrowRight":
+      case "ArrowDown": {
+        event.preventDefault();
+        moveTabFocus(1);
+        return;
+      }
+      case "Home": {
+        event.preventDefault();
+        focusEdgeTab("first");
+        return;
+      }
+      case "End": {
+        event.preventDefault();
+        focusEdgeTab("last");
+        return;
+      }
+      case "Enter":
+      case " ": {
+        event.preventDefault();
+        activateTab(focusedTab);
+        return;
+      }
+      default:
+        return;
+    }
+  };
+
   const saveDirtyRef = useRef(false);
   const lastSavedAtMsRef = useRef(0);
   const lastFrameAtMsRef = useRef<number | null>(null);
@@ -197,6 +323,21 @@ export default function App() {
     }
   };
 
+  const closeWindModal = () => {
+    setWindActiveItemId(null);
+    setWindProgress(0);
+  };
+
+  const handleWindClick = () => {
+    const next = windProgress + 1;
+    if (next >= 10) {
+      handlePurchase(activateManualEvent(state, "wind-up", Date.now()));
+      closeWindModal();
+      return;
+    }
+    setWindProgress(next);
+  };
+
   const handleExport = async () => {
     const saveString = encodeSaveString(state, Date.now());
     setImportText(saveString);
@@ -291,23 +432,124 @@ export default function App() {
   const catalogBrands = useMemo(() => {
     return ["All", ...new Set(catalogEntries.map((entry) => entry.brand))];
   }, [catalogEntries]);
+  const ownedCatalogTiers = useMemo(() => {
+    return watchItems.filter((item) => getItemCount(state, item.id) > 0).map((item) => item.id);
+  }, [state, watchItems]);
+  const hasOwnedCatalogTiers = ownedCatalogTiers.length > 0;
+
   const filteredCatalogEntries = useMemo(() => {
     const query = catalogSearch.trim().toLowerCase();
-    const visibleEntries =
-      showDiscoveredOnly && discoveredCatalogIds.length > 0
-        ? catalogEntries.filter((entry) => discoveredCatalogIds.includes(entry.id))
-        : catalogEntries;
-    return visibleEntries.filter((entry) => {
+    const ownedTierSet = new Set(ownedCatalogTiers);
+
+    const filteredByOwnership = catalogEntries.filter((entry) => {
+      const tags = getCatalogEntryTags(entry);
+      const tierTag = tags.find((tag) =>
+        ownedTierSet.has(tag as (typeof ownedCatalogTiers)[number]),
+      );
+      const isOwned = Boolean(tierTag);
+      return catalogTab === "owned" ? isOwned : !isOwned;
+    });
+
+    const filteredByFilters = filteredByOwnership.filter((entry) => {
       const matchesBrand = catalogBrand === "All" || entry.brand === catalogBrand;
-      const tags = getCatalogEntryTags(entry).join(" ");
+      const entryTags = getCatalogEntryTags(entry);
+      const matchesStyle = catalogStyle === "all" || entryTags.includes("womens");
+
+      const year = entry.year === "Unknown" ? null : Number(entry.year);
+      const matchesEra = (() => {
+        if (catalogEra === "all") {
+          return true;
+        }
+        if (catalogEra === "unknown") {
+          return year === null;
+        }
+        if (year === null) {
+          return false;
+        }
+        if (catalogEra === "pre-1970") {
+          return year < 1970;
+        }
+        if (catalogEra === "1970-1999") {
+          return year >= 1970 && year <= 1999;
+        }
+        return year >= 2000;
+      })();
+
+      const matchesType =
+        catalogType === "all" || entryTags.some((tag) => tag.toLowerCase() === catalogType);
+
+      const tags = entryTags.join(" ");
       const matchesQuery =
         query.length === 0 ||
         `${entry.brand} ${entry.model} ${entry.description} ${entry.year} ${tags}`
           .toLowerCase()
           .includes(query);
-      return matchesBrand && matchesQuery;
+
+      return matchesBrand && matchesStyle && matchesEra && matchesType && matchesQuery;
     });
-  }, [catalogEntries, catalogBrand, catalogSearch, discoveredCatalogIds, showDiscoveredOnly]);
+
+    const sortByTierRank = (entry: (typeof catalogEntries)[number]) => {
+      const tags = getCatalogEntryTags(entry);
+      if (tags.includes("starter")) {
+        return 0;
+      }
+      if (tags.includes("classic")) {
+        return 1;
+      }
+      if (tags.includes("chronograph")) {
+        return 2;
+      }
+      if (tags.includes("tourbillon")) {
+        return 3;
+      }
+      return 999;
+    };
+
+    const sorted = (() => {
+      if (catalogSort === "default") {
+        return filteredByFilters;
+      }
+
+      const copy = filteredByFilters.slice();
+
+      if (catalogSort === "brand") {
+        return copy.sort((a, b) => a.brand.localeCompare(b.brand));
+      }
+
+      if (catalogSort === "year") {
+        return copy.sort((a, b) => {
+          const ay = a.year === "Unknown" ? null : Number(a.year);
+          const by = b.year === "Unknown" ? null : Number(b.year);
+
+          if (ay === null && by === null) {
+            return 0;
+          }
+          if (ay === null) {
+            return 1;
+          }
+          if (by === null) {
+            return -1;
+          }
+
+          return by - ay;
+        });
+      }
+
+      return copy.sort((a, b) => sortByTierRank(a) - sortByTierRank(b));
+    })();
+
+    return sorted;
+  }, [
+    catalogBrand,
+    catalogEntries,
+    catalogEra,
+    catalogSearch,
+    catalogSort,
+    catalogStyle,
+    catalogTab,
+    catalogType,
+    ownedCatalogTiers,
+  ]);
 
   const discoveredCatalogEntries = useMemo(() => {
     if (discoveredCatalogIds.length === 0) {
@@ -381,21 +623,36 @@ export default function App() {
           <h1>Emily Idle</h1>
           <p className="muted">Build your vault, unlock new lines, and stack bonuses.</p>
           <nav className="page-nav" aria-label="Primary navigation">
-            <a className="page-nav-link" href="#collection">
-              Collection
-            </a>
-            <a className="page-nav-link" href="#workshop">
-              Workshop
-            </a>
-            <a className="page-nav-link" href="#maison">
-              Maison
-            </a>
-            <a className="page-nav-link" href="#catalog">
-              Catalog
-            </a>
-            <a className="page-nav-link" href="#save">
-              Save
-            </a>
+            <div role="tablist" aria-label="Primary navigation">
+              {tabs.map((tab) => {
+                const selected = tab.id === activeTab;
+                const focusable = tab.id === focusedTab;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className="page-nav-link"
+                    role="tab"
+                    id={`${tab.id}-tab`}
+                    aria-selected={selected}
+                    aria-controls={tab.id}
+                    tabIndex={focusable ? 0 : -1}
+                    onClick={() => activateTab(tab.id)}
+                    onFocus={() => setFocusedTab(tab.id)}
+                    onKeyDown={handleTabKeyDown}
+                    ref={(node) => {
+                      if (!node) {
+                        tabRefs.current.delete(tab.id);
+                        return;
+                      }
+                      tabRefs.current.set(tab.id, node);
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
           </nav>
         </div>
         <section className="stats" aria-labelledby="vault-stats-title">
@@ -420,7 +677,7 @@ export default function App() {
               <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
             </div>
             <div>
-              <dt>Sentimental value</dt>
+              <dt>Memories</dt>
               <dd id="collection-value">{stats.sentimentalValue}</dd>
             </div>
             <div>
@@ -431,760 +688,1165 @@ export default function App() {
         </section>
       </header>
 
-      <section className="collection" id="collection">
-        <div>
-          <h2>Collection</h2>
-          <p className="muted">Acquire pieces to grow cash and enjoyment.</p>
-          <div className="collection-setup" data-testid="collection-setup">
-            <fieldset className="automation-toggle" data-testid="automation-controls">
-              <legend className="automation-label">Automation controls</legend>
-              {autoBuyUnlocked ? (
-                <button
-                  type="button"
-                  className={autoBuyEnabled ? "" : "secondary"}
-                  onClick={() => setAutoBuyToggle((value) => !value)}
-                >
-                  {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
-                </button>
-              ) : (
-                <p className="muted">Unlock automation with Workshop blueprints.</p>
-              )}
-            </fieldset>
-            <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
-              <header className="panel-header">
-                <div>
-                  <p className="eyebrow">Catalog bonuses</p>
-                  <h3>Tier bonuses</h3>
-                  <p className="muted">Unlock archive tiers by discovering references.</p>
-                </div>
-                <div className="results-count" data-testid="catalog-tier-count">
-                  {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
-                </div>
-              </header>
-              <div className="card-stack" data-testid="catalog-tier-list">
-                {catalogTierDefinitions.map((tier) => {
-                  const unlocked = catalogTierUnlocks.includes(tier.id);
-                  const progress = catalogTierProgress[tier.id];
-                  return (
-                    <div
-                      className={`card catalog-tier-card ${unlocked ? "catalog-tier-unlocked" : ""}`}
-                      key={tier.id}
-                      data-testid="catalog-tier-card"
+      <section
+        className="collection"
+        id="collection"
+        role="tabpanel"
+        aria-labelledby="collection-tab"
+        hidden={activeTab !== "collection"}
+      >
+        {activeTab === "collection" && (
+          <>
+            <div>
+              <h2>Collection</h2>
+              <p className="muted">Acquire pieces to grow cash and enjoyment.</p>
+              <div className="collection-setup" data-testid="collection-setup">
+                <fieldset className="automation-toggle" data-testid="automation-controls">
+                  <legend className="automation-label">Automation controls</legend>
+                  {autoBuyUnlocked ? (
+                    <button
+                      type="button"
+                      className={autoBuyEnabled ? "" : "secondary"}
+                      onClick={() => setAutoBuyToggle((value) => !value)}
                     >
-                      <div className="card-header">
-                        <div>
-                          <h4>{tier.name}</h4>
-                          <p>{tier.description}</p>
-                        </div>
-                        <div>{unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}</div>
-                      </div>
-                      <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                      {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
+                    </button>
+                  ) : (
+                    <p className="muted">Unlock automation with Atelier blueprints.</p>
+                  )}
+                </fieldset>
+                <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
+                  <header className="panel-header">
+                    <div>
+                      <p className="eyebrow">Catalog bonuses</p>
+                      <h3>Tier bonuses</h3>
+                      <p className="muted">Unlock archive tiers by discovering references.</p>
                     </div>
-                  );
-                })}
+                    <div className="results-count" data-testid="catalog-tier-count">
+                      {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                    </div>
+                  </header>
+                  <div className="card-stack" data-testid="catalog-tier-list">
+                    {catalogTierDefinitions.map((tier) => {
+                      const unlocked = catalogTierUnlocks.includes(tier.id);
+                      const progress = catalogTierProgress[tier.id];
+                      return (
+                        <div
+                          className={`card catalog-tier-card ${unlocked ? "catalog-tier-unlocked" : ""}`}
+                          key={tier.id}
+                          data-testid="catalog-tier-card"
+                        >
+                          <div className="card-header">
+                            <div>
+                              <h4>{tier.name}</h4>
+                              <p>{tier.description}</p>
+                            </div>
+                            <div>
+                              {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
+                            </div>
+                          </div>
+                          <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
+                    {catalogTierBonuses.length > 0
+                      ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
+                      : "Discover references to unlock tier bonuses."}
+                  </p>
+                </div>
               </div>
-              <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
-                {catalogTierBonuses.length > 0
-                  ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
-                  : "Discover references to unlock tier bonuses."}
-              </p>
-            </div>
-          </div>
-          {showMaisonLines && (
-            <div className="panel maison-lines" data-testid="maison-lines">
-              <header className="panel-header">
-                <div>
-                  <p className="eyebrow">Maison expansion</p>
-                  <h3>Maison lines</h3>
-                  <p className="muted">Invest Heritage or Reputation to expand your house.</p>
+              {showMaisonLines && (
+                <div className="panel maison-lines" data-testid="maison-lines">
+                  <header className="panel-header">
+                    <div>
+                      <p className="eyebrow">Maison expansion</p>
+                      <h3>Maison lines</h3>
+                      <p className="muted">Invest Heritage or Reputation to expand your house.</p>
+                    </div>
+                    <div className="results-count" data-testid="maison-lines-count">
+                      {Object.values(state.maisonLines).filter(Boolean).length} /{" "}
+                      {maisonLines.length} active
+                    </div>
+                  </header>
+                  <div className="card-stack" data-testid="maison-lines-list">
+                    {maisonLines.map((line) => {
+                      const owned = state.maisonLines[line.id] ?? false;
+                      const canAfford = canBuyMaisonLine(state, line.id);
+                      const costLabel =
+                        line.currency === "heritage"
+                          ? `${line.cost} Heritage`
+                          : `${line.cost} Reputation`;
+                      const effectLabel = (() => {
+                        if (line.incomeMultiplier) {
+                          return `+${Math.round((line.incomeMultiplier - 1) * 100)}% cash`;
+                        }
+                        if (line.collectionBonusMultiplier) {
+                          return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+                        }
+                        if (line.workshopBlueprintBonus) {
+                          return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
+                        }
+                        return "Maison line";
+                      })();
+
+                      return (
+                        <div className="card" key={line.id} data-testid="maison-line-card">
+                          <div className="card-header">
+                            <div>
+                              <h4>{line.name}</h4>
+                              <p>{line.description}</p>
+                            </div>
+                            <div>{owned ? "Active" : costLabel}</div>
+                          </div>
+                          <p>{effectLabel}</p>
+                          <div className="card-actions">
+                            <button
+                              type="button"
+                              className="secondary"
+                              disabled={owned || !canAfford}
+                              onClick={() => handlePurchase(buyMaisonLine(state, line.id))}
+                            >
+                              {owned ? "Live" : `Activate (${costLabel})`}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="results-count" data-testid="maison-lines-count">
-                  {Object.values(state.maisonLines).filter(Boolean).length} / {maisonLines.length}{" "}
-                  active
-                </div>
-              </header>
-              <div className="card-stack" data-testid="maison-lines-list">
-                {maisonLines.map((line) => {
-                  const owned = state.maisonLines[line.id] ?? false;
-                  const canAfford = canBuyMaisonLine(state, line.id);
-                  const costLabel =
-                    line.currency === "heritage"
-                      ? `${line.cost} Heritage`
-                      : `${line.cost} Reputation`;
-                  const effectLabel = (() => {
-                    if (line.incomeMultiplier) {
-                      return `+${Math.round((line.incomeMultiplier - 1) * 100)}% cash`;
-                    }
-                    if (line.collectionBonusMultiplier) {
-                      return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                    }
-                    if (line.workshopBlueprintBonus) {
-                      return `+${line.workshopBlueprintBonus} Workshop blueprint per reset`;
-                    }
-                    return "Maison line";
-                  })();
+              )}
+              <div id="collection-list" className="card-stack">
+                {watchItems.map((item) => {
+                  const owned = state.items[item.id] ?? 0;
+                  const price = getItemPriceCents(state, item.id, 1);
+                  const maxAffordable = getMaxAffordableItemCount(state, item.id);
+                  const bulkQty = Math.min(10, Math.max(1, maxAffordable));
+                  const bulkPrice = getItemPriceCents(state, item.id, bulkQty);
+                  const unlocked = isItemUnlocked(state, item.id);
 
                   return (
-                    <div className="card" key={line.id} data-testid="maison-line-card">
+                    <div className="card" key={item.id}>
                       <div className="card-header">
                         <div>
-                          <h4>{line.name}</h4>
-                          <p>{line.description}</p>
+                          <h3>{item.name}</h3>
+                          <p>{item.description}</p>
                         </div>
-                        <div>{owned ? "Active" : costLabel}</div>
+                        <div>{owned} owned</div>
                       </div>
-                      <p>{effectLabel}</p>
+                      <p>
+                        {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash each · Memories{" "}
+                        {formatMoneyFromCents(item.collectionValueCents)}
+                      </p>
                       <div className="card-actions">
                         <button
                           type="button"
                           className="secondary"
-                          disabled={owned || !canAfford}
-                          onClick={() => handlePurchase(buyMaisonLine(state, line.id))}
+                          disabled={owned <= 0}
+                          onClick={() => {
+                            setWindActiveItemId(item.id);
+                            setWindProgress(0);
+                          }}
                         >
-                          {owned ? "Live" : `Activate (${costLabel})`}
+                          Interact
                         </button>
+                        <button
+                          type="button"
+                          disabled={!canBuyItem(state, item.id, 1) || !unlocked}
+                          onClick={() => handlePurchase(buyItem(state, item.id, 1))}
+                        >
+                          Buy ({formatMoneyFromCents(price)})
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary"
+                          disabled={
+                            bulkQty <= 1 || !canBuyItem(state, item.id, bulkQty) || !unlocked
+                          }
+                          onClick={() => handlePurchase(buyItem(state, item.id, bulkQty))}
+                        >
+                          Buy {bulkQty} ({formatMoneyFromCents(bulkPrice)})
+                        </button>
+                        {!unlocked &&
+                          item.unlockMilestoneId &&
+                          shouldShowUnlockTag(state, item.unlockMilestoneId) && (
+                            <div className="unlock-tag">
+                              Unlocking soon ·{" "}
+                              {getMilestoneRequirementLabel(item.unlockMilestoneId)}
+                            </div>
+                          )}
                       </div>
                     </div>
                   );
                 })}
               </div>
             </div>
-          )}
-          <div id="collection-list" className="card-stack">
-            {watchItems.map((item) => {
-              const owned = state.items[item.id] ?? 0;
-              const price = getItemPriceCents(state, item.id, 1);
-              const maxAffordable = getMaxAffordableItemCount(state, item.id);
-              const bulkQty = Math.min(10, Math.max(1, maxAffordable));
-              const bulkPrice = getItemPriceCents(state, item.id, bulkQty);
-              const unlocked = isItemUnlocked(state, item.id);
 
-              return (
-                <div className="card" key={item.id}>
-                  <div className="card-header">
-                    <div>
-                      <h3>{item.name}</h3>
-                      <p>{item.description}</p>
-                    </div>
-                    <div>{owned} owned</div>
-                  </div>
-                  <p>
-                    {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash each · Sentimental
-                    value {formatMoneyFromCents(item.collectionValueCents)}
-                  </p>
-                  <div className="card-actions">
-                    <button
-                      type="button"
-                      disabled={!canBuyItem(state, item.id, 1) || !unlocked}
-                      onClick={() => handlePurchase(buyItem(state, item.id, 1))}
-                    >
-                      Buy ({formatMoneyFromCents(price)})
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary"
-                      disabled={bulkQty <= 1 || !canBuyItem(state, item.id, bulkQty) || !unlocked}
-                      onClick={() => handlePurchase(buyItem(state, item.id, bulkQty))}
-                    >
-                      Buy {bulkQty} ({formatMoneyFromCents(bulkPrice)})
-                    </button>
-                    {!unlocked &&
-                      item.unlockMilestoneId &&
-                      shouldShowUnlockTag(state, item.unlockMilestoneId) && (
-                        <div className="unlock-tag">
-                          Unlocking soon · {getMilestoneRequirementLabel(item.unlockMilestoneId)}
+            <aside className="side-panel">
+              <div className="panel">
+                <h3>Upgrades</h3>
+                <div id="upgrade-list" className="card-stack">
+                  {upgrades.map((upgrade) => {
+                    const level = state.upgrades[upgrade.id] ?? 0;
+                    const price = getUpgradePriceCents(state, upgrade.id, 1);
+                    const unlocked = isUpgradeUnlocked(state, upgrade.id);
+
+                    return (
+                      <div className="card" key={upgrade.id}>
+                        <div className="card-header">
+                          <div>
+                            <h3>{upgrade.name}</h3>
+                            <p>{upgrade.description}</p>
+                          </div>
+                          <div>Level {level}</div>
                         </div>
-                      )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <aside className="side-panel">
-          {showWorkshopSection && (
-            <section
-              className={`panel workshop-panel ${showWorkshopPanel ? "" : "panel-teaser"}`}
-              data-testid="workshop-panel"
-              id="workshop"
-              aria-labelledby="workshop-title"
-            >
-              {showWorkshopPanel ? (
-                <>
-                  <header className="panel-header">
-                    <div>
-                      <p className="eyebrow">Reset loop</p>
-                      <h3 id="workshop-title">Workshop</h3>
-                      <p className="muted">Trade enjoyment for Blueprints and permanent boosts.</p>
-                    </div>
-                    <div className="results-count" data-testid="workshop-balance">
-                      {state.workshopBlueprints.toLocaleString()} Blueprints
-                    </div>
-                  </header>
-                  <div className="workshop-reset" data-testid="workshop-reset">
-                    <div>
-                      <p className="workshop-label">Reset threshold</p>
-                      <p className="workshop-value">
-                        {getEnjoymentThresholdLabel(getWorkshopPrestigeThresholdCents())}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="workshop-label">Current gain</p>
-                      <p className="workshop-value">+{workshopPrestigeGain} Blueprints</p>
-                    </div>
-                  </div>
-                  <fieldset className="workshop-cta">
-                    <legend className="visually-hidden">Reset vault</legend>
-                    {workshopResetArmed ? (
-                      <div className="workshop-confirm">
-                        <button
-                          type="button"
-                          disabled={!canPrestigeWorkshop}
-                          onClick={() => {
-                            if (!canPrestigeWorkshop) {
-                              return;
-                            }
-                            handlePurchase(prestigeWorkshop(state, workshopPrestigeGain));
-                            setWorkshopResetArmed(false);
-                          }}
-                        >
-                          Confirm reset
-                        </button>
-                        <button
-                          type="button"
-                          className="secondary"
-                          onClick={() => setWorkshopResetArmed(false)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="secondary"
-                        disabled={!canPrestigeWorkshop}
-                        onClick={() => setWorkshopResetArmed(true)}
-                      >
-                        Reset vault
-                      </button>
-                    )}
-                    <p className="muted" aria-live="polite">
-                      {workshopResetArmed
-                        ? "Confirming will reset progress and grant Blueprints."
-                        : canPrestigeWorkshop
-                          ? "Resetting trades your enjoyment for Blueprints and permanent boosts."
-                          : "Requires reaching the enjoyment threshold."}
-                    </p>
-                  </fieldset>
-                  <div className="workshop-upgrades">
-                    <h4>Upgrades</h4>
-                    <div className="card-stack">
-                      {workshopUpgrades.map((upgrade) => {
-                        const owned = state.workshopUpgrades[upgrade.id] ?? false;
-                        const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
-                        const effectLabel = (() => {
-                          if (upgrade.incomeMultiplier) {
-                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
-                          }
-                          if (upgrade.softcapMultiplier) {
-                            return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                          }
-                          if (upgrade.softcapExponentBonus) {
-                            return `Softcap exponent +${upgrade.softcapExponentBonus}`;
-                          }
-                          if (upgrade.unlocks?.autoBuyEnabled) {
-                            return "Unlocks automation";
-                          }
-                          return "Permanent upgrade";
-                        })();
-
-                        return (
-                          <div
-                            className="card workshop-upgrade-card"
-                            key={upgrade.id}
-                            data-testid="workshop-upgrade-card"
+                        <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% cash per level</p>
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            disabled={!canBuyUpgrade(state, upgrade.id, 1) || !unlocked}
+                            onClick={() => handlePurchase(buyUpgrade(state, upgrade.id))}
                           >
-                            <div className="card-header">
-                              <div>
-                                <h3>{upgrade.name}</h3>
-                                <p>{upgrade.description}</p>
+                            Upgrade ({formatMoneyFromCents(price)})
+                          </button>
+                          {!unlocked &&
+                            upgrade.unlockMilestoneId &&
+                            shouldShowUnlockTag(state, upgrade.unlockMilestoneId) && (
+                              <div className="unlock-tag">
+                                Unlocking soon ·{" "}
+                                {getMilestoneRequirementLabel(upgrade.unlockMilestoneId)}
                               </div>
-                              <div>{owned ? "Owned" : `${upgrade.blueprintCost} Blueprints`}</div>
-                            </div>
-                            <p>{effectLabel}</p>
-                            <div className="card-actions">
-                              <button
-                                type="button"
-                                className="secondary"
-                                disabled={owned || !canAfford}
-                                onClick={() =>
-                                  handlePurchase(buyWorkshopUpgrade(state, upgrade.id))
-                                }
-                              >
-                                {owned ? "Installed" : `Buy (${upgrade.blueprintCost} Blueprints)`}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="panel-teaser-content" data-testid="workshop-teaser">
-                  <p className="eyebrow">Reset loop</p>
-                  <h3>Workshop</h3>
-                  <p className="muted">Your vault is close to yielding Blueprints.</p>
-                  <div className="teaser-progress">
-                    <div className="teaser-track">
-                      <div
-                        className="teaser-fill"
-                        style={{ width: `${Math.round(workshopRevealProgress * 100)}%` }}
-                      ></div>
-                    </div>
-                    <span>{Math.round(workshopRevealProgress * 100)}% to first reset</span>
-                  </div>
+                            )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-            </section>
-          )}
-          {showMaisonSection && (
-            <section
-              className={`panel maison-panel ${showMaisonPanel ? "" : "panel-teaser"}`}
-              data-testid="maison-panel"
-              id="maison"
-              aria-labelledby="maison-title"
-            >
-              {showMaisonPanel ? (
-                <>
-                  <header className="panel-header">
-                    <div>
-                      <p className="eyebrow">Meta progression</p>
-                      <h3 id="maison-title">Maison</h3>
-                      <p className="muted">
-                        Prestige the workshop to earn Heritage and strengthen long-term enjoyment.
-                      </p>
-                    </div>
-                    <div className="results-count" data-testid="maison-balance">
-                      {state.maisonHeritage.toLocaleString()} Heritage ·{" "}
-                      {state.maisonReputation.toLocaleString()} Reputation
-                    </div>
-                  </header>
-                  <div className="workshop-reset maison-reset" data-testid="maison-reset">
-                    <div>
-                      <p className="workshop-label">Reset threshold</p>
-                      <p className="workshop-value">
-                        {getEnjoymentThresholdLabel(getMaisonPrestigeThresholdCents())}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="workshop-label">Current gain</p>
-                      <p className="workshop-value">+{maisonPrestigeGain} Heritage</p>
-                    </div>
-                    <div>
-                      <p className="workshop-label">Legacy credit</p>
-                      <p className="workshop-value">+{maisonReputationGain} Reputation</p>
-                    </div>
-                  </div>
-                  <p className="muted maison-reset-detail">
-                    Resets Collection + Workshop progress. Maison lines remain active.
-                  </p>
-                  <fieldset className="workshop-cta">
-                    <legend className="visually-hidden">Reset workshop</legend>
-                    {maisonResetArmed ? (
-                      <div className="workshop-confirm">
-                        <button
-                          type="button"
-                          disabled={!canPrestigeMaison}
-                          onClick={() => {
-                            if (!canPrestigeMaison) {
-                              return;
-                            }
-                            handlePurchase(prestigeMaison(state));
-                            setMaisonResetArmed(false);
-                          }}
-                        >
-                          Confirm prestige
-                        </button>
-                        <button
-                          type="button"
-                          className="secondary"
-                          onClick={() => setMaisonResetArmed(false)}
-                        >
-                          Cancel
-                        </button>
+              </div>
+              <div className="panel">
+                <h3>Milestones</h3>
+                <div id="milestone-list" className="card-stack">
+                  {milestones.map((milestone) => {
+                    const unlocked = state.unlockedMilestones.includes(milestone.id);
+                    return (
+                      <div className="card" key={milestone.id}>
+                        <h3>{milestone.name}</h3>
+                        <p>{milestone.description}</p>
+                        <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
+                        <p>{unlocked ? "Unlocked" : "Locked"}</p>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="secondary"
-                        disabled={!canPrestigeMaison}
-                        onClick={() => setMaisonResetArmed(true)}
-                      >
-                        Prestige workshop
-                      </button>
-                    )}
-                    <p className="muted" aria-live="polite">
-                      {maisonResetArmed
-                        ? "Confirming resets Collection + Workshop and grants Heritage & Reputation."
-                        : canPrestigeMaison
-                          ? "Prestiging converts your enjoyment engine into Maison legacy."
-                          : "Requires reaching the enjoyment threshold."}
-                    </p>
-                  </fieldset>
-                  <div className="workshop-upgrades">
-                    <h4>Maison upgrades</h4>
-                    <div className="card-stack">
-                      {maisonUpgrades.map((upgrade) => {
-                        const owned = state.maisonUpgrades[upgrade.id] ?? false;
-                        const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
-                        const costLabel =
-                          upgrade.currency === "heritage"
-                            ? `${upgrade.cost} Heritage`
-                            : `${upgrade.cost} Reputation`;
-                        const effectLabel = (() => {
-                          if (upgrade.incomeMultiplier) {
-                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
-                          }
-                          if (upgrade.collectionBonusMultiplier) {
-                            return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                          }
-                          if (upgrade.softcapMultiplier) {
-                            return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                          }
-                          return "Permanent upgrade";
-                        })();
-
-                        return (
-                          <div
-                            className="card workshop-upgrade-card"
-                            key={upgrade.id}
-                            data-testid="maison-upgrade-card"
-                          >
-                            <div className="card-header">
-                              <div>
-                                <h3>{upgrade.name}</h3>
-                                <p>{upgrade.description}</p>
-                              </div>
-                              <div>{owned ? "Owned" : costLabel}</div>
-                            </div>
-                            <p>{effectLabel}</p>
-                            <div className="card-actions">
-                              <button
-                                type="button"
-                                className="secondary"
-                                disabled={owned || !canAfford}
-                                onClick={() => handlePurchase(buyMaisonUpgrade(state, upgrade.id))}
-                              >
-                                {owned ? "Installed" : `Buy (${costLabel})`}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="panel-teaser-content" data-testid="maison-teaser">
-                  <p className="eyebrow">Meta progression</p>
-                  <h3>Maison</h3>
-                  <p className="muted">Your maison is almost ready for legacy prestige.</p>
-                  <div className="teaser-progress">
-                    <div className="teaser-track">
-                      <div
-                        className="teaser-fill"
-                        style={{ width: `${Math.round(maisonRevealProgress * 100)}%` }}
-                      ></div>
-                    </div>
-                    <span>{Math.round(maisonRevealProgress * 100)}% to Maison reset</span>
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
-            </section>
-          )}
-          <div className="panel">
-            <h3>Upgrades</h3>
-            <div id="upgrade-list" className="card-stack">
-              {upgrades.map((upgrade) => {
-                const level = state.upgrades[upgrade.id] ?? 0;
-                const price = getUpgradePriceCents(state, upgrade.id, 1);
-                const unlocked = isUpgradeUnlocked(state, upgrade.id);
-
-                return (
-                  <div className="card" key={upgrade.id}>
-                    <div className="card-header">
-                      <div>
-                        <h3>{upgrade.name}</h3>
-                        <p>{upgrade.description}</p>
+              </div>
+              <div className="panel">
+                <h3>Achievements</h3>
+                <p className="muted">Permanent proof of your vault milestones.</p>
+                <div className="card-stack">
+                  {achievements.map((achievement) => {
+                    const unlocked = state.achievementUnlocks.includes(achievement.id);
+                    return (
+                      <div className="card" key={achievement.id}>
+                        <h3>{achievement.name}</h3>
+                        <p>{achievement.description}</p>
+                        <p className="muted" aria-live="polite">
+                          {unlocked ? "Unlocked" : "Locked"}
+                        </p>
                       </div>
-                      <div>Level {level}</div>
-                    </div>
-                    <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% cash per level</p>
-                    <div className="card-actions">
-                      <button
-                        type="button"
-                        disabled={!canBuyUpgrade(state, upgrade.id, 1) || !unlocked}
-                        onClick={() => handlePurchase(buyUpgrade(state, upgrade.id))}
-                      >
-                        Upgrade ({formatMoneyFromCents(price)})
-                      </button>
-                      {!unlocked &&
-                        upgrade.unlockMilestoneId &&
-                        shouldShowUnlockTag(state, upgrade.unlockMilestoneId) && (
-                          <div className="unlock-tag">
-                            Unlocking soon ·{" "}
-                            {getMilestoneRequirementLabel(upgrade.unlockMilestoneId)}
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="panel">
+                <h3>Events</h3>
+                <p className="muted">
+                  Live boosts cycle in and out. Current multiplier x
+                  {currentEventMultiplier.toFixed(2)}.
+                </p>
+                <div className="card-stack">
+                  {events.map((event) => {
+                    const active = isEventActive(state, event.id, nowMs);
+                    const statusLabel = getEventStatusLabel(state, event.id, nowMs);
+                    return (
+                      <div className="card" key={event.id}>
+                        <div className="card-header">
+                          <div>
+                            <h3>{event.name}</h3>
+                            <p>{event.description}</p>
                           </div>
-                        )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className="panel">
-            <h3>Milestones</h3>
-            <div id="milestone-list" className="card-stack">
-              {milestones.map((milestone) => {
-                const unlocked = state.unlockedMilestones.includes(milestone.id);
-                return (
-                  <div className="card" key={milestone.id}>
-                    <h3>{milestone.name}</h3>
-                    <p>{milestone.description}</p>
-                    <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
-                    <p>{unlocked ? "Unlocked" : "Locked"}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className="panel">
-            <h3>Achievements</h3>
-            <p className="muted">Permanent proof of your vault milestones.</p>
-            <div className="card-stack">
-              {achievements.map((achievement) => {
-                const unlocked = state.achievementUnlocks.includes(achievement.id);
-                return (
-                  <div className="card" key={achievement.id}>
-                    <h3>{achievement.name}</h3>
-                    <p>{achievement.description}</p>
-                    <p className="muted" aria-live="polite">
-                      {unlocked ? "Unlocked" : "Locked"}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className="panel">
-            <h3>Events</h3>
-            <p className="muted">
-              Live boosts cycle in and out. Current multiplier x{currentEventMultiplier.toFixed(2)}.
-            </p>
-            <div className="card-stack">
-              {events.map((event) => {
-                const active = isEventActive(state, event.id, nowMs);
-                const statusLabel = getEventStatusLabel(state, event.id, nowMs);
-                return (
-                  <div className="card" key={event.id}>
-                    <div className="card-header">
-                      <div>
-                        <h3>{event.name}</h3>
-                        <p>{event.description}</p>
+                          <div>{active ? "Live" : "Idle"}</div>
+                        </div>
+                        <p>Income x{event.incomeMultiplier.toFixed(2)}</p>
+                        <p className="muted" aria-live="polite">
+                          {statusLabel}
+                        </p>
                       </div>
-                      <div>{active ? "Live" : "Idle"}</div>
-                    </div>
-                    <p>Income x{event.incomeMultiplier.toFixed(2)}</p>
-                    <p className="muted" aria-live="polite">
-                      {statusLabel}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className="panel">
-            <h3>Set bonuses</h3>
-            <div id="set-bonus-list" className="card-stack">
-              {setBonuses.map((bonus) => {
-                const active = activeBonuses.some((entry) => entry.id === bonus.id);
-                return (
-                  <div className="card" key={bonus.id}>
-                    <h3>{bonus.name}</h3>
-                    <p>{bonus.description}</p>
-                    <p className="muted">
-                      {active
-                        ? `Active (+${Math.round((bonus.incomeMultiplier - 1) * 100)}%)`
-                        : "Inactive"}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </aside>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="panel">
+                <h3>Set bonuses</h3>
+                <div id="set-bonus-list" className="card-stack">
+                  {setBonuses.map((bonus) => {
+                    const active = activeBonuses.some((entry) => entry.id === bonus.id);
+                    return (
+                      <div className="card" key={bonus.id}>
+                        <h3>{bonus.name}</h3>
+                        <p>{bonus.description}</p>
+                        <p className="muted">
+                          {active
+                            ? `Active (+${Math.round((bonus.incomeMultiplier - 1) * 100)}%)`
+                            : "Inactive"}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </aside>
+          </>
+        )}
       </section>
 
-      <section className="panel catalog-panel" id="catalog">
-        <header className="panel-header">
-          <div>
-            <p className="eyebrow">Archive</p>
-            <h2>Catalog</h2>
-            <p className="muted">Explore reference pieces and track licensing sources.</p>
-          </div>
-          <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-            {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
-          </div>
-        </header>
-        <search className="catalog-filters" data-testid="catalog-filters">
-          <div className="filter-field">
-            <label htmlFor="catalog-search">Search</label>
-            <input
-              id="catalog-search"
-              data-testid="catalog-search"
-              type="search"
-              placeholder="Search by model, year, tags"
-              value={catalogSearch}
-              onChange={(event) => setCatalogSearch(event.target.value)}
-            />
-          </div>
-          <div className="filter-field">
-            <label htmlFor="catalog-brand">Brand</label>
-            <select
-              id="catalog-brand"
-              data-testid="catalog-brand"
-              value={catalogBrand}
-              onChange={(event) => setCatalogBrand(event.target.value)}
-            >
-              {catalogBrands.map((brand) => (
-                <option key={brand} value={brand}>
-                  {brand}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="filter-field">
-            <label htmlFor="catalog-owned">View</label>
-            <select
-              id="catalog-owned"
-              data-testid="catalog-owned"
-              value={showDiscoveredOnly ? "discovered" : "all"}
-              onChange={(event) => setShowDiscoveredOnly(event.target.value === "discovered")}
-            >
-              <option value="discovered">Discovered only</option>
-              <option value="all">All references</option>
-            </select>
-          </div>
-        </search>
-        <div className="catalog-grid" data-testid="catalog-grid">
-          {filteredCatalogEntries.map((entry) => {
-            const discovered = discoveredCatalogIds.includes(entry.id);
-            const tags = getCatalogEntryTags(entry);
-            return (
-              <article
-                key={entry.id}
-                className={`catalog-card ${discovered ? "catalog-discovered" : "catalog-locked"}`}
-                data-testid="catalog-card"
+      <section
+        id="workshop"
+        role="tabpanel"
+        aria-labelledby="workshop-tab"
+        hidden={activeTab !== "workshop"}
+      >
+        {activeTab === "workshop" && (
+          <>
+            {showWorkshopSection && (
+              <section
+                className={`panel workshop-panel ${showWorkshopPanel ? "" : "panel-teaser"}`}
+                data-testid="workshop-panel"
+                aria-labelledby="workshop-title"
               >
-                <div className="catalog-media">
-                  <img
-                    src={getCatalogImageUrl(entry)}
-                    alt={`${entry.brand} ${entry.model}`}
-                    loading="lazy"
-                    onError={(event) => {
-                      const target = event.currentTarget;
-                      const placeholder =
-                        "data:image/svg+xml;utf8," +
-                        encodeURIComponent(
-                          `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                            `<rect width='100%' height='100%' fill='#131720'/>` +
-                            `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                            `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                            `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                            `</svg>`,
-                        );
-
-                      if (target.dataset.fallback !== "true") {
-                        target.dataset.fallback = "true";
-                        target.src = placeholder;
-                      }
-                    }}
-                  />
-                  {!discovered && <span className="catalog-badge">Undiscovered</span>}
-                </div>
-                <div className="catalog-content">
-                  <div className="catalog-title">
-                    <div>
-                      <p className="catalog-brand">{entry.brand}</p>
-                      <h3>{entry.model}</h3>
+                {showWorkshopPanel ? (
+                  <>
+                    <header className="panel-header">
+                      <div>
+                        <p className="eyebrow">Reset loop</p>
+                        <h3 id="workshop-title">Atelier</h3>
+                        <p className="muted">
+                          Trade enjoyment for Blueprints and permanent boosts.
+                        </p>
+                      </div>
+                      <div className="results-count" data-testid="workshop-balance">
+                        {state.workshopBlueprints.toLocaleString()} Blueprints
+                      </div>
+                    </header>
+                    <div className="workshop-reset" data-testid="workshop-reset">
+                      <div>
+                        <p className="workshop-label">Reset threshold</p>
+                        <p className="workshop-value">
+                          {getEnjoymentThresholdLabel(getWorkshopPrestigeThresholdCents())}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="workshop-label">Current gain</p>
+                        <p className="workshop-value">+{workshopPrestigeGain} Blueprints</p>
+                      </div>
                     </div>
-                    <p className="catalog-year">{entry.year}</p>
-                  </div>
-                  <p>{entry.description}</p>
-                  <p className="catalog-tags">{tags.join(" · ")}</p>
-                  <p className="catalog-attribution">{entry.image.attribution}</p>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
+                    <fieldset className="workshop-cta">
+                      <legend className="visually-hidden">Reset atelier</legend>
+                      {workshopResetArmed ? (
+                        <div className="workshop-confirm">
+                          <button
+                            type="button"
+                            disabled={!canPrestigeWorkshop}
+                            onClick={() => {
+                              if (!canPrestigeWorkshop) {
+                                return;
+                              }
+                              handlePurchase(prestigeWorkshop(state, workshopPrestigeGain));
+                              setWorkshopResetArmed(false);
+                            }}
+                          >
+                            Confirm reset
+                          </button>
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={() => setWorkshopResetArmed(false)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="secondary"
+                          disabled={!canPrestigeWorkshop}
+                          onClick={() => setWorkshopResetArmed(true)}
+                        >
+                          Reset atelier
+                        </button>
+                      )}
+                      <p className="muted" aria-live="polite">
+                        {workshopResetArmed
+                          ? "Confirming will reset progress and grant Blueprints."
+                          : canPrestigeWorkshop
+                            ? "Resetting trades your enjoyment for Blueprints and permanent boosts."
+                            : "Requires reaching the enjoyment threshold."}
+                      </p>
+                    </fieldset>
+                    <div className="workshop-upgrades">
+                      <h4>Upgrades</h4>
+                      <div className="card-stack">
+                        {workshopUpgrades.map((upgrade) => {
+                          const owned = state.workshopUpgrades[upgrade.id] ?? false;
+                          const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
+                          const effectLabel = (() => {
+                            if (upgrade.incomeMultiplier) {
+                              return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                            }
+                            if (upgrade.softcapMultiplier) {
+                              return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
+                            }
+                            if (upgrade.softcapExponentBonus) {
+                              return `Softcap exponent +${upgrade.softcapExponentBonus}`;
+                            }
+                            if (upgrade.unlocks?.autoBuyEnabled) {
+                              return "Unlocks automation";
+                            }
+                            return "Permanent upgrade";
+                          })();
 
-      <section className="panel catalog-sources" data-testid="catalog-sources">
-        <h2>Sources &amp; Licenses</h2>
-        <p className="muted">
-          Every image in the archive lists its original source and license for compliance.
-        </p>
-        <ul className="sources-list" data-testid="sources-list">
-          {catalogEntries.map((entry) => (
-            <li key={entry.id} data-testid="source-item">
-              <div className="source-title">
-                <strong>{entry.brand}</strong> · {entry.model}
-              </div>
-              <div className="source-links" data-testid="source-links">
-                <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
-                  Source
-                </a>
-                {entry.image.licenseUrl ? (
-                  <a href={entry.image.licenseUrl} target="_blank" rel="noreferrer">
-                    {entry.image.licenseName}
-                  </a>
+                          return (
+                            <div
+                              className="card workshop-upgrade-card"
+                              key={upgrade.id}
+                              data-testid="workshop-upgrade-card"
+                            >
+                              <div className="card-header">
+                                <div>
+                                  <h3>{upgrade.name}</h3>
+                                  <p>{upgrade.description}</p>
+                                </div>
+                                <div>{owned ? "Owned" : `${upgrade.blueprintCost} Blueprints`}</div>
+                              </div>
+                              <p>{effectLabel}</p>
+                              <div className="card-actions">
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  disabled={owned || !canAfford}
+                                  onClick={() =>
+                                    handlePurchase(buyWorkshopUpgrade(state, upgrade.id))
+                                  }
+                                >
+                                  {owned
+                                    ? "Installed"
+                                    : `Buy (${upgrade.blueprintCost} Blueprints)`}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
                 ) : (
-                  <span>{entry.image.licenseName}</span>
+                  <div className="panel-teaser-content" data-testid="workshop-teaser">
+                    <p className="eyebrow">Reset loop</p>
+                    <h3>Atelier</h3>
+                    <p className="muted">Your vault is close to yielding Blueprints.</p>
+                    <div className="teaser-progress">
+                      <div className="teaser-track">
+                        <div
+                          className="teaser-fill"
+                          style={{ width: `${Math.round(workshopRevealProgress * 100)}%` }}
+                        ></div>
+                      </div>
+                      <span>{Math.round(workshopRevealProgress * 100)}% to first reset</span>
+                    </div>
+                  </div>
                 )}
-              </div>
-            </li>
-          ))}
-        </ul>
+              </section>
+            )}
+          </>
+        )}
       </section>
 
-      <section className="panel" id="save">
-        <h2>Save</h2>
-        <div className="controls">
-          <button type="button" onClick={handleExport}>
-            Export
-          </button>
-        </div>
+      <section
+        id="maison"
+        role="tabpanel"
+        aria-labelledby="maison-tab"
+        hidden={activeTab !== "maison"}
+      >
+        {activeTab === "maison" && (
+          <>
+            {showMaisonSection && (
+              <section
+                className={`panel maison-panel ${showMaisonPanel ? "" : "panel-teaser"}`}
+                data-testid="maison-panel"
+                aria-labelledby="maison-title"
+              >
+                {showMaisonPanel ? (
+                  <>
+                    <header className="panel-header">
+                      <div>
+                        <p className="eyebrow">Meta progression</p>
+                        <h3 id="maison-title">Maison</h3>
+                        <p className="muted">
+                          Prestige the atelier to earn Heritage and strengthen long-term enjoyment.
+                        </p>
+                      </div>
+                      <div className="results-count" data-testid="maison-balance">
+                        {state.maisonHeritage.toLocaleString()} Heritage ·{" "}
+                        {state.maisonReputation.toLocaleString()} Reputation
+                      </div>
+                    </header>
+                    <div className="workshop-reset maison-reset" data-testid="maison-reset">
+                      <div>
+                        <p className="workshop-label">Reset threshold</p>
+                        <p className="workshop-value">
+                          {getEnjoymentThresholdLabel(getMaisonPrestigeThresholdCents())}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="workshop-label">Current gain</p>
+                        <p className="workshop-value">+{maisonPrestigeGain} Heritage</p>
+                      </div>
+                      <div>
+                        <p className="workshop-label">Legacy credit</p>
+                        <p className="workshop-value">+{maisonReputationGain} Reputation</p>
+                      </div>
+                    </div>
+                    <p className="muted maison-reset-detail">
+                      Resets Collection + Atelier progress. Maison lines remain active.
+                    </p>
+                    <fieldset className="workshop-cta">
+                      <legend className="visually-hidden">Reset atelier</legend>
+                      {maisonResetArmed ? (
+                        <div className="workshop-confirm">
+                          <button
+                            type="button"
+                            disabled={!canPrestigeMaison}
+                            onClick={() => {
+                              if (!canPrestigeMaison) {
+                                return;
+                              }
+                              handlePurchase(prestigeMaison(state));
+                              setMaisonResetArmed(false);
+                            }}
+                          >
+                            Confirm prestige
+                          </button>
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={() => setMaisonResetArmed(false)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="secondary"
+                          disabled={!canPrestigeMaison}
+                          onClick={() => setMaisonResetArmed(true)}
+                        >
+                          Prestige atelier
+                        </button>
+                      )}
+                      <p className="muted" aria-live="polite">
+                        {maisonResetArmed
+                          ? "Confirming resets Collection + Atelier and grants Heritage & Reputation."
+                          : canPrestigeMaison
+                            ? "Prestiging converts your enjoyment engine into Maison legacy."
+                            : "Requires reaching the enjoyment threshold."}
+                      </p>
+                    </fieldset>
+                    <div className="workshop-upgrades">
+                      <h4>Maison upgrades</h4>
+                      <div className="card-stack">
+                        {maisonUpgrades.map((upgrade) => {
+                          const owned = state.maisonUpgrades[upgrade.id] ?? false;
+                          const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
+                          const costLabel =
+                            upgrade.currency === "heritage"
+                              ? `${upgrade.cost} Heritage`
+                              : `${upgrade.cost} Reputation`;
+                          const effectLabel = (() => {
+                            if (upgrade.incomeMultiplier) {
+                              return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                            }
+                            if (upgrade.collectionBonusMultiplier) {
+                              return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+                            }
+                            if (upgrade.softcapMultiplier) {
+                              return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
+                            }
+                            return "Permanent upgrade";
+                          })();
 
-        <div className="controls">
-          <label htmlFor="import-save-text">Import data</label>
-          <textarea
-            id="import-save-text"
-            rows={3}
-            placeholder="Paste exported data here"
-            aria-describedby="save-status"
-            value={importText}
-            onChange={(event) => setImportText(event.target.value)}
-          ></textarea>
-          <button type="button" onClick={handleImport}>
-            Import
-          </button>
-        </div>
+                          return (
+                            <div
+                              className="card workshop-upgrade-card"
+                              key={upgrade.id}
+                              data-testid="maison-upgrade-card"
+                            >
+                              <div className="card-header">
+                                <div>
+                                  <h3>{upgrade.name}</h3>
+                                  <p>{upgrade.description}</p>
+                                </div>
+                                <div>{owned ? "Owned" : costLabel}</div>
+                              </div>
+                              <p>{effectLabel}</p>
+                              <div className="card-actions">
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  disabled={owned || !canAfford}
+                                  onClick={() =>
+                                    handlePurchase(buyMaisonUpgrade(state, upgrade.id))
+                                  }
+                                >
+                                  {owned ? "Installed" : `Buy (${costLabel})`}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="panel-teaser-content" data-testid="maison-teaser">
+                    <p className="eyebrow">Meta progression</p>
+                    <h3>Maison</h3>
+                    <p className="muted">Your maison is almost ready for legacy prestige.</p>
+                    <div className="teaser-progress">
+                      <div className="teaser-track">
+                        <div
+                          className="teaser-fill"
+                          style={{ width: `${Math.round(maisonRevealProgress * 100)}%` }}
+                        ></div>
+                      </div>
+                      <span>{Math.round(maisonRevealProgress * 100)}% to Maison reset</span>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+          </>
+        )}
+      </section>
 
-        <p id="save-status" role="status" aria-live="polite">
-          {saveStatus}
-        </p>
+      <section
+        className="panel catalog-panel"
+        id="catalog"
+        role="tabpanel"
+        aria-labelledby="catalog-tab"
+        hidden={activeTab !== "catalog"}
+      >
+        {activeTab === "catalog" && (
+          <>
+            <header className="panel-header">
+              <div>
+                <p className="eyebrow">Archive</p>
+                <h2>Catalog</h2>
+                <p className="muted">Explore reference pieces and track licensing sources.</p>
+              </div>
+              <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
+                {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length}{" "}
+                discovered
+              </div>
+            </header>
+            <search className="catalog-filters" data-testid="catalog-filters">
+              <div className="filter-field">
+                <label htmlFor="catalog-search">Search</label>
+                <input
+                  id="catalog-search"
+                  data-testid="catalog-search"
+                  type="search"
+                  placeholder="Search by model, year, tags"
+                  value={catalogSearch}
+                  onChange={(event) => setCatalogSearch(event.target.value)}
+                />
+              </div>
+              <div className="filter-field">
+                <label htmlFor="catalog-brand">Brand</label>
+                <select
+                  id="catalog-brand"
+                  data-testid="catalog-brand"
+                  value={catalogBrand}
+                  onChange={(event) => setCatalogBrand(event.target.value)}
+                >
+                  {catalogBrands.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="filter-field">
+                <label htmlFor="catalog-style">Style</label>
+                <select
+                  id="catalog-style"
+                  data-testid="catalog-style"
+                  value={catalogStyle}
+                  onChange={(event) => setCatalogStyle(event.target.value as typeof catalogStyle)}
+                >
+                  <option value="all">All</option>
+                  <option value="womens">Womens</option>
+                </select>
+              </div>
+              <div className="filter-field">
+                <label htmlFor="catalog-sort">Sort</label>
+                <select
+                  id="catalog-sort"
+                  data-testid="catalog-sort"
+                  value={catalogSort}
+                  onChange={(event) => setCatalogSort(event.target.value as typeof catalogSort)}
+                >
+                  <option value="default">Default</option>
+                  <option value="brand">Brand (A→Z)</option>
+                  <option value="year">Year (newest→oldest)</option>
+                  <option value="tier">Tier (starter→tourbillon)</option>
+                </select>
+              </div>
+              <div className="filter-field">
+                <label htmlFor="catalog-era">Era</label>
+                <select
+                  id="catalog-era"
+                  data-testid="catalog-era"
+                  value={catalogEra}
+                  onChange={(event) => setCatalogEra(event.target.value as typeof catalogEra)}
+                >
+                  <option value="all">All</option>
+                  <option value="pre-1970">Pre-1970</option>
+                  <option value="1970-1999">1970-1999</option>
+                  <option value="2000+">2000+</option>
+                  <option value="unknown">Unknown</option>
+                </select>
+              </div>
+              <div className="filter-field">
+                <label htmlFor="catalog-type">Type</label>
+                <select
+                  id="catalog-type"
+                  data-testid="catalog-type"
+                  value={catalogType}
+                  onChange={(event) => setCatalogType(event.target.value as typeof catalogType)}
+                >
+                  <option value="all">All</option>
+                  <option value="gmt">GMT</option>
+                  <option value="chronograph">Chronograph</option>
+                  <option value="dress">Dress</option>
+                  <option value="diver">Diver</option>
+                </select>
+              </div>
+              <div className="filter-field" data-testid="catalog-owned-tabs">
+                <span className="filter-label">View</span>
+                <div className="catalog-tablist" role="tablist" aria-label="Catalog ownership">
+                  {(
+                    [
+                      { id: "unowned", label: "Unowned" },
+                      { id: "owned", label: "Owned" },
+                    ] as const
+                  ).map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      className={`catalog-tab ${catalogTab === tab.id ? "catalog-tab-active" : ""}`}
+                      aria-selected={catalogTab === tab.id}
+                      aria-controls={`catalog-${tab.id}`}
+                      id={`catalog-${tab.id}-tab`}
+                      tabIndex={catalogTab === tab.id ? 0 : -1}
+                      onClick={() => setCatalogTab(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </search>
+            <section
+              id="catalog-unowned"
+              role="tabpanel"
+              aria-labelledby="catalog-unowned-tab"
+              hidden={catalogTab !== "unowned"}
+            >
+              {catalogTab === "unowned" && (
+                <div className="catalog-grid" data-testid="catalog-grid">
+                  {filteredCatalogEntries.map((entry) => {
+                    const discovered = discoveredCatalogIds.includes(entry.id);
+                    const tags = getCatalogEntryTags(entry);
+                    return (
+                      <article
+                        key={entry.id}
+                        className={`catalog-card ${discovered ? "catalog-discovered" : "catalog-locked"}`}
+                        data-testid="catalog-card"
+                      >
+                        <div className="catalog-media">
+                          <img
+                            src={getCatalogImageUrl(entry)}
+                            alt={`${entry.brand} ${entry.model}`}
+                            loading="lazy"
+                            onError={(event) => {
+                              const target = event.currentTarget;
+                              const placeholder =
+                                "data:image/svg+xml;utf8," +
+                                encodeURIComponent(
+                                  `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
+                                    `<rect width='100%' height='100%' fill='#131720'/>` +
+                                    `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
+                                    `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
+                                    `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
+                                    `</svg>`,
+                                );
+
+                              if (target.dataset.fallback !== "true") {
+                                target.dataset.fallback = "true";
+                                target.src = placeholder;
+                              }
+                            }}
+                          />
+                          {!discovered && <span className="catalog-badge">Undiscovered</span>}
+                        </div>
+                        <div className="catalog-content">
+                          <div className="catalog-title">
+                            <div>
+                              <p className="catalog-brand">{entry.brand}</p>
+                              <h3>{entry.model}</h3>
+                            </div>
+                            <p className="catalog-year">{entry.year}</p>
+                          </div>
+                          <p>{entry.description}</p>
+                          {entry.facts && entry.facts.length > 0 && (
+                            <details className="catalog-facts" data-testid="catalog-facts">
+                              <summary>Facts</summary>
+                              <ul>
+                                {entry.facts.map((fact) => (
+                                  <li key={fact}>{fact}</li>
+                                ))}
+                              </ul>
+                            </details>
+                          )}
+                          <p className="catalog-tags">{tags.join(" · ")}</p>
+                          <p className="catalog-attribution">{entry.image.attribution}</p>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+            <section
+              id="catalog-owned"
+              role="tabpanel"
+              aria-labelledby="catalog-owned-tab"
+              hidden={catalogTab !== "owned"}
+            >
+              {catalogTab === "owned" && (
+                <>
+                  {!hasOwnedCatalogTiers ? (
+                    <p className="catalog-empty" data-testid="catalog-owned-empty">
+                      No owned tiers yet—add pieces to your vault to start the archive.
+                    </p>
+                  ) : (
+                    <div className="catalog-grid" data-testid="catalog-grid">
+                      {filteredCatalogEntries.map((entry) => {
+                        const discovered = discoveredCatalogIds.includes(entry.id);
+                        const tags = getCatalogEntryTags(entry);
+                        return (
+                          <article
+                            key={entry.id}
+                            className={`catalog-card ${discovered ? "catalog-discovered" : "catalog-locked"}`}
+                            data-testid="catalog-card"
+                          >
+                            <div className="catalog-media">
+                              <img
+                                src={getCatalogImageUrl(entry)}
+                                alt={`${entry.brand} ${entry.model}`}
+                                loading="lazy"
+                                onError={(event) => {
+                                  const target = event.currentTarget;
+                                  const placeholder =
+                                    "data:image/svg+xml;utf8," +
+                                    encodeURIComponent(
+                                      `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
+                                        `<rect width='100%' height='100%' fill='#131720'/>` +
+                                        `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
+                                        `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
+                                        `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
+                                        `</svg>`,
+                                    );
+
+                                  if (target.dataset.fallback !== "true") {
+                                    target.dataset.fallback = "true";
+                                    target.src = placeholder;
+                                  }
+                                }}
+                              />
+                              {!discovered && <span className="catalog-badge">Undiscovered</span>}
+                            </div>
+                            <div className="catalog-content">
+                              <div className="catalog-title">
+                                <div>
+                                  <p className="catalog-brand">{entry.brand}</p>
+                                  <h3>{entry.model}</h3>
+                                </div>
+                                <p className="catalog-year">{entry.year}</p>
+                              </div>
+                              <p>{entry.description}</p>
+                              {entry.facts && entry.facts.length > 0 && (
+                                <details className="catalog-facts" data-testid="catalog-facts">
+                                  <summary>Facts</summary>
+                                  <ul>
+                                    {entry.facts.map((fact) => (
+                                      <li key={fact}>{fact}</li>
+                                    ))}
+                                  </ul>
+                                </details>
+                              )}
+                              <p className="catalog-tags">{tags.join(" · ")}</p>
+                              <p className="catalog-attribution">{entry.image.attribution}</p>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+            <section className="panel catalog-sources" data-testid="catalog-sources">
+              <h2>Sources &amp; Licenses</h2>
+              <p className="muted">
+                Every image in the archive lists its original source and license for compliance.
+              </p>
+
+              <ul className="sources-list" data-testid="sources-list">
+                {catalogEntries.map((entry) => (
+                  <li key={entry.id} data-testid="source-item">
+                    <strong className="source-title">
+                      {entry.brand} {entry.model}
+                    </strong>
+                    <span className="muted">{entry.image.attribution}</span>
+                    <div className="source-links" data-testid="source-links">
+                      <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
+                        Source
+                      </a>
+                      {entry.image.licenseUrl ? (
+                        <a href={entry.image.licenseUrl} target="_blank" rel="noreferrer">
+                          {entry.image.licenseName}
+                        </a>
+                      ) : (
+                        <span>{entry.image.licenseName}</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="panel catalog-dealers" data-testid="catalog-dealers">
+                <h3>Trusted dealers (external)</h3>
+                <p className="muted">
+                  Dealer names are provided for reference only; no affiliation or endorsement is
+                  implied.
+                </p>
+                <ul className="card-stack" data-testid="dealer-list">
+                  {["Hodinkee", "Crown & Caliber", "WatchBox", "Bob's Watches", "Tourneau"].map(
+                    (dealer) => (
+                      <li key={dealer}>{dealer}</li>
+                    ),
+                  )}
+                </ul>
+              </div>
+            </section>
+          </>
+        )}
+      </section>
+
+      <section
+        id="stats"
+        role="tabpanel"
+        aria-labelledby="stats-tab"
+        hidden={activeTab !== "stats"}
+      >
+        {activeTab === "stats" && (
+          <div className="panel">
+            <h2>Stats</h2>
+            <p className="muted">Derived metrics from your current state.</p>
+            <dl className="stats-grid" data-testid="stats-metrics">
+              <div>
+                <dt>Vault cash</dt>
+                <dd data-testid="stats-cash">{stats.cash}</dd>
+              </div>
+              <div>
+                <dt>Cash / sec</dt>
+                <dd data-testid="stats-cash-rate">{stats.cashRate}</dd>
+              </div>
+              <div>
+                <dt>Enjoyment</dt>
+                <dd data-testid="stats-enjoyment">{stats.enjoyment}</dd>
+              </div>
+              <div>
+                <dt>Enjoyment / sec</dt>
+                <dd data-testid="stats-enjoyment-rate">{stats.enjoymentRate}</dd>
+              </div>
+              <div>
+                <dt>Memories</dt>
+                <dd data-testid="stats-memories">{stats.sentimentalValue}</dd>
+              </div>
+              <div>
+                <dt>Atelier resets</dt>
+                <dd data-testid="stats-workshop-prestige">{state.workshopPrestigeCount}</dd>
+              </div>
+              <div>
+                <dt>Maison heritage</dt>
+                <dd data-testid="stats-maison-heritage">{state.maisonHeritage}</dd>
+              </div>
+              <div>
+                <dt>Maison reputation</dt>
+                <dd data-testid="stats-maison-reputation">{state.maisonReputation}</dd>
+              </div>
+              <div>
+                <dt>Event multiplier</dt>
+                <dd data-testid="stats-event-multiplier">x{currentEventMultiplier.toFixed(2)}</dd>
+              </div>
+            </dl>
+
+            <section className="panel stats-journal" data-testid="stats-journal">
+              <h3>Journal</h3>
+              <div className="card-stack" data-testid="lore-chapters">
+                {(
+                  [
+                    {
+                      id: "collector-shelf",
+                      title: "First arrivals",
+                      text: "The first pieces find their way into the vault, still warm from wrists and stories. You learn their rhythms, their quirks, and the quiet pull of the next addition.",
+                    },
+                    {
+                      id: "showcase",
+                      title: "The cabinet grows",
+                      text: "The vault starts to feel curated instead of accidental. A pattern emerges: what you seek, what you keep, and what you let go as the collection takes shape.",
+                    },
+                    {
+                      id: "atelier",
+                      title: "Atelier nights",
+                      text: "Late hours in the atelier turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the vault responds in kind.",
+                    },
+                  ] as const
+                )
+                  .filter((chapter) => state.unlockedMilestones.includes(chapter.id))
+                  .map((chapter) => (
+                    <article className="card" key={chapter.id} data-testid="lore-chapter">
+                      <h4>{chapter.title}</h4>
+                      <p>{chapter.text}</p>
+                    </article>
+                  ))}
+              </div>
+            </section>
+          </div>
+        )}
+      </section>
+
+      {windActiveItemId && (
+        <div role="dialog" aria-modal="true" className="panel">
+          <header className="panel-header">
+            <div>
+              <h2>Wind the watch</h2>
+              <p className="muted">Wind 10 times to trigger a short boost.</p>
+            </div>
+            <button
+              type="button"
+              className="secondary"
+              data-testid="wind-close"
+              onClick={closeWindModal}
+            >
+              Close
+            </button>
+          </header>
+          <p data-testid="wind-progress">{windProgress} / 10</p>
+          <div className="card-actions">
+            <button type="button" data-testid="wind-button" onClick={handleWindClick}>
+              Wind
+            </button>
+          </div>
+        </div>
+      )}
+
+      <section
+        className="panel"
+        id="save"
+        role="tabpanel"
+        aria-labelledby="save-tab"
+        hidden={activeTab !== "save"}
+      >
+        {activeTab === "save" && (
+          <>
+            <h2>Save</h2>
+            <div className="controls">
+              <button type="button" onClick={handleExport}>
+                Export
+              </button>
+            </div>
+
+            <fieldset className="controls" data-testid="audio-controls">
+              <legend>Audio settings</legend>
+              <label>
+                <input
+                  type="checkbox"
+                  data-testid="audio-sfx-toggle"
+                  checked={audioSettings.sfxEnabled}
+                  onChange={(event) => {
+                    const nextSettings = {
+                      ...audioSettings,
+                      sfxEnabled: event.target.checked,
+                    };
+                    setAudioSettings(nextSettings);
+                    window.localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(nextSettings));
+                  }}
+                />
+                Enable SFX
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  data-testid="audio-bgm-toggle"
+                  checked={audioSettings.bgmEnabled}
+                  onChange={(event) => {
+                    const nextSettings = {
+                      ...audioSettings,
+                      bgmEnabled: event.target.checked,
+                    };
+                    setAudioSettings(nextSettings);
+                    window.localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(nextSettings));
+                  }}
+                />
+                Enable BGM
+              </label>
+            </fieldset>
+
+            <div className="controls">
+              <label htmlFor="import-save-text">Import data</label>
+              <textarea
+                id="import-save-text"
+                rows={3}
+                placeholder="Paste exported data here"
+                aria-describedby="save-status"
+                value={importText}
+                onChange={(event) => setImportText(event.target.value)}
+              ></textarea>
+              <button type="button" onClick={handleImport}>
+                Import
+              </button>
+            </div>
+
+            <output id="save-status" aria-live="polite">
+              {saveStatus}
+            </output>
+          </>
+        )}
       </section>
     </main>
   );

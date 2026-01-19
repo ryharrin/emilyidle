@@ -307,6 +307,53 @@ button:not(:disabled):hover {
   font-size: 0.9rem;
 }
 
+.filter-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9da3ad;
+}
+
+.catalog-tablist {
+  display: inline-flex;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid #2a2f3b;
+  background: #0f1115;
+}
+
+.catalog-tab {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent;
+  color: #c5cbd6;
+}
+
+.catalog-tab:hover,
+.catalog-tab:focus-visible {
+  border-color: #3c4150;
+}
+
+.catalog-tab-active {
+  background: #f5f5f6;
+  color: #11131a;
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(15, 17, 21, 0.3);
+}
+
+.catalog-empty {
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px dashed #2f3544;
+  background: #0f1115;
+  color: #b6bcc7;
+}
+
 .filter-field input,
 .filter-field select {
   border-radius: 12px;

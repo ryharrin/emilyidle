@@ -6,8 +6,12 @@ import {
   buyMaisonLine,
   buyMaisonUpgrade,
   createInitialState,
+  getCollectionBonusMultiplier,
   getCollectionValueCents,
+  getEffectiveIncomeRateCentsPerSec,
+  getEnjoymentRateCentsPerSec,
   getEventIncomeMultiplier,
+  getWatchAbilityIncomeMultiplier,
   getEventStatusLabel,
   getMaisonCollectionBonusMultiplier,
   getMaisonIncomeMultiplier,
@@ -45,7 +49,7 @@ describe("maison prestige", () => {
     expect(lines.map((line) => line.id)).toContain("complication-line");
   });
 
-  it("unlocks achievements for Sentimental value and prestige", () => {
+  it("unlocks achievements for Memories and prestige", () => {
     const baseState = createInitialState();
     const upgradedState = applyAchievementUnlocks({
       ...baseState,
@@ -59,9 +63,33 @@ describe("maison prestige", () => {
     expect(getCollectionValueCents(baseState)).toBe(0);
     expect(upgradedState.achievementUnlocks).toContain("workshop-reforged");
     expect(upgradedState.achievementUnlocks).toContain("six-figure-vault");
+
+    const centuryState = applyAchievementUnlocks({
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 100,
+      },
+    });
+    expect(centuryState.achievementUnlocks).toContain("vault-century");
+
+    const millionState = applyAchievementUnlocks({
+      ...baseState,
+      items: {
+        ...baseState.items,
+        tourbillon: 500,
+      },
+    });
+    expect(millionState.achievementUnlocks).toContain("million-memories");
+
+    const decadeState = applyAchievementUnlocks({
+      ...baseState,
+      workshopPrestigeCount: 10,
+    });
+    expect(decadeState.achievementUnlocks).toContain("workshop-decade");
   });
 
-  it("activates and cools down events", () => {
+  it("activates, cools down, and respects calendar-date events", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -84,6 +112,28 @@ describe("maison prestige", () => {
     const cooled = applyEventState(activated, laterMs, collectionValue);
     expect(isEventActive(cooled, "auction-weekend", laterMs)).toBe(false);
     expect(getEventStatusLabel(cooled, "auction-weekend", laterMs)).toContain("Cooldown");
+
+    const birthdayState = {
+      ...baseState,
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+    };
+
+    const onBirthdayMs = new Date(2026, 3, 27, 12, 0, 0).getTime();
+    const onBirthday = applyEventState(birthdayState, onBirthdayMs, 0);
+    expect(isEventActive(onBirthday, "emily-birthday", onBirthdayMs)).toBe(true);
+    expect(getEventIncomeMultiplier(onBirthday, onBirthdayMs)).toBeCloseTo(1.27, 8);
+    expect(getEventStatusLabel(onBirthday, "emily-birthday", onBirthdayMs)).toContain("Active");
+
+    const dayAfterMs = new Date(2026, 3, 28, 12, 0, 0).getTime();
+    const dayAfter = applyEventState(birthdayState, dayAfterMs, 0);
+    const expectedNextAvailableMs = new Date(2027, 3, 27, 0, 0, 0).getTime();
+    expect(dayAfter.eventStates["emily-birthday"].nextAvailableAtMs).toBe(expectedNextAvailableMs);
+    expect(getEventStatusLabel(dayAfter, "emily-birthday", dayAfterMs)).toContain("Cooldown");
+
+    const beforeBirthdayMs = new Date(2026, 3, 26, 12, 0, 0).getTime();
+    const beforeBirthday = applyEventState(birthdayState, beforeBirthdayMs, 0);
+    expect(getEventStatusLabel(beforeBirthday, "emily-birthday", beforeBirthdayMs)).toBe("Ready");
   });
 
   it("resets workshop progress but keeps maison upgrades", () => {
@@ -203,6 +253,67 @@ describe("maison prestige", () => {
     expect(getMaisonReputationGain(lineState)).toBe(2);
     expect(getMaisonLineBlueprintBonus(lineState)).toBe(1);
     expect(getWorkshopPrestigeGain(lineState)).toBe(2);
+  });
+
+  it("applies watch ability multipliers to cash only", () => {
+    const baseState = createInitialState();
+    expect(getCollectionBonusMultiplier(baseState)).toBe(1);
+
+    const baseRate = getEffectiveIncomeRateCentsPerSec(baseState, 1);
+
+    const starterIncome =
+      getWatchItems().find((item) => item.id === "starter")?.incomeCentsPerSec ?? 0;
+    const chronographIncome =
+      getWatchItems().find((item) => item.id === "chronograph")?.incomeCentsPerSec ?? 0;
+
+    const starter10 = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 10,
+      },
+    };
+
+    expect(getWatchAbilityIncomeMultiplier(starter10)).toBeCloseTo(1.02, 8);
+
+    const starter10Expected =
+      (baseRate + starterIncome * 10) *
+      getCollectionBonusMultiplier(starter10) *
+      getWatchAbilityIncomeMultiplier(starter10);
+    expect(getEffectiveIncomeRateCentsPerSec(starter10, 1)).toBeCloseTo(starter10Expected, 6);
+
+    const chrono5 = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: 5,
+      },
+    };
+
+    const chrono5Expected =
+      (baseRate + chronographIncome * 5) *
+      getCollectionBonusMultiplier(chrono5) *
+      getWatchAbilityIncomeMultiplier(chrono5);
+    expect(getEffectiveIncomeRateCentsPerSec(chrono5, 1)).toBeCloseTo(chrono5Expected, 6);
+
+    const stackedHigh = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 10,
+        chronograph: 5,
+      },
+    };
+
+    const stackedExpected =
+      (baseRate + starterIncome * 10 + chronographIncome * 5) *
+      getCollectionBonusMultiplier(stackedHigh) *
+      getWatchAbilityIncomeMultiplier(stackedHigh);
+    expect(getEffectiveIncomeRateCentsPerSec(stackedHigh, 1)).toBeCloseTo(stackedExpected, 6);
+
+    expect(getEnjoymentRateCentsPerSec(stackedHigh)).toBe(
+      getCollectionValueCents(stackedHigh) / 100,
+    );
   });
 
   it("applies maison upgrade effects", () => {

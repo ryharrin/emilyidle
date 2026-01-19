@@ -1,4 +1,4 @@
-export type CatalogBrand = "Rolex" | "Jaeger-LeCoultre" | "Audemars Piguet";
+export type CatalogBrand = "Rolex" | "Jaeger-LeCoultre" | "Audemars Piguet" | "Omega" | "Cartier";
 
 export type CatalogImage = {
   url: string;
@@ -16,6 +16,7 @@ export type CatalogEntry = {
   description: string;
   year: string;
   tags: string[];
+  facts?: string[];
   image: CatalogImage;
 };
 
@@ -964,6 +965,118 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
         "File:Audemars Piguet Royal Oak Tradition d'Excellence 4, ref. 25969, risalente al 2004.jpg by EMore98 (CC BY-SA 4.0)",
     },
   },
+  {
+    id: "omega-omega-seamaster-de-ville-1970",
+    brand: "Omega",
+    model: "Omega Seamaster De Ville",
+    description: "Open-license reference image of Omega Seamaster De Ville.",
+    year: "1970",
+    tags: ["omega", "seamaster", "watch", "womens"],
+    facts: [
+      "Omega introduced the Seamaster line in the late 1940s.",
+      "De Ville originally appeared as a Seamaster sub-collection before becoming its own line.",
+    ],
+    image: {
+      url: "https://upload.wikimedia.org/wikipedia/commons/1/1f/Omega_Seamaster_De_Ville_1970.jpg",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Omega_Seamaster_De_Ville_1970.jpg",
+      licenseName: "Public domain",
+      licenseUrl: "",
+      author: "Fourdee",
+      attribution: "File:Omega Seamaster De Ville 1970.jpg by Fourdee (Public domain)",
+    },
+  },
+  {
+    id: "omega-omega-seamaster-120m-1998",
+    brand: "Omega",
+    model: "Omega Seamaster 120M Analog-Digital",
+    description: "Open-license reference image of Omega Seamaster 120M Analog-Digital.",
+    year: "1998",
+    tags: ["omega", "seamaster", "watch", "diver"],
+    image: {
+      url: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Omega_seamaster_120m_1998.jpg",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Omega_seamaster_120m_1998.jpg",
+      licenseName: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      author: "AbdullahAlfowzan",
+      attribution: "File:Omega seamaster 120m 1998.jpg by AbdullahAlfowzan (CC BY-SA 4.0)",
+    },
+  },
+  {
+    id: "omega-omega-speedmaster-reduced-351050",
+    brand: "Omega",
+    model: "Omega Speedmaster Reduced 3510.50",
+    description: "Open-license reference image of Omega Speedmaster Reduced 3510.50.",
+    year: "Unknown",
+    tags: ["omega", "speedmaster", "watch", "chronograph"],
+    image: {
+      url: "https://upload.wikimedia.org/wikipedia/commons/0/06/Omega_speedmaster_reduced_351050.jpg",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Omega_speedmaster_reduced_351050.jpg",
+      licenseName: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      author: "Kjellnz",
+      attribution: "File:Omega speedmaster reduced 351050.jpg by Kjellnz (CC BY-SA 4.0)",
+    },
+  },
+  {
+    id: "cartier-cartier-tank",
+    brand: "Cartier",
+    model: "Cartier Tank",
+    description: "Open-license reference image of Cartier Tank.",
+    year: "Unknown",
+    tags: ["cartier", "tank", "watch", "dress", "womens"],
+    facts: [
+      "The Tank debuted in 1917 and became one of Cartier's signature designs.",
+      "The rectangular case and railroad minute track are classic Tank cues.",
+    ],
+    image: {
+      url: "https://upload.wikimedia.org/wikipedia/commons/d/df/Cartier_Tank.jpg",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cartier_Tank.jpg",
+      licenseName: "CC BY-SA 2.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
+      author: "Guy Sie",
+      attribution: "File:Cartier Tank.jpg by Guy Sie (CC BY-SA 2.0)",
+    },
+  },
+  {
+    id: "cartier-cartier-tank-must-2021",
+    brand: "Cartier",
+    model: "Cartier Tank Must",
+    description: "Open-license reference image of Cartier Tank Must.",
+    year: "2021",
+    tags: ["cartier", "tank", "watch", "dress", "womens"],
+    facts: [
+      "The Tank Must is a modern re-issue inspired by earlier Tank Must models.",
+      "A clean dial and compact proportions make it a staple dress watch silhouette.",
+    ],
+    image: {
+      url: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Cartier_Tank_Must%2C_2021.jpg",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cartier_Tank_Must,_2021.jpg",
+      licenseName: "CC BY-SA 4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+      author: "EMore98",
+      attribution: "File:Cartier Tank Must, 2021.jpg by EMore98 (CC BY-SA 4.0)",
+    },
+  },
+  {
+    id: "cartier-cartier-santos-1988",
+    brand: "Cartier",
+    model: "Cartier Santos",
+    description: "Open-license reference image of Cartier Santos.",
+    year: "1988",
+    tags: ["cartier", "santos", "watch", "womens"],
+    facts: [
+      "The Santos is one of the earliest purpose-built wristwatch designs, originating in the early 1900s.",
+      "Signature details include the square bezel and exposed screws.",
+    ],
+    image: {
+      url: "https://upload.wikimedia.org/wikipedia/commons/9/99/Cartier_Santos_1988.jpg",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Cartier_Santos_1988.jpg",
+      licenseName: "CC BY-SA 3.0",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+      author: "Noop1958",
+      attribution: "File:Cartier Santos 1988.jpg by Noop1958 (CC BY-SA 3.0)",
+    },
+  },
 ];
 
 const WIKIMEDIA_BASE_URL = "https://upload.wikimedia.org/wikipedia/commons/";
@@ -992,6 +1105,12 @@ const MISSING_LOCAL_IMAGES = new Set([
   "1/1e/Audemars_Piguet_Royal_Oak_Offshore_Diver.jpg",
   "3/3f/Audemars_Piguet_Royal_Oak_in_oro_e_tantalio%2C_fine_anni_%2780-primi_%2790.jpg",
   "2/23/Audemars_Piguet_Royal_Oak_Tradition_d%27Excellence_4%2C_ref._25969%2C_risalente_al_2004.jpg",
+  "1/1f/Omega_Seamaster_De_Ville_1970.jpg",
+  "f/fa/Omega_seamaster_120m_1998.jpg",
+  "0/06/Omega_speedmaster_reduced_351050.jpg",
+  "d/df/Cartier_Tank.jpg",
+  "f/fc/Cartier_Tank_Must%2C_2021.jpg",
+  "9/99/Cartier_Santos_1988.jpg",
 ]);
 const TIER_TAGS = new Set(["starter", "classic", "chronograph", "tourbillon"]);
 

@@ -90,7 +90,10 @@ export type AchievementId =
   | "first-drawer"
   | "six-figure-vault"
   | "workshop-reforged"
-  | "workshop-veteran";
+  | "workshop-veteran"
+  | "vault-century"
+  | "million-memories"
+  | "workshop-decade";
 
 export type AchievementRequirement =
   | { type: "totalItems"; threshold: number }
@@ -104,11 +107,14 @@ export type AchievementDefinition = {
   requirement: AchievementRequirement;
 };
 
-export type EventId = "auction-weekend";
+export type EventId = "auction-weekend" | "emily-birthday" | "wind-up";
 
 export type CatalogTierId = "starter" | "classic" | "chronograph" | "tourbillon";
 
-export type EventTrigger = { type: "collectionValue"; thresholdCents: number };
+export type EventTrigger =
+  | { type: "collectionValue"; thresholdCents: number }
+  | { type: "manual" }
+  | { type: "calendarDate"; month: number; day: number; timezone: "local" };
 
 export type EventDefinition = {
   id: EventId;
@@ -435,7 +441,7 @@ const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
   {
     id: "six-figure-vault",
     name: "Six-figure vault",
-    description: "Reach $120k in Sentimental value.",
+    description: "Reach $120k in Memories.",
     requirement: { type: "collectionValue", thresholdCents: 120_000 },
   },
   {
@@ -450,6 +456,24 @@ const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
     description: "Prestige the workshop three times.",
     requirement: { type: "workshopPrestigeCount", threshold: 3 },
   },
+  {
+    id: "vault-century",
+    name: "Vault century",
+    description: "Hold 100 watches in the vault.",
+    requirement: { type: "totalItems", threshold: 100 },
+  },
+  {
+    id: "million-memories",
+    name: "Million memories",
+    description: "Reach $1,000,000 in Memories.",
+    requirement: { type: "collectionValue", thresholdCents: 100_000_000 },
+  },
+  {
+    id: "workshop-decade",
+    name: "Workshop decade",
+    description: "Prestige the workshop ten times.",
+    requirement: { type: "workshopPrestigeCount", threshold: 10 },
+  },
 ];
 
 const EVENTS: ReadonlyArray<EventDefinition> = [
@@ -461,6 +485,24 @@ const EVENTS: ReadonlyArray<EventDefinition> = [
     durationMs: 90_000,
     cooldownMs: 240_000,
     incomeMultiplier: 1.6,
+  },
+  {
+    id: "emily-birthday",
+    name: "Emily's birthday",
+    description: "A once-a-year boost in honor of the day.",
+    trigger: { type: "calendarDate", month: 4, day: 27, timezone: "local" },
+    durationMs: 86_400_000,
+    cooldownMs: 0,
+    incomeMultiplier: 1.27,
+  },
+  {
+    id: "wind-up",
+    name: "Wind-up",
+    description: "A freshly wound crown keeps the vault humming.",
+    trigger: { type: "manual" },
+    durationMs: 60_000,
+    cooldownMs: 120_000,
+    incomeMultiplier: 1.05,
   },
 ];
 
@@ -990,6 +1032,16 @@ export function getCollectionBonusMultiplier(state: GameState): number {
   return multiplier * getMaisonCollectionBonusMultiplier(state);
 }
 
+export function getWatchAbilityIncomeMultiplier(state: GameState): number {
+  const starterCount = getItemCount(state, "starter");
+  const chronographCount = getItemCount(state, "chronograph");
+
+  const starterBonus = starterCount >= 10 ? 1.02 : 1;
+  const chronographBonus = chronographCount >= 5 ? 1.05 : 1;
+
+  return starterBonus * chronographBonus;
+}
+
 export function getActiveSetBonuses(state: GameState): SetBonusDefinition[] {
   return SET_BONUSES.filter((bonus) =>
     Object.entries(bonus.requirements).every(([itemId, required]) => {
@@ -1020,6 +1072,7 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
   const workshopMultiplier = getWorkshopIncomeMultiplier(state);
   const maisonMultiplier = getMaisonIncomeMultiplier(state);
   const catalogTierMultiplier = getCatalogTierIncomeMultiplier(state);
+  const abilityMultiplier = getWatchAbilityIncomeMultiplier(state);
 
   return (
     (BASE_INCOME_CENTS_PER_SEC + itemIncome) *
@@ -1028,7 +1081,8 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
     collectionMultiplier *
     workshopMultiplier *
     maisonMultiplier *
-    catalogTierMultiplier
+    catalogTierMultiplier *
+    abilityMultiplier
   );
 }
 
@@ -1042,17 +1096,27 @@ export function applyEventState(
     ...state.eventStates,
   };
 
+  const now = new Date(nowMs);
+  const currentYear = now.getFullYear();
+
+  const getLocalStartMs = (year: number, month: number, day: number) =>
+    new Date(year, month - 1, day, 0, 0, 0, 0).getTime();
+
   for (const event of EVENTS) {
     const entry = nextStates[event.id] ?? { activeUntilMs: 0, nextAvailableAtMs: 0 };
     if (nowMs < entry.activeUntilMs) {
       continue;
     }
 
-    if (nowMs < entry.nextAvailableAtMs) {
+    if (event.trigger.type !== "calendarDate" && nowMs < entry.nextAvailableAtMs) {
       if (!nextStates[event.id]) {
         nextStates[event.id] = entry;
         changed = true;
       }
+      continue;
+    }
+
+    if (event.trigger.type === "manual") {
       continue;
     }
 
@@ -1065,6 +1129,51 @@ export function applyEventState(
         nextAvailableAtMs: nowMs + event.durationMs + event.cooldownMs,
       };
       changed = true;
+      continue;
+    }
+
+    if (event.trigger.type === "calendarDate") {
+      const startMs = getLocalStartMs(currentYear, event.trigger.month, event.trigger.day);
+      const endMs = startMs + event.durationMs;
+      const nextYearStartMs = getLocalStartMs(
+        currentYear + 1,
+        event.trigger.month,
+        event.trigger.day,
+      );
+
+      if (nowMs >= startMs && nowMs < endMs) {
+        const next = { activeUntilMs: endMs, nextAvailableAtMs: endMs };
+        if (
+          entry.activeUntilMs !== next.activeUntilMs ||
+          entry.nextAvailableAtMs !== next.nextAvailableAtMs
+        ) {
+          nextStates[event.id] = next;
+          changed = true;
+        }
+        continue;
+      }
+
+      if (nowMs >= endMs) {
+        const next = { activeUntilMs: 0, nextAvailableAtMs: nextYearStartMs };
+        if (
+          entry.activeUntilMs !== next.activeUntilMs ||
+          entry.nextAvailableAtMs !== next.nextAvailableAtMs
+        ) {
+          nextStates[event.id] = next;
+          changed = true;
+        }
+        continue;
+      }
+
+      const next = { activeUntilMs: 0, nextAvailableAtMs: 0 };
+      if (
+        entry.activeUntilMs !== next.activeUntilMs ||
+        entry.nextAvailableAtMs !== next.nextAvailableAtMs
+      ) {
+        nextStates[event.id] = next;
+        changed = true;
+      }
+      continue;
     }
   }
 
@@ -1099,6 +1208,31 @@ export function isEventActive(state: GameState, eventId: EventId, nowMs: number)
   }
 
   return nowMs < entry.activeUntilMs;
+}
+
+export function activateManualEvent(state: GameState, eventId: EventId, nowMs: number): GameState {
+  const event = EVENTS.find((entry) => entry.id === eventId);
+  if (!event || event.trigger.type !== "manual") {
+    return state;
+  }
+
+  const entry = state.eventStates[eventId] ?? { activeUntilMs: 0, nextAvailableAtMs: 0 };
+  if (nowMs < entry.activeUntilMs || nowMs < entry.nextAvailableAtMs) {
+    return state;
+  }
+
+  const nextStates: Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }> = {
+    ...state.eventStates,
+    [eventId]: {
+      activeUntilMs: nowMs + event.durationMs,
+      nextAvailableAtMs: nowMs + event.durationMs + event.cooldownMs,
+    },
+  };
+
+  return {
+    ...state,
+    eventStates: nextStates,
+  };
 }
 
 export function getEventStatusLabel(state: GameState, eventId: EventId, nowMs: number): string {

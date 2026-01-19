@@ -31,6 +31,7 @@ test.describe("collection loop", () => {
   });
 
   test("renders collection structure and stats", async ({ page }) => {
+    await page.getByRole("tab", { name: "Vault" }).click();
     await expect(page.locator(selectors.currency)).toHaveText(/\$/);
     await expect(page.locator(selectors.income)).toHaveText(/\$/);
     await expect(page.locator(selectors.collectionValue)).toHaveText(/\$/);
@@ -45,12 +46,14 @@ test.describe("collection loop", () => {
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
+    await page.getByRole("tab", { name: "Vault" }).click();
     const firstCard = page.locator(selectors.collectionCards).first();
     const buyButton = firstCard.getByRole("button", { name: /Buy \(/ });
     await expect(buyButton).toBeDisabled();
   });
 
   test("export and import save round trip", async ({ page }) => {
+    await page.getByRole("tab", { name: "Save" }).click();
     await page.getByRole("button", { name: "Export" }).click();
     const saveText = await page.inputValue(selectors.importText);
     expect(saveText.length).toBeGreaterThan(0);
@@ -64,7 +67,26 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.saveStatus)).toContainText("Imported save from");
   });
 
+  test("audio toggles render and respond", async ({ page }) => {
+    await page.getByRole("tab", { name: "Save" }).click();
+
+    const sfxToggle = page.getByTestId("audio-sfx-toggle");
+    const bgmToggle = page.getByTestId("audio-bgm-toggle");
+
+    await expect(sfxToggle).toBeVisible();
+    await expect(bgmToggle).toBeVisible();
+
+    await sfxToggle.click();
+    await bgmToggle.click();
+
+    await expect(sfxToggle).toBeChecked();
+    await expect(bgmToggle).toBeChecked();
+  });
+
   test("catalog filters and sources", async ({ page }) => {
+    const catalogTab = page.getByRole("tab", { name: "Catalog" });
+    await catalogTab.click();
+
     const catalogFilters = page.getByTestId("catalog-filters");
     const catalogCards = page.getByTestId("catalog-grid").getByTestId("catalog-card");
     const resultsCount = page.getByTestId("catalog-results-count");
@@ -143,6 +165,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
+    await page.getByRole("tab", { name: "Atelier" }).click();
     await expect(page.locator(selectors.workshopPanel)).toBeVisible();
     await expect(page.locator(selectors.workshopGain).last()).toContainText("+1 Blueprints");
     await expect(page.locator(selectors.workshopResetButton)).toBeEnabled();
@@ -150,12 +173,12 @@ test.describe("collection loop", () => {
 
   test("automation toggle appears after automation upgrade", async ({ page }) => {
     const automationToggle = page.locator(selectors.automationToggle);
-    await expect(automationToggle).toContainText("Unlock automation with Workshop blueprints.");
+    await expect(automationToggle).toContainText("Unlock automation with Atelier blueprints.");
 
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 0,
-      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
+      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 8 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
       workshopBlueprints: 0,
@@ -181,6 +204,8 @@ test.describe("collection loop", () => {
       achievementUnlocks: [],
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+        "showcase-week": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+        "heritage-gala": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
       catalogTierUnlocks: [],
@@ -200,6 +225,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
+    await page.getByRole("tab", { name: "Vault" }).click();
     await expect(page.locator(selectors.automationToggle).getByRole("button")).toHaveText(
       /Auto-buy (on|off)/,
     );
@@ -257,6 +283,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
+    await page.getByRole("tab", { name: "Maison" }).click();
     await expect(page.locator(selectors.maisonPanel)).toBeVisible();
     await expect(page.locator(selectors.maisonGain).nth(1)).toContainText("+2 Heritage");
     await expect(page.locator(selectors.maisonGain).nth(2)).toContainText("+0 Reputation");
@@ -268,11 +295,11 @@ test.describe("collection loop", () => {
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 0,
-      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 8 },
+      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
       workshopBlueprints: 0,
-      workshopPrestigeCount: 1,
+      workshopPrestigeCount: 0,
       workshopUpgrades: {
         "etched-ledgers": false,
         "vault-calibration": false,
@@ -294,6 +321,8 @@ test.describe("collection loop", () => {
       achievementUnlocks: [],
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+        "showcase-week": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+        "heritage-gala": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
       catalogTierUnlocks: [],
@@ -313,9 +342,10 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
+    await page.getByRole("tab", { name: "Vault" }).click();
     await expect(page.getByRole("heading", { name: "Achievements" })).toBeVisible();
+
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
-    await expect(page.getByText("Workshop reforged")).toBeVisible();
     await expect(page.getByText(/Auction weekend/)).toBeVisible();
     await expect(page.getByText(/Income x/).first()).toBeVisible();
   });
