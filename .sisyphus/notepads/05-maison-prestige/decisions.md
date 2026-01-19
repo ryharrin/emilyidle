@@ -1,0 +1,1 @@
+- Preserved `unlockedMilestones` during Maison prestige reset (user preference).

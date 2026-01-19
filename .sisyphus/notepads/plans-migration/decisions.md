@@ -1,0 +1,2 @@
+- Used the exact `/tmp/catalog-entries.ts` dataset as the canonical source for `src/game/catalog.ts`.
+- Recommend save key migration via read-old/write-new on load, then remove old key after successful write.
