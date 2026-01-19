@@ -216,7 +216,7 @@ Run all gates after applying fixes:
   **Acceptance Criteria**:
   - [x] All commands exit 0.
 
-- [ ] 5. Squash-merge into main (include everything not gitignored)
+- [x] 5. Squash-merge into main (include everything not gitignored)
 
   **What to do**:
   - Ensure working tree is clean.
@@ -230,8 +230,8 @@ Run all gates after applying fixes:
   **Parallelizable**: NO
 
   **Acceptance Criteria**:
-  - [ ] `git log -1` on `main` shows a single new commit containing the branch changes.
-  - [ ] `git status` clean.
+  - [x] `git log -1` on `main` shows a single new commit containing the branch changes.
+  - [x] `git status` clean.
 
 ---
 
