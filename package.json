@@ -10,15 +10,39 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@playwright/test": "^1.49.1",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
+    "jsdom": "^25.0.1",
     "prettier": "^3.8.0",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.53.0",
-    "vite": "^6.0.0"
-  }
+    "vite": "^6.0.0",
+    "vitest": "^1.6.0"
+  },
+  "vitest": {
+    "test": {
+      "environment": "jsdom",
+      "setupFiles": "./tests/vitest.setup.ts",
+      "include": [
+        "tests/**/*.unit.test.{ts,tsx}"
+      ],
+      "exclude": [
+        "tests/**/*.spec.{ts,tsx}"
+      ]
+    }
+  },
+  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
 }

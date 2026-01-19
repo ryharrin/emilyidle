@@ -1,0 +1,2 @@
+- Lowered workshop and maison prestige collection-value divisors to keep thresholds reachable.
+- Added auction-weekend event triggered by collection value for income boosts.

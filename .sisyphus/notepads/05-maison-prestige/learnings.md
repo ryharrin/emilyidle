@@ -1,0 +1,5 @@
+- Maison prestige resets collection + workshop progress but preserves `unlockedMilestones`.
+- Maison gain uses sqrt of combined collection value and workshop blueprints.
+- Maison upgrades follow workshop-style purchase helpers with heritage/reputation costs.
+- Maison tests use softcap base 60_000 and upgrade multipliers 1.12/1.2.
+- Maison panel tests rely on data-testid `maison-panel`, `maison-reset`, `maison-upgrade-card`.

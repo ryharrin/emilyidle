@@ -1,0 +1,1 @@
+- Dropped `workshopLifetimeCurrencyEarnedCents` and `workshopLifetimeItemsCrafted` from persisted state since they are unused.

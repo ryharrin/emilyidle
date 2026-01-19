@@ -1,0 +1,3 @@
+- Rebrand sweep: key strings live in `index.html` (`<title>`), `src/App.tsx` (hero heading), and `README.md` (H1).
+- LocalStorage save key is centralized as `SAVE_KEY` in `src/game/persistence.ts`; e2e tests seed saves using hardcoded key in `tests/collection-loop.spec.ts`.
+- `dist/` is present locally but ignored by `.gitignore`; treat as build output, not a source of truth.
