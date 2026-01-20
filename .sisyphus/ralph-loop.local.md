@@ -1,10 +1,10 @@
 ---
-active: true
+active: false
 iteration: 1
 max_iterations: 50
 completion_promise: "DONE"
-started_at: "2026-01-19T00:23:38.981Z"
-session_id: "ses_42c644b12ffePu1anOYfIcFYLO"
+started_at: "2026-01-20T03:58:33.686Z"
+session_id: "ses_428b51221ffedcn2eHvO3LvbcD"
 ---
 
-Implement unfinished plan in .sisyphus/plans/unfinished-workstreams.md
+Finish all tasks, then implement remaining plans. Don't ask any questions.
