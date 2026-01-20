@@ -40,8 +40,8 @@ test.describe("collection loop", () => {
     await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
 
     await expect(page.locator(selectors.collectionCards)).toHaveCount(4);
-    await expect(page.locator(selectors.upgradeCards)).toHaveCount(3);
-    await expect(page.locator(selectors.milestoneCards)).toHaveCount(3);
+    await expect(page.locator(selectors.upgradeCards)).toHaveCount(4);
+    await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(3);
   });
 

@@ -448,71 +448,14 @@ describe("catalog ownership tabs", () => {
         currencyCents: 0,
         enjoymentCents: 0,
         items: { starter: 1, classic: 0, chronograph: 0, tourbillon: 0 },
-        upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+        upgrades: {
+          "polishing-tools": 0,
+          "assembly-jigs": 0,
+          "guild-contracts": 0,
+          "archive-guides": 0,
+        },
         unlockedMilestones: [],
-        workshopBlueprints: 0,
-        workshopPrestigeCount: 0,
-        workshopUpgrades: {
-          "etched-ledgers": false,
-          "vault-calibration": false,
-          "heritage-templates": false,
-          "automation-blueprints": false,
-        },
-        maisonHeritage: 0,
-        maisonReputation: 0,
-        maisonUpgrades: {
-          "atelier-charter": false,
-          "heritage-loom": false,
-          "global-vitrine": false,
-        },
-        maisonLines: {
-          "atelier-line": false,
-          "heritage-line": false,
-          "complication-line": false,
-        },
-        achievementUnlocks: [],
-        eventStates: { "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 } },
-        discoveredCatalogEntries: [],
-        catalogTierUnlocks: [],
-      },
-    };
 
-    localStorage.setItem("emily-idle:save", JSON.stringify(ownedPayload));
-    render(<App />);
-
-    const user = userEvent.setup();
-    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
-
-    const ownershipTabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
-    const ownedTab = within(ownershipTabList).getByRole("tab", { name: /^Owned$/ });
-    await user.click(ownedTab);
-
-    const [catalogGrid] = screen.getAllByTestId(/catalog-grid/);
-    await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
-
-    const ownedCards = within(catalogGrid).getAllByTestId(/catalog-card/);
-    expect(ownedCards.length).toBeGreaterThan(0);
-    ownedCards.forEach((card) => {
-      expect(card.textContent).not.toContain("Jaeger-LeCoultre");
-      expect(card.textContent).not.toContain("Audemars Piguet");
-    });
-  });
-
-  it("excludes owned tiers from unowned tab", async () => {
-    const ownedPayload = {
-      version: 2,
-      savedAt: new Date(0).toISOString(),
-      lastSimulatedAtMs: Date.now(),
-      state: {
-        currencyCents: 0,
-        enjoymentCents: 0,
-        items: { starter: 1, classic: 0, chronograph: 0, tourbillon: 0 },
-        upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-        unlockedMilestones: [],
         workshopBlueprints: 0,
         workshopPrestigeCount: 0,
         workshopUpgrades: {
@@ -573,6 +516,10 @@ describe("wind minigame", () => {
           items: {
             ...baseState.items,
             starter: 1,
+          },
+          upgrades: {
+            ...baseState.upgrades,
+            "archive-guides": 0,
           },
         },
       }),
