@@ -218,7 +218,7 @@ Run all gates after applying fixes:
 
 - [x] 5. Squash-merge into main (include everything not gitignored)
 
-  **What to do**:
+     **What to do**:
   - Ensure working tree is clean.
   - Update local `main`.
   - Squash merge `phase-11-notes` into `main` (one commit).
