@@ -13,59 +13,19 @@ Purpose: Add a real-image catalog (Rolex / Jaeger‑LeCoultre / Audemars Piguet)
 
 ### 03-00 — UI framework migration
 
-- [ ] Migrate UI to React (or similar) with Vite integration
-  - **Files**: `package.json`, `vite.config.ts`, `src/App.tsx`, `src/components/*`, `src/style.css`
-  - **Verification**: `pnpm run dev`; `pnpm run build`; `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: NO
-
-### 03-01 — Catalog data model (brand/model/metadata) + filtering/search
-
-- [ ] Define catalog schema for brands/models/metadata
-  - **Files**: `src/game/catalog.ts` (new), `src/game/state.ts` (integration)
-  - **Verification**: `pnpm run typecheck`; `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: NO
-
-- [ ] Implement filtering/search UI for catalog
-  - **Files**: `src/App.tsx`, `src/style.css`
-  - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: YES
-
-### 03-02 — Image pipeline (curate list, store sources, render)
-
-- [ ] Decide image storage approach (local assets vs remote URLs)
-  - **Files**: `.sisyphus/plans/08-collection-integration.md` (reference), `src/game/catalog.ts` (metadata fields)
-  - **Verification**: document decision in plan notes; `pnpm run test:e2e`
-  - **Parallelizable**: NO
-
-- [ ] Add image metadata fields (source URL, license, author, attribution text)
-  - **Files**: `src/game/catalog.ts`
-  - **Verification**: `pnpm run typecheck`; `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: YES
-
-- [ ] Render images in catalog UI (with graceful fallback)
-  - **Files**: `src/App.tsx`, `src/style.css`
-  - **Verification**: `pnpm run test:e2e`
-  - **Parallelizable**: YES
-
-### 03-03 — Attribution UI + “sources” view
-
-- [ ] Add per-item attribution display
-  - **Files**: `src/App.tsx`
-  - **Verification**: `pnpm run test:e2e`
-  - **Parallelizable**: YES
-
-- [ ] Add a “Sources / Licenses” view (list all images + licenses)
-  - **Files**: `src/App.tsx`
-  - **Verification**: `pnpm run test:e2e`
-  - **Parallelizable**: NO
-
-## Plan-wide verification
-
-- [ ] `pnpm run typecheck`
-- [ ] `pnpm run lint`
-- [ ] `pnpm run build`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run test:e2e`
+- [x] Migrate UI to React (or similar) with Vite integration
+- [x] Define catalog schema for brands/models/metadata
+- [x] Implement filtering/search UI for catalog
+- [x] Decide image storage approach (local assets vs remote URLs)
+- [x] Add image metadata fields (source URL, license, author, attribution text)
+- [x] Render images in catalog UI (with graceful fallback)
+- [x] Add per-item attribution display
+- [x] Add a “Sources / Licenses” view (list all images + licenses)
+- [x] `pnpm run typecheck`
+- [x] `pnpm run lint`
+- [x] `pnpm run build`
+- [x] `pnpm run test:unit`
+- [x] `pnpm run test:e2e`
 
 ## Notes / assumptions
 
