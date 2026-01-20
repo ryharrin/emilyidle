@@ -1,8 +1,13 @@
 export type WatchItemId = "starter" | "classic" | "chronograph" | "tourbillon";
-export type UpgradeId = "polishing-tools" | "assembly-jigs" | "guild-contracts";
-export type MilestoneId = "collector-shelf" | "showcase" | "atelier";
+export type UpgradeId = "polishing-tools" | "assembly-jigs" | "guild-contracts" | "archive-guides";
+export type MilestoneId = "collector-shelf" | "showcase" | "atelier" | "archive-curator";
 
-export const ALL_MILESTONE_IDS: MilestoneId[] = ["collector-shelf", "showcase", "atelier"];
+export const ALL_MILESTONE_IDS: MilestoneId[] = [
+  "collector-shelf",
+  "showcase",
+  "atelier",
+  "archive-curator",
+];
 export type SetBonusId = "starter-set" | "precision-set" | "complication-set";
 export type WorkshopUpgradeId =
   | "etched-ledgers"
@@ -73,7 +78,8 @@ export type MaisonLineDefinition = {
 
 export type MilestoneRequirement =
   | { type: "totalItems"; threshold: number }
-  | { type: "collectionValue"; thresholdCents: number };
+  | { type: "collectionValue"; thresholdCents: number }
+  | { type: "catalogDiscovery"; threshold: number };
 
 export type MilestoneDefinition = {
   id: MilestoneId;
@@ -93,12 +99,14 @@ export type AchievementId =
   | "workshop-veteran"
   | "vault-century"
   | "million-memories"
-  | "workshop-decade";
+  | "workshop-decade"
+  | "catalog-keeper";
 
 export type AchievementRequirement =
   | { type: "totalItems"; threshold: number }
   | { type: "collectionValue"; thresholdCents: number }
-  | { type: "workshopPrestigeCount"; threshold: number };
+  | { type: "workshopPrestigeCount"; threshold: number }
+  | { type: "catalogDiscovery"; threshold: number };
 
 export type AchievementDefinition = {
   id: AchievementId;
@@ -381,6 +389,15 @@ const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
     incomeMultiplierPerLevel: 0.12,
     unlockMilestoneId: "showcase",
   },
+  {
+    id: "archive-guides",
+    name: "Archive guides",
+    description: "Cataloged references deepen vault earnings.",
+    basePriceCents: 85_000,
+    priceGrowth: 1.85,
+    incomeMultiplierPerLevel: 0.1,
+    unlockMilestoneId: "archive-curator",
+  },
 ];
 
 const MILESTONES: ReadonlyArray<MilestoneDefinition> = [
@@ -404,6 +421,13 @@ const MILESTONES: ReadonlyArray<MilestoneDefinition> = [
     description: "Collect 50 pieces to unlock tourbillons.",
     requirement: { type: "totalItems", threshold: 50 },
     unlocks: { items: ["tourbillon"] },
+  },
+  {
+    id: "archive-curator",
+    name: "Archive curator",
+    description: "Discover 12 catalog references to unlock archive guides.",
+    requirement: { type: "catalogDiscovery", threshold: 12 },
+    unlocks: { upgrades: ["archive-guides"] },
   },
 ];
 
@@ -473,6 +497,12 @@ const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
     name: "Workshop decade",
     description: "Prestige the workshop ten times.",
     requirement: { type: "workshopPrestigeCount", threshold: 10 },
+  },
+  {
+    id: "catalog-keeper",
+    name: "Catalog keeper",
+    description: "Discover 20 catalog references.",
+    requirement: { type: "catalogDiscovery", threshold: 20 },
   },
 ];
 
@@ -966,8 +996,14 @@ export function getUnlockVisibilityRatio(state: GameState, milestoneId: Mileston
     return milestone.requirement.threshold > 0 ? owned / milestone.requirement.threshold : 0;
   }
 
-  return milestone.requirement.thresholdCents > 0
-    ? getCollectionValueCents(state) / milestone.requirement.thresholdCents
+  if (milestone.requirement.type === "collectionValue") {
+    return milestone.requirement.thresholdCents > 0
+      ? getCollectionValueCents(state) / milestone.requirement.thresholdCents
+      : 0;
+  }
+
+  return milestone.requirement.threshold > 0
+    ? state.discoveredCatalogEntries.length / milestone.requirement.threshold
     : 0;
 }
 
@@ -1016,7 +1052,11 @@ export function getMilestoneRequirementLabel(milestoneId: MilestoneId): string {
     return `Own ${milestone.requirement.threshold} total items`;
   }
 
-  return `Reach ${formatMoneyFromCents(milestone.requirement.thresholdCents)} Memories`;
+  if (milestone.requirement.type === "collectionValue") {
+    return `Reach ${formatMoneyFromCents(milestone.requirement.thresholdCents)} Memories`;
+  }
+
+  return `Discover ${milestone.requirement.threshold} catalog references`;
 }
 
 export function getCollectionBonusMultiplier(state: GameState): number {
@@ -1626,7 +1666,11 @@ function isMilestoneMet(state: GameState, milestone: MilestoneDefinition): boole
     return getTotalItemCount(state) >= requirement.threshold;
   }
 
-  return getCollectionValueCents(state) >= requirement.thresholdCents;
+  if (requirement.type === "collectionValue") {
+    return getCollectionValueCents(state) >= requirement.thresholdCents;
+  }
+
+  return state.discoveredCatalogEntries.length >= requirement.threshold;
 }
 
 function isAchievementMet(state: GameState, achievement: AchievementDefinition): boolean {
@@ -1638,6 +1682,10 @@ function isAchievementMet(state: GameState, achievement: AchievementDefinition):
 
   if (requirement.type === "collectionValue") {
     return getCollectionValueCents(state) >= requirement.thresholdCents;
+  }
+
+  if (requirement.type === "catalogDiscovery") {
+    return state.discoveredCatalogEntries.length >= requirement.threshold;
   }
 
   return state.workshopPrestigeCount >= requirement.threshold;

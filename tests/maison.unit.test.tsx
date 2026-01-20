@@ -150,6 +150,7 @@ describe("maison prestige", () => {
       upgrades: {
         ...baseState.upgrades,
         "polishing-tools": 3,
+        "archive-guides": 0,
       },
       workshopBlueprints: 6,
       workshopPrestigeCount: 3,
