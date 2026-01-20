@@ -1081,37 +1081,6 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
 
 const WIKIMEDIA_BASE_URL = "https://upload.wikimedia.org/wikipedia/commons/";
 const LOCAL_CATALOG_ROOT = "/catalog/";
-const MISSING_LOCAL_IMAGES = new Set([
-  "d/df/Jaeger-LeCoultre_Reverso_2011.jpg",
-  "4/45/Balance_of_a_wristwatch_Jaeger-LeCoultre_Master_Eight_Days_Perpetual_Squelette.png",
-  "a/a7/Jaeger-LeCoultre_MasterEightDaysPerpetualSquelette_%28cropped_twice%29.png",
-  "8/81/Jaeger-LeCoultre_E502_Futurematic.JPG",
-  "5/58/Jaeger-LeCoultre_Memovox_model_E855_with_calibre_K825.JPG",
-  "2/28/Jaeger-LeCoultre_MasterEightDaysPerpetualSquelette_cropped.png",
-  "2/25/Jaeger-LeCoultre_caliber_K916_with_EU_version_rotor.jpg",
-  "c/c5/Jaeger-LeCoultre_Reverso%2C_anni_2000.jpg",
-  "b/b5/Jaeger-LeCoultre_MasterEightDaysPerpetualSquelette.jpg",
-  "f/fa/Quanti%C3%A8me.jpg",
-  "c/cc/Audemars_Piguet_ref._25831_con_datario%2C_riserva_di_carica_e_tourbillon%2C_risalente_al_1997.jpg",
-  "5/57/Audemars_Piguet_dress_watch_in_oro_carica_manuale%2C_fine_anni_%2770.jpg",
-  "0/05/Audemars_Piguet_Royal_Oak_ref._15202.jpg",
-  "6/68/Audemars_Piguet_Royal_Oak_Cronograph_con_calibro_modulare%2C_ref._25721._Primi_anni_Novanta.jpg",
-  "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo%2C_met%C3%A0_anni_Novanta.jpg",
-  "a/aa/Audemars_2385.jpg",
-  "3/35/Royal_Oak_Automatic_.png",
-  "7/79/Calibro_Audemars_Piguet_7121_con_massa_oscillante_personalizzata_con_il_numero_50%2C_per_celebrare_i_cinquant%27anni_dalla_nascita_del_Royal_Oak._Risalente_al_2022.jpg",
-  "0/0e/Audemars_2385_Royal_Oak_resized.jpg",
-  "7/7d/Audemars_Piguet_CODE_11.59_Chronograph_ref._26393.jpg",
-  "1/1e/Audemars_Piguet_Royal_Oak_Offshore_Diver.jpg",
-  "3/3f/Audemars_Piguet_Royal_Oak_in_oro_e_tantalio%2C_fine_anni_%2780-primi_%2790.jpg",
-  "2/23/Audemars_Piguet_Royal_Oak_Tradition_d%27Excellence_4%2C_ref._25969%2C_risalente_al_2004.jpg",
-  "1/1f/Omega_Seamaster_De_Ville_1970.jpg",
-  "f/fa/Omega_seamaster_120m_1998.jpg",
-  "0/06/Omega_speedmaster_reduced_351050.jpg",
-  "d/df/Cartier_Tank.jpg",
-  "f/fc/Cartier_Tank_Must%2C_2021.jpg",
-  "9/99/Cartier_Santos_1988.jpg",
-]);
 const TIER_TAGS = new Set(["starter", "classic", "chronograph", "tourbillon"]);
 
 function inferCatalogTier(entry: CatalogEntry, tags: string[]): string {
@@ -1146,9 +1115,6 @@ export function getCatalogEntryTags(entry: CatalogEntry): string[] {
 export function getCatalogImageUrl(entry: CatalogEntry): string {
   if (entry.image.url.startsWith(WIKIMEDIA_BASE_URL)) {
     const relativePath = entry.image.url.slice(WIKIMEDIA_BASE_URL.length);
-    if (MISSING_LOCAL_IMAGES.has(relativePath)) {
-      return entry.image.url;
-    }
     return `${LOCAL_CATALOG_ROOT}${relativePath}`;
   }
   return entry.image.url;

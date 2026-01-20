@@ -85,6 +85,9 @@ function sanitizeState(value: unknown): GameState | null {
           (entry): entry is string => typeof entry === "string",
         )
       : [],
+    catalogTierUnlocks: Array.isArray(record.catalogTierUnlocks)
+      ? record.catalogTierUnlocks.filter((entry): entry is string => typeof entry === "string")
+      : [],
     enjoymentCents: isFiniteNumber(record.enjoymentCents) ? Math.max(0, record.enjoymentCents) : 0,
   };
 
