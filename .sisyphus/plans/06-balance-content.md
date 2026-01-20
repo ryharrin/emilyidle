@@ -12,32 +12,18 @@ Purpose: Tune pacing/softcaps and add enough mid/late content that all three lay
 
 ### 06-01 — Balance pass (curves, thresholds, softcaps, pacing)
 
-- [ ] Establish target pacing goals (time-to-first-prestige, etc.)
-  - **Files**: `.sisyphus/plans/02-collection-loop.md` (reference), `src/game/state.ts` (constants)
-  - **Verification**: `pnpm run test:unit`
-  - **Parallelizable**: NO
-
-- [ ] Tune curves and thresholds across Collection/Workshop/Maison
-  - **Files**: `src/game/state.ts`, `src/game/sim.ts`
-  - **Verification**: `pnpm run test:unit`
-  - **Parallelizable**: YES
+- [x] Establish target pacing goals (time-to-first-prestige, etc.)
+- [x] Tune curves and thresholds across Collection/Workshop/Maison
 
 ### 06-02 — Content pass (achievements, events, milestone goals)
 
-- [ ] Add achievements (small initial set) with persistence
-  - **Files**: `src/game/state.ts`, `src/game/persistence.ts`, `src/App.tsx`
-  - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: YES
-
-- [ ] Add simple events/milestones to reduce idle monotony
-  - **Files**: `src/game/sim.ts`, `src/App.tsx`
-  - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: NO
+- [x] Add achievements (small initial set) with persistence
+- [x] Add simple events/milestones to reduce idle monotony
 
 ## Plan-wide verification
 
-- [ ] `pnpm run typecheck`
-- [ ] `pnpm run lint`
-- [ ] `pnpm run build`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run test:e2e`
+- [x] `pnpm run typecheck`
+- [x] `pnpm run lint`
+- [x] `pnpm run build`
+- [x] `pnpm run test:unit`
+- [x] `pnpm run test:e2e`
