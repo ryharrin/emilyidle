@@ -13,44 +13,17 @@ Purpose: Add the first prestige layer (“Workshop”) that resets Collection pr
 
 ### 04-01 — Prestige 1 reset rules
 
-- [ ] Define reset/persist rules for Workshop prestige
-  - **Files**: `src/game/state.ts`, `src/game/persistence.ts`
-  - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: NO
-
-- [ ] Add prestige trigger thresholds + confirmation UI
-  - **Files**: `src/App.tsx`, `src/style.css`
-  - **Verification**: `pnpm run test:e2e`
-  - **Parallelizable**: YES
-
-### 04-02 — Workshop meta-currency + permanent upgrades/unlocks
-
-- [ ] Introduce Workshop meta-currency (e.g., Blueprints/Parts)
-  - **Files**: `src/game/state.ts`, `src/game/sim.ts`
-  - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: NO
-
-- [ ] Add permanent upgrades unlocked by meta-currency
-  - **Files**: `src/game/state.ts`, `src/App.tsx`
-  - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: YES
-
-### 04-03 — Automation and QoL
-
-- [ ] Add simple automation (auto-buy / bulk buy) gated by Workshop progress
-  - **Files**: `src/game/state.ts`, `src/App.tsx`
-  - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
-  - **Parallelizable**: NO
-
-- [ ] Add QoL: milestones, better formatting, basic UI navigation
-  - **Files**: `src/App.tsx`, `src/game/format.ts`, `src/style.css`
-  - **Verification**: `pnpm run test:e2e`
-  - **Parallelizable**: YES
+- [x] Define reset/persist rules for Workshop prestige
+- [x] Add prestige trigger thresholds + confirmation UI
+- [x] Introduce Workshop meta-currency (e.g., Blueprints/Parts)
+- [x] Add permanent upgrades unlocked by meta-currency
+- [x] Add simple automation (auto-buy / bulk buy) gated by Workshop progress
+- [x] Add QoL: milestones, better formatting, basic UI navigation
 
 ## Plan-wide verification
 
-- [ ] `pnpm run typecheck`
-- [ ] `pnpm run lint`
-- [ ] `pnpm run build`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run test:e2e`
+- [x] `pnpm run typecheck`
+- [x] `pnpm run lint`
+- [x] `pnpm run build`
+- [x] `pnpm run test:unit`
+- [x] `pnpm run test:e2e`
