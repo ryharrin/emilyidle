@@ -9,6 +9,7 @@ import {
   getWorkshopPrestigeGain,
   prestigeWorkshop,
 } from "../src/game/state";
+import { decodeSaveString } from "../src/game/persistence";
 
 describe("workshop prestige", () => {
   it("calculates prestige gain from enjoyment", () => {
@@ -72,5 +73,24 @@ describe("workshop prestige", () => {
 
     expect(nextState.workshopBlueprints).toBe(0);
     expect(nextState.workshopUpgrades["vault-calibration"]).toBe(true);
+  });
+
+  it("decodes legacy saves with catalog tiers", () => {
+    const baseState = createInitialState();
+    const legacySave = JSON.stringify({
+      version: 1,
+      savedAt: new Date(0).toISOString(),
+      lastSimulatedAtMs: 0,
+      state: {
+        ...baseState,
+        catalogTierUnlocks: ["starter"],
+      },
+    });
+
+    const decoded = decodeSaveString(legacySave);
+    expect(decoded.ok).toBe(true);
+    if (decoded.ok) {
+      expect(decoded.save.state.catalogTierUnlocks).toContain("starter");
+    }
   });
 });
