@@ -61,6 +61,9 @@ x Deploy the game to github pages for easy access and sharing.
 
 Bug fixes:
 
+- Replace the catalog filter <search> wrapper with a standard form element to avoid invalid tag warnings.
+- Skip the requestAnimationFrame simulation loop during Vitest runs to eliminate act() warnings.
+
 
 Upcoming Major Changes to Game Design:
 - Make enjoyment the main currency. Make better watches increase enjoyment rate. Quartz watches give very small enjoyment, mechanical more, and complications even more.
