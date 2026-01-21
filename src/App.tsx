@@ -1759,7 +1759,11 @@ export default function App() {
                 discovered
               </div>
             </header>
-            <search className="catalog-filters" data-testid="catalog-filters">
+            <form
+              className="catalog-filters"
+              data-testid="catalog-filters"
+              onSubmit={(event) => event.preventDefault()}
+            >
               <div className="filter-field">
                 <label htmlFor="catalog-search">Search</label>
                 <input
@@ -1867,7 +1871,7 @@ export default function App() {
                   ))}
                 </div>
               </div>
-            </search>
+            </form>
             <section className="catalog-collection" aria-labelledby="catalog-collection-title">
               <header className="panel-header">
                 <div>
