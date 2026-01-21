@@ -42,7 +42,7 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.collectionCards)).toHaveCount(4);
     await expect(page.locator(selectors.upgradeCards)).toHaveCount(4);
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
-    await expect(page.locator(selectors.setBonusCards)).toHaveCount(3);
+    await expect(page.locator(selectors.setBonusCards)).toHaveCount(8);
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
@@ -84,6 +84,55 @@ test.describe("collection loop", () => {
   });
 
   test("catalog filters and sources", async ({ page }) => {
+    const seededState = {
+      currencyCents: 0,
+      enjoymentCents: 0,
+      items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+      upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+      unlockedMilestones: ["showcase"],
+      workshopBlueprints: 0,
+      workshopPrestigeCount: 0,
+      workshopUpgrades: {
+        "etched-ledgers": false,
+        "vault-calibration": false,
+        "heritage-templates": false,
+        "automation-blueprints": false,
+      },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now() },
+    );
+
+    await page.goto("/");
+
     const catalogTab = page.getByRole("tab", { name: "Catalog" });
     await catalogTab.click();
 
@@ -107,7 +156,7 @@ test.describe("collection loop", () => {
     await expect(resultsCount).toContainText(`${filteredCount} results`);
 
     const sourcesList = page.getByTestId("sources-list");
-    await expect(sourcesList.getByTestId("source-item")).toHaveCount(initialCount);
+    await expect(sourcesList.getByTestId("source-item")).toHaveCount(59);
     await expect(
       sourcesList.getByTestId("source-links").first().getByRole("link", { name: "Source" }),
     ).toBeVisible();
