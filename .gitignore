@@ -3,6 +3,7 @@ node_modules
 .vite
 dist
 *.log
+test-results/
 
 # editor
 .vscode
