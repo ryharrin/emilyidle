@@ -1,34 +1,153 @@
-# Roadmap: Emily Idle
+# Roadmap
 
-## Overview
+## Current Milestone: v1.0 Core Roadmap
 
-Iterate on a stable, fun idle/watch-collecting loop by shipping small, verifiable improvements in short phases (bugfixes, polish, and future design changes).
+### Phase 1: Foundation
 
-## Domain Expertise
-
-None
-
-## Phases
-
-- [x] **Phase 1: Bugfix Pass** - Fix small correctness and test-signal issues (warnings, invalid markup).
-
-## Phase Details
-
-### Phase 1: Bugfix Pass
-
-**Goal**: Eliminate current dev/test warnings and minor correctness issues without changing gameplay behavior.
-
-**Depends on**: Nothing (planning initialization)
-
-**Research**: Unlikely (internal codebase patterns)
-
-**Plans**: 1 plan
+**Goal:** [To be planned]
+**Depends on:** None
+**Plans:** 1/10 plans complete
 
 Plans:
-- [x] 01-01: Fix invalid markup + remove test warnings; update NOTES bug list
+- [ ] TBD (run /gsd:plan-phase 1 to break down)
 
-## Progress
+**Details:**
+[To be added during planning]
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Bugfix Pass | 1/1 | Complete | 2026-01-21 |
+### Phase 2: Collection Loop
+
+**Goal:** [To be planned]
+**Depends on:** Phase 1
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 2 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 3: Catalog Images
+
+**Goal:** [To be planned]
+**Depends on:** Phase 2
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 3 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 4: Workshop Prestige
+
+**Goal:** [To be planned]
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 4 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 5: Maison Prestige
+
+**Goal:** [To be planned]
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 5 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 6: Balance Content
+
+**Goal:** [To be planned]
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 6 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 7: Packaging Polish
+
+**Goal:** [To be planned]
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 7 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 8: Collection Integration
+
+**Goal:** [To be planned]
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 8 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 9: UI Reveal Polish
+
+**Goal:** [To be planned]
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 9 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 10: Theme Enjoyment
+
+**Goal:** [To be planned]
+**Depends on:** Phase 9
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 10 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 11: Phase 11 Notes
+
+**Goal:** [To be planned]
+**Depends on:** Phase 10
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 11 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 12: major-updates-01-21
+
+**Goal:** [To be planned]
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 12 to break down)
+
+**Details:**
+[To be added during planning]
+
+---
+
+## Upcoming Milestones
+
+- TBD
