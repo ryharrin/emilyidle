@@ -39,7 +39,7 @@ Purpose: Improve pacing/clarity by hiding future layers/unlocks until they’re 
   - **Verification**: `pnpm run build`; manual visual check
   - **Parallelizable**: YES
 
-- [~] Add “vault” / “atelier” language consistency pass
+- [x] Add “vault” / “atelier” language consistency pass
   - **Files**: `src/App.tsx`
   - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: YES

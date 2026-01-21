@@ -13,3 +13,25 @@
 - Added Save tab audio toggles with default-off persistence coverage.
 - Replaced Catalog View select with Owned/Unowned ARIA tabs and tier-based filtering defaults.
 - Expanded catalog with Omega + Cartier entries, including licensed metadata and year coverage.
+
+## Design spikes
+
+### Mini-game improvement (wind-up)
+
+- Mechanic update: Keep the 10-click interaction but add a timed streak window (e.g., 5s) that grants extra clicks if the player keeps a rhythm.
+- Reward impact: Each completed streak extends the wind-up boost duration by +15s (capped at 90s) and increases multiplier from 1.05 → 1.15 while active.
+- UI change: Show a streak meter and remaining bonus duration in the wind modal.
+- Acceptance tests:
+  - Unit: fast 10-click path grants 90s boost + 1.15 multiplier.
+  - Unit: slow clicks (beyond streak window) cap at base 60s + 1.05.
+  - Unit: streak meter resets after close/reopen.
+
+### Prestige improvement
+
+- Mechanic update: Add a visible prestige track that converts a % of workshop blueprints into a permanent vault multiplier (stacking up to 25%).
+- Reward impact: Workshop reset grants 1–3% permanent vault bonus based on enjoyment at reset; Maison reset preserves bonus.
+- UI change: Show permanent bonus in Atelier/Maison panels and on Stats.
+- Acceptance tests:
+  - Unit: prestige track increases multiplier on reset and persists across resets.
+  - Unit: bonus capped at 25%.
+  - Unit: stats panel displays permanent bonus label.

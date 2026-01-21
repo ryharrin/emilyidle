@@ -55,15 +55,15 @@ Bring `phase-11-notes` into a plan-correct, merge-ready state (per all `.sisyphu
 
 ### Definition of Done
 
-- [ ] All discrepancy-fix tasks completed.
-- [ ] All verification gates pass:
-  - [ ] `pnpm run lint`
-  - [ ] `pnpm run typecheck`
-  - [ ] `pnpm run test:unit`
-  - [ ] `pnpm run test:e2e`
-  - [ ] `pnpm run build`
-- [ ] `git status` is clean.
-- [ ] `main` contains the branch changes via a **single squash commit**.
+- [x] All discrepancy-fix tasks completed.
+- [x] All verification gates pass:
+  - [x] `pnpm run lint`
+  - [x] `pnpm run typecheck`
+  - [x] `pnpm run test:unit`
+  - [x] `pnpm run test:e2e`
+  - [x] `pnpm run build`
+- [ ] `git status` is clean. (Pending: requires commit/staging of current changes.)
+- [ ] `main` contains the branch changes via a **single squash commit**. (Pending: explicit request to merge.)
 
 ### Must NOT Have (Guardrails)
 
@@ -155,7 +155,7 @@ Run all gates after applying fixes:
 
   **Acceptance Criteria**:
   - [x] `.sisyphus/plans/phase-11-notes.md` exists in-branch.
-  - [ ] (Optional) `git grep "phase-11-notes\\.md" .sisyphus/plans` shows references resolve.
+  - [x] (Optional) `git grep "phase-11-notes\\.md" .sisyphus/plans` shows references resolve.
 
 - [x] 2. Align plan dealer list with code (plan-only)
 
