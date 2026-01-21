@@ -292,9 +292,10 @@ describe("catalog filters", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        classic: 1,
+        starter: 90,
+        chronograph: 2,
       },
-      unlockedMilestones: ["showcase"],
+      discoveredCatalogEntries: ["cartier-cartier-tank-must-2021"],
     };
 
     localStorage.setItem(
