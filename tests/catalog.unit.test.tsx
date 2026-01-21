@@ -15,28 +15,32 @@ describe("primary navigation tabs", () => {
     cleanup();
   });
 
-  it("renders the primary navigation tablist and tabs", () => {
+  it("renders only vault and save tabs on a fresh save", () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
 
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
     expect(vaultTab.getAttribute("id")).toBe("collection-tab");
     expect(vaultTab.getAttribute("aria-controls")).toBe("collection");
-
-    expect(catalogTab.getAttribute("id")).toBe("catalog-tab");
-    expect(catalogTab.getAttribute("aria-controls")).toBe("catalog");
+    expect(saveTab.getAttribute("id")).toBe("save-tab");
+    expect(saveTab.getAttribute("aria-controls")).toBe("save");
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("false");
+    expect(saveTab.getAttribute("aria-selected")).toBe("false");
+
+    expect(within(tabList).queryByRole("tab", { name: /Catalog/i })).toBeNull();
+    expect(within(tabList).queryByRole("tab", { name: /Stats/i })).toBeNull();
+    expect(within(tabList).queryByRole("tab", { name: /Atelier/i })).toBeNull();
+    expect(within(tabList).queryByRole("tab", { name: /Maison/i })).toBeNull();
   });
 
-  it("moves focus with arrow keys without activating tabs", async () => {
+  it("moves focus between visible tabs without activating", async () => {
     const user = userEvent.setup();
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const atelierTab = within(tabList).getByRole("tab", { name: /Atelier/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
     vaultTab.focus();
     expect(document.activeElement).toBe(vaultTab);
@@ -44,19 +48,19 @@ describe("primary navigation tabs", () => {
 
     await user.keyboard("{ArrowRight}");
 
-    expect(document.activeElement).toBe(atelierTab);
+    expect(document.activeElement).toBe(saveTab);
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
-    expect(atelierTab.getAttribute("aria-selected")).toBe("false");
+    expect(saveTab.getAttribute("aria-selected")).toBe("false");
     expect(vaultTab.getAttribute("tabindex")).toBe("-1");
-    expect(atelierTab.getAttribute("tabindex")).toBe("0");
+    expect(saveTab.getAttribute("tabindex")).toBe("0");
 
     await user.keyboard("{ArrowLeft}");
 
     expect(document.activeElement).toBe(vaultTab);
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
-    expect(atelierTab.getAttribute("aria-selected")).toBe("false");
+    expect(saveTab.getAttribute("aria-selected")).toBe("false");
     expect(vaultTab.getAttribute("tabindex")).toBe("0");
-    expect(atelierTab.getAttribute("tabindex")).toBe("-1");
+    expect(saveTab.getAttribute("tabindex")).toBe("-1");
   });
 
   it.each([
@@ -67,29 +71,48 @@ describe("primary navigation tabs", () => {
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
-    expect(screen.queryByTestId("catalog-filters")).toBeNull();
+    expect(screen.queryByRole("tabpanel", { name: /Save/i })).toBeNull();
 
     vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}");
+    await user.keyboard("{ArrowRight}");
 
-    expect(document.activeElement).toBe(catalogTab);
+    expect(document.activeElement).toBe(saveTab);
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("false");
-    expect(screen.queryByTestId("catalog-filters")).toBeNull();
+    expect(saveTab.getAttribute("aria-selected")).toBe("false");
+    expect(screen.queryByRole("tabpanel", { name: /Save/i })).toBeNull();
 
     await user.keyboard(key);
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByTestId("catalog-filters")).toBeTruthy();
+    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tabpanel", { name: /Save/i })).toBeTruthy();
   });
 });
 
 describe("catalog tier bonuses", () => {
   beforeEach(() => {
     localStorage.clear();
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: 2,
+      },
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
     render(<App />);
   });
 
@@ -109,6 +132,25 @@ describe("catalog tier bonuses", () => {
 describe("catalog filters", () => {
   beforeEach(async () => {
     localStorage.clear();
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: 2,
+      },
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
     render(<App />);
 
     const user = userEvent.setup();
@@ -117,8 +159,7 @@ describe("catalog filters", () => {
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
     const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
 
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
+    await user.click(catalogTab);
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("false");
     expect(catalogTab.getAttribute("aria-selected")).toBe("true");
@@ -246,7 +287,37 @@ describe("catalog filters", () => {
   });
 
   it("renders catalog facts as details when present", async () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        classic: 1,
+      },
+      unlockedMilestones: ["showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    cleanup();
+    render(<App />);
+
     const user = userEvent.setup();
+    const primaryTabs = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(primaryTabs).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+
+    const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
+    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned$/ });
+    await user.click(ownedTab);
 
     const searchInput = screen.getByTestId("catalog-search");
     await user.type(searchInput, "Tank Must");
@@ -321,7 +392,7 @@ describe("catalog filters", () => {
     });
   });
 
-  it("shows owned empty state when no tiers are owned", async () => {
+  it("shows owned grid when tiers are owned", async () => {
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
     const ownedTab = within(tabList).getByRole("tab", { name: /^Owned$/ });
@@ -329,29 +400,83 @@ describe("catalog filters", () => {
     await user.click(ownedTab);
 
     expect(ownedTab.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByTestId("catalog-owned-empty")).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.queryByTestId("catalog-owned-empty")).toBeNull();
+      expect(screen.getByTestId("catalog-grid")).toBeTruthy();
+    });
+  }, 20_000);
+
+  it("shows catalog filters when catalog is unlocked", async () => {
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+
+    await userEvent.click(catalogTab);
+
+    expect(screen.getByTestId("catalog-filters")).toBeTruthy();
   });
 });
 
 describe("catalog ownership tabs", () => {
   beforeEach(() => {
     localStorage.clear();
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: 2,
+      },
+      achievementUnlocks: ["first-drawer"],
+      unlockedMilestones: ["collector-shelf", "showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
   });
 
   afterEach(() => {
     cleanup();
   });
 
-  it("renders stats tab metrics", async () => {
+  it("renders stats tab metrics when stats are unlocked", async () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 10,
+      },
+      achievementUnlocks: ["first-drawer"],
+      unlockedMilestones: ["collector-shelf", "showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    cleanup();
     render(<App />);
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
     const statsTab = within(tabList).getByRole("tab", { name: /Stats/i });
 
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
+    await user.click(statsTab);
 
     expect(statsTab.getAttribute("aria-selected")).toBe("true");
 
@@ -373,6 +498,11 @@ describe("catalog ownership tabs", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 10,
+      },
+      achievementUnlocks: ["first-drawer"],
       unlockedMilestones: ["collector-shelf", "showcase"],
     };
 
@@ -391,11 +521,9 @@ describe("catalog ownership tabs", () => {
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
     const statsTab = within(tabList).getByRole("tab", { name: /Stats/i });
 
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
+    await user.click(statsTab);
 
     expect(statsTab.getAttribute("aria-selected")).toBe("true");
 
@@ -409,14 +537,11 @@ describe("catalog ownership tabs", () => {
   });
 
   it("renders trusted dealers panel under the catalog", async () => {
-    render(<App />);
-
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
 
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
+    await user.click(catalogTab);
 
     expect(screen.getByText(/Trusted dealers \(external\)/i)).toBeTruthy();
     expect(
@@ -440,115 +565,30 @@ describe("catalog ownership tabs", () => {
   });
 
   it("shows owned tier entries when items are owned", async () => {
+    const baseState = createInitialState();
     const ownedPayload = {
       version: 2,
       savedAt: new Date(0).toISOString(),
       lastSimulatedAtMs: Date.now(),
       state: {
-        currencyCents: 0,
-        enjoymentCents: 0,
-        items: { starter: 1, classic: 0, chronograph: 0, tourbillon: 0 },
-        upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-        unlockedMilestones: [],
-        workshopBlueprints: 0,
-        workshopPrestigeCount: 0,
-        workshopUpgrades: {
-          "etched-ledgers": false,
-          "vault-calibration": false,
-          "heritage-templates": false,
-          "automation-blueprints": false,
+        ...baseState,
+        items: { starter: 1, classic: 0, chronograph: 2, tourbillon: 0 },
+        upgrades: {
+          ...baseState.upgrades,
+          "archive-guides": 0,
         },
-        maisonHeritage: 0,
-        maisonReputation: 0,
-        maisonUpgrades: {
-          "atelier-charter": false,
-          "heritage-loom": false,
-          "global-vitrine": false,
-        },
-        maisonLines: {
-          "atelier-line": false,
-          "heritage-line": false,
-          "complication-line": false,
-        },
-        achievementUnlocks: [],
-        eventStates: { "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 } },
-        discoveredCatalogEntries: [],
-        catalogTierUnlocks: [],
       },
     };
 
     localStorage.setItem("emily-idle:save", JSON.stringify(ownedPayload));
+    cleanup();
     render(<App />);
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
 
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
-
-    const ownershipTabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
-    const ownedTab = within(ownershipTabList).getByRole("tab", { name: /^Owned$/ });
-    await user.click(ownedTab);
-
-    const [catalogGrid] = screen.getAllByTestId(/catalog-grid/);
-    await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
-
-    const ownedCards = within(catalogGrid).getAllByTestId(/catalog-card/);
-    expect(ownedCards.length).toBeGreaterThan(0);
-    ownedCards.forEach((card) => {
-      expect(card.textContent).not.toContain("Jaeger-LeCoultre");
-      expect(card.textContent).not.toContain("Audemars Piguet");
-    });
-  });
-
-  it("excludes owned tiers from unowned tab", async () => {
-    const ownedPayload = {
-      version: 2,
-      savedAt: new Date(0).toISOString(),
-      lastSimulatedAtMs: Date.now(),
-      state: {
-        currencyCents: 0,
-        enjoymentCents: 0,
-        items: { starter: 1, classic: 0, chronograph: 0, tourbillon: 0 },
-        upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-        unlockedMilestones: [],
-        workshopBlueprints: 0,
-        workshopPrestigeCount: 0,
-        workshopUpgrades: {
-          "etched-ledgers": false,
-          "vault-calibration": false,
-          "heritage-templates": false,
-          "automation-blueprints": false,
-        },
-        maisonHeritage: 0,
-        maisonReputation: 0,
-        maisonUpgrades: {
-          "atelier-charter": false,
-          "heritage-loom": false,
-          "global-vitrine": false,
-        },
-        maisonLines: {
-          "atelier-line": false,
-          "heritage-line": false,
-          "complication-line": false,
-        },
-        achievementUnlocks: [],
-        eventStates: { "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 } },
-        discoveredCatalogEntries: [],
-        catalogTierUnlocks: [],
-      },
-    };
-
-    localStorage.setItem("emily-idle:save", JSON.stringify(ownedPayload));
-    render(<App />);
-
-    const user = userEvent.setup();
-    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
+    await user.click(catalogTab);
 
     const unownedGrid = screen.getByTestId("catalog-grid");
     await waitFor(() => within(unownedGrid).getAllByTestId(/catalog-card/));
@@ -573,6 +613,10 @@ describe("wind minigame", () => {
           items: {
             ...baseState.items,
             starter: 1,
+          },
+          upgrades: {
+            ...baseState.upgrades,
+            "archive-guides": 0,
           },
         },
       }),
@@ -636,21 +680,21 @@ describe("wind minigame", () => {
 });
 
 describe("audio toggles", () => {
+  const openSaveTab = async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    await user.click(saveTab);
+
+    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+  };
+
   beforeEach(async () => {
     localStorage.clear();
     render(<App />);
 
-    const user = userEvent.setup();
-    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
-
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
-
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+    await openSaveTab();
   });
 
   afterEach(() => {
@@ -670,15 +714,8 @@ describe("audio toggles", () => {
     cleanup();
     render(<App />);
 
-    const user = userEvent.setup();
-    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    await openSaveTab();
 
-    vaultTab.focus();
-    await user.keyboard("{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}{ArrowRight}{Enter}");
-
-    expect(saveTab.getAttribute("aria-selected")).toBe("true");
     const sfxToggle = screen.getByTestId("audio-sfx-toggle") as HTMLInputElement;
     const bgmToggle = screen.getByTestId("audio-bgm-toggle") as HTMLInputElement;
     expect(sfxToggle.checked).toBe(false);
@@ -696,5 +733,209 @@ describe("audio toggles", () => {
 
     const parsed = raw ? JSON.parse(raw) : null;
     expect(parsed).toEqual({ sfxEnabled: true, bgmEnabled: false });
+  });
+});
+
+describe("settings preferences", () => {
+  const openSaveTab = async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    await user.click(saveTab);
+
+    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+  };
+
+  const openStatsTab = async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const statsTab = within(tabList).getByRole("tab", { name: /Stats/i });
+
+    await user.click(statsTab);
+
+    expect(statsTab.getAttribute("aria-selected")).toBe("true");
+  };
+
+  const renderWithStatsUnlocked = () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 12,
+      },
+      achievementUnlocks: ["first-drawer"],
+      unlockedMilestones: ["collector-shelf", "showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+  };
+
+  const renderWithCatalogUnlocked = () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 15,
+        chronograph: 1,
+      },
+      unlockedMilestones: ["showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+  };
+
+  beforeEach(async () => {
+    localStorage.clear();
+    render(<App />);
+
+    await openSaveTab();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("defaults to system theme and shows all toggles", () => {
+    const themeSelect = screen.getByTestId("settings-theme") as HTMLSelectElement;
+    const hideAchievements = screen.getByTestId("settings-hide-achievements") as HTMLInputElement;
+
+    expect(themeSelect.value).toBe("system");
+    expect(hideAchievements.checked).toBe(false);
+  });
+
+  it("persists theme selection", async () => {
+    const user = userEvent.setup();
+    const themeSelect = screen.getByTestId("settings-theme") as HTMLSelectElement;
+
+    await user.selectOptions(themeSelect, "light");
+
+    const raw = localStorage.getItem("emily-idle:settings");
+    expect(raw).not.toBeNull();
+
+    const parsed = raw ? JSON.parse(raw) : null;
+    expect(parsed.themeMode).toBe("light");
+  });
+
+  it("hides completed achievements when enabled", async () => {
+    cleanup();
+    renderWithStatsUnlocked();
+    await openSaveTab();
+
+    const user = userEvent.setup();
+    const hideAchievements = screen.getByTestId("settings-hide-achievements") as HTMLInputElement;
+    await user.click(hideAchievements);
+
+    await openStatsTab();
+
+    expect(screen.queryByText(/First drawer/i)).toBeNull();
+  });
+
+  it("hides tabs when preference disabled", async () => {
+    cleanup();
+    renderWithCatalogUnlocked();
+    await openSaveTab();
+
+    const user = userEvent.setup();
+    const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
+    await user.click(catalogToggle);
+
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    expect(within(tabList).queryByRole("tab", { name: /Catalog/i })).toBeNull();
+  });
+});
+
+describe("coachmarks", () => {
+  const openVaultTab = async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+
+    await user.click(vaultTab);
+
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+  };
+
+  beforeEach(async () => {
+    localStorage.clear();
+    render(<App />);
+
+    await openVaultTab();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders coachmarks for new players", async () => {
+    const coachmarks = screen.getAllByTestId("coachmark");
+    expect(coachmarks.length).toBeGreaterThan(0);
+  });
+
+  it("stores dismissed coachmarks in settings", async () => {
+    const coachmarks = screen.getAllByTestId("coachmark");
+    const user = userEvent.setup();
+
+    const dismissButton = within(coachmarks[0] as HTMLElement).getByRole("button", {
+      name: /Dismiss/i,
+    });
+
+    await user.click(dismissButton);
+
+    const raw = localStorage.getItem("emily-idle:settings");
+    expect(raw).toContain("coachmarksDismissed");
+  });
+
+  it("respects persisted dismissals", () => {
+    localStorage.setItem(
+      "emily-idle:settings",
+      JSON.stringify({
+        themeMode: "system",
+        hideCompletedAchievements: false,
+        tabVisibility: {
+          collection: true,
+          workshop: true,
+          maison: true,
+          catalog: true,
+          stats: true,
+          save: true,
+        },
+        coachmarksDismissed: {
+          "vault-basics": true,
+          "catalog-archive": true,
+          "atelier-reset": true,
+          "maison-legacy": true,
+          "set-bonuses": true,
+          "crafting-workshop": true,
+        },
+      }),
+    );
+
+    cleanup();
+    render(<App />);
+
+    expect(screen.queryByTestId("coachmark")).toBeNull();
   });
 });

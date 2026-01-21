@@ -27,41 +27,54 @@ import {
   canMaisonPrestige,
   canWorkshopPrestige,
   createInitialState,
+  getAchievementProgressRatio,
   getAchievements,
   getActiveSetBonuses,
+  getEffectiveIncomeRateCentsPerSec,
+  getEnjoymentCents,
+  getEnjoymentRateCentsPerSec,
+  getSoftcapEfficiency,
   getCatalogDiscovery,
   getCatalogEntries,
   getCatalogTierBonuses,
   getCatalogTierDefinitions,
   getCatalogTierProgress,
   getCatalogTierUnlocks,
-  getAutoBuyEnabled,
-  getCollectionValueCents,
-  getEffectiveIncomeRateCentsPerSec,
-  getEnjoymentCents,
-  getEnjoymentRateCentsPerSec,
-  getEnjoymentThresholdLabel,
-  getEventIncomeMultiplier,
-  getEventStatusLabel,
+  getCraftedBoostCounts,
+  getCraftedBoosts,
+  getCraftingParts,
+  getCraftingPartsPerWatch,
+  getCraftingRecipes,
+  getUnlockVisibilityRatio,
+  craftBoost,
+  dismantleItem,
+  canCraftBoost,
+  getCraftedBoostIncomeMultiplier,
+  getCraftedBoostCollectionMultiplier,
+  getCraftedBoostPrestigeMultiplier,
+  getWatchItems,
+  getUpgrades,
+  getSetBonuses,
   getEvents,
-  getItemCount,
-  getItemPriceCents,
+  getMaisonUpgrades,
   getMaisonLines,
   getMaisonPrestigeGain,
   getMaisonPrestigeThresholdCents,
+  getEventIncomeMultiplier,
+  getItemCount,
+  getAutoBuyEnabled,
   getMaisonReputationGain,
-  getMaisonUpgrades,
   getMaxAffordableItemCount,
+  getItemPriceCents,
   getMilestoneRequirementLabel,
-  getMilestones,
-  getSetBonuses,
-  getSoftcapEfficiency,
-  getUpgrades,
   getUpgradePriceCents,
-  getWatchItems,
+  getEventStatusLabel,
+  getEnjoymentThresholdLabel,
+  getCollectionValueCents,
   getWorkshopPrestigeGain,
   getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
+  getMilestones,
   isEventActive,
   isItemUnlocked,
   isMaisonRevealReady,
@@ -78,15 +91,42 @@ import { SIM_TICK_MS, step } from "./game/sim";
 const MAX_FRAME_DELTA_MS = 250;
 const AUTO_SAVE_INTERVAL_MS = 2_000;
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
+const SETTINGS_KEY = "emily-idle:settings";
 
 type AudioSettings = {
   sfxEnabled: boolean;
   bgmEnabled: boolean;
 };
 
+type ThemeMode = "system" | "light" | "dark";
+
+type Settings = {
+  themeMode: ThemeMode;
+  hideCompletedAchievements: boolean;
+  tabVisibility: Record<
+    "collection" | "workshop" | "maison" | "catalog" | "stats" | "save",
+    boolean
+  >;
+  coachmarksDismissed: Record<string, boolean>;
+};
+
 const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
   sfxEnabled: false,
   bgmEnabled: false,
+};
+
+const DEFAULT_SETTINGS: Settings = {
+  themeMode: "system",
+  hideCompletedAchievements: false,
+  tabVisibility: {
+    collection: true,
+    workshop: true,
+    maison: true,
+    catalog: true,
+    stats: true,
+    save: true,
+  },
+  coachmarksDismissed: {},
 };
 
 const loadAudioSettings = (): AudioSettings => {
@@ -114,6 +154,67 @@ const loadAudioSettings = (): AudioSettings => {
   }
 };
 
+const loadSettings = (): Settings => {
+  if (typeof window === "undefined") {
+    return DEFAULT_SETTINGS;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_KEY);
+    if (!raw) {
+      return DEFAULT_SETTINGS;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      return DEFAULT_SETTINGS;
+    }
+
+    const themeMode: ThemeMode =
+      parsed.themeMode === "light" || parsed.themeMode === "dark" || parsed.themeMode === "system"
+        ? parsed.themeMode
+        : "system";
+    const hideCompletedAchievements =
+      typeof parsed.hideCompletedAchievements === "boolean"
+        ? parsed.hideCompletedAchievements
+        : false;
+    const tabVisibilityBase =
+      parsed.tabVisibility && typeof parsed.tabVisibility === "object" ? parsed.tabVisibility : {};
+    const tabVisibility = {
+      collection: true,
+      workshop: typeof tabVisibilityBase.workshop === "boolean" ? tabVisibilityBase.workshop : true,
+      maison: typeof tabVisibilityBase.maison === "boolean" ? tabVisibilityBase.maison : true,
+      catalog: typeof tabVisibilityBase.catalog === "boolean" ? tabVisibilityBase.catalog : true,
+      stats: typeof tabVisibilityBase.stats === "boolean" ? tabVisibilityBase.stats : true,
+      save: true,
+    };
+    const coachmarksDismissedBase =
+      parsed.coachmarksDismissed && typeof parsed.coachmarksDismissed === "object"
+        ? parsed.coachmarksDismissed
+        : {};
+    const coachmarksDismissed = Object.entries(coachmarksDismissedBase).reduce<
+      Record<string, boolean>
+    >((acc, [key, value]) => {
+      if (typeof value === "boolean") {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    return {
+      themeMode,
+      hideCompletedAchievements,
+      tabVisibility: {
+        ...DEFAULT_SETTINGS.tabVisibility,
+        ...tabVisibility,
+      },
+      coachmarksDismissed,
+    };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+};
+
 export default function App() {
   const [state, setState] = useState<GameState>(() => createInitialState());
   const [windActiveItemId, setWindActiveItemId] = useState<null | string>(null);
@@ -135,6 +236,33 @@ export default function App() {
   const [maisonResetArmed, setMaisonResetArmed] = useState(false);
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
+  const [settings, setSettings] = useState<Settings>(() => loadSettings());
+  const [devSettings, setDevSettings] = useState(() => ({
+    enabled: false,
+    speedMultiplier: 1,
+  }));
+  const [coachmarksDismissed, setCoachmarksDismissed] = useState<Record<string, boolean>>(
+    () => settings.coachmarksDismissed,
+  );
+
+  const persistSettings = (nextSettings: Settings) => {
+    setSettings(nextSettings);
+    setCoachmarksDismissed(nextSettings.coachmarksDismissed);
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const enabled = params.has("dev");
+    setDevSettings((current) => ({
+      ...current,
+      enabled,
+    }));
+  }, []);
 
   const tabs = useMemo(
     () =>
@@ -149,25 +277,44 @@ export default function App() {
     [],
   );
   type TabId = (typeof tabs)[number]["id"];
-
   const [activeTab, setActiveTab] = useState<TabId>("collection");
   const [focusedTab, setFocusedTab] = useState<TabId>("collection");
   const tabRefs = useRef(new Map<TabId, HTMLButtonElement>());
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    if (settings.themeMode === "system") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", settings.themeMode);
+    }
+  }, [settings.themeMode]);
 
   const focusTabById = (tabId: TabId) => {
     tabRefs.current.get(tabId)?.focus();
   };
 
   const moveTabFocus = (direction: -1 | 1) => {
-    const currentIndex = tabs.findIndex((tab) => tab.id === focusedTab);
-    const nextIndex = (currentIndex + direction + tabs.length) % tabs.length;
-    const nextId = tabs[nextIndex].id;
+    if (visibleTabs.length === 0) {
+      return;
+    }
+
+    const currentIndex = visibleTabs.findIndex((tab) => tab.id === focusedTab);
+    const nextIndex = (currentIndex + direction + visibleTabs.length) % visibleTabs.length;
+    const nextId = visibleTabs[nextIndex].id;
     setFocusedTab(nextId);
     focusTabById(nextId);
   };
 
   const focusEdgeTab = (edge: "first" | "last") => {
-    const nextId = edge === "first" ? tabs[0].id : tabs[tabs.length - 1].id;
+    if (visibleTabs.length === 0) {
+      return;
+    }
+
+    const nextId = edge === "first" ? visibleTabs[0].id : visibleTabs[visibleTabs.length - 1].id;
     setFocusedTab(nextId);
     focusTabById(nextId);
   };
@@ -178,6 +325,10 @@ export default function App() {
   };
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (visibleTabs.length === 0) {
+      return;
+    }
+
     switch (event.key) {
       case "ArrowLeft":
       case "ArrowUp": {
@@ -285,6 +436,12 @@ export default function App() {
         saveDirtyRef.current = true;
       }
 
+      if (devSettings.enabled && devSettings.speedMultiplier !== 1) {
+        if (devSettings.speedMultiplier > 1) {
+          accumulatorMsRef.current += SIM_TICK_MS * (devSettings.speedMultiplier - 1);
+        }
+      }
+
       if (saveDirtyRef.current && Date.now() - lastSavedAtMsRef.current >= AUTO_SAVE_INTERVAL_MS) {
         persistNow("interval");
       }
@@ -336,6 +493,14 @@ export default function App() {
       return;
     }
     setWindProgress(next);
+  };
+
+  const handleDismantle = (itemId: (typeof watchItems)[number]["id"]) => {
+    handlePurchase(dismantleItem(state, itemId, 1));
+  };
+
+  const handleCraftBoost = (boostId: (typeof craftedBoosts)[number]["id"]) => {
+    handlePurchase(craftBoost(state, boostId));
   };
 
   const handleExport = async () => {
@@ -432,10 +597,115 @@ export default function App() {
   const catalogBrands = useMemo(() => {
     return ["All", ...new Set(catalogEntries.map((entry) => entry.brand))];
   }, [catalogEntries]);
+  const showcaseVisibilityRatio = useMemo(
+    () => getUnlockVisibilityRatio(state, "showcase"),
+    [state],
+  );
+  const statsVisibilityRatio = useMemo(
+    () => getAchievementProgressRatio(state, "first-drawer"),
+    [state],
+  );
+  const tabVisibility = useMemo(
+    () => ({
+      collection: true,
+      save: true,
+      catalog: showcaseVisibilityRatio >= 0.8,
+      stats: statsVisibilityRatio >= 0.8,
+      workshop: showWorkshopSection,
+      maison: showMaisonSection,
+    }),
+    [showcaseVisibilityRatio, statsVisibilityRatio, showWorkshopSection, showMaisonSection],
+  );
+  const userTabVisibility = useMemo(
+    () => ({
+      ...settings.tabVisibility,
+      collection: true,
+      save: true,
+    }),
+    [settings.tabVisibility],
+  );
+  const combinedTabVisibility = useMemo(
+    () => ({
+      collection: true,
+      save: true,
+      catalog: tabVisibility.catalog && userTabVisibility.catalog,
+      stats: tabVisibility.stats && userTabVisibility.stats,
+      workshop: tabVisibility.workshop && userTabVisibility.workshop,
+      maison: tabVisibility.maison && userTabVisibility.maison,
+    }),
+    [tabVisibility, userTabVisibility],
+  );
+  const visibleTabs = useMemo(
+    () => tabs.filter((tab) => combinedTabVisibility[tab.id]),
+    [tabs, combinedTabVisibility],
+  );
+
+  useEffect(() => {
+    if (combinedTabVisibility[activeTab]) {
+      return;
+    }
+
+    const nextTab = "collection";
+    if (activeTab !== nextTab) {
+      setActiveTab(nextTab);
+      setFocusedTab(nextTab);
+    }
+  }, [activeTab, combinedTabVisibility]);
+
+  const visibleTabOptions = useMemo(
+    () =>
+      tabs.filter((tab) => tab.id !== "collection" && tab.id !== "save" && tabVisibility[tab.id]),
+    [tabs, tabVisibility],
+  );
+  const coachmarks = useMemo(
+    () => [
+      {
+        id: "vault-basics",
+        title: "Vault basics",
+        text: "Buy watches to earn cash and enjoyment. Interact to trigger special moments.",
+      },
+      {
+        id: "catalog-archive",
+        title: "Catalog archive",
+        text: "Track discovered references to unlock tier bonuses and archive upgrades.",
+      },
+      {
+        id: "atelier-reset",
+        title: "Atelier reset",
+        text: "Prestige the atelier to convert enjoyment into blueprints.",
+      },
+      {
+        id: "maison-legacy",
+        title: "Maison legacy",
+        text: "Prestige further to earn Heritage and Reputation, powering long-term boosts.",
+      },
+      {
+        id: "set-bonuses",
+        title: "Set bonuses",
+        text: "Complete sets to stack permanent income multipliers.",
+      },
+      {
+        id: "crafting-workshop",
+        title: "Crafting workshop",
+        text: "Dismantle watches into parts, then craft permanent boosts.",
+      },
+    ],
+    [],
+  );
+  const activeCoachmarks = coachmarks.filter((mark) => !coachmarksDismissed[mark.id]);
   const ownedCatalogTiers = useMemo(() => {
     return watchItems.filter((item) => getItemCount(state, item.id) > 0).map((item) => item.id);
   }, [state, watchItems]);
   const hasOwnedCatalogTiers = ownedCatalogTiers.length > 0;
+  const archiveCuratorMilestone = milestones.find(
+    (milestone) => milestone.id === "archive-curator",
+  );
+  const archiveCuratorThreshold =
+    archiveCuratorMilestone?.requirement.type === "catalogDiscovery"
+      ? archiveCuratorMilestone.requirement.threshold
+      : 0;
+  const archiveCuratorProgress = Math.min(discoveredCatalogIds.length, archiveCuratorThreshold);
+  const archiveCuratorUnlocked = state.unlockedMilestones.includes("archive-curator");
 
   const filteredCatalogEntries = useMemo(() => {
     const query = catalogSearch.trim().toLowerCase();
@@ -553,7 +823,7 @@ export default function App() {
 
   const discoveredCatalogEntries = useMemo(() => {
     if (discoveredCatalogIds.length === 0) {
-      return catalogEntries;
+      return [];
     }
     const discovered = new Set(discoveredCatalogIds);
     return catalogEntries.filter((entry) => discovered.has(entry.id));
@@ -570,6 +840,20 @@ export default function App() {
   const catalogTierBonusMultiplier = useMemo(
     () => catalogTierBonuses.reduce((total, bonus) => total * bonus.incomeMultiplier, 1),
     [catalogTierBonuses],
+  );
+  const craftingParts = useMemo(() => getCraftingParts(state), [state]);
+  const craftingRecipes = useMemo(() => getCraftingRecipes(), []);
+  const craftedBoosts = useMemo(() => getCraftedBoosts(), []);
+  const craftedBoostCounts = useMemo(() => getCraftedBoostCounts(state), [state]);
+  const craftingPartsPerWatch = useMemo(() => getCraftingPartsPerWatch(), []);
+  const craftedIncomeMultiplier = useMemo(() => getCraftedBoostIncomeMultiplier(state), [state]);
+  const craftedCollectionMultiplier = useMemo(
+    () => getCraftedBoostCollectionMultiplier(state),
+    [state],
+  );
+  const craftedPrestigeMultiplier = useMemo(
+    () => getCraftedBoostPrestigeMultiplier(state),
+    [state],
   );
 
   const showMaisonLines = useMemo(
@@ -624,7 +908,7 @@ export default function App() {
           <p className="muted">Build your vault, unlock new lines, and stack bonuses.</p>
           <nav className="page-nav" aria-label="Primary navigation">
             <div role="tablist" aria-label="Primary navigation">
-              {tabs.map((tab) => {
+              {visibleTabs.map((tab) => {
                 const selected = tab.id === activeTab;
                 const focusable = tab.id === focusedTab;
                 return (
@@ -726,6 +1010,19 @@ export default function App() {
                       {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
                     </div>
                   </header>
+                  {archiveCuratorMilestone && (
+                    <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
+                      <p className="muted">
+                        Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold} ·
+                        Unlock Archive guides to boost vault income.
+                      </p>
+                      <p className="catalog-tier-curator-status">
+                        {archiveCuratorUnlocked
+                          ? "Archive guides are available in Upgrades."
+                          : `Next milestone: ${archiveCuratorMilestone.name}.`}
+                      </p>
+                    </div>
+                  )}
                   <div className="card-stack" data-testid="catalog-tier-list">
                     {catalogTierDefinitions.map((tier) => {
                       const unlocked = catalogTierUnlocks.includes(tier.id);
@@ -825,6 +1122,7 @@ export default function App() {
                   const bulkQty = Math.min(10, Math.max(1, maxAffordable));
                   const bulkPrice = getItemPriceCents(state, item.id, bulkQty);
                   const unlocked = isItemUnlocked(state, item.id);
+                  const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
 
                   return (
                     <div className="card" key={item.id}>
@@ -839,6 +1137,7 @@ export default function App() {
                         {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash each · Memories{" "}
                         {formatMoneyFromCents(item.collectionValueCents)}
                       </p>
+                      <p className="muted">Dismantle value: {partsPerWatch} parts</p>
                       <div className="card-actions">
                         <button
                           type="button"
@@ -850,6 +1149,14 @@ export default function App() {
                           }}
                         >
                           Interact
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary"
+                          disabled={owned <= 0 || partsPerWatch <= 0}
+                          onClick={() => handleDismantle(item.id)}
+                        >
+                          Dismantle
                         </button>
                         <button
                           type="button"
@@ -884,6 +1191,39 @@ export default function App() {
             </div>
 
             <aside className="side-panel">
+              {activeCoachmarks.length > 0 && (
+                <div className="panel" data-testid="coachmarks">
+                  <h3>Coachmarks</h3>
+                  <div className="card-stack">
+                    {activeCoachmarks.map((mark) => (
+                      <div className="card" key={mark.id} data-testid="coachmark">
+                        <div className="card-header">
+                          <div>
+                            <h4>{mark.title}</h4>
+                            <p>{mark.text}</p>
+                          </div>
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={() => {
+                              const nextDismissed = {
+                                ...coachmarksDismissed,
+                                [mark.id]: true,
+                              };
+                              persistSettings({
+                                ...settings,
+                                coachmarksDismissed: nextDismissed,
+                              });
+                            }}
+                          >
+                            Dismiss
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="panel">
                 <h3>Upgrades</h3>
                 <div id="upgrade-list" className="card-stack">
@@ -944,18 +1284,25 @@ export default function App() {
                 <h3>Achievements</h3>
                 <p className="muted">Permanent proof of your vault milestones.</p>
                 <div className="card-stack">
-                  {achievements.map((achievement) => {
-                    const unlocked = state.achievementUnlocks.includes(achievement.id);
-                    return (
-                      <div className="card" key={achievement.id}>
-                        <h3>{achievement.name}</h3>
-                        <p>{achievement.description}</p>
-                        <p className="muted" aria-live="polite">
-                          {unlocked ? "Unlocked" : "Locked"}
-                        </p>
-                      </div>
-                    );
-                  })}
+                  {achievements
+                    .filter((achievement) => {
+                      if (!settings.hideCompletedAchievements) {
+                        return true;
+                      }
+                      return !state.achievementUnlocks.includes(achievement.id);
+                    })
+                    .map((achievement) => {
+                      const unlocked = state.achievementUnlocks.includes(achievement.id);
+                      return (
+                        <div className="card" key={achievement.id}>
+                          <h3>{achievement.name}</h3>
+                          <p>{achievement.description}</p>
+                          <p className="muted" aria-live="polite">
+                            {unlocked ? "Unlocked" : "Locked"}
+                          </p>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
               <div className="panel">
@@ -1003,6 +1350,59 @@ export default function App() {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+              <div className="panel" data-testid="crafting-panel">
+                <h3>Crafting workshop</h3>
+                <p className="muted">
+                  Break down watches into parts, then craft permanent vault boosts.
+                </p>
+                <div className="results-count" data-testid="crafting-parts">
+                  {craftingParts} parts
+                </div>
+                <div className="card-stack" data-testid="crafting-recipes">
+                  {craftingRecipes.map((recipe) => {
+                    const owned = craftedBoostCounts[recipe.id] ?? 0;
+                    const canCraft = canCraftBoost(state, recipe.id);
+                    return (
+                      <div className="card" key={recipe.id}>
+                        <div className="card-header">
+                          <div>
+                            <h4>{recipe.name}</h4>
+                            <p>{recipe.description}</p>
+                          </div>
+                          <div>{owned} crafted</div>
+                        </div>
+                        <p>Cost: {recipe.partsCost} parts</p>
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            className="secondary"
+                            disabled={!canCraft}
+                            onClick={() => handleCraftBoost(recipe.id)}
+                          >
+                            Craft
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="card-stack" data-testid="crafting-boosts">
+                  {craftedBoosts.map((boost) => (
+                    <div className="card" key={boost.id}>
+                      <h4>{boost.name}</h4>
+                      <p>{boost.description}</p>
+                      <p className="muted">
+                        {boost.id === "polished-tools" &&
+                          `Income x${craftedIncomeMultiplier.toFixed(2)}`}
+                        {boost.id === "heritage-springs" &&
+                          `Collection x${craftedCollectionMultiplier.toFixed(2)}`}
+                        {boost.id === "artisan-jig" &&
+                          `Prestige x${craftedPrestigeMultiplier.toFixed(2)}`}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </aside>
@@ -1468,6 +1868,73 @@ export default function App() {
                 </div>
               </div>
             </search>
+            <section className="catalog-collection" aria-labelledby="catalog-collection-title">
+              <header className="panel-header">
+                <div>
+                  <p className="eyebrow">Collection book</p>
+                  <h3 id="catalog-collection-title">Archive shelf</h3>
+                  <p className="muted">Discovered references appear here for quick review.</p>
+                </div>
+                <div className="results-count" data-testid="catalog-discovered-count">
+                  {discoveredCatalogEntries.length} / {catalogEntries.length} discovered
+                </div>
+              </header>
+              {discoveredCatalogEntries.length > 0 ? (
+                <div className="catalog-grid" data-testid="catalog-discovered-grid">
+                  {discoveredCatalogEntries.map((entry) => {
+                    const tags = getCatalogEntryTags(entry);
+                    return (
+                      <article
+                        key={entry.id}
+                        className="catalog-card catalog-discovered"
+                        data-testid="catalog-card"
+                      >
+                        <div className="catalog-media">
+                          <img
+                            src={getCatalogImageUrl(entry)}
+                            alt={`${entry.brand} ${entry.model}`}
+                            loading="lazy"
+                            onError={(event) => {
+                              const target = event.currentTarget;
+                              const placeholder =
+                                "data:image/svg+xml;utf8," +
+                                encodeURIComponent(
+                                  `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
+                                    `<rect width='100%' height='100%' fill='#131720'/>` +
+                                    `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
+                                    `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
+                                    `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
+                                    `</svg>`,
+                                );
+
+                              if (target.dataset.fallback !== "true") {
+                                target.dataset.fallback = "true";
+                                target.src = placeholder;
+                              }
+                            }}
+                          />
+                        </div>
+                        <div className="catalog-content">
+                          <div className="catalog-title">
+                            <div>
+                              <p className="catalog-brand">{entry.brand}</p>
+                              <h3>{entry.model}</h3>
+                            </div>
+                            <p className="catalog-year">{entry.year}</p>
+                          </div>
+                          <p>{entry.description}</p>
+                          <p className="catalog-tags">{tags.join(" · ")}</p>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="catalog-empty" data-testid="catalog-discovered-empty">
+                  No discoveries yet. Track down references in the archive to fill this shelf.
+                </p>
+              )}
+            </section>
             <section
               id="catalog-unowned"
               role="tabpanel"
@@ -1520,16 +1987,6 @@ export default function App() {
                             <p className="catalog-year">{entry.year}</p>
                           </div>
                           <p>{entry.description}</p>
-                          {entry.facts && entry.facts.length > 0 && (
-                            <details className="catalog-facts" data-testid="catalog-facts">
-                              <summary>Facts</summary>
-                              <ul>
-                                {entry.facts.map((fact) => (
-                                  <li key={fact}>{fact}</li>
-                                ))}
-                              </ul>
-                            </details>
-                          )}
                           <p className="catalog-tags">{tags.join(" · ")}</p>
                           <p className="catalog-attribution">{entry.image.attribution}</p>
                         </div>
@@ -1599,7 +2056,7 @@ export default function App() {
                               <p>{entry.description}</p>
                               {entry.facts && entry.facts.length > 0 && (
                                 <details className="catalog-facts" data-testid="catalog-facts">
-                                  <summary>Facts</summary>
+                                  <summary>Collector notes</summary>
                                   <ul>
                                     {entry.facts.map((fact) => (
                                       <li key={fact}>{fact}</li>
@@ -1618,6 +2075,7 @@ export default function App() {
                 </>
               )}
             </section>
+
             <section className="panel catalog-sources" data-testid="catalog-sources">
               <h2>Sources &amp; Licenses</h2>
               <p className="muted">
@@ -1825,6 +2283,131 @@ export default function App() {
                 />
                 Enable BGM
               </label>
+            </fieldset>
+
+            <fieldset className="controls" data-testid="settings-controls">
+              <legend>Preferences</legend>
+              <label>
+                Theme mode
+                <select
+                  data-testid="settings-theme"
+                  value={settings.themeMode}
+                  onChange={(event) => {
+                    persistSettings({
+                      ...settings,
+                      themeMode: event.target.value as ThemeMode,
+                    });
+                  }}
+                >
+                  <option value="system">System</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  data-testid="settings-hide-achievements"
+                  checked={settings.hideCompletedAchievements}
+                  onChange={(event) => {
+                    persistSettings({
+                      ...settings,
+                      hideCompletedAchievements: event.target.checked,
+                    });
+                  }}
+                />
+                Hide completed achievements
+              </label>
+              <div className="controls">
+                <span className="muted">Visible tabs</span>
+                {visibleTabOptions.map((tab) => (
+                  <label key={tab.id}>
+                    <input
+                      type="checkbox"
+                      data-testid={`tab-visibility-${tab.id}`}
+                      checked={settings.tabVisibility[tab.id]}
+                      onChange={(event) => {
+                        persistSettings({
+                          ...settings,
+                          tabVisibility: {
+                            ...settings.tabVisibility,
+                            [tab.id]: event.target.checked,
+                          },
+                        });
+                      }}
+                    />
+                    {tab.label}
+                  </label>
+                ))}
+              </div>
+              {devSettings.enabled && (
+                <div className="controls" data-testid="dev-controls">
+                  <span className="muted">Dev mode</span>
+                  <label>
+                    Speed
+                    <select
+                      value={String(devSettings.speedMultiplier)}
+                      onChange={(event) => {
+                        const value = Number(event.target.value);
+                        setDevSettings((current) => ({
+                          ...current,
+                          speedMultiplier: Number.isFinite(value) ? value : 1,
+                        }));
+                      }}
+                    >
+                      <option value="1">1x</option>
+                      <option value="2">2x</option>
+                      <option value="4">4x</option>
+                    </select>
+                  </label>
+                  <div className="card-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() =>
+                        handlePurchase({
+                          ...state,
+                          currencyCents: state.currencyCents + 500_000,
+                        })
+                      }
+                    >
+                      Grant $500k
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        const boostedItems = watchItems.reduce<Record<string, number>>(
+                          (acc, item) => {
+                            acc[item.id] = Math.max(state.items[item.id] ?? 0, 10);
+                            return acc;
+                          },
+                          {},
+                        );
+                        handlePurchase({
+                          ...state,
+                          items: {
+                            ...state.items,
+                            ...boostedItems,
+                          },
+                          unlockedMilestones: getMilestones().map((milestone) => milestone.id),
+                        });
+                      }}
+                    >
+                      Unlock watches
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        handlePurchase(createInitialState());
+                      }}
+                    >
+                      Reset save
+                    </button>
+                  </div>
+                </div>
+              )}
             </fieldset>
 
             <div className="controls">

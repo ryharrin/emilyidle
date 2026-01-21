@@ -15,25 +15,25 @@ Purpose: Make the catalog/collection feel like part of the core progression loop
 
 ### 08-01 — Local asset pipeline for catalog images
 
-- [ ] Move catalog images from remote URLs to local assets
+- [x] Move catalog images from remote URLs to local assets
   - **Files**: `public/*` (or `src/assets/*`), `src/game/catalog.ts`
   - **Verification**: `pnpm run build`; `pnpm run test:e2e`
   - **Parallelizable**: NO
 
-- [ ] Keep attribution + license metadata intact (even when images are local)
+- [x] Keep attribution + license metadata intact (even when images are local)
   - **Files**: `src/game/catalog.ts`, UI surface in `src/App.tsx`
   - **Verification**: `pnpm run test:e2e` (Sources & Licenses section still lists correct entries)
   - **Parallelizable**: YES
 
 ### 08-02 — Integrate catalog/collection into progression
 
-- [ ] Add gameplay meaning to catalog entries (beyond being a gallery)
+- [x] Add gameplay meaning to catalog entries (beyond being a gallery)
   - Suggested approach: tie specific catalog entries to unlockables (milestones, achievements, events, or set bonuses)
   - **Files**: `src/game/state.ts`, `src/game/catalog.ts`, `src/App.tsx`
   - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: NO
 
-- [ ] Add an in-game “collection book” / “owned references” view
+- [x] Add an in-game “collection book” / “owned references” view
   - Suggested approach: unlock-by-ownership markers, and show which catalog entries you’ve “discovered” via gameplay
   - **Files**: `src/App.tsx`, `src/style.css`, persistence in `src/game/persistence.ts`
   - **Verification**: `pnpm run test:e2e`
@@ -41,23 +41,23 @@ Purpose: Make the catalog/collection feel like part of the core progression loop
 
 ### 08-03 — Persistence and migration for new collection data
 
-- [ ] Persist newly introduced collection/catalog progression state
+- [x] Persist newly introduced collection/catalog progression state
   - **Files**: `src/game/state.ts`, `src/game/persistence.ts`
   - **Verification**: `pnpm run test:unit`; `pnpm run test:e2e`
   - **Parallelizable**: NO
 
-- [ ] Add save migration for existing saves
+- [x] Add save migration for existing saves
   - **Files**: `src/game/persistence.ts`
   - **Verification**: add/update a unit test for decoding legacy saves
   - **Parallelizable**: NO
 
 ## Plan-wide verification
 
-- [ ] `pnpm run lint`
-- [ ] `pnpm run typecheck`
-- [ ] `pnpm run build`
-- [ ] `pnpm run test:unit`
-- [ ] `pnpm run test:e2e`
+- [x] `pnpm run lint`
+- [x] `pnpm run typecheck`
+- [x] `pnpm run build`
+- [x] `pnpm run test:unit`
+- [x] `pnpm run test:e2e`
 
 ## Notes / assumptions
 
