@@ -8,7 +8,15 @@ export const ALL_MILESTONE_IDS: MilestoneId[] = [
   "atelier",
   "archive-curator",
 ];
-export type SetBonusId = "starter-set" | "precision-set" | "complication-set";
+export type SetBonusId =
+  | "starter-set"
+  | "precision-set"
+  | "complication-set"
+  | "oyster-society"
+  | "crown-chronicle"
+  | "seamaster-society"
+  | "dress-circle"
+  | "diver-crew";
 export type WorkshopUpgradeId =
   | "etched-ledgers"
   | "vault-calibration"
@@ -117,6 +125,8 @@ export type AchievementDefinition = {
 
 export type EventId = "auction-weekend" | "emily-birthday" | "wind-up";
 
+export type CraftedBoostId = "polished-tools" | "heritage-springs" | "artisan-jig";
+
 export type CatalogTierId = "starter" | "classic" | "chronograph" | "tourbillon";
 
 export type EventTrigger =
@@ -172,6 +182,8 @@ export type GameState = {
   eventStates: Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }>;
   discoveredCatalogEntries: CatalogEntryId[];
   catalogTierUnlocks: CatalogTierId[];
+  craftingParts: number;
+  craftedBoosts: Record<CraftedBoostId, number>;
 };
 
 export type PersistedGameState = {
@@ -191,6 +203,8 @@ export type PersistedGameState = {
   eventStates?: Record<string, { activeUntilMs: number; nextAvailableAtMs: number }>;
   discoveredCatalogEntries?: string[];
   catalogTierUnlocks?: string[];
+  craftingParts?: number;
+  craftedBoosts?: Record<string, number>;
 };
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
@@ -453,6 +467,41 @@ const SET_BONUSES: ReadonlyArray<SetBonusDefinition> = [
     requirements: { chronograph: 3, tourbillon: 1 },
     incomeMultiplier: 1.15,
   },
+  {
+    id: "oyster-society",
+    name: "Oyster society",
+    description: "Build 12 quartz + 4 automatics for 8% boost.",
+    requirements: { starter: 12, classic: 4 },
+    incomeMultiplier: 1.08,
+  },
+  {
+    id: "crown-chronicle",
+    name: "Crown chronicle",
+    description: "Hold 4 chronographs + 1 tourbillon for 12% boost.",
+    requirements: { chronograph: 4, tourbillon: 1 },
+    incomeMultiplier: 1.12,
+  },
+  {
+    id: "seamaster-society",
+    name: "Seamaster society",
+    description: "Keep 8 automatics + 3 chronographs for 9% boost.",
+    requirements: { classic: 8, chronograph: 3 },
+    incomeMultiplier: 1.09,
+  },
+  {
+    id: "dress-circle",
+    name: "Dress circle",
+    description: "Maintain 10 quartz + 2 automatics for 7% boost.",
+    requirements: { starter: 10, classic: 2 },
+    incomeMultiplier: 1.07,
+  },
+  {
+    id: "diver-crew",
+    name: "Diver crew",
+    description: "Keep 6 automatics + 2 chronographs for 8% boost.",
+    requirements: { classic: 6, chronograph: 2 },
+    incomeMultiplier: 1.08,
+  },
 ];
 
 const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
@@ -536,9 +585,66 @@ const EVENTS: ReadonlyArray<EventDefinition> = [
   },
 ];
 
+const CRAFTED_BOOSTS: ReadonlyArray<{ id: CraftedBoostId; name: string; description: string }> = [
+  {
+    id: "polished-tools",
+    name: "Polished tools",
+    description: "Restored finishing gear that keeps production refined.",
+  },
+  {
+    id: "heritage-springs",
+    name: "Heritage springs",
+    description: "Clockwork springs tuned for consistent output.",
+  },
+  {
+    id: "artisan-jig",
+    name: "Artisan jig",
+    description: "Precision jigs that keep prestige gains steady.",
+  },
+];
+
+const CRAFTING_RECIPES: ReadonlyArray<{
+  id: CraftedBoostId;
+  name: string;
+  description: string;
+  partsCost: number;
+}> = [
+  {
+    id: "polished-tools",
+    name: "Polished tools",
+    description: "Craft a refined tool kit for an income boost.",
+    partsCost: 12,
+  },
+  {
+    id: "heritage-springs",
+    name: "Heritage springs",
+    description: "Craft springs that raise collection bonuses.",
+    partsCost: 18,
+  },
+  {
+    id: "artisan-jig",
+    name: "Artisan jig",
+    description: "Craft a jig that amplifies prestige gains.",
+    partsCost: 24,
+  },
+];
+
 const WORKSHOP_PRESTIGE_THRESHOLD_CENTS = 800_000;
 const MAISON_PRESTIGE_THRESHOLD_CENTS = 4_000_000;
-const REVEAL_THRESHOLD_RATIO = 0.7;
+const REVEAL_THRESHOLD_RATIO = 0.8;
+
+const CRAFTING_PARTS_PER_WATCH: Record<WatchItemId, number> = {
+  starter: 1,
+  classic: 2,
+  chronograph: 4,
+  tourbillon: 8,
+};
+
+const CRAFTED_BOOST_MULTIPLIERS: Record<CraftedBoostId, number> = {
+  "polished-tools": 1.05,
+  "heritage-springs": 1.04,
+  "artisan-jig": 1.12,
+};
 
 const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
 const UPGRADE_LOOKUP = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
@@ -546,6 +652,7 @@ const MILESTONE_LOOKUP = new Map(MILESTONES.map((milestone) => [milestone.id, mi
 const WORKSHOP_UPGRADE_LOOKUP = new Map(WORKSHOP_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const MAISON_UPGRADE_LOOKUP = new Map(MAISON_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const MAISON_LINE_LOOKUP = new Map(MAISON_LINES.map((line) => [line.id, line]));
+const CRAFTING_RECIPE_LOOKUP = new Map(CRAFTING_RECIPES.map((recipe) => [recipe.id, recipe]));
 
 export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
   return WATCH_ITEMS;
@@ -585,6 +692,10 @@ export function getMaisonLines(): ReadonlyArray<MaisonLineDefinition> {
 
 export function getCatalogEntries(): ReadonlyArray<CatalogEntry> {
   return CATALOG_ENTRIES;
+}
+
+export function getCraftingPartsPerWatch(): Record<WatchItemId, number> {
+  return CRAFTING_PARTS_PER_WATCH;
 }
 
 export function getCatalogTierDefinitions(): ReadonlyArray<CatalogTierBonusDefinition> {
@@ -682,6 +793,100 @@ export function getCatalogTierBonuses(state: GameState): CatalogTierBonusDefinit
   return CATALOG_TIER_BONUSES.filter((bonus) => unlocked.has(bonus.id));
 }
 
+export function getCraftingRecipes(): ReadonlyArray<{
+  id: CraftedBoostId;
+  name: string;
+  description: string;
+  partsCost: number;
+}> {
+  return CRAFTING_RECIPES;
+}
+
+export function getCraftedBoosts(): ReadonlyArray<{
+  id: CraftedBoostId;
+  name: string;
+  description: string;
+}> {
+  return CRAFTED_BOOSTS;
+}
+
+export function getCraftedBoostCounts(state: GameState): Record<CraftedBoostId, number> {
+  return state.craftedBoosts;
+}
+
+export function getCraftedBoostIncomeMultiplier(state: GameState): number {
+  const polishedBoosts = state.craftedBoosts["polished-tools"] ?? 0;
+  return Math.pow(CRAFTED_BOOST_MULTIPLIERS["polished-tools"], polishedBoosts);
+}
+
+export function getCraftedBoostCollectionMultiplier(state: GameState): number {
+  const springBoosts = state.craftedBoosts["heritage-springs"] ?? 0;
+  return Math.pow(CRAFTED_BOOST_MULTIPLIERS["heritage-springs"], springBoosts);
+}
+
+export function getCraftedBoostPrestigeMultiplier(state: GameState): number {
+  const jigBoosts = state.craftedBoosts["artisan-jig"] ?? 0;
+  return Math.pow(CRAFTED_BOOST_MULTIPLIERS["artisan-jig"], jigBoosts);
+}
+
+export function getCraftingParts(state: GameState): number {
+  return state.craftingParts;
+}
+
+export function dismantleItem(state: GameState, id: WatchItemId, quantity = 1): GameState {
+  if (quantity <= 0) {
+    return state;
+  }
+
+  const owned = getItemCount(state, id);
+  if (owned < quantity) {
+    return state;
+  }
+
+  const partsGain = (CRAFTING_PARTS_PER_WATCH[id] ?? 0) * quantity;
+  if (partsGain <= 0) {
+    return state;
+  }
+
+  const nextState: GameState = {
+    ...state,
+    items: {
+      ...state.items,
+      [id]: owned - quantity,
+    },
+    craftingParts: state.craftingParts + partsGain,
+  };
+
+  return applyAchievementUnlocks(applyMilestoneUnlocks(nextState));
+}
+
+export function canCraftBoost(state: GameState, id: CraftedBoostId): boolean {
+  const recipe = CRAFTING_RECIPE_LOOKUP.get(id);
+  if (!recipe) {
+    return false;
+  }
+  return state.craftingParts >= recipe.partsCost;
+}
+
+export function craftBoost(state: GameState, id: CraftedBoostId): GameState {
+  const recipe = CRAFTING_RECIPE_LOOKUP.get(id);
+  if (!recipe || state.craftingParts < recipe.partsCost) {
+    return state;
+  }
+
+  const currentCount = state.craftedBoosts[id] ?? 0;
+  const nextState: GameState = {
+    ...state,
+    craftingParts: state.craftingParts - recipe.partsCost,
+    craftedBoosts: {
+      ...state.craftedBoosts,
+      [id]: currentCount + 1,
+    },
+  };
+
+  return applyAchievementUnlocks(applyMilestoneUnlocks(nextState));
+}
+
 export function getCatalogTierIncomeMultiplier(state: GameState): number {
   return getCatalogTierBonuses(state).reduce(
     (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
@@ -725,6 +930,12 @@ export function createInitialState(): GameState {
     eventStates: createEventStates(),
     discoveredCatalogEntries: [],
     catalogTierUnlocks: [],
+    craftingParts: 0,
+    craftedBoosts: {
+      "polished-tools": 0,
+      "heritage-springs": 0,
+      "artisan-jig": 0,
+    },
   };
 }
 
@@ -820,6 +1031,23 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
         CATALOG_TIER_BONUSES.some((bonus) => bonus.id === entry),
       )
     : [];
+  const craftingParts = Number.isFinite(saved.craftingParts ?? 0)
+    ? Math.max(0, Math.floor(saved.craftingParts ?? 0))
+    : 0;
+  const craftedBoostsBase =
+    saved.craftedBoosts && typeof saved.craftedBoosts === "object" ? saved.craftedBoosts : {};
+  const craftedBoosts = CRAFTED_BOOSTS.reduce<Record<CraftedBoostId, number>>(
+    (acc, boost) => {
+      const rawValue = craftedBoostsBase[boost.id as keyof typeof craftedBoostsBase];
+      acc[boost.id] = Number.isFinite(rawValue) ? Math.max(0, Math.floor(rawValue as number)) : 0;
+      return acc;
+    },
+    {
+      "polished-tools": 0,
+      "heritage-springs": 0,
+      "artisan-jig": 0,
+    },
+  );
   const restoredState = applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
     enjoymentCents,
@@ -841,9 +1069,19 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     eventStates,
     discoveredCatalogEntries,
     catalogTierUnlocks,
+    craftingParts,
+    craftedBoosts,
   });
 
   return updateCatalogTierUnlocks(restoredState);
+}
+
+export function applyCraftedBoostIncome(state: GameState): number {
+  return getCraftedBoostIncomeMultiplier(state);
+}
+
+export function applyCraftedBoostCollection(state: GameState): number {
+  return getCraftedBoostCollectionMultiplier(state);
 }
 
 export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): GameState {
@@ -856,6 +1094,8 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
     workshopBlueprints: state.workshopBlueprints + Math.max(0, Math.floor(earnedPrestigeCurrency)),
     workshopPrestigeCount: state.workshopPrestigeCount + 1,
     workshopUpgrades: { ...state.workshopUpgrades },
+    craftingParts: state.craftingParts,
+    craftedBoosts: { ...state.craftedBoosts },
   };
 
   return applyMilestoneUnlocks(applyAchievementUnlocks(nextState));
@@ -864,7 +1104,9 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
 export function getWorkshopPrestigeGain(state: GameState): number {
   const enjoyment = getEnjoymentCents(state);
   const baseGain = Math.max(0, Math.floor((enjoyment / WORKSHOP_PRESTIGE_THRESHOLD_CENTS) ** 0.5));
-  return baseGain + getMaisonLineBlueprintBonus(state);
+  return Math.floor(
+    (baseGain + getMaisonLineBlueprintBonus(state)) * getCraftedBoostPrestigeMultiplier(state),
+  );
 }
 
 export function canWorkshopPrestige(state: GameState): boolean {
@@ -887,6 +1129,8 @@ export function prestigeMaison(state: GameState): GameState {
     maisonReputation: state.maisonReputation + reputationGain,
     maisonUpgrades: { ...state.maisonUpgrades },
     maisonLines: { ...state.maisonLines },
+    craftingParts: state.craftingParts,
+    craftedBoosts: { ...state.craftedBoosts },
   };
 
   return applyMilestoneUnlocks(applyAchievementUnlocks(nextState));
@@ -1007,6 +1251,36 @@ export function getUnlockVisibilityRatio(state: GameState, milestoneId: Mileston
     : 0;
 }
 
+export function getAchievementProgressRatio(
+  state: GameState,
+  achievementId: AchievementId,
+): number {
+  const achievement = ACHIEVEMENTS.find((entry) => entry.id === achievementId);
+  if (!achievement) {
+    return 0;
+  }
+
+  const requirement = achievement.requirement;
+  if (requirement.type === "totalItems") {
+    const owned = getTotalItemCount(state);
+    return requirement.threshold > 0 ? owned / requirement.threshold : 0;
+  }
+
+  if (requirement.type === "collectionValue") {
+    return requirement.thresholdCents > 0
+      ? getCollectionValueCents(state) / requirement.thresholdCents
+      : 0;
+  }
+
+  if (requirement.type === "workshopPrestigeCount") {
+    return requirement.threshold > 0 ? state.workshopPrestigeCount / requirement.threshold : 0;
+  }
+
+  return requirement.threshold > 0
+    ? state.discoveredCatalogEntries.length / requirement.threshold
+    : 0;
+}
+
 export function shouldShowUnlockTag(state: GameState, milestoneId: MilestoneId): boolean {
   return getUnlockVisibilityRatio(state, milestoneId) >= REVEAL_THRESHOLD_RATIO;
 }
@@ -1069,7 +1343,11 @@ export function getCollectionBonusMultiplier(state: GameState): number {
     }
   }
 
-  return multiplier * getMaisonCollectionBonusMultiplier(state);
+  return (
+    multiplier *
+    getMaisonCollectionBonusMultiplier(state) *
+    getCraftedBoostCollectionMultiplier(state)
+  );
 }
 
 export function getWatchAbilityIncomeMultiplier(state: GameState): number {
@@ -1113,6 +1391,7 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
   const maisonMultiplier = getMaisonIncomeMultiplier(state);
   const catalogTierMultiplier = getCatalogTierIncomeMultiplier(state);
   const abilityMultiplier = getWatchAbilityIncomeMultiplier(state);
+  const craftedMultiplier = getCraftedBoostIncomeMultiplier(state);
 
   return (
     (BASE_INCOME_CENTS_PER_SEC + itemIncome) *
@@ -1122,7 +1401,8 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
     workshopMultiplier *
     maisonMultiplier *
     catalogTierMultiplier *
-    abilityMultiplier
+    abilityMultiplier *
+    craftedMultiplier
   );
 }
 

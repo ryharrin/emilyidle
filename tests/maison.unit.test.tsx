@@ -13,18 +13,26 @@ import {
   getEventIncomeMultiplier,
   getWatchAbilityIncomeMultiplier,
   getEventStatusLabel,
+  getAchievementProgressRatio,
   getMaisonCollectionBonusMultiplier,
   getMaisonIncomeMultiplier,
   getMaisonLineBlueprintBonus,
   getMaisonLines,
   getMaisonPrestigeGain,
   getMaisonReputationGain,
+  getMaisonPrestigeThresholdCents,
+  getMilestones,
   getUpgrades,
   getWatchItems,
   getWorkshopPrestigeGain,
+  getWorkshopPrestigeThresholdCents,
   getWorkshopSoftcapValue,
+  getActiveSetBonuses,
   isEventActive,
+  isMaisonRevealReady,
+  isWorkshopRevealReady,
   prestigeMaison,
+  shouldShowUnlockTag,
 } from "../src/game/state";
 
 describe("maison prestige", () => {
@@ -40,6 +48,21 @@ describe("maison prestige", () => {
 
     expect(getMaisonPrestigeGain(baseState)).toBe(0);
     expect(getMaisonPrestigeGain(seededState)).toBe(3);
+  });
+
+  it("activates set bonuses at thresholds", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 12,
+        classic: 4,
+      },
+    };
+
+    const activeBonuses = getActiveSetBonuses(seededState);
+    expect(activeBonuses.map((bonus) => bonus.id)).toContain("oyster-society");
   });
 
   it("lists maison line definitions", () => {
@@ -343,5 +366,78 @@ describe("maison prestige", () => {
     expect(getMaisonIncomeMultiplier(upgradedState)).toBeCloseTo(1.232, 5);
     expect(getMaisonCollectionBonusMultiplier(upgradedState)).toBeCloseTo(1.32, 5);
     expect(getWorkshopSoftcapValue(upgradedState)).toBeCloseTo(72_000, 5);
+  });
+
+  it("reveals workshop, maison, milestone, and achievement unlocks at 80%", () => {
+    const baseState = createInitialState();
+    const workshopThreshold = getWorkshopPrestigeThresholdCents();
+    const maisonThreshold = getMaisonPrestigeThresholdCents();
+
+    const belowWorkshop = {
+      ...baseState,
+      enjoymentCents: workshopThreshold * 0.79,
+    };
+    const atWorkshop = {
+      ...baseState,
+      enjoymentCents: workshopThreshold * 0.8,
+    };
+
+    expect(isWorkshopRevealReady(belowWorkshop)).toBe(false);
+    expect(isWorkshopRevealReady(atWorkshop)).toBe(true);
+
+    const belowMaison = {
+      ...baseState,
+      enjoymentCents: maisonThreshold * 0.79,
+    };
+    const atMaison = {
+      ...baseState,
+      enjoymentCents: maisonThreshold * 0.8,
+    };
+
+    expect(isMaisonRevealReady(belowMaison)).toBe(false);
+    expect(isMaisonRevealReady(atMaison)).toBe(true);
+
+    const showcaseMilestone = getMilestones().find((milestone) => milestone.id === "showcase");
+    if (!showcaseMilestone || showcaseMilestone.requirement.type !== "collectionValue") {
+      throw new Error("Expected showcase milestone with collection value requirement");
+    }
+
+    const belowMilestone = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: 1,
+      },
+    };
+
+    const threshold = showcaseMilestone.requirement.thresholdCents;
+    const atMilestone = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: Math.ceil((threshold * 0.8) / 18_000),
+      },
+    };
+
+    expect(shouldShowUnlockTag(belowMilestone, "showcase")).toBe(false);
+    expect(shouldShowUnlockTag(atMilestone, "showcase")).toBe(true);
+
+    const belowAchievement = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 9,
+      },
+    };
+    const atAchievement = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 10,
+      },
+    };
+
+    expect(getAchievementProgressRatio(belowAchievement, "first-drawer")).toBeLessThan(0.8);
+    expect(getAchievementProgressRatio(atAchievement, "first-drawer")).toBeGreaterThanOrEqual(0.8);
   });
 });

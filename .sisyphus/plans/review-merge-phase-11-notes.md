@@ -155,7 +155,7 @@ Run all gates after applying fixes:
 
   **Acceptance Criteria**:
   - [x] `.sisyphus/plans/phase-11-notes.md` exists in-branch.
-  - [ ] (Optional) `git grep "phase-11-notes\\.md" .sisyphus/plans` shows references resolve.
+  - [x] (Optional) `git grep "phase-11-notes\\.md" .sisyphus/plans` shows references resolve.
 
 - [x] 2. Align plan dealer list with code (plan-only)
 

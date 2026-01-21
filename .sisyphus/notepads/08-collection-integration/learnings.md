@@ -34,3 +34,7 @@
 
 - Extended save sanitization to capture `catalogTierUnlocks` in `src/game/persistence.ts` so catalog tier progress persists explicitly across saves.
 - Catalog discovery counts used for archive-curator/keeper milestones now persist through `discoveredCatalogEntries`, with upgrades initialized in test payloads to include the new `archive-guides` key.
+
+## 2026-01-20 Task: 08-01 attribution verification
+
+- Verified catalog UI still renders attribution and license info from `CATALOG_ENTRIES`, with Sources & Licenses listing `entry.image.attribution` plus `licenseName`/`licenseUrl` alongside local image URLs.
