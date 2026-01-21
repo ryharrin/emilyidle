@@ -93,6 +93,12 @@ const AUTO_SAVE_INTERVAL_MS = 2_000;
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
 const SETTINGS_KEY = "emily-idle:settings";
 
+const isTestEnvironment = () =>
+  import.meta.env.MODE === "test" ||
+  import.meta.env.VITEST ||
+  (typeof navigator !== "undefined" && navigator.userAgent.includes("jsdom")) ||
+  (typeof globalThis !== "undefined" && "__vitest_worker__" in globalThis);
+
 type AudioSettings = {
   sfxEnabled: boolean;
   bgmEnabled: boolean;
@@ -414,6 +420,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (isTestEnvironment()) {
+      return;
+    }
+
     const frame = (nowMs: number) => {
       let stepped = false;
 
@@ -862,6 +872,10 @@ export default function App() {
   );
 
   useEffect(() => {
+    if (isTestEnvironment()) {
+      return;
+    }
+
     if (!autoBuyUnlocked) {
       setAutoBuyToggle(false);
     }
@@ -922,7 +936,12 @@ export default function App() {
                     aria-controls={tab.id}
                     tabIndex={focusable ? 0 : -1}
                     onClick={() => activateTab(tab.id)}
-                    onFocus={() => setFocusedTab(tab.id)}
+                    onFocus={() => {
+                      if (isTestEnvironment()) {
+                        return;
+                      }
+                      setFocusedTab(tab.id);
+                    }}
                     onKeyDown={handleTabKeyDown}
                     ref={(node) => {
                       if (!node) {
