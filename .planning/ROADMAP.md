@@ -138,12 +138,12 @@ Plans:
 
 **Goal:** [To be planned]
 **Depends on:** Phase 11
-**Plans:** 5/10 plans complete
+**Plans:** 6/10 plans complete
 
 Plans:
 - [x] 12-01-PLAN.md
 - [x] 12-02-PLAN.md
-- [ ] 12-03-PLAN.md
+- [x] 12-03-PLAN.md
 - [x] 12-04-PLAN.md
 - [x] 12-05-PLAN.md
 - [x] 12-06-PLAN.md

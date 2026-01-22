@@ -279,6 +279,84 @@ test.describe("collection loop", () => {
     ).toBeVisible();
   });
 
+  test("catalog image assets load", async ({ page }) => {
+    const seededState = {
+      currencyCents: 0,
+      enjoymentCents: 0,
+      items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+      upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+      unlockedMilestones: ["showcase"],
+      workshopBlueprints: 0,
+      workshopPrestigeCount: 0,
+      workshopUpgrades: {
+        "etched-ledgers": false,
+        "vault-calibration": false,
+        "heritage-templates": false,
+        "automation-blueprints": false,
+      },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now() },
+    );
+
+    const imageFilename = "Rolex_GMT-Master_II_ref._126713GRNR.jpg";
+    const imageResponse = page.waitForResponse((response) => {
+      if (!response.url().includes(imageFilename)) {
+        return false;
+      }
+      return response.status() === 200;
+    });
+
+    await page.goto("/emilyidle/");
+    await page.getByRole("tab", { name: "Catalog" }).click();
+
+    await page.getByTestId("catalog-search").fill("126713GRNR");
+
+    const card = page.getByTestId("catalog-grid").getByTestId("catalog-card").first();
+    const image = card.locator("img");
+    await expect(image).toHaveCount(1);
+
+    const src = await image.getAttribute("src");
+    expect(src).not.toBeNull();
+    if (!src) {
+      throw new Error("Expected catalog card image src");
+    }
+
+    expect(src).toContain("/emilyidle/catalog/");
+    expect(src).toContain(imageFilename);
+    expect(src.startsWith("data:image")).toBe(false);
+
+    await imageResponse;
+  });
+
   test("workshop panel shows gain and reset state", async ({ page }) => {
     const workshopPanel = page.locator(selectors.workshopPanel);
     await expect(workshopPanel).toHaveCount(0);
