@@ -29,7 +29,6 @@ import {
   createInitialState,
   getAchievementProgressRatio,
   getAchievements,
-  getActiveSetBonuses,
   getEffectiveIncomeRateCentsPerSec,
   getEnjoymentCents,
   getEnjoymentRateCentsPerSec,
@@ -581,6 +580,10 @@ export default function App() {
   }, [state]);
 
   const watchItems = useMemo(() => getWatchItems(), []);
+  const watchItemLabels = useMemo(
+    () => new Map(watchItems.map((item) => [item.id, item.name])),
+    [watchItems],
+  );
   const milestones = useMemo(() => getMilestones(), []);
   const upgrades = useMemo(() => getUpgrades(), []);
   const setBonuses = useMemo(() => getSetBonuses(), []);
@@ -590,7 +593,6 @@ export default function App() {
   const maisonUpgrades = useMemo(() => getMaisonUpgrades(), []);
   const catalogEntries = useMemo(() => getCatalogEntries(), []);
   const discoveredCatalogIds = useMemo(() => getCatalogDiscovery(state), [state]);
-  const activeBonuses = useMemo(() => getActiveSetBonuses(state), [state]);
   const workshopPrestigeGain = useMemo(() => getWorkshopPrestigeGain(state), [state]);
   const maisonPrestigeGain = useMemo(() => getMaisonPrestigeGain(state), [state]);
   const canPrestigeWorkshop = useMemo(() => canWorkshopPrestige(state), [state]);
@@ -1374,18 +1376,46 @@ export default function App() {
               </div>
               <div className="panel">
                 <h3>Set bonuses</h3>
-                <div id="set-bonus-list" className="card-stack">
+                <div id="set-bonus-list" className="card-stack" data-testid="set-bonus-list">
                   {setBonuses.map((bonus) => {
-                    const active = activeBonuses.some((entry) => entry.id === bonus.id);
+                    const requirements = Object.entries(bonus.requirements) as Array<
+                      [keyof GameState["items"], number]
+                    >;
+                    const progress = requirements.map(([itemId, required]) => {
+                      const requiredCount = required ?? 0;
+                      const currentCount = state.items[itemId] ?? 0;
+                      return {
+                        itemId,
+                        label: watchItemLabels.get(itemId) ?? itemId,
+                        currentCount,
+                        requiredCount,
+                        met: currentCount >= requiredCount,
+                      };
+                    });
+                    const active = progress.every((entry) => entry.met);
+                    const bonusPercent = Math.round((bonus.incomeMultiplier - 1) * 100);
                     return (
-                      <div className="card" key={bonus.id}>
-                        <h3>{bonus.name}</h3>
-                        <p>{bonus.description}</p>
-                        <p className="muted">
-                          {active
-                            ? `Active (+${Math.round((bonus.incomeMultiplier - 1) * 100)}%)`
-                            : "Inactive"}
-                        </p>
+                      <div
+                        className="card"
+                        key={bonus.id}
+                        data-testid="set-bonus-card"
+                        data-bonus-id={bonus.id}
+                      >
+                        <div className="card-header">
+                          <div>
+                            <h3>{bonus.name}</h3>
+                            <p>{bonus.description}</p>
+                          </div>
+                          <div>{active ? "Active" : "Inactive"}</div>
+                        </div>
+                        <div className="set-bonus-progress">
+                          {progress.map((entry) => (
+                            <p className={entry.met ? "" : "muted"} key={entry.itemId}>
+                              {entry.label} {entry.currentCount} / {entry.requiredCount}
+                            </p>
+                          ))}
+                        </div>
+                        <p className="muted">Income +{bonusPercent}%</p>
                       </div>
                     );
                   })}

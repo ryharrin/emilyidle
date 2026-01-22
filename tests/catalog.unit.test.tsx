@@ -3,7 +3,7 @@ import { cleanup, render, screen, within, waitFor } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 
 import App from "../src/App";
-import { createInitialState } from "../src/game/state";
+import { createInitialState, getSetBonuses } from "../src/game/state";
 
 describe("primary navigation tabs", () => {
   beforeEach(() => {
@@ -126,6 +126,54 @@ describe("catalog tier bonuses", () => {
 
     expect(cards).toHaveLength(4);
     expect(panel.textContent).toContain("Tier bonuses");
+  });
+});
+
+describe("set bonuses", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 18,
+        classic: 4,
+        chronograph: 2,
+        tourbillon: 1,
+      },
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders set bonus cards and activates collector quartet", () => {
+    const list = screen.getByTestId("set-bonus-list");
+    const cards = within(list).getAllByTestId("set-bonus-card");
+
+    expect(cards).toHaveLength(getSetBonuses().length);
+
+    const collectorCard = cards.find(
+      (card) => card.getAttribute("data-bonus-id") === "collector-quartet",
+    );
+
+    expect(collectorCard).toBeTruthy();
+    expect(collectorCard?.textContent).toContain("Collector quartet");
+    expect(collectorCard?.textContent).toContain("Active");
   });
 });
 
