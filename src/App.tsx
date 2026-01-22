@@ -92,6 +92,16 @@ const MAX_FRAME_DELTA_MS = 250;
 const AUTO_SAVE_INTERVAL_MS = 2_000;
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
 const SETTINGS_KEY = "emily-idle:settings";
+const TAB_DEFINITIONS = [
+  { id: "collection", label: "Vault" },
+  { id: "workshop", label: "Atelier" },
+  { id: "maison", label: "Maison" },
+  { id: "catalog", label: "Catalog" },
+  { id: "stats", label: "Stats" },
+  { id: "save", label: "Save" },
+] as const;
+
+type TabId = (typeof TAB_DEFINITIONS)[number]["id"];
 
 const isTestEnvironment = () =>
   import.meta.env.MODE === "test" ||
@@ -105,14 +115,12 @@ type AudioSettings = {
 };
 
 type ThemeMode = "system" | "light" | "dark";
+const HIDEABLE_TAB_IDS: TabId[] = ["workshop", "maison", "catalog", "stats"];
 
 type Settings = {
   themeMode: ThemeMode;
   hideCompletedAchievements: boolean;
-  tabVisibility: Record<
-    "collection" | "workshop" | "maison" | "catalog" | "stats" | "save",
-    boolean
-  >;
+  hiddenTabs: TabId[];
   coachmarksDismissed: Record<string, boolean>;
 };
 
@@ -124,14 +132,7 @@ const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
 const DEFAULT_SETTINGS: Settings = {
   themeMode: "system",
   hideCompletedAchievements: false,
-  tabVisibility: {
-    collection: true,
-    workshop: true,
-    maison: true,
-    catalog: true,
-    stats: true,
-    save: true,
-  },
+  hiddenTabs: [],
   coachmarksDismissed: {},
 };
 
@@ -184,16 +185,19 @@ const loadSettings = (): Settings => {
       typeof parsed.hideCompletedAchievements === "boolean"
         ? parsed.hideCompletedAchievements
         : false;
-    const tabVisibilityBase =
-      parsed.tabVisibility && typeof parsed.tabVisibility === "object" ? parsed.tabVisibility : {};
-    const tabVisibility = {
-      collection: true,
-      workshop: typeof tabVisibilityBase.workshop === "boolean" ? tabVisibilityBase.workshop : true,
-      maison: typeof tabVisibilityBase.maison === "boolean" ? tabVisibilityBase.maison : true,
-      catalog: typeof tabVisibilityBase.catalog === "boolean" ? tabVisibilityBase.catalog : true,
-      stats: typeof tabVisibilityBase.stats === "boolean" ? tabVisibilityBase.stats : true,
-      save: true,
-    };
+    const hiddenTabsRaw: unknown[] = Array.isArray(parsed.hiddenTabs) ? parsed.hiddenTabs : [];
+    const hiddenTabs = hiddenTabsRaw.reduce((acc: TabId[], value: unknown) => {
+      if (typeof value !== "string") {
+        return acc;
+      }
+
+      const isHideable = HIDEABLE_TAB_IDS.includes(value as TabId);
+      if (isHideable && !acc.includes(value as TabId)) {
+        acc.push(value as TabId);
+      }
+
+      return acc;
+    }, []);
     const coachmarksDismissedBase =
       parsed.coachmarksDismissed && typeof parsed.coachmarksDismissed === "object"
         ? parsed.coachmarksDismissed
@@ -210,10 +214,7 @@ const loadSettings = (): Settings => {
     return {
       themeMode,
       hideCompletedAchievements,
-      tabVisibility: {
-        ...DEFAULT_SETTINGS.tabVisibility,
-        ...tabVisibility,
-      },
+      hiddenTabs,
       coachmarksDismissed,
     };
   } catch {
@@ -270,19 +271,7 @@ export default function App() {
     }));
   }, []);
 
-  const tabs = useMemo(
-    () =>
-      [
-        { id: "collection", label: "Vault" },
-        { id: "workshop", label: "Atelier" },
-        { id: "maison", label: "Maison" },
-        { id: "catalog", label: "Catalog" },
-        { id: "stats", label: "Stats" },
-        { id: "save", label: "Save" },
-      ] as const,
-    [],
-  );
-  type TabId = (typeof tabs)[number]["id"];
+  const tabs = useMemo(() => TAB_DEFINITIONS, []);
   const [activeTab, setActiveTab] = useState<TabId>("collection");
   const [focusedTab, setFocusedTab] = useState<TabId>("collection");
   const tabRefs = useRef(new Map<TabId, HTMLButtonElement>());
@@ -638,13 +627,17 @@ export default function App() {
     }),
     [showcaseVisibilityRatio, statsVisibilityRatio, showWorkshopSection, showMaisonSection],
   );
+  const hiddenTabsSet = useMemo(() => new Set(settings.hiddenTabs), [settings.hiddenTabs]);
   const userTabVisibility = useMemo(
     () => ({
-      ...settings.tabVisibility,
       collection: true,
       save: true,
+      catalog: true,
+      stats: true,
+      workshop: true,
+      maison: true,
     }),
-    [settings.tabVisibility],
+    [],
   );
   const combinedTabVisibility = useMemo(
     () => ({
@@ -676,7 +669,9 @@ export default function App() {
 
   const visibleTabOptions = useMemo(
     () =>
-      tabs.filter((tab) => tab.id !== "collection" && tab.id !== "save" && tabVisibility[tab.id]),
+      tabs.filter(
+        (tab) => HIDEABLE_TAB_IDS.includes(tab.id) && tabVisibility[tab.id],
+      ),
     [tabs, tabVisibility],
   );
   const coachmarks = useMemo(
@@ -2368,14 +2363,14 @@ export default function App() {
                     <input
                       type="checkbox"
                       data-testid={`tab-visibility-${tab.id}`}
-                      checked={settings.tabVisibility[tab.id]}
+                      checked={!hiddenTabsSet.has(tab.id)}
                       onChange={(event) => {
+                        const nextHiddenTabs = event.target.checked
+                          ? settings.hiddenTabs.filter((hiddenTab) => hiddenTab !== tab.id)
+                          : Array.from(new Set([...settings.hiddenTabs, tab.id]));
                         persistSettings({
                           ...settings,
-                          tabVisibility: {
-                            ...settings.tabVisibility,
-                            [tab.id]: event.target.checked,
-                          },
+                          hiddenTabs: nextHiddenTabs,
                         });
                       }}
                     />
