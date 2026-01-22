@@ -8,9 +8,11 @@ import {
   createInitialState,
   getCollectionBonusMultiplier,
   getCollectionValueCents,
+  getCraftedBoostIncomeMultiplier,
   getEffectiveIncomeRateCentsPerSec,
   getEnjoymentRateCentsPerSec,
   getEventIncomeMultiplier,
+  getCatalogTierIncomeMultiplier,
   getWatchAbilityIncomeMultiplier,
   getEventStatusLabel,
   getAchievementProgressRatio,
@@ -22,8 +24,10 @@ import {
   getMaisonReputationGain,
   getMaisonPrestigeThresholdCents,
   getMilestones,
+  getRawIncomeRateCentsPerSec,
   getUpgrades,
   getWatchItems,
+  getWorkshopIncomeMultiplier,
   getWorkshopPrestigeGain,
   getWorkshopPrestigeThresholdCents,
   getWorkshopSoftcapValue,
@@ -52,17 +56,59 @@ describe("maison prestige", () => {
 
   it("activates set bonuses at thresholds", () => {
     const baseState = createInitialState();
-    const seededState = {
-      ...baseState,
-      items: {
-        ...baseState.items,
-        starter: 12,
-        classic: 4,
-      },
-    };
+    const baseIncome = getRawIncomeRateCentsPerSec(baseState);
 
-    const activeBonuses = getActiveSetBonuses(seededState);
-    expect(activeBonuses.map((bonus) => bonus.id)).toContain("oyster-society");
+    const cases: Array<[string, Partial<typeof baseState.items>]> = [
+      ["oyster-society", { starter: 12, classic: 4 }],
+      ["crown-chronicle", { chronograph: 4, tourbillon: 1 }],
+      ["seamaster-society", { classic: 8, chronograph: 3 }],
+      ["dress-circle", { starter: 10, classic: 2 }],
+      ["diver-crew", { classic: 6, chronograph: 2 }],
+      ["collector-quartet", { starter: 18, classic: 4, chronograph: 2, tourbillon: 1 }],
+    ];
+
+    const watchItems = getWatchItems();
+
+    for (const [bonusId, requiredItems] of cases) {
+      const seededState = {
+        ...baseState,
+        items: {
+          ...baseState.items,
+          ...requiredItems,
+        },
+      };
+
+      const activeBonuses = getActiveSetBonuses(seededState);
+      expect(activeBonuses.map((bonus) => bonus.id)).toContain(bonusId);
+
+      const setBonusMultiplier = activeBonuses.reduce(
+        (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
+        1,
+      );
+
+      const itemIncome = watchItems.reduce(
+        (total, item) => total + (seededState.items[item.id] ?? 0) * item.incomeCentsPerSec,
+        0,
+      );
+
+      const expected =
+        (baseIncome + itemIncome) *
+        setBonusMultiplier *
+        getCollectionBonusMultiplier(seededState) *
+        getWorkshopIncomeMultiplier(seededState) *
+        getMaisonIncomeMultiplier(seededState) *
+        getCatalogTierIncomeMultiplier(seededState) *
+        getWatchAbilityIncomeMultiplier(seededState) *
+        getCraftedBoostIncomeMultiplier(seededState);
+
+      const actual = getRawIncomeRateCentsPerSec(seededState);
+      expect(actual).toBeCloseTo(expected, 6);
+
+      const matched = activeBonuses.find((bonus) => bonus.id === bonusId);
+      expect(matched).toBeTruthy();
+      const withoutTarget = expected / (matched?.incomeMultiplier ?? 1);
+      expect(actual).not.toBeCloseTo(withoutTarget, 6);
+    }
   });
 
   it("lists maison line definitions", () => {

@@ -16,7 +16,8 @@ export type SetBonusId =
   | "crown-chronicle"
   | "seamaster-society"
   | "dress-circle"
-  | "diver-crew";
+  | "diver-crew"
+  | "collector-quartet";
 export type WorkshopUpgradeId =
   | "etched-ledgers"
   | "vault-calibration"
@@ -501,6 +502,13 @@ const SET_BONUSES: ReadonlyArray<SetBonusDefinition> = [
     description: "Keep 6 automatics + 2 chronographs for 8% boost.",
     requirements: { classic: 6, chronograph: 2 },
     incomeMultiplier: 1.08,
+  },
+  {
+    id: "collector-quartet",
+    name: "Collector quartet",
+    description: "Hold 18 quartz + 4 automatics + 2 chronographs + 1 tourbillon for 13% boost.",
+    requirements: { starter: 18, classic: 4, chronograph: 2, tourbillon: 1 },
+    incomeMultiplier: 1.13,
   },
 ];
 
