@@ -281,11 +281,7 @@ export default function App() {
       return;
     }
 
-    if (settings.themeMode === "system") {
-      document.documentElement.removeAttribute("data-theme");
-    } else {
-      document.documentElement.setAttribute("data-theme", settings.themeMode);
-    }
+    document.documentElement.setAttribute("data-theme", settings.themeMode);
   }, [settings.themeMode]);
 
   const focusTabById = (tabId: TabId) => {
