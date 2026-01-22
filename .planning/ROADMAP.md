@@ -138,9 +138,11 @@ Plans:
 
 **Goal:** [To be planned]
 **Depends on:** Phase 11
-**Plans:** 0 plans
+**Plans:** 2/10 plans complete
 
 Plans:
+- [x] 12-01: Reveal gating + tab visibility coverage
+- [x] 12-02: Persistent settings + theme/tab wiring
 - [ ] TBD (run /gsd:plan-phase 12 to break down)
 
 **Details:**
