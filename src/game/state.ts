@@ -34,6 +34,7 @@ export type WatchItemDefinition = {
   basePriceCents: number;
   priceGrowth: number;
   incomeCentsPerSec: number;
+  enjoymentCentsPerSec: number;
   collectionValueCents: number;
   unlockMilestoneId?: MilestoneId;
 };
@@ -349,6 +350,7 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     basePriceCents: 100,
     priceGrowth: 1.14,
     incomeCentsPerSec: 6,
+    enjoymentCentsPerSec: 2,
     collectionValueCents: 140,
   },
   {
@@ -358,6 +360,7 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     basePriceCents: 1_500,
     priceGrowth: 1.165,
     incomeCentsPerSec: 36,
+    enjoymentCentsPerSec: 12,
     collectionValueCents: 2_400,
     unlockMilestoneId: "collector-shelf",
   },
@@ -368,6 +371,7 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     basePriceCents: 10_000,
     priceGrowth: 1.175,
     incomeCentsPerSec: 185,
+    enjoymentCentsPerSec: 60,
     collectionValueCents: 18_000,
     unlockMilestoneId: "showcase",
   },
@@ -378,6 +382,7 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     basePriceCents: 120_000,
     priceGrowth: 1.19,
     incomeCentsPerSec: 980,
+    enjoymentCentsPerSec: 240,
     collectionValueCents: 210_000,
     unlockMilestoneId: "atelier",
   },
@@ -670,6 +675,10 @@ const CRAFTING_RECIPE_LOOKUP = new Map(CRAFTING_RECIPES.map((recipe) => [recipe.
 
 export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
   return WATCH_ITEMS;
+}
+
+export function getWatchItemEnjoymentRateCentsPerSec(item: WatchItemDefinition): number {
+  return item.enjoymentCentsPerSec;
 }
 
 export function getUpgrades(): ReadonlyArray<UpgradeDefinition> {
@@ -1345,7 +1354,11 @@ export function getPrestigeLegacyMultiplier(state: GameState): number {
 }
 
 export function getEnjoymentRateCentsPerSec(state: GameState): number {
-  return (getCollectionValueCents(state) / 100) * getPrestigeLegacyMultiplier(state);
+  const baseRate = WATCH_ITEMS.reduce(
+    (total, item) => total + getItemCount(state, item.id) * getWatchItemEnjoymentRateCentsPerSec(item),
+    0,
+  );
+  return baseRate * getPrestigeLegacyMultiplier(state);
 }
 
 export function getEnjoymentThresholdLabel(cents: number): string {
