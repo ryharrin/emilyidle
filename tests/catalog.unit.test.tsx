@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { vi } from "vitest";
 
 import App from "../src/App";
 import { createInitialState, getSetBonuses } from "../src/game/state";
@@ -717,7 +718,7 @@ describe("wind minigame", () => {
     cleanup();
   });
 
-  it("opens and closes the wind modal and resets progress", async () => {
+  it("opens and closes the wind session modal and resets progress", async () => {
     const user = userEvent.setup();
 
     const interactButtons = screen.getAllByRole("button", { name: /^Interact$/ });
@@ -729,24 +730,26 @@ describe("wind minigame", () => {
     await user.click(enabledInteract as HTMLElement);
 
     expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByTestId("wind-progress").textContent).toContain("0 / 10");
+    expect(screen.getByTestId("wind-progress").textContent).toContain("Round 0 / 5");
+    expect(screen.getByTestId("wind-progress").textContent).toContain("Tension 0 / 10");
 
-    const windButton = screen.getByTestId("wind-button");
-    await user.click(windButton);
-    await user.click(windButton);
-    await user.click(windButton);
+    const steadyButton = screen.getByTestId("wind-steady");
+    await user.click(steadyButton);
+    await user.click(steadyButton);
 
-    expect(screen.getByTestId("wind-progress").textContent).toContain("3 / 10");
+    expect(screen.getByTestId("wind-progress").textContent).toContain("Round 2 / 5");
+    expect(screen.getByTestId("wind-progress").textContent).toContain("Tension 2 / 10");
 
     await user.click(screen.getByTestId("wind-close"));
     expect(screen.queryByRole("dialog")).toBeNull();
 
     await user.click(enabledInteract as HTMLElement);
     expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByTestId("wind-progress").textContent).toContain("0 / 10");
+    expect(screen.getByTestId("wind-progress").textContent).toContain("Round 0 / 5");
+    expect(screen.getByTestId("wind-progress").textContent).toContain("Tension 0 / 10");
   });
 
-  it("activates the wind-up event after 10 clicks", async () => {
+  it("activates the wind-up event after completing 5 rounds", async () => {
     const user = userEvent.setup();
 
     const interactButtons = screen.getAllByRole("button", { name: /^Interact$/ });
@@ -757,13 +760,37 @@ describe("wind minigame", () => {
 
     await user.click(enabledInteract as HTMLElement);
 
-    const windButton = screen.getByTestId("wind-button");
-    for (let i = 0; i < 10; i += 1) {
-      await user.click(windButton);
+    const steadyButton = screen.getByTestId("wind-steady");
+    for (let i = 0; i < 5; i += 1) {
+      await user.click(steadyButton);
     }
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByText(/Current multiplier x1\.05\./i)).toBeTruthy();
+    expect(screen.getByText(/Current multiplier x1\.15\./i)).toBeTruthy();
+  });
+
+  it("ends early on slip and applies the base wind-up reward", async () => {
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.99);
+
+    try {
+      const user = userEvent.setup();
+
+      const interactButtons = screen.getAllByRole("button", { name: /^Interact$/ });
+      const enabledInteract = interactButtons.find(
+        (button) => !(button as HTMLButtonElement).disabled,
+      );
+      expect(enabledInteract).toBeTruthy();
+
+      await user.click(enabledInteract as HTMLElement);
+
+      const pushButton = screen.getByTestId("wind-push");
+      await user.click(pushButton);
+
+      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(screen.getByText(/Current multiplier x1\.05\./i)).toBeTruthy();
+    } finally {
+      randomSpy.mockRestore();
+    }
   });
 });
 

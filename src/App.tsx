@@ -13,7 +13,7 @@ import {
   persistSaveToLocalStorage,
 } from "./game/persistence";
 import {
-  activateManualEvent,
+  applyWindSessionRewards,
   buyItem,
   buyMaisonLine,
   buyMaisonUpgrade,
@@ -84,7 +84,7 @@ import {
   shouldShowUnlockTag,
 } from "./game/state";
 import { getCatalogEntryTags, getCatalogImageUrl } from "./game/catalog";
-import type { GameState } from "./game/state";
+import type { GameState, WatchItemId } from "./game/state";
 import { SIM_TICK_MS, step } from "./game/sim";
 
 const MAX_FRAME_DELTA_MS = 250;
@@ -223,8 +223,9 @@ const loadSettings = (): Settings => {
 
 export default function App() {
   const [state, setState] = useState<GameState>(() => createInitialState());
-  const [windActiveItemId, setWindActiveItemId] = useState<null | string>(null);
-  const [windProgress, setWindProgress] = useState(0);
+  const [windActiveItemId, setWindActiveItemId] = useState<null | WatchItemId>(null);
+  const [windRound, setWindRound] = useState(0);
+  const [windTension, setWindTension] = useState(0);
   const [saveStatus, setSaveStatus] = useState("");
   const [importText, setImportText] = useState("");
   const [catalogSearch, setCatalogSearch] = useState("");
@@ -488,17 +489,37 @@ export default function App() {
 
   const closeWindModal = () => {
     setWindActiveItemId(null);
-    setWindProgress(0);
+    setWindRound(0);
+    setWindTension(0);
   };
 
-  const handleWindClick = () => {
-    const next = windProgress + 1;
-    if (next >= 10) {
-      handlePurchase(activateManualEvent(state, "wind-up", Date.now()));
-      closeWindModal();
+  const resolveWindRound = (nextRound: number, nextTension: number) => {
+    if (!windActiveItemId) {
       return;
     }
-    setWindProgress(next);
+
+    if (nextRound < 5) {
+      setWindRound(nextRound);
+      setWindTension(nextTension);
+      return;
+    }
+
+    handlePurchase(applyWindSessionRewards(state, windActiveItemId, nextTension, Date.now()));
+    closeWindModal();
+  };
+
+  const handleWindSteady = () => {
+    resolveWindRound(windRound + 1, Math.min(10, windTension + 1));
+  };
+
+  const handleWindPush = () => {
+    const succeeded = Math.random() < 0.6;
+    if (!succeeded) {
+      resolveWindRound(5, windTension);
+      return;
+    }
+
+    resolveWindRound(windRound + 1, Math.min(10, windTension + 2));
   };
 
   const handleDismantle = (itemId: (typeof watchItems)[number]["id"]) => {
@@ -1214,7 +1235,8 @@ export default function App() {
                           disabled={owned <= 0}
                           onClick={() => {
                             setWindActiveItemId(item.id);
-                            setWindProgress(0);
+                            setWindRound(0);
+                            setWindTension(0);
                           }}
                         >
                           Interact
@@ -1383,6 +1405,9 @@ export default function App() {
                 <div className="card-stack">
                   {events.map((event) => {
                     const active = isEventActive(state, event.id, nowMs);
+                    const effectiveMultiplier = active
+                      ? state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier
+                      : event.incomeMultiplier;
                     const statusLabel = getEventStatusLabel(state, event.id, nowMs);
                     return (
                       <div className="card" key={event.id}>
@@ -1393,7 +1418,7 @@ export default function App() {
                           </div>
                           <div>{active ? "Live" : "Idle"}</div>
                         </div>
-                        <p>Income x{event.incomeMultiplier.toFixed(2)}</p>
+                        <p>Income x{effectiveMultiplier.toFixed(2)}</p>
                         <p className="muted" aria-live="polite">
                           {statusLabel}
                         </p>
@@ -2337,8 +2362,8 @@ export default function App() {
         <div role="dialog" aria-modal="true" className="panel">
           <header className="panel-header">
             <div>
-              <h2>Wind the watch</h2>
-              <p className="muted">Wind 10 times to trigger a short boost.</p>
+              <h2>Wind session</h2>
+              <p className="muted">Choose your pace. Finish 5 rounds to trigger a boost.</p>
             </div>
             <button
               type="button"
@@ -2349,10 +2374,15 @@ export default function App() {
               Close
             </button>
           </header>
-          <p data-testid="wind-progress">{windProgress} / 10</p>
+          <p data-testid="wind-progress">
+            Round {windRound} / 5 · Tension {windTension} / 10
+          </p>
           <div className="card-actions">
-            <button type="button" data-testid="wind-button" onClick={handleWindClick}>
-              Wind
+            <button type="button" data-testid="wind-steady" onClick={handleWindSteady}>
+              Steady wind
+            </button>
+            <button type="button" className="secondary" data-testid="wind-push" onClick={handleWindPush}>
+              Push it
             </button>
           </div>
         </div>

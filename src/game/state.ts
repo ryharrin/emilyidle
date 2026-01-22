@@ -145,6 +145,12 @@ export type EventDefinition = {
   incomeMultiplier: number;
 };
 
+export type EventState = {
+  activeUntilMs: number;
+  nextAvailableAtMs: number;
+  incomeMultiplier?: number;
+};
+
 export type CatalogTierBonusDefinition = {
   id: CatalogTierId;
   name: string;
@@ -180,7 +186,7 @@ export type GameState = {
   maisonUpgrades: Record<MaisonUpgradeId, boolean>;
   maisonLines: Record<MaisonLineId, boolean>;
   achievementUnlocks: AchievementId[];
-  eventStates: Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }>;
+  eventStates: Record<EventId, EventState>;
   discoveredCatalogEntries: CatalogEntryId[];
   catalogTierUnlocks: CatalogTierId[];
   craftingParts: number;
@@ -201,7 +207,7 @@ export type PersistedGameState = {
   maisonUpgrades?: Record<string, boolean>;
   maisonLines?: Record<string, boolean>;
   achievementUnlocks?: string[];
-  eventStates?: Record<string, { activeUntilMs: number; nextAvailableAtMs: number }>;
+  eventStates?: Record<string, { activeUntilMs: number; nextAvailableAtMs: number; incomeMultiplier?: number }>;
   discoveredCatalogEntries?: string[];
   catalogTierUnlocks?: string[];
   craftingParts?: number;
@@ -997,13 +1003,21 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
 
   if (saved.eventStates) {
     for (const [key, value] of Object.entries(saved.eventStates)) {
-      const stateValue = value as { activeUntilMs: number; nextAvailableAtMs: number };
+      const stateValue = value as {
+        activeUntilMs: number;
+        nextAvailableAtMs: number;
+        incomeMultiplier?: number;
+      };
       if (key in eventStates && Number.isFinite(stateValue?.activeUntilMs)) {
         eventStates[key as EventId] = {
           activeUntilMs: Math.max(0, Math.floor(stateValue.activeUntilMs)),
           nextAvailableAtMs: Number.isFinite(stateValue.nextAvailableAtMs)
             ? Math.max(0, Math.floor(stateValue.nextAvailableAtMs))
             : 0,
+          incomeMultiplier:
+            Number.isFinite(stateValue.incomeMultiplier) && typeof stateValue.incomeMultiplier === "number"
+              ? Math.max(0, stateValue.incomeMultiplier)
+              : undefined,
         };
       }
     }
@@ -1420,7 +1434,7 @@ export function applyEventState(
   collectionValueCents: number,
 ): GameState {
   let changed = false;
-  const nextStates: Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }> = {
+  const nextStates: Record<EventId, EventState> = {
     ...state.eventStates,
   };
 
@@ -1523,7 +1537,8 @@ export function getEffectiveIncomeRateCentsPerSec(state: GameState, eventMultipl
 export function getEventIncomeMultiplier(state: GameState, nowMs: number): number {
   return EVENTS.reduce((multiplier, event) => {
     if (isEventActive(state, event.id, nowMs)) {
-      return multiplier * event.incomeMultiplier;
+      const entry = state.eventStates[event.id];
+      return multiplier * (entry?.incomeMultiplier ?? event.incomeMultiplier);
     }
     return multiplier;
   }, 1);
@@ -1538,7 +1553,12 @@ export function isEventActive(state: GameState, eventId: EventId, nowMs: number)
   return nowMs < entry.activeUntilMs;
 }
 
-export function activateManualEvent(state: GameState, eventId: EventId, nowMs: number): GameState {
+export function activateManualEvent(
+  state: GameState,
+  eventId: EventId,
+  nowMs: number,
+  options?: { incomeMultiplier?: number },
+): GameState {
   const event = EVENTS.find((entry) => entry.id === eventId);
   if (!event || event.trigger.type !== "manual") {
     return state;
@@ -1549,11 +1569,17 @@ export function activateManualEvent(state: GameState, eventId: EventId, nowMs: n
     return state;
   }
 
-  const nextStates: Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }> = {
+  const resolvedMultiplier =
+    typeof options?.incomeMultiplier === "number" && Number.isFinite(options.incomeMultiplier)
+      ? Math.max(0, options.incomeMultiplier)
+      : event.incomeMultiplier;
+
+  const nextStates: Record<EventId, EventState> = {
     ...state.eventStates,
     [eventId]: {
       activeUntilMs: nowMs + event.durationMs,
       nextAvailableAtMs: nowMs + event.durationMs + event.cooldownMs,
+      incomeMultiplier: resolvedMultiplier,
     },
   };
 
@@ -1561,6 +1587,35 @@ export function activateManualEvent(state: GameState, eventId: EventId, nowMs: n
     ...state,
     eventStates: nextStates,
   };
+}
+
+export function getWindUpIncomeMultiplierForTension(tension: number): number {
+  const clamped = Math.max(0, Math.min(10, Math.floor(tension)));
+  return Math.min(1.25, 1.05 + 0.02 * clamped);
+}
+
+export function getWindSessionCashPayoutCents(
+  state: GameState,
+  itemId: WatchItemId,
+  tension: number,
+): number {
+  const item = requireWatchItem(itemId);
+  const clamped = Math.max(0, Math.min(10, Math.floor(tension)));
+  const base = Math.max(1_000, item.incomeCentsPerSec * 10);
+  return Math.max(0, Math.round(base * (1 + clamped / 10)));
+}
+
+export function applyWindSessionRewards(
+  state: GameState,
+  itemId: WatchItemId,
+  tension: number,
+  nowMs: number,
+): GameState {
+  const cashPayout = getWindSessionCashPayoutCents(state, itemId, tension);
+  const withCash = cashPayout > 0 ? { ...state, currencyCents: state.currencyCents + cashPayout } : state;
+  return activateManualEvent(withCash, "wind-up", nowMs, {
+    incomeMultiplier: getWindUpIncomeMultiplierForTension(tension),
+  });
 }
 
 export function getEventStatusLabel(state: GameState, eventId: EventId, nowMs: number): string {
@@ -1923,11 +1978,11 @@ function createUpgradeLevels(): Record<UpgradeId, number> {
 
 function createEventStates(): Record<
   EventId,
-  { activeUntilMs: number; nextAvailableAtMs: number }
+  EventState
 > {
   return EVENTS.reduce(
     (states, event) => ({ ...states, [event.id]: { activeUntilMs: 0, nextAvailableAtMs: 0 } }),
-    {} as Record<EventId, { activeUntilMs: number; nextAvailableAtMs: number }>,
+    {} as Record<EventId, EventState>,
   );
 }
 
