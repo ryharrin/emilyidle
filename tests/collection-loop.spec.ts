@@ -594,6 +594,64 @@ test.describe("collection loop", () => {
     await expect(page.getByText(/Income x/).first()).toBeVisible();
   });
 
+  test("wind session completes and applies rewards (wind)", async ({ page }) => {
+    const seededState = {
+      currencyCents: 0,
+      enjoymentCents: 0,
+      items: { starter: 1 },
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now() },
+    );
+
+    await page.goto("/");
+    await page.getByRole("tab", { name: "Vault" }).click();
+
+    const interactButtons = page.getByRole("button", { name: "Interact" });
+    const interactButton = interactButtons.first();
+    await expect(interactButton).toBeEnabled();
+    await interactButton.click();
+
+    await expect(page.getByRole("dialog")).toBeVisible();
+
+    const steady = page.getByTestId("wind-steady");
+    for (let i = 0; i < 5; i += 1) {
+      await steady.click();
+    }
+
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByText(/Current multiplier x1\.15\./i)).toBeVisible();
+
+    const result = await page.evaluate(() => {
+      const saved = window.localStorage.getItem("emily-idle:save");
+      const parsed = saved ? JSON.parse(saved) : null;
+      const windState = parsed?.state?.eventStates?.["wind-up"];
+      return {
+        currencyCents: parsed?.state?.currencyCents,
+        windUpMultiplier: windState?.incomeMultiplier,
+        windUpActiveUntilMs: windState?.activeUntilMs,
+      };
+    });
+
+    expect(typeof result.currencyCents).toBe("number");
+    expect((result.currencyCents ?? 0) > 0).toBe(true);
+    expect(result.windUpMultiplier).toBeCloseTo(1.15, 5);
+    expect(typeof result.windUpActiveUntilMs).toBe("number");
+  });
+
   test("craft: dismantle watches and craft a boost", async ({ page }) => {
     const seededState = {
       currencyCents: 0,
