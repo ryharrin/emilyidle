@@ -26,6 +26,7 @@ import {
   getMaisonReputationGain,
   getMaisonPrestigeThresholdCents,
   getMilestones,
+  getPrestigeLegacyMultiplier,
   getRawIncomeRateCentsPerSec,
   getUpgrades,
   getWatchItems,
@@ -101,7 +102,8 @@ describe("maison prestige", () => {
         getMaisonIncomeMultiplier(seededState) *
         getCatalogTierIncomeMultiplier(seededState) *
         getWatchAbilityIncomeMultiplier(seededState) *
-        getCraftedBoostIncomeMultiplier(seededState);
+        getCraftedBoostIncomeMultiplier(seededState) *
+        getPrestigeLegacyMultiplier(seededState);
 
       const actual = getRawIncomeRateCentsPerSec(seededState);
       expect(actual).toBeCloseTo(expected, 6);
@@ -111,6 +113,36 @@ describe("maison prestige", () => {
       const withoutTarget = expected / (matched?.incomeMultiplier ?? 1);
       expect(actual).not.toBeCloseTo(withoutTarget, 6);
     }
+  });
+
+  it("applies prestige legacy multiplier to cash and enjoyment rates", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 10,
+      },
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+    };
+
+    const baseIncome = getRawIncomeRateCentsPerSec(seededState);
+    const baseEnjoyment = getEnjoymentRateCentsPerSec(seededState);
+
+    const withWorkshopPrestige = {
+      ...seededState,
+      workshopPrestigeCount: 1,
+    };
+    expect(getPrestigeLegacyMultiplier(withWorkshopPrestige)).toBeCloseTo(1.05, 8);
+    expect(getRawIncomeRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseIncome * 1.05, 6);
+    expect(getEnjoymentRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseEnjoyment * 1.05, 6);
+
+    const withHeritage = {
+      ...seededState,
+      maisonHeritage: 2,
+    };
+    expect(getPrestigeLegacyMultiplier(withHeritage)).toBeCloseTo(Math.pow(1.03, 2), 8);
   });
 
   it("lists maison line definitions", () => {
