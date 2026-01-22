@@ -1100,7 +1100,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
 ];
 
 const WIKIMEDIA_BASE_URL = "https://upload.wikimedia.org/wikipedia/commons/";
-const LOCAL_CATALOG_ROOT = "/catalog/";
+const LOCAL_CATALOG_ROOT = `${import.meta.env.BASE_URL}catalog/`;
 const TIER_TAGS = new Set(["starter", "classic", "chronograph", "tourbillon"]);
 
 function inferCatalogTier(entry: CatalogEntry, tags: string[]): string {
