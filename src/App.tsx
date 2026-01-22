@@ -52,6 +52,7 @@ import {
   getCraftedBoostCollectionMultiplier,
   getCraftedBoostPrestigeMultiplier,
   getWatchItems,
+  getWatchItemEnjoymentRateCentsPerSec,
   getUpgrades,
   getSetBonuses,
   getEvents,
@@ -687,7 +688,7 @@ export default function App() {
       {
         id: "vault-basics",
         title: "Vault basics",
-        text: "Buy watches to earn cash and enjoyment. Interact to trigger special moments.",
+        text: "Buy watches to earn enjoyment and cash. Interact to trigger special moments.",
       },
       {
         id: "catalog-archive",
@@ -1035,20 +1036,20 @@ export default function App() {
           </h2>
           <dl>
             <div>
+              <dt>Vault enjoyment</dt>
+              <dd id="enjoyment">{stats.enjoyment}</dd>
+            </div>
+            <div>
+              <dt>Enjoyment / sec</dt>
+              <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
+            </div>
+            <div>
               <dt>Vault cash</dt>
               <dd id="currency">{stats.cash}</dd>
             </div>
             <div>
               <dt>Cash / sec</dt>
               <dd id="income">{stats.cashRate}</dd>
-            </div>
-            <div>
-              <dt>Enjoyment</dt>
-              <dd id="enjoyment">{stats.enjoyment}</dd>
-            </div>
-            <div>
-              <dt>Enjoyment / sec</dt>
-              <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
             </div>
             <div>
               <dt>Memories</dt>
@@ -1073,7 +1074,7 @@ export default function App() {
           <>
             <div>
               <h2>Collection</h2>
-              <p className="muted">Acquire pieces to grow cash and enjoyment.</p>
+              <p className="muted">Acquire pieces to grow enjoyment and cash.</p>
               <div className="collection-setup" data-testid="collection-setup">
                 <fieldset className="automation-toggle" data-testid="automation-controls">
                   <legend className="automation-label">Automation controls</legend>
@@ -1224,6 +1225,7 @@ export default function App() {
                         <div>{owned} owned</div>
                       </div>
                       <p>
+                        {formatRateFromCentsPerSec(getWatchItemEnjoymentRateCentsPerSec(item))} enjoyment each ·{" "}
                         {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash each · Memories{" "}
                         {formatMoneyFromCents(item.collectionValueCents)}
                       </p>
@@ -2286,20 +2288,20 @@ export default function App() {
             <p className="muted">Derived metrics from your current state.</p>
             <dl className="stats-grid" data-testid="stats-metrics">
               <div>
+                <dt>Vault enjoyment</dt>
+                <dd data-testid="stats-enjoyment">{stats.enjoyment}</dd>
+              </div>
+              <div>
+                <dt>Enjoyment / sec</dt>
+                <dd data-testid="stats-enjoyment-rate">{stats.enjoymentRate}</dd>
+              </div>
+              <div>
                 <dt>Vault cash</dt>
                 <dd data-testid="stats-cash">{stats.cash}</dd>
               </div>
               <div>
                 <dt>Cash / sec</dt>
                 <dd data-testid="stats-cash-rate">{stats.cashRate}</dd>
-              </div>
-              <div>
-                <dt>Enjoyment</dt>
-                <dd data-testid="stats-enjoyment">{stats.enjoyment}</dd>
-              </div>
-              <div>
-                <dt>Enjoyment / sec</dt>
-                <dd data-testid="stats-enjoyment-rate">{stats.enjoymentRate}</dd>
               </div>
               <div>
                 <dt>Memories</dt>
