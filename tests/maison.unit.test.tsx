@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { decodeSaveString, encodeSaveString } from "../src/game/persistence";
+
 import {
   applyAchievementUnlocks,
   applyEventState,
@@ -485,5 +487,87 @@ describe("maison prestige", () => {
 
     expect(getAchievementProgressRatio(belowAchievement, "first-drawer")).toBeLessThan(0.8);
     expect(getAchievementProgressRatio(atAchievement, "first-drawer")).toBeGreaterThanOrEqual(0.8);
+  });
+});
+
+describe("crafting persistence", () => {
+  it("round-trips crafting state through save encode/decode", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      craftingParts: 42,
+      craftedBoosts: {
+        ...baseState.craftedBoosts,
+        "polished-tools": 2,
+        "artisan-jig": 1,
+      },
+    };
+
+    const encoded = encodeSaveString(seededState, Date.now(), new Date(0));
+    const decoded = decodeSaveString(encoded);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) {
+      return;
+    }
+
+    expect(decoded.save.state.craftingParts).toBe(42);
+    expect(decoded.save.state.craftedBoosts["polished-tools"]).toBe(2);
+    expect(decoded.save.state.craftedBoosts["artisan-jig"]).toBe(1);
+  });
+
+  it("defaults crafting fields when missing from payload", () => {
+    const baseState = createInitialState();
+
+    const { craftingParts: _craftingParts, craftedBoosts: _craftedBoosts, ...stateWithoutCrafting } =
+      baseState;
+
+    const raw = JSON.stringify({
+      version: 2,
+      savedAt: new Date(0).toISOString(),
+      lastSimulatedAtMs: 0,
+      state: stateWithoutCrafting,
+    });
+
+    const decoded = decodeSaveString(raw);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) {
+      return;
+    }
+
+    expect(decoded.save.state.craftingParts).toBe(0);
+    expect(decoded.save.state.craftedBoosts["polished-tools"]).toBe(0);
+    expect(decoded.save.state.craftedBoosts["heritage-springs"]).toBe(0);
+    expect(decoded.save.state.craftedBoosts["artisan-jig"]).toBe(0);
+  });
+
+  it("clamps and ignores invalid crafting data", () => {
+    const baseState = createInitialState();
+
+    const encoded = encodeSaveString(baseState, 0, new Date(0));
+    const parsed = JSON.parse(encoded) as {
+      version: number;
+      savedAt: string;
+      lastSimulatedAtMs: number;
+      state: Record<string, unknown>;
+    };
+
+    parsed.state.craftingParts = -5;
+    parsed.state.craftedBoosts = {
+      "polished-tools": "nope",
+      "artisan-jig": 3,
+      "unknown-boost": 99,
+    };
+
+    const raw = JSON.stringify(parsed);
+
+    const decoded = decodeSaveString(raw);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) {
+      return;
+    }
+
+    expect(decoded.save.state.craftingParts).toBe(0);
+    expect(decoded.save.state.craftedBoosts["polished-tools"]).toBe(0);
+    expect(decoded.save.state.craftedBoosts["artisan-jig"]).toBe(3);
   });
 });
