@@ -1096,6 +1096,66 @@ describe("coachmarks", () => {
   });
 });
 
+describe("dev mode controls", () => {
+  const openSaveTab = async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    await user.click(saveTab);
+    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.replaceState({}, "", "/");
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("does not render dev controls when dev mode is disabled", async () => {
+    render(<App />);
+    await openSaveTab();
+
+    expect(screen.queryByTestId("dev-controls")).toBeNull();
+  });
+
+  it("renders dev controls when enabled via ?dev=1", async () => {
+    window.history.replaceState({}, "", "/?dev=1");
+    render(<App />);
+    await openSaveTab();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("dev-controls")).toBeTruthy();
+    });
+  });
+
+  it("grants cash and persists save when enabled", async () => {
+    window.history.replaceState({}, "", "/?dev");
+    render(<App />);
+    await openSaveTab();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("dev-controls")).toBeTruthy();
+    });
+
+    const user = userEvent.setup();
+    const devControls = screen.getByTestId("dev-controls");
+    await user.click(within(devControls).getByRole("button", { name: /Grant/i }));
+
+    const rawSave = localStorage.getItem("emily-idle:save");
+    expect(rawSave).toBeTruthy();
+    if (!rawSave) {
+      throw new Error("Expected save to be written after dev purchase");
+    }
+
+    const parsed = JSON.parse(rawSave);
+    expect(parsed.state.currencyCents).toBeGreaterThan(createInitialState().currencyCents);
+  });
+});
+
 describe("atelier crafting UI", () => {
   const openAtelierTab = async () => {
     const user = userEvent.setup();
