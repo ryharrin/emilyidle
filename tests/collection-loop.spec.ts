@@ -30,6 +30,59 @@ test.describe("collection loop", () => {
     await page.goto("/");
   });
 
+  test("autosave writes fresh localStorage payload", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+    });
+
+    await page.goto("/");
+
+    await page.waitForFunction(
+      () => window.localStorage.getItem("emily-idle:save") !== null,
+      null,
+      { timeout: 3000 },
+    );
+
+    const { raw, parsed } = await page.evaluate(() => {
+      const saved = window.localStorage.getItem("emily-idle:save");
+      return {
+        raw: saved,
+        parsed: saved ? JSON.parse(saved) : null,
+      };
+    });
+
+    expect(raw).not.toBeNull();
+    expect(parsed).not.toBeNull();
+    if (!raw || !parsed) {
+      throw new Error("Expected autosave payload after initial load");
+    }
+    expect(parsed.version).toBe(2);
+    expect(typeof parsed.state.currencyCents).toBe("number");
+
+    await page.getByRole("tab", { name: "Vault" }).click();
+    const firstCard = page.locator(selectors.collectionCards).first();
+    const buyButton = firstCard.getByRole("button", { name: /Buy \(/ });
+    await expect(buyButton).toBeEnabled({ timeout: 15000 });
+    await buyButton.click();
+
+    await page.waitForFunction(
+      () => {
+        const saved = window.localStorage.getItem("emily-idle:save");
+        if (!saved) {
+          return false;
+        }
+        const nextPayload = JSON.parse(saved);
+        return (nextPayload.state?.items?.starter ?? 0) >= 1;
+      },
+      null,
+      { timeout: 3000 },
+    );
+
+    const updatedSave = await page.evaluate(() => window.localStorage.getItem("emily-idle:save"));
+    expect(updatedSave).not.toBeNull();
+    expect(updatedSave).not.toBe(raw);
+  });
+
   test("renders collection structure and stats", async ({ page }) => {
     await page.getByRole("tab", { name: "Vault" }).click();
     await expect(page.locator(selectors.currency)).toHaveText(/\$/);

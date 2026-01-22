@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   formatMoneyFromCents,
@@ -374,6 +374,7 @@ export default function App() {
   const lastFrameAtMsRef = useRef<number | null>(null);
   const accumulatorMsRef = useRef(0);
   const rafRef = useRef<number | null>(null);
+  const stateRef = useRef(state);
 
   useEffect(() => {
     const loadResult = loadSaveFromLocalStorage();
@@ -398,6 +399,27 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const persistNow = useCallback(
+    (reason: string, snapshot: GameState = stateRef.current) => {
+      const nowMs = Date.now();
+      const result = persistSaveToLocalStorage(snapshot, nowMs);
+
+      if (!result.ok) {
+        console.warn(`Autosave failed (${reason}). ${result.error}`);
+        setSaveStatus(`Save failed: ${result.error}`);
+        return;
+      }
+
+      lastSavedAtMsRef.current = nowMs;
+      saveDirtyRef.current = false;
+    },
+    [],
+  );
+
+  useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden" && saveDirtyRef.current) {
         persistNow("visibilitychange:hidden");
@@ -417,7 +439,7 @@ export default function App() {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
     };
-  }, []);
+  }, [persistNow]);
 
   useEffect(() => {
     if (isTestEnvironment()) {
@@ -435,7 +457,11 @@ export default function App() {
 
         while (accumulatorMsRef.current >= SIM_TICK_MS) {
           stepped = true;
-          setState((current: GameState) => step(current, SIM_TICK_MS));
+          setState((current: GameState) => {
+            const nextState = step(current, SIM_TICK_MS);
+            stateRef.current = nextState;
+            return nextState;
+          });
           accumulatorMsRef.current -= SIM_TICK_MS;
         }
       }
@@ -466,27 +492,13 @@ export default function App() {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, []);
-
-  const persistNow = (reason: string) => {
-    const nowMs = Date.now();
-    const result = persistSaveToLocalStorage(state, nowMs);
-
-    if (!result.ok) {
-      console.warn(`Autosave failed (${reason}). ${result.error}`);
-      setSaveStatus(`Save failed: ${result.error}`);
-      return;
-    }
-
-    lastSavedAtMsRef.current = nowMs;
-    saveDirtyRef.current = false;
-  };
+  }, [devSettings.enabled, devSettings.speedMultiplier, persistNow]);
 
   const handlePurchase = (nextState: GameState) => {
     if (nextState !== state) {
       setState(nextState);
       saveDirtyRef.current = true;
-      persistNow("purchase");
+      persistNow("purchase", nextState);
     }
   };
 
@@ -550,7 +562,7 @@ export default function App() {
     accumulatorMsRef.current = 0;
 
     saveDirtyRef.current = true;
-    persistNow("import");
+    persistNow("import", decoded.save.state);
     setSaveStatus(`Imported save from ${decoded.save.savedAt}.`);
   };
 
@@ -599,7 +611,7 @@ export default function App() {
     1,
     state.enjoymentCents / getMaisonPrestigeThresholdCents(),
   );
-  const nowMs = useMemo(() => Date.now(), [state]);
+  const nowMs = Date.now();
   const currentEventMultiplier = useMemo(
     () => getEventIncomeMultiplier(state, nowMs),
     [state, nowMs],
@@ -886,6 +898,11 @@ export default function App() {
       return;
     }
 
+    const autoBuyTrigger = state.currencyCents + state.unlockedMilestones.length;
+    if (autoBuyTrigger <= 0) {
+      return;
+    }
+
     setState((current) => {
       let nextState = current;
 
@@ -909,6 +926,9 @@ export default function App() {
         saveDirtyRef.current = true;
       }
 
+      if (nextState !== current) {
+        stateRef.current = nextState;
+      }
       return nextState;
     });
   }, [autoBuyEnabled, state.currencyCents, state.unlockedMilestones, watchItems]);
