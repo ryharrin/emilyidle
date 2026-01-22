@@ -330,6 +330,45 @@ describe("catalog filters", () => {
     expect(details[0]?.tagName).toBe("DETAILS");
   });
 
+  it("does not render collector notes for unowned entries", async () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: 2,
+      },
+      unlockedMilestones: ["showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    cleanup();
+    render(<App />);
+
+    const user = userEvent.setup();
+    const primaryTabs = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(primaryTabs).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+
+    const searchInput = screen.getByTestId("catalog-search");
+    await user.type(searchInput, "Tank Must");
+
+    const catalogGrid = screen.getByTestId("catalog-grid");
+    await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
+
+    expect(catalogGrid.textContent).toContain("Cartier");
+    expect(screen.queryByTestId("catalog-facts")).toBeNull();
+  });
+
   it("sorts catalog by brand (A→Z)", async () => {
     const user = userEvent.setup();
 
