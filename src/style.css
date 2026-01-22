@@ -392,6 +392,41 @@ button:not(:disabled):hover {
 
 .catalog-panel {
   margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  border-color: #2b2f3a;
+  background:
+    linear-gradient(150deg, rgba(26, 30, 38, 0.92), rgba(12, 14, 18, 0.96)),
+    radial-gradient(circle at 20% 0%, rgba(164, 128, 86, 0.12), transparent 55%),
+    #12151b;
+  box-shadow:
+    0 20px 45px rgba(7, 9, 12, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .catalog-panel {
+  border-color: #d6c9b9;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(244, 236, 226, 0.8)),
+    radial-gradient(circle at 10% 0%, rgba(212, 173, 116, 0.2), transparent 55%),
+    #fbf7f0;
+  box-shadow:
+    0 22px 42px rgba(96, 80, 64, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.catalog-header {
+  align-items: flex-end;
+}
+
+.catalog-header h2 {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 2.1rem;
+}
+
+.catalog-header .muted {
+  max-width: 32rem;
 }
 
 .catalog-collection {
@@ -435,16 +470,22 @@ button:not(:disabled):hover {
   margin-bottom: 22px;
   padding: 16px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(12, 14, 18, 0.65);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(232, 198, 147, 0.2);
+  background:
+    linear-gradient(135deg, rgba(17, 20, 26, 0.92), rgba(10, 12, 16, 0.88)),
+    radial-gradient(circle at 10% 0%, rgba(232, 198, 147, 0.16), transparent 60%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 30px rgba(7, 9, 12, 0.45);
 }
 
 [data-theme="light"] .catalog-filters {
-  border-color: rgba(211, 196, 180, 0.8);
-  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(192, 160, 121, 0.5);
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(245, 237, 226, 0.82)),
+    radial-gradient(circle at 10% 0%, rgba(204, 165, 110, 0.25), transparent 60%);
   box-shadow:
-    0 10px 20px rgba(92, 80, 66, 0.12),
+    0 14px 28px rgba(94, 80, 66, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -458,7 +499,12 @@ button:not(:disabled):hover {
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #9da3ad;
+  color: #d3b07b;
+  font-weight: 600;
+}
+
+[data-theme="light"] .filter-label {
+  color: #9a6a2f;
 }
 
 .catalog-tablist {
@@ -557,29 +603,32 @@ button:not(:disabled):hover {
 
 .catalog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
 }
 
 .catalog-card {
   border-radius: 20px;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(15, 17, 21, 0.2)), #181c25;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(12, 14, 18, 0.45)),
+    #151a22;
+  border: 1px solid rgba(232, 198, 147, 0.18);
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 100%;
   box-shadow:
-    0 18px 32px rgba(8, 10, 14, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 20px 36px rgba(6, 8, 12, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 [data-theme="light"] .catalog-card {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 237, 226, 0.55)), #ffffff;
-  border-color: rgba(220, 205, 186, 0.9);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 235, 221, 0.7)),
+    #ffffff;
+  border-color: rgba(198, 169, 132, 0.6);
   box-shadow:
-    0 18px 32px rgba(94, 80, 66, 0.18),
+    0 20px 34px rgba(94, 80, 66, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
@@ -610,8 +659,8 @@ button:not(:disabled):hover {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  background: linear-gradient(135deg, rgba(22, 25, 31, 0.95), rgba(8, 9, 12, 0.75));
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(28, 22, 16, 0.95), rgba(12, 10, 8, 0.8));
+  border: 1px solid rgba(232, 198, 147, 0.35);
   color: #f0f2f8;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
@@ -619,8 +668,8 @@ button:not(:disabled):hover {
 }
 
 [data-theme="light"] .catalog-badge {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(233, 221, 204, 0.8));
-  border-color: rgba(190, 160, 121, 0.7);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(229, 212, 188, 0.85));
+  border-color: rgba(170, 130, 86, 0.6);
   color: #2a241c;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
@@ -629,9 +678,9 @@ button:not(:disabled):hover {
 
 .catalog-facts {
   border-radius: 12px;
-  border: 1px solid #2a2f3b;
+  border: 1px solid rgba(232, 198, 147, 0.2);
   padding: 8px 12px;
-  background: rgba(15, 17, 21, 0.7);
+  background: rgba(15, 17, 21, 0.8);
 }
 
 .catalog-facts summary {
@@ -639,13 +688,41 @@ button:not(:disabled):hover {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #c5cbd6;
+  color: #e1c99a;
 }
 
 .catalog-facts ul {
   margin: 8px 0 0;
   padding-left: 18px;
-  color: #b6bcc7;
+  color: #c7cdd6;
+}
+
+.catalog-owned-details {
+  border-top: 1px solid rgba(232, 198, 147, 0.2);
+  padding-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.catalog-owned-blurb {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #f0e4d2;
+}
+
+.catalog-owned-specs {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.78rem;
+  color: #c1b6a6;
+}
+
+[data-theme="light"] .catalog-owned-blurb {
+  color: #3a2a18;
+}
+
+[data-theme="light"] .catalog-owned-specs {
+  color: #6a5946;
 }
 
 .catalog-media {
@@ -667,7 +744,7 @@ button:not(:disabled):hover {
 .catalog-content {
   padding: 18px 18px 20px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   letter-spacing: 0.01em;
 }
 
@@ -688,28 +765,45 @@ button:not(:disabled):hover {
 
 .catalog-brand {
   text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.7rem;
-  color: #9da3ad;
+  letter-spacing: 0.24em;
+  font-size: 0.65rem;
+  color: #e2c08d;
+  font-weight: 600;
   margin: 0 0 6px;
 }
 
+[data-theme="light"] .catalog-brand {
+  color: #9a6a2f;
+}
+
 .catalog-year {
-  font-size: 0.8rem;
-  color: #9da3ad;
+  font-size: 0.7rem;
+  color: #d9c7a8;
   margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 198, 147, 0.3);
+  background: rgba(12, 14, 18, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+[data-theme="light"] .catalog-year {
+  color: #7a5a35;
+  border-color: rgba(170, 130, 86, 0.4);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .catalog-tags {
   font-size: 0.78rem;
-  color: #a4abb6;
+  color: #c2b4a0;
   margin: 0;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 [data-theme="light"] .catalog-tags {
-  color: #6b5f52;
+  color: #7b5a35;
 }
 
 .catalog-attribution {

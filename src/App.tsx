@@ -1787,7 +1787,7 @@ export default function App() {
       >
         {activeTab === "catalog" && (
           <>
-            <header className="panel-header">
+            <header className="panel-header catalog-header">
               <div>
                 <p className="eyebrow">Archive</p>
                 <h2>Catalog</h2>
@@ -1804,7 +1804,9 @@ export default function App() {
               onSubmit={(event) => event.preventDefault()}
             >
               <div className="filter-field">
-                <label htmlFor="catalog-search">Search</label>
+                <label className="filter-label" htmlFor="catalog-search">
+                  Search
+                </label>
                 <input
                   id="catalog-search"
                   data-testid="catalog-search"
@@ -1815,7 +1817,9 @@ export default function App() {
                 />
               </div>
               <div className="filter-field">
-                <label htmlFor="catalog-brand">Brand</label>
+                <label className="filter-label" htmlFor="catalog-brand">
+                  Brand
+                </label>
                 <select
                   id="catalog-brand"
                   data-testid="catalog-brand"
@@ -1830,7 +1834,9 @@ export default function App() {
                 </select>
               </div>
               <div className="filter-field">
-                <label htmlFor="catalog-style">Style</label>
+                <label className="filter-label" htmlFor="catalog-style">
+                  Style
+                </label>
                 <select
                   id="catalog-style"
                   data-testid="catalog-style"
@@ -1842,7 +1848,9 @@ export default function App() {
                 </select>
               </div>
               <div className="filter-field">
-                <label htmlFor="catalog-sort">Sort</label>
+                <label className="filter-label" htmlFor="catalog-sort">
+                  Sort
+                </label>
                 <select
                   id="catalog-sort"
                   data-testid="catalog-sort"
@@ -1856,7 +1864,9 @@ export default function App() {
                 </select>
               </div>
               <div className="filter-field">
-                <label htmlFor="catalog-era">Era</label>
+                <label className="filter-label" htmlFor="catalog-era">
+                  Era
+                </label>
                 <select
                   id="catalog-era"
                   data-testid="catalog-era"
@@ -1871,7 +1881,9 @@ export default function App() {
                 </select>
               </div>
               <div className="filter-field">
-                <label htmlFor="catalog-type">Type</label>
+                <label className="filter-label" htmlFor="catalog-type">
+                  Type
+                </label>
                 <select
                   id="catalog-type"
                   data-testid="catalog-type"
