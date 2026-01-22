@@ -29,6 +29,7 @@ import {
   getPrestigeLegacyMultiplier,
   getRawIncomeRateCentsPerSec,
   getUpgrades,
+  getWatchItemEnjoymentRateCentsPerSec,
   getWatchItems,
   getWorkshopIncomeMultiplier,
   getWorkshopPrestigeGain,
@@ -415,9 +416,13 @@ describe("maison prestige", () => {
       getWatchAbilityIncomeMultiplier(stackedHigh);
     expect(getEffectiveIncomeRateCentsPerSec(stackedHigh, 1)).toBeCloseTo(stackedExpected, 6);
 
-    expect(getEnjoymentRateCentsPerSec(stackedHigh)).toBe(
-      getCollectionValueCents(stackedHigh) / 100,
+    const enjoymentRates = new Map(
+      getWatchItems().map((item) => [item.id, getWatchItemEnjoymentRateCentsPerSec(item)]),
     );
+    const expectedEnjoyment =
+      (enjoymentRates.get("starter") ?? 0) * 10 +
+      (enjoymentRates.get("chronograph") ?? 0) * 5;
+    expect(getEnjoymentRateCentsPerSec(stackedHigh)).toBe(expectedEnjoyment);
   });
 
   it("applies maison upgrade effects", () => {
