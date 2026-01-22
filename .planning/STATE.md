@@ -11,10 +11,10 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 ## Current Position
 
 Phase: 13 of 18 (enjoyment-economy-foundation)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-22 - Milestone v2.0 created
-Progress: ░░░░░░░░░░ 0%
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-01-22 - Completed Phase 13 enjoyment economy foundation (13-01, 13-02)
+Progress: ██████████ 100%
 
 ## Accumulated Context
 
@@ -36,6 +36,8 @@ Progress: ░░░░░░░░░░ 0%
 | 12-08 | Approved Wind Session design spike and implemented scaled rewards | 5 rounds, tension, Push/Steady choice |
 | 12-09 | Added prestige legacy multiplier for workshop resets and maison heritage | Always-on compounding boost |
 | 12-10 | Aligned GitHub Pages deploy workflow and verified /emilyidle build output | Pages artifact upload v4 |
+| 13-01 | Use explicit per-watch enjoyment rates and sum owned watches | Stable per-watch display and tier-driven enjoyment economy |
+| 13-02 | Make enjoyment the primary Collection currency in UI and stats | Align player-facing copy with enjoyment-first economy |
 
 ### Deferred Issues
 - None
@@ -44,7 +46,7 @@ Progress: ░░░░░░░░░░ 0%
 - None
 
 ### Session Continuity
-Last session: 2026-01-22T20:31:11Z
-Stopped at: Milestone v2.0 initialization
+Last session: 2026-01-22T22:40:56Z
+Stopped at: Completed Phase 13 enjoyment economy foundation; ready for Phase 14 planning
 
 Resume file: None

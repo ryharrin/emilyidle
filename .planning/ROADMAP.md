@@ -160,10 +160,11 @@ Plans:
 **Goal:** Shift core currency to enjoyment with watch tier modifiers.
 **Depends on:** Phase 12
 **Research:** Unlikely (internal systems)
-**Plans:** 0 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 13 to break down)
+- [x] 13-01-PLAN.md
+- [x] 13-02-PLAN.md
 
 **Details:**
 [To be added during planning]
