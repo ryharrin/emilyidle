@@ -796,26 +796,16 @@ describe("settings preferences", () => {
     expect(saveTab.getAttribute("aria-selected")).toBe("true");
   };
 
-  const openStatsTab = async () => {
-    const user = userEvent.setup();
-    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const statsTab = within(tabList).getByRole("tab", { name: /Stats/i });
-
-    await user.click(statsTab);
-
-    expect(statsTab.getAttribute("aria-selected")).toBe("true");
-  };
-
-  const renderWithStatsUnlocked = () => {
+  const renderWithCatalogUnlocked = () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 12,
+        starter: 15,
+        chronograph: 1,
       },
-      achievementUnlocks: ["first-drawer"],
-      unlockedMilestones: ["collector-shelf", "showcase"],
+      unlockedMilestones: ["showcase"],
     };
 
     localStorage.setItem(
@@ -831,16 +821,11 @@ describe("settings preferences", () => {
     render(<App />);
   };
 
-  const renderWithCatalogUnlocked = () => {
+  const renderWithAchievementsUnlocked = () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
-      items: {
-        ...baseState.items,
-        starter: 15,
-        chronograph: 1,
-      },
-      unlockedMilestones: ["showcase"],
+      achievementUnlocks: ["first-drawer"],
     };
 
     localStorage.setItem(
@@ -875,6 +860,50 @@ describe("settings preferences", () => {
     expect(hideAchievements.checked).toBe(false);
   });
 
+  it("applies theme mode to the document root", async () => {
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-theme")).toBe("system");
+    });
+
+    const user = userEvent.setup();
+    const themeSelect = screen.getByTestId("settings-theme") as HTMLSelectElement;
+
+    await user.selectOptions(themeSelect, "light");
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    });
+
+    await user.selectOptions(themeSelect, "dark");
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    });
+  });
+
+  it("falls back to defaults for invalid JSON", async () => {
+    localStorage.setItem("emily-idle:settings", "not-json");
+
+    cleanup();
+    render(<App />);
+
+    await openSaveTab();
+
+    const themeSelect = screen.getByTestId("settings-theme") as HTMLSelectElement;
+    const hideAchievements = screen.getByTestId("settings-hide-achievements") as HTMLInputElement;
+
+    expect(themeSelect.value).toBe("system");
+    expect(hideAchievements.checked).toBe(false);
+  });
+
+  it("defaults unlocked tab toggles to visible", async () => {
+    cleanup();
+    renderWithCatalogUnlocked();
+
+    await openSaveTab();
+
+    const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
+    expect(catalogToggle.checked).toBe(true);
+  });
+
   it("persists theme selection", async () => {
     const user = userEvent.setup();
     const themeSelect = screen.getByTestId("settings-theme") as HTMLSelectElement;
@@ -888,21 +917,38 @@ describe("settings preferences", () => {
     expect(parsed.themeMode).toBe("light");
   });
 
+  it("persists achievement visibility preference", async () => {
+    const user = userEvent.setup();
+    const hideAchievements = screen.getByTestId("settings-hide-achievements") as HTMLInputElement;
+
+    await user.click(hideAchievements);
+
+    const raw = localStorage.getItem("emily-idle:settings");
+    const parsed = raw ? JSON.parse(raw) : null;
+    expect(parsed.hideCompletedAchievements).toBe(true);
+  });
+
   it("hides completed achievements when enabled", async () => {
     cleanup();
-    renderWithStatsUnlocked();
-    await openSaveTab();
+    renderWithAchievementsUnlocked();
 
     const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    await user.click(vaultTab);
+    expect(screen.queryByText(/First drawer/i)).toBeTruthy();
+
+    await user.click(saveTab);
     const hideAchievements = screen.getByTestId("settings-hide-achievements") as HTMLInputElement;
     await user.click(hideAchievements);
 
-    await openStatsTab();
-
+    await user.click(vaultTab);
     expect(screen.queryByText(/First drawer/i)).toBeNull();
   });
 
-  it("hides tabs when preference disabled", async () => {
+  it("persists hidden tab selections", async () => {
     cleanup();
     renderWithCatalogUnlocked();
     await openSaveTab();
@@ -911,7 +957,24 @@ describe("settings preferences", () => {
     const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
     await user.click(catalogToggle);
 
+    const raw = localStorage.getItem("emily-idle:settings");
+    const parsed = raw ? JSON.parse(raw) : null;
+    expect(parsed.hiddenTabs).toEqual(["catalog"]);
+  });
+
+  it("hides tabs when preference disabled", async () => {
+    cleanup();
+    renderWithCatalogUnlocked();
+
+    const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    await user.click(saveTab);
+
+    const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
+    await user.click(catalogToggle);
+
     expect(within(tabList).queryByRole("tab", { name: /Catalog/i })).toBeNull();
   });
 });
@@ -963,14 +1026,7 @@ describe("coachmarks", () => {
       JSON.stringify({
         themeMode: "system",
         hideCompletedAchievements: false,
-        tabVisibility: {
-          collection: true,
-          workshop: true,
-          maison: true,
-          catalog: true,
-          stats: true,
-          save: true,
-        },
+        hiddenTabs: [],
         coachmarksDismissed: {
           "vault-basics": true,
           "catalog-archive": true,
