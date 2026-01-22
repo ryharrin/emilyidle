@@ -792,6 +792,25 @@ describe("settings preferences", () => {
     expect(hideAchievements.checked).toBe(false);
   });
 
+  it("applies theme mode to the document root", async () => {
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-theme")).toBe("system");
+    });
+
+    const user = userEvent.setup();
+    const themeSelect = screen.getByTestId("settings-theme") as HTMLSelectElement;
+
+    await user.selectOptions(themeSelect, "light");
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    });
+
+    await user.selectOptions(themeSelect, "dark");
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    });
+  });
+
   it("falls back to defaults for invalid JSON", async () => {
     localStorage.setItem("emily-idle:settings", "not-json");
 
