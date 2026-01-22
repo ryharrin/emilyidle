@@ -89,6 +89,11 @@ function sanitizeState(value: unknown): GameState | null {
       ? record.catalogTierUnlocks.filter((entry): entry is string => typeof entry === "string")
       : [],
     enjoymentCents: isFiniteNumber(record.enjoymentCents) ? Math.max(0, record.enjoymentCents) : 0,
+    craftingParts: isFiniteNumber(record.craftingParts) ? record.craftingParts : 0,
+    craftedBoosts:
+      typeof record.craftedBoosts === "object" && record.craftedBoosts !== null
+        ? (record.craftedBoosts as Record<string, number>)
+        : {},
   };
 
   return createStateFromSave(persisted);
