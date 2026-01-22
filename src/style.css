@@ -877,6 +877,21 @@ button:not(:disabled):hover {
   gap: 16px;
 }
 
+.workshop-layout {
+  display: grid;
+  gap: 24px;
+}
+
+.workshop-crafting {
+  display: grid;
+  gap: 16px;
+}
+
+.workshop-crafting-section {
+  display: grid;
+  gap: 10px;
+}
+
 .workshop-panel {
   position: relative;
   overflow: hidden;

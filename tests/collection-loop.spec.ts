@@ -95,7 +95,7 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.collectionCards)).toHaveCount(4);
     await expect(page.locator(selectors.upgradeCards)).toHaveCount(4);
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
-    await expect(page.locator(selectors.setBonusCards)).toHaveCount(8);
+    await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
@@ -134,6 +134,70 @@ test.describe("collection loop", () => {
 
     await expect(sfxToggle).toBeChecked();
     await expect(bgmToggle).toBeChecked();
+  });
+
+  test("tabs respect hidden preferences", async ({ page }) => {
+    const seededState = {
+      currencyCents: 0,
+      enjoymentCents: 0,
+      items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+      upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+      unlockedMilestones: ["showcase"],
+      workshopBlueprints: 0,
+      workshopPrestigeCount: 0,
+      workshopUpgrades: {
+        "etched-ledgers": false,
+        "vault-calibration": false,
+        "heritage-templates": false,
+        "automation-blueprints": false,
+      },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+    };
+
+    const settings = {
+      themeMode: "system",
+      hideCompletedAchievements: false,
+      hiddenTabs: ["catalog"],
+      coachmarksDismissed: {},
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs, nextSettings }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+        window.localStorage.setItem("emily-idle:settings", JSON.stringify(nextSettings));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now(), nextSettings: settings },
+    );
+
+    await page.goto("/");
+
+    const tabList = page.getByRole("tablist", { name: "Primary navigation" });
+    await expect(tabList.getByRole("tab", { name: "Vault" })).toBeVisible();
+    await expect(tabList.getByRole("tab", { name: "Save" })).toBeVisible();
+    await expect(tabList.getByRole("tab", { name: "Catalog" })).toHaveCount(0);
   });
 
   test("catalog filters and sources", async ({ page }) => {
@@ -528,5 +592,81 @@ test.describe("collection loop", () => {
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
     await expect(page.getByText(/Auction weekend/)).toBeVisible();
     await expect(page.getByText(/Income x/).first()).toBeVisible();
+  });
+
+  test("craft: dismantle watches and craft a boost", async ({ page }) => {
+    const seededState = {
+      currencyCents: 0,
+      enjoymentCents: 800_000,
+      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 2 },
+      upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+      unlockedMilestones: [],
+      workshopBlueprints: 0,
+      workshopPrestigeCount: 0,
+      workshopUpgrades: {
+        "etched-ledgers": false,
+        "vault-calibration": false,
+        "heritage-templates": false,
+        "automation-blueprints": false,
+      },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+      craftingParts: 0,
+      craftedBoosts: {
+        "polished-tools": 0,
+        "heritage-springs": 0,
+        "artisan-jig": 0,
+      },
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now() },
+    );
+
+    await page.goto("/");
+    await page.getByRole("tab", { name: "Atelier" }).click();
+
+    const parts = page.getByTestId("workshop-crafting-parts");
+    await expect(parts).toContainText("0 parts");
+
+    const dismantleList = page.getByTestId("workshop-dismantle-list");
+    const tourbillonCard = dismantleList.locator('[data-item-id="tourbillon"]');
+    await tourbillonCard.getByRole("button", { name: "Dismantle" }).click();
+    await tourbillonCard.getByRole("button", { name: "Dismantle" }).click();
+
+    await expect(parts).toContainText("16 parts");
+
+    const recipes = page.getByTestId("workshop-crafting-recipes");
+    const polishedCard = recipes.locator(".card", { hasText: "Polished tools" }).first();
+    await expect(polishedCard.getByRole("button", { name: "Craft" })).toBeEnabled();
+    await polishedCard.getByRole("button", { name: "Craft" }).click();
+
+    await expect(parts).toContainText("4 parts");
+    await expect(page.getByTestId("workshop-crafting-boosts")).toContainText("Income x1.05");
   });
 });

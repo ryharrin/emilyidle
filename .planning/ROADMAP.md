@@ -138,11 +138,19 @@ Plans:
 
 **Goal:** [To be planned]
 **Depends on:** Phase 11
-**Plans:** 1/10 plans complete
+**Plans:** 6/10 plans complete
 
 Plans:
-- [x] 12-03 - Catalog reskin + owned-only details
-- [ ] Remaining plans tracked in `.planning/phases/12-major-updates-01-21/`
+- [x] 12-01-PLAN.md
+- [x] 12-02-PLAN.md
+- [x] 12-03-PLAN.md
+- [x] 12-04-PLAN.md
+- [x] 12-05-PLAN.md
+- [x] 12-06-PLAN.md
+- [ ] 12-07-PLAN.md
+- [ ] 12-08-PLAN.md
+- [ ] 12-09-PLAN.md
+- [ ] 12-10-PLAN.md
 
 **Details:**
 [To be added during planning]
