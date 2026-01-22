@@ -1043,6 +1043,17 @@ describe("coachmarks", () => {
   it("renders coachmarks for new players", async () => {
     const coachmarks = screen.getAllByTestId("coachmark");
     expect(coachmarks.length).toBeGreaterThan(0);
+
+    const titles = coachmarks.map((card) =>
+      within(card as HTMLElement).getByRole("heading", { level: 4 }).textContent?.trim(),
+    );
+
+    expect(titles).toContain("Vault basics");
+    expect(titles).toContain("Catalog archive");
+    expect(titles).toContain("Atelier reset");
+    expect(titles).toContain("Maison legacy");
+    expect(titles).toContain("Set bonuses");
+    expect(titles).toContain("Crafting workshop");
   });
 
   it("stores dismissed coachmarks in settings", async () => {
@@ -1081,6 +1092,7 @@ describe("coachmarks", () => {
     render(<App />);
 
     expect(screen.queryByTestId("coachmark")).toBeNull();
+    expect(screen.queryByTestId("coachmarks")).toBeNull();
   });
 });
 
