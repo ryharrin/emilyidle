@@ -138,10 +138,11 @@ Plans:
 
 **Goal:** [To be planned]
 **Depends on:** Phase 11
-**Plans:** 0 plans
+**Plans:** 1/10 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 12 to break down)
+- [x] 12-03 - Catalog reskin + owned-only details
+- [ ] Remaining plans tracked in `.planning/phases/12-major-updates-01-21/`
 
 **Details:**
 [To be added during planning]
