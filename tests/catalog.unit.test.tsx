@@ -773,6 +773,26 @@ describe("settings preferences", () => {
     render(<App />);
   };
 
+  const renderWithAchievementsUnlocked = () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      achievementUnlocks: ["first-drawer"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+  };
+
   beforeEach(async () => {
     localStorage.clear();
     render(<App />);
@@ -860,6 +880,26 @@ describe("settings preferences", () => {
     expect(parsed.hideCompletedAchievements).toBe(true);
   });
 
+  it("hides completed achievements when enabled", async () => {
+    cleanup();
+    renderWithAchievementsUnlocked();
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    await user.click(vaultTab);
+    expect(screen.queryByText(/First drawer/i)).toBeTruthy();
+
+    await user.click(saveTab);
+    const hideAchievements = screen.getByTestId("settings-hide-achievements") as HTMLInputElement;
+    await user.click(hideAchievements);
+
+    await user.click(vaultTab);
+    expect(screen.queryByText(/First drawer/i)).toBeNull();
+  });
+
   it("persists hidden tab selections", async () => {
     cleanup();
     renderWithCatalogUnlocked();
@@ -872,6 +912,22 @@ describe("settings preferences", () => {
     const raw = localStorage.getItem("emily-idle:settings");
     const parsed = raw ? JSON.parse(raw) : null;
     expect(parsed.hiddenTabs).toEqual(["catalog"]);
+  });
+
+  it("hides tabs when preference disabled", async () => {
+    cleanup();
+    renderWithCatalogUnlocked();
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    await user.click(saveTab);
+
+    const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
+    await user.click(catalogToggle);
+
+    expect(within(tabList).queryByRole("tab", { name: /Catalog/i })).toBeNull();
   });
 });
 
