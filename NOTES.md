@@ -60,10 +60,10 @@ x Deploy the game to github pages for easy access and sharing.
 
 
 Bug fixes:
-
-- Replace the catalog filter <search> wrapper with a standard form element to avoid invalid tag warnings.
-- Skip the requestAnimationFrame simulation loop during Vitest runs to eliminate act() warnings.
-
+x Replace the catalog filter <search> wrapper with a standard form element to avoid invalid tag warnings.
+x Skip the requestAnimationFrame simulation loop during Vitest runs to eliminate act() warnings.
+- The 'interact' button doesn't seem to do anything yet. (Planned fix: implement mini-game mechanics triggered by the button.)
+- Display how much money is needed for the next blueprint in the atelier view. (Planned fix: add a display element showing the cost of the next blueprint.)
 
 Upcoming Major Changes to Game Design:
 - Make enjoyment the main currency. Make better watches increase enjoyment rate. Quartz watches give very small enjoyment, mechanical more, and complications even more.
