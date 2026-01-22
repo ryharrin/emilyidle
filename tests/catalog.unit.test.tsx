@@ -988,3 +988,90 @@ describe("coachmarks", () => {
     expect(screen.queryByTestId("coachmark")).toBeNull();
   });
 });
+
+describe("atelier crafting UI", () => {
+  const openAtelierTab = async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const atelierTab = within(tabList).getByRole("tab", { name: /Atelier/i });
+
+    await user.click(atelierTab);
+    expect(atelierTab.getAttribute("aria-selected")).toBe("true");
+  };
+
+  beforeEach(async () => {
+    localStorage.clear();
+
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      enjoymentCents: 640_000,
+      items: {
+        ...baseState.items,
+        tourbillon: 2,
+      },
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+    await openAtelierTab();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("dismantles watches into parts and crafts a boost", async () => {
+    const user = userEvent.setup();
+
+    expect(screen.getByTestId("workshop-crafting")).toBeTruthy();
+    expect(screen.getByTestId("workshop-crafting-parts").textContent).toContain("0 parts");
+
+    const dismantleList = screen.getByTestId("workshop-dismantle-list");
+    const dismantleCards = within(dismantleList).getAllByTestId(
+      "workshop-dismantle-card",
+    ) as HTMLElement[];
+    const tourbillonCard = dismantleCards.find(
+      (card) => card.getAttribute("data-item-id") === "tourbillon",
+    );
+    expect(tourbillonCard).toBeTruthy();
+    if (!tourbillonCard) {
+      throw new Error("Expected tourbillon dismantle card");
+    }
+
+    const dismantleButton = within(tourbillonCard).getByRole("button", { name: /Dismantle/i });
+
+    await user.click(dismantleButton);
+    expect(screen.getByTestId("workshop-crafting-parts").textContent).toContain("8 parts");
+    expect(tourbillonCard.textContent).toContain("1 owned");
+
+    await user.click(dismantleButton);
+    expect(screen.getByTestId("workshop-crafting-parts").textContent).toContain("16 parts");
+    expect(tourbillonCard.textContent).toContain("0 owned");
+
+    const recipes = screen.getByTestId("workshop-crafting-recipes");
+    const polishedToolsHeading = within(recipes).getByRole("heading", {
+      name: /Polished tools/i,
+    });
+    const polishedToolsCard = polishedToolsHeading.closest(".card");
+    expect(polishedToolsCard).toBeTruthy();
+    if (!(polishedToolsCard instanceof HTMLElement)) {
+      throw new Error("Expected Polished tools recipe card");
+    }
+
+    await user.click(within(polishedToolsCard).getByRole("button", { name: /^Craft$/ }));
+
+    expect(screen.getByTestId("workshop-crafting-parts").textContent).toContain("4 parts");
+    expect(within(polishedToolsCard).getByText(/1 crafted/i)).toBeTruthy();
+    expect(screen.getByTestId("workshop-crafting-boosts").textContent).toContain("Income x1.05");
+  });
+});
