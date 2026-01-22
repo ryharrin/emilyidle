@@ -935,6 +935,54 @@ export default function App() {
     });
   }, [autoBuyEnabled, state.currencyCents, state.unlockedMilestones, watchItems]);
 
+  const renderCraftingRecipes = (testId: string) => (
+    <div className="card-stack" data-testid={testId}>
+      {craftingRecipes.map((recipe) => {
+        const owned = craftedBoostCounts[recipe.id] ?? 0;
+        const canCraft = canCraftBoost(state, recipe.id);
+        return (
+          <div className="card" key={recipe.id}>
+            <div className="card-header">
+              <div>
+                <h4>{recipe.name}</h4>
+                <p>{recipe.description}</p>
+              </div>
+              <div>{owned} crafted</div>
+            </div>
+            <p>Cost: {recipe.partsCost} parts</p>
+            <div className="card-actions">
+              <button
+                type="button"
+                className="secondary"
+                disabled={!canCraft}
+                onClick={() => handleCraftBoost(recipe.id)}
+              >
+                Craft
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const renderCraftingBoosts = (testId: string) => (
+    <div className="card-stack" data-testid={testId}>
+      {craftedBoosts.map((boost) => (
+        <div className="card" key={boost.id}>
+          <h4>{boost.name}</h4>
+          <p>{boost.description}</p>
+          <p className="muted">
+            {boost.id === "polished-tools" && `Income x${craftedIncomeMultiplier.toFixed(2)}`}
+            {boost.id === "heritage-springs" &&
+              `Collection x${craftedCollectionMultiplier.toFixed(2)}`}
+            {boost.id === "artisan-jig" && `Prestige x${craftedPrestigeMultiplier.toFixed(2)}`}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <main className="container">
       <header className="hero">
@@ -1429,50 +1477,8 @@ export default function App() {
                 <div className="results-count" data-testid="crafting-parts">
                   {craftingParts} parts
                 </div>
-                <div className="card-stack" data-testid="crafting-recipes">
-                  {craftingRecipes.map((recipe) => {
-                    const owned = craftedBoostCounts[recipe.id] ?? 0;
-                    const canCraft = canCraftBoost(state, recipe.id);
-                    return (
-                      <div className="card" key={recipe.id}>
-                        <div className="card-header">
-                          <div>
-                            <h4>{recipe.name}</h4>
-                            <p>{recipe.description}</p>
-                          </div>
-                          <div>{owned} crafted</div>
-                        </div>
-                        <p>Cost: {recipe.partsCost} parts</p>
-                        <div className="card-actions">
-                          <button
-                            type="button"
-                            className="secondary"
-                            disabled={!canCraft}
-                            onClick={() => handleCraftBoost(recipe.id)}
-                          >
-                            Craft
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="card-stack" data-testid="crafting-boosts">
-                  {craftedBoosts.map((boost) => (
-                    <div className="card" key={boost.id}>
-                      <h4>{boost.name}</h4>
-                      <p>{boost.description}</p>
-                      <p className="muted">
-                        {boost.id === "polished-tools" &&
-                          `Income x${craftedIncomeMultiplier.toFixed(2)}`}
-                        {boost.id === "heritage-springs" &&
-                          `Collection x${craftedCollectionMultiplier.toFixed(2)}`}
-                        {boost.id === "artisan-jig" &&
-                          `Prestige x${craftedPrestigeMultiplier.toFixed(2)}`}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                {renderCraftingRecipes("crafting-recipes")}
+                {renderCraftingBoosts("crafting-boosts")}
               </div>
             </aside>
           </>
@@ -1486,7 +1492,7 @@ export default function App() {
         hidden={activeTab !== "workshop"}
       >
         {activeTab === "workshop" && (
-          <>
+          <div className="workshop-layout">
             {showWorkshopSection && (
               <section
                 className={`panel workshop-panel ${showWorkshopPanel ? "" : "panel-teaser"}`}
@@ -1636,7 +1642,61 @@ export default function App() {
                 )}
               </section>
             )}
-          </>
+            <section className="panel workshop-crafting" data-testid="workshop-crafting">
+              <h3>Crafting workshop</h3>
+              <p className="muted">
+                Break down watches into parts, then craft permanent vault boosts.
+              </p>
+              <div className="results-count" data-testid="workshop-crafting-parts">
+                {craftingParts} parts
+              </div>
+              <div className="workshop-crafting-section" data-testid="workshop-dismantle">
+                <p className="workshop-label">Dismantle watches</p>
+                <p className="muted">Convert owned watches into parts for recipes.</p>
+                <div className="card-stack" data-testid="workshop-dismantle-list">
+                  {watchItems.map((item) => {
+                    const owned = getItemCount(state, item.id);
+                    const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
+                    const canDismantle = owned > 0 && partsPerWatch > 0;
+                    return (
+                      <div
+                        className="card"
+                        key={item.id}
+                        data-testid="workshop-dismantle-card"
+                        data-item-id={item.id}
+                      >
+                        <div className="card-header">
+                          <div>
+                            <h4>{item.name}</h4>
+                            <p>{partsPerWatch} parts per watch</p>
+                          </div>
+                          <div>{owned} owned</div>
+                        </div>
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            className="secondary"
+                            disabled={!canDismantle}
+                            onClick={() => handleDismantle(item.id)}
+                          >
+                            Dismantle
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="workshop-crafting-section">
+                <p className="workshop-label">Recipes</p>
+                {renderCraftingRecipes("workshop-crafting-recipes")}
+              </div>
+              <div className="workshop-crafting-section">
+                <p className="workshop-label">Active boosts</p>
+                {renderCraftingBoosts("workshop-crafting-boosts")}
+              </div>
+            </section>
+          </div>
         )}
       </section>
 
