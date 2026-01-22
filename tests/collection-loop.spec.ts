@@ -451,4 +451,80 @@ test.describe("collection loop", () => {
     await expect(page.getByText(/Auction weekend/)).toBeVisible();
     await expect(page.getByText(/Income x/).first()).toBeVisible();
   });
+
+  test("craft: dismantle watches and craft a boost", async ({ page }) => {
+    const seededState = {
+      currencyCents: 0,
+      enjoymentCents: 800_000,
+      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 2 },
+      upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+      unlockedMilestones: [],
+      workshopBlueprints: 0,
+      workshopPrestigeCount: 0,
+      workshopUpgrades: {
+        "etched-ledgers": false,
+        "vault-calibration": false,
+        "heritage-templates": false,
+        "automation-blueprints": false,
+      },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+      craftingParts: 0,
+      craftedBoosts: {
+        "polished-tools": 0,
+        "heritage-springs": 0,
+        "artisan-jig": 0,
+      },
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now() },
+    );
+
+    await page.goto("/");
+    await page.getByRole("tab", { name: "Atelier" }).click();
+
+    const parts = page.getByTestId("workshop-crafting-parts");
+    await expect(parts).toContainText("0 parts");
+
+    const dismantleList = page.getByTestId("workshop-dismantle-list");
+    const tourbillonCard = dismantleList.locator('[data-item-id="tourbillon"]');
+    await tourbillonCard.getByRole("button", { name: "Dismantle" }).click();
+    await tourbillonCard.getByRole("button", { name: "Dismantle" }).click();
+
+    await expect(parts).toContainText("16 parts");
+
+    const recipes = page.getByTestId("workshop-crafting-recipes");
+    const polishedCard = recipes.locator(".card", { hasText: "Polished tools" }).first();
+    await expect(polishedCard.getByRole("button", { name: "Craft" })).toBeEnabled();
+    await polishedCard.getByRole("button", { name: "Craft" }).click();
+
+    await expect(parts).toContainText("4 parts");
+    await expect(page.getByTestId("workshop-crafting-boosts")).toContainText("Income x1.05");
+  });
 });
