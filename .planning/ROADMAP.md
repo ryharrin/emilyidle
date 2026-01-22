@@ -138,10 +138,19 @@ Plans:
 
 **Goal:** [To be planned]
 **Depends on:** Phase 11
-**Plans:** 0 plans
+**Plans:** 2/10 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 12 to break down)
+- [x] 12-01-PLAN.md
+- [ ] 12-02-PLAN.md
+- [ ] 12-03-PLAN.md
+- [x] 12-04-PLAN.md
+- [ ] 12-05-PLAN.md
+- [ ] 12-06-PLAN.md
+- [ ] 12-07-PLAN.md
+- [ ] 12-08-PLAN.md
+- [ ] 12-09-PLAN.md
+- [ ] 12-10-PLAN.md
 
 **Details:**
 [To be added during planning]
