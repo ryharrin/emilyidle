@@ -1,6 +1,6 @@
 # Roadmap
 
-## Current Milestone: v1.0 Core Roadmap
+## Current Milestone: v2.0 Upcoming Major Changes to Game Design
 
 ### Phase 1: Foundation
 
@@ -151,6 +151,84 @@ Plans:
 - [x] 12-08-PLAN.md
 - [x] 12-09-PLAN.md
 - [x] 12-10-PLAN.md
+
+**Details:**
+[To be added during planning]
+
+### Phase 13: Enjoyment Economy Foundation
+
+**Goal:** Shift core currency to enjoyment with watch tier modifiers.
+**Depends on:** Phase 12
+**Research:** Unlikely (internal systems)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 13 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 14: Therapist Career Economy
+
+**Goal:** Add therapist career progression to generate money alongside enjoyment.
+**Depends on:** Phase 13
+**Research:** Unlikely (internal systems)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 14 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 15: Dual-Currency Acquisition
+
+**Goal:** Gate watch purchases by enjoyment while spending career-earned money.
+**Depends on:** Phase 14
+**Research:** Unlikely (internal systems)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 15 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 16: Nostalgia Prestige Reset
+
+**Goal:** Redesign prestige to reset enjoyment/money and award nostalgia points.
+**Depends on:** Phase 15
+**Research:** Unlikely (internal systems)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 16 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 17: Nostalgia Unlocks
+
+**Goal:** Use nostalgia points to permanently unlock watches across runs.
+**Depends on:** Phase 16
+**Research:** Unlikely (internal systems)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 17 to break down)
+
+**Details:**
+[To be added during planning]
+
+### Phase 18: Codebase Refactor
+
+**Goal:** Refactor game files for clearer separation of logic, UI, and data models.
+**Depends on:** Phase 17
+**Research:** Unlikely (internal systems)
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 18 to break down)
 
 **Details:**
 [To be added during planning]
