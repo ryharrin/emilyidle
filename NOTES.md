@@ -20,7 +20,27 @@ x Use real trusted dealer names.
 x Add Emily's birthday as an in-game event or milestone. 4/27/89
 x Add a way to sort/filter the watch catalog by different criteria (e.g., brand, era, type).
 x Add more women's watches to the catalog to appeal to a broader audience.
+x Have the watch catalog visually mimic a replica watch website for added immersion.
+x Integrate the collection of watches into the game's core mechanics, making them more than just collectibles.
+x Have the collection of watches impact gameplay, such as providing bonuses or unlocking new features.
+x Hide tabs that are not yet relevant to the player to reduce clutter.
+x Add a settings menu for customizing gameplay experience.
+x Add a setting to toggle between light and dark mode for better accessibility.
+x Add a setting to hide completed achievements from the achievements list.
+x Add a setting to hide tabs that are no longer relevant to the player.
+x Add a tutorial or help section to guide new players through the game's mechanics.
+x Add detailed information about each watch, including history, specifications, and significance.
+x Add a dev mode for testing purposes, allowing for easy unlocking of watches and resources, as well as modifying the rate of resource generation.
+x Improve the mini game mechanics to make them more engaging and rewarding.
+x Improve the prestige mechanics to make them more meaningful and integrated into the overall gameplay loop.
+x Add more detailed information about the watches, their specs, and historical context.
+x Introduce a crafting system where players can combine certain watches or parts to create new, unique watches with special attributes.
+x Set up github pages for hosting the game online.
+x Deploy the game to github pages for easy access and sharing.
 
+Completed Bug Fixes:
+x Replace the catalog filter <search> wrapper with a standard form element to avoid invalid tag warnings.
+x Skip the requestAnimationFrame simulation loop during Vitest runs to eliminate act() warnings.
 
 Will not implement Features:
 * Introduce a crafting system where players can combine certain watches or parts to create new, unique
@@ -40,30 +60,12 @@ Will not implement Features:
 * Implement a feature where players can create and join watch clubs or communities within the game to discuss
 
 Planned Features:
-x Have the watch catalog visually mimic a replica watch website for added immersion.
-x Integrate the collection of watches into the game's core mechanics, making them more than just collectibles.
-x Have the collection of watches impact gameplay, such as providing bonuses or unlocking new features.
-x Hide tabs that are not yet relevant to the player to reduce clutter.
-x Add a settings menu for customizing gameplay experience.
-x Add a setting to toggle between light and dark mode for better accessibility.
-x Add a setting to hide completed achievements from the achievements list.
-x Add a setting to hide tabs that are no longer relevant to the player.
-x Add a tutorial or help section to guide new players through the game's mechanics.
-x Add detailed information about each watch, including history, specifications, and significance.
-x Add a dev mode for testing purposes, allowing for easy unlocking of watches and resources, as well as modifying the rate of resource generation.
-x Improve the mini game mechanics to make them more engaging and rewarding.
-x Improve the prestige mechanics to make them more meaningful and integrated into the overall gameplay loop.
-x Add more detailed information about the watches, their specs, and historical context.
-x Introduce a crafting system where players can combine certain watches or parts to create new, unique watches with special attributes.
-x Set up github pages for hosting the game online.
-x Deploy the game to github pages for easy access and sharing.
 
 
 Bug fixes:
-x Replace the catalog filter <search> wrapper with a standard form element to avoid invalid tag warnings.
-x Skip the requestAnimationFrame simulation loop during Vitest runs to eliminate act() warnings.
 - The 'interact' button doesn't seem to do anything yet. (Planned fix: implement mini-game mechanics triggered by the button.)
 - Display how much money is needed for the next blueprint in the atelier view. (Planned fix: add a display element showing the cost of the next blueprint.)
+- Atelier bonuses should be more powerful to make them feel more impactful. The second vault run should be significantly faster than the first. (Planned fix: adjust the bonus scaling for atelier upgrades.)
 
 Upcoming Major Changes to Game Design:
 - Make enjoyment the main currency. Make better watches increase enjoyment rate. Quartz watches give very small enjoyment, mechanical more, and complications even more.
