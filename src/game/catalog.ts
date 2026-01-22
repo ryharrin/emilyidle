@@ -63,6 +63,10 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     description: "Open-license reference image of Rolex Rolex GMT-Master II ref. 126713GRNR.",
     year: "Unknown",
     tags: ["gmt", "rolex", "watch"],
+    facts: [
+      "The GMT-Master line is built around tracking multiple time zones via a 24-hour bezel.",
+      "Two-tone cases and rotating 24-hour bezels are signature GMT cues.",
+    ],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/9/91/Rolex_GMT-Master_II_ref._126713GRNR.jpg",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex_GMT-Master_II_ref._126713GRNR.jpg",
@@ -96,6 +100,10 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
       "Open-license reference image of Rolex Rolex Daytona ref. 6265 in oro, primi anni Settanta.",
     year: "Unknown",
     tags: ["daytona", "rolex", "watch"],
+    facts: [
+      "The Daytona is Rolex's best-known chronograph line, tied closely to motorsport timing.",
+      "Screw-down pushers and tachymeter bezels are hallmark Daytona details.",
+    ],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/0/04/Rolex_Daytona_ref._6265_in_oro%2C_primi_anni_Settanta.jpg",
       sourceUrl:
@@ -443,6 +451,10 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     description: "Open-license reference image of Jaeger-LeCoultre Jaeger-LeCoultre Reverso 2011.",
     year: "Unknown",
     tags: ["jaeger-lecoultre", "reverso", "watch"],
+    facts: [
+      "The Reverso's swiveling case was designed to protect the dial during polo matches.",
+      "Its Art Deco geometry and reversible case are the line's calling card.",
+    ],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/d/df/Jaeger-LeCoultre_Reverso_2011.jpg",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_Reverso_2011.jpg",
@@ -755,6 +767,10 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
       "Open-license reference image of Audemars Piguet Audemars Piguet Royal Oak ref. 15202.",
     year: "Unknown",
     tags: ["audemars piguet", "royal-oak", "watch"],
+    facts: [
+      "The Royal Oak popularized the luxury steel sports watch with an exposed bezel screw motif.",
+      "Its angular case and integrated bracelet define the Royal Oak profile.",
+    ],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/0/05/Audemars_Piguet_Royal_Oak_ref._15202.jpg",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_Royal_Oak_ref._15202.jpg",
@@ -1008,6 +1024,10 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     description: "Open-license reference image of Omega Speedmaster Reduced 3510.50.",
     year: "Unknown",
     tags: ["omega", "speedmaster", "watch", "chronograph"],
+    facts: [
+      "The Speedmaster is Omega's best-known chronograph family, linked to spaceflight heritage.",
+      "The 'Reduced' variant is a smaller, more compact take on classic Speedmaster proportions.",
+    ],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/0/06/Omega_speedmaster_reduced_351050.jpg",
       sourceUrl: "https://commons.wikimedia.org/wiki/File:Omega_speedmaster_reduced_351050.jpg",
