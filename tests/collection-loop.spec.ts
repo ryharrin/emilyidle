@@ -95,7 +95,7 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.collectionCards)).toHaveCount(4);
     await expect(page.locator(selectors.upgradeCards)).toHaveCount(4);
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
-    await expect(page.locator(selectors.setBonusCards)).toHaveCount(8);
+    await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
