@@ -624,27 +624,16 @@ export default function App() {
     [showcaseVisibilityRatio, statsVisibilityRatio, showWorkshopSection, showMaisonSection],
   );
   const hiddenTabsSet = useMemo(() => new Set(settings.hiddenTabs), [settings.hiddenTabs]);
-  const userTabVisibility = useMemo(
-    () => ({
-      collection: true,
-      save: true,
-      catalog: true,
-      stats: true,
-      workshop: true,
-      maison: true,
-    }),
-    [],
-  );
   const combinedTabVisibility = useMemo(
     () => ({
       collection: true,
       save: true,
-      catalog: tabVisibility.catalog && userTabVisibility.catalog,
-      stats: tabVisibility.stats && userTabVisibility.stats,
-      workshop: tabVisibility.workshop && userTabVisibility.workshop,
-      maison: tabVisibility.maison && userTabVisibility.maison,
+      catalog: tabVisibility.catalog && !hiddenTabsSet.has("catalog"),
+      stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
+      workshop: tabVisibility.workshop && !hiddenTabsSet.has("workshop"),
+      maison: tabVisibility.maison && !hiddenTabsSet.has("maison"),
     }),
-    [tabVisibility, userTabVisibility],
+    [hiddenTabsSet, tabVisibility],
   );
   const visibleTabs = useMemo(
     () => tabs.filter((tab) => combinedTabVisibility[tab.id]),
