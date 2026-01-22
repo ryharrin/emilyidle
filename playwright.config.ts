@@ -4,6 +4,14 @@ export default defineConfig({
   testDir: "./tests",
   testMatch: /.*\.spec\.(ts|tsx)/,
   timeout: 60_000,
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        browserName: "chromium",
+      },
+    },
+  ],
   use: {
     baseURL: "http://localhost:5177",
     headless: true,
