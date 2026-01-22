@@ -570,10 +570,10 @@ describe("catalog ownership tabs", () => {
     expect(statsTab.getAttribute("aria-selected")).toBe("true");
 
     const metrics = screen.getByTestId("stats-metrics");
+    expect(metrics.textContent).toContain("Vault enjoyment");
+    expect(metrics.textContent).toContain("Enjoyment / sec");
     expect(metrics.textContent).toContain("Vault cash");
     expect(metrics.textContent).toContain("Cash / sec");
-    expect(metrics.textContent).toContain("Enjoyment");
-    expect(metrics.textContent).toContain("Enjoyment / sec");
     expect(metrics.textContent).toContain("Memories");
     expect(metrics.textContent).toContain("Atelier resets");
     expect(metrics.textContent).toContain("Maison heritage");
