@@ -152,6 +152,12 @@ export type EventState = {
   incomeMultiplier?: number;
 };
 
+export type TherapistCareerState = {
+  level: number;
+  xp: number;
+  nextAvailableAtMs: number;
+};
+
 export type CatalogTierBonusDefinition = {
   id: CatalogTierId;
   name: string;
@@ -176,6 +182,7 @@ export type CatalogEntryId = CatalogEntry["id"];
 export type GameState = {
   currencyCents: number;
   enjoymentCents: number;
+  therapistCareer: TherapistCareerState;
   items: Record<WatchItemId, number>;
   upgrades: Record<UpgradeId, number>;
   unlockedMilestones: MilestoneId[];
@@ -197,6 +204,7 @@ export type GameState = {
 export type PersistedGameState = {
   currencyCents: number;
   enjoymentCents?: number;
+  therapistCareer?: { level?: number; xp?: number; nextAvailableAtMs?: number };
   items?: Record<string, number>;
   upgrades?: Record<string, number>;
   unlockedMilestones?: string[];
@@ -208,7 +216,10 @@ export type PersistedGameState = {
   maisonUpgrades?: Record<string, boolean>;
   maisonLines?: Record<string, boolean>;
   achievementUnlocks?: string[];
-  eventStates?: Record<string, { activeUntilMs: number; nextAvailableAtMs: number; incomeMultiplier?: number }>;
+  eventStates?: Record<
+    string,
+    { activeUntilMs: number; nextAvailableAtMs: number; incomeMultiplier?: number }
+  >;
   discoveredCatalogEntries?: string[];
   catalogTierUnlocks?: string[];
   craftingParts?: number;
@@ -218,6 +229,11 @@ export type PersistedGameState = {
 const BASE_INCOME_CENTS_PER_SEC = 10;
 const INCOME_SOFTCAP_CENTS_PER_SEC = 60_000;
 const INCOME_SOFTCAP_EXPONENT = 0.6;
+
+const THERAPIST_BASE_SESSION_COOLDOWN_MS = 30_000;
+const THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS = 150;
+const THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS = 500;
+const THERAPIST_SESSION_XP_GAIN = 10;
 
 const WORKSHOP_UPGRADES: ReadonlyArray<WorkshopUpgradeDefinition> = [
   {
@@ -939,6 +955,11 @@ export function createInitialState(): GameState {
   return {
     currencyCents: 0,
     enjoymentCents: 0,
+    therapistCareer: {
+      level: 1,
+      xp: 0,
+      nextAvailableAtMs: 0,
+    },
     items: createItemCounts(),
     upgrades: createUpgradeLevels(),
     unlockedMilestones: [],
@@ -969,6 +990,24 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const maisonUpgrades = createMaisonUpgradeStates();
   const maisonLines = createMaisonLineStates();
   const eventStates = createEventStates();
+
+  const therapistRaw = saved.therapistCareer;
+  const therapistCareer: TherapistCareerState = {
+    level:
+      therapistRaw && typeof therapistRaw === "object" && Number.isFinite(therapistRaw.level)
+        ? Math.max(1, Math.floor(therapistRaw.level ?? 1))
+        : 1,
+    xp:
+      therapistRaw && typeof therapistRaw === "object" && Number.isFinite(therapistRaw.xp)
+        ? Math.max(0, Math.floor(therapistRaw.xp ?? 0))
+        : 0,
+    nextAvailableAtMs:
+      therapistRaw &&
+      typeof therapistRaw === "object" &&
+      Number.isFinite(therapistRaw.nextAvailableAtMs)
+        ? Math.max(0, Math.floor(therapistRaw.nextAvailableAtMs ?? 0))
+        : 0,
+  };
 
   if (saved.items) {
     for (const [key, value] of Object.entries(saved.items)) {
@@ -1024,7 +1063,8 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
             ? Math.max(0, Math.floor(stateValue.nextAvailableAtMs))
             : 0,
           incomeMultiplier:
-            Number.isFinite(stateValue.incomeMultiplier) && typeof stateValue.incomeMultiplier === "number"
+            Number.isFinite(stateValue.incomeMultiplier) &&
+            typeof stateValue.incomeMultiplier === "number"
               ? Math.max(0, stateValue.incomeMultiplier)
               : undefined,
         };
@@ -1082,6 +1122,7 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const restoredState = applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
     enjoymentCents,
+    therapistCareer,
     items,
     upgrades,
     unlockedMilestones,
@@ -1355,7 +1396,8 @@ export function getPrestigeLegacyMultiplier(state: GameState): number {
 
 export function getEnjoymentRateCentsPerSec(state: GameState): number {
   const baseRate = WATCH_ITEMS.reduce(
-    (total, item) => total + getItemCount(state, item.id) * getWatchItemEnjoymentRateCentsPerSec(item),
+    (total, item) =>
+      total + getItemCount(state, item.id) * getWatchItemEnjoymentRateCentsPerSec(item),
     0,
   );
   return baseRate * getPrestigeLegacyMultiplier(state);
@@ -1562,6 +1604,18 @@ export function getEffectiveIncomeRateCentsPerSec(state: GameState, eventMultipl
   return applySoftcap(rawIncome, getWorkshopSoftcapValue(state), getWorkshopSoftcapExponent(state));
 }
 
+export function getTherapistCashRateCentsPerSec(_state: GameState): number {
+  // Earning model is discrete sessions (not per-second).
+  return 0;
+}
+
+export function getTotalCashRateCentsPerSec(state: GameState, eventMultiplier = 1): number {
+  return (
+    getEffectiveIncomeRateCentsPerSec(state, eventMultiplier) +
+    getTherapistCashRateCentsPerSec(state)
+  );
+}
+
 export function getEventIncomeMultiplier(state: GameState, nowMs: number): number {
   return EVENTS.reduce((multiplier, event) => {
     if (isEventActive(state, event.id, nowMs)) {
@@ -1640,10 +1694,79 @@ export function applyWindSessionRewards(
   nowMs: number,
 ): GameState {
   const cashPayout = getWindSessionCashPayoutCents(state, itemId, tension);
-  const withCash = cashPayout > 0 ? { ...state, currencyCents: state.currencyCents + cashPayout } : state;
+  const withCash =
+    cashPayout > 0 ? { ...state, currencyCents: state.currencyCents + cashPayout } : state;
   return activateManualEvent(withCash, "wind-up", nowMs, {
     incomeMultiplier: getWindUpIncomeMultiplierForTension(tension),
   });
+}
+
+export function getTherapistCareer(state: GameState): TherapistCareerState {
+  return state.therapistCareer;
+}
+
+export function getTherapistSessionCooldownMs(_level: number): number {
+  return THERAPIST_BASE_SESSION_COOLDOWN_MS;
+}
+
+export function getTherapistSessionEnjoymentCostCents(level: number): number {
+  const clampedLevel = Math.max(1, Math.floor(level));
+  return Math.max(
+    0,
+    Math.floor(THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS * (1 + 0.12 * (clampedLevel - 1))),
+  );
+}
+
+export function getTherapistSessionCashPayoutCents(level: number): number {
+  const clampedLevel = Math.max(1, Math.floor(level));
+  return Math.max(
+    0,
+    Math.floor(THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS * (1 + 0.18 * (clampedLevel - 1))),
+  );
+}
+
+export function getTherapistXpRequiredForNextLevel(level: number): number {
+  const clampedLevel = Math.max(1, Math.floor(level));
+  return Math.max(10, Math.floor(50 * 1.22 ** (clampedLevel - 1)));
+}
+
+export function canPerformTherapistSession(state: GameState, nowMs: number): boolean {
+  const career = state.therapistCareer;
+  if (nowMs < career.nextAvailableAtMs) {
+    return false;
+  }
+
+  const cost = getTherapistSessionEnjoymentCostCents(career.level);
+  return state.enjoymentCents >= cost;
+}
+
+export function performTherapistSession(state: GameState, nowMs: number): GameState {
+  if (!canPerformTherapistSession(state, nowMs)) {
+    return state;
+  }
+
+  const career = state.therapistCareer;
+  const cost = getTherapistSessionEnjoymentCostCents(career.level);
+  const payout = getTherapistSessionCashPayoutCents(career.level);
+
+  let nextLevel = career.level;
+  let nextXp = career.xp + THERAPIST_SESSION_XP_GAIN;
+
+  while (nextXp >= getTherapistXpRequiredForNextLevel(nextLevel)) {
+    nextXp -= getTherapistXpRequiredForNextLevel(nextLevel);
+    nextLevel += 1;
+  }
+
+  return {
+    ...state,
+    currencyCents: state.currencyCents + payout,
+    enjoymentCents: state.enjoymentCents - cost,
+    therapistCareer: {
+      level: nextLevel,
+      xp: nextXp,
+      nextAvailableAtMs: nowMs + getTherapistSessionCooldownMs(nextLevel),
+    },
+  };
 }
 
 export function getEventStatusLabel(state: GameState, eventId: EventId, nowMs: number): string {
@@ -2004,10 +2127,7 @@ function createUpgradeLevels(): Record<UpgradeId, number> {
   );
 }
 
-function createEventStates(): Record<
-  EventId,
-  EventState
-> {
+function createEventStates(): Record<EventId, EventState> {
   return EVENTS.reduce(
     (states, event) => ({ ...states, [event.id]: { activeUntilMs: 0, nextAvailableAtMs: 0 } }),
     {} as Record<EventId, EventState>,
