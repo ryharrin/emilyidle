@@ -68,6 +68,8 @@ import {
   getUpgradePriceCents,
   getEventStatusLabel,
   getEnjoymentThresholdLabel,
+  getNostalgiaUnlockCost,
+  getNostalgiaUnlockIds,
   getNostalgiaPrestigeGain,
   getNostalgiaPrestigeThresholdCents,
   getCollectionValueCents,
@@ -87,6 +89,10 @@ import {
   getTherapistSessionEnjoymentCostCents,
   getTherapistXpRequiredForNextLevel,
   performTherapistSession,
+  canBuyNostalgiaUnlock,
+  buyNostalgiaUnlock,
+  canRefundNostalgiaUnlock,
+  refundNostalgiaUnlock,
   canNostalgiaPrestige,
   prestigeMaison,
   prestigeNostalgia,
@@ -261,6 +267,7 @@ export default function App() {
   const [maisonResetArmed, setMaisonResetArmed] = useState(false);
   const [nostalgiaModalOpen, setNostalgiaModalOpen] = useState(false);
   const [nostalgiaResultsDismissed, setNostalgiaResultsDismissed] = useState(false);
+  const [nostalgiaUnlockPending, setNostalgiaUnlockPending] = useState<WatchItemId | null>(null);
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
@@ -605,10 +612,15 @@ export default function App() {
   }, [state]);
 
   const watchItems = useMemo(() => getWatchItems(), []);
+  const watchItemsById = useMemo(
+    () => new Map(watchItems.map((item) => [item.id, item])),
+    [watchItems],
+  );
   const watchItemLabels = useMemo(
     () => new Map(watchItems.map((item) => [item.id, item.name])),
     [watchItems],
   );
+  const nostalgiaUnlockIds = useMemo(() => getNostalgiaUnlockIds(), []);
   const milestones = useMemo(() => getMilestones(), []);
   const upgrades = useMemo(() => getUpgrades(), []);
   const setBonuses = useMemo(() => getSetBonuses(), []);
@@ -635,7 +647,11 @@ export default function App() {
   const nostalgiaPrestigeThreshold = getNostalgiaPrestigeThresholdCents();
   const nostalgiaEarned = state.nostalgiaEnjoymentEarnedCents;
   const nostalgiaProgress = Math.min(1, nostalgiaEarned / nostalgiaPrestigeThreshold);
-  const showNostalgiaPanel = state.nostalgiaPoints > 0 || canPrestigeNostalgia;
+  const showNostalgiaPanel =
+    state.nostalgiaPoints > 0 ||
+    canPrestigeNostalgia ||
+    state.nostalgiaResets > 0 ||
+    state.nostalgiaUnlockedItems.length > 0;
   const showNostalgiaTeaser = !showNostalgiaPanel && nostalgiaProgress >= 0.8;
   const showNostalgiaSection = showNostalgiaPanel || showNostalgiaTeaser;
   const workshopRevealProgress = Math.min(
@@ -915,6 +931,12 @@ export default function App() {
     () => getCraftedBoostPrestigeMultiplier(state),
     [state],
   );
+  const pendingNostalgiaUnlock = nostalgiaUnlockPending
+    ? watchItemsById.get(nostalgiaUnlockPending)
+    : null;
+  const pendingNostalgiaUnlockCost = nostalgiaUnlockPending
+    ? getNostalgiaUnlockCost(nostalgiaUnlockPending)
+    : 0;
 
   const showMaisonLines = useMemo(
     () => state.maisonHeritage > 0 || state.maisonReputation > 0 || canPrestigeMaison,
@@ -1294,6 +1316,7 @@ export default function App() {
                         </button>
                         <button
                           type="button"
+                          data-testid={`vault-buy-${item.id}`}
                           disabled={!unlocked || !singleGate.ok}
                           onClick={() => handlePurchase(buyItem(state, item.id, 1))}
                         >
@@ -1302,6 +1325,7 @@ export default function App() {
                         <button
                           type="button"
                           className="secondary"
+                          data-testid={`vault-buy-bulk-${item.id}`}
                           disabled={!unlocked || bulkQty <= 1 || !bulkGate.ok}
                           onClick={() => handlePurchase(buyItem(state, item.id, bulkQty))}
                         >
@@ -2117,6 +2141,110 @@ export default function App() {
                   </button>
                 </div>
 
+                {state.nostalgiaResets >= 1 && (
+                  <div className="nostalgia-unlocks" data-testid="nostalgia-unlocks">
+                    <header className="nostalgia-unlocks-header">
+                      <div>
+                        <p className="eyebrow">Permanent unlocks</p>
+                        <h4>Unlock store</h4>
+                        <p className="muted">
+                          Spend Nostalgia to unlock new watch lines across every reset.
+                        </p>
+                      </div>
+                      <label className="nostalgia-unlocks-toggle">
+                        <input
+                          type="checkbox"
+                          checked={settings.confirmNostalgiaUnlocks}
+                          data-testid="nostalgia-unlock-confirm-toggle"
+                          onChange={() =>
+                            persistSettings({
+                              ...settings,
+                              confirmNostalgiaUnlocks: !settings.confirmNostalgiaUnlocks,
+                            })
+                          }
+                        />
+                        Confirm unlock purchases
+                      </label>
+                    </header>
+                    <div className="nostalgia-unlock-grid">
+                      {nostalgiaUnlockIds.map((unlockId, index) => {
+                        const item = watchItemsById.get(unlockId);
+                        if (!item) {
+                          return null;
+                        }
+                        const cost = getNostalgiaUnlockCost(unlockId);
+                        const unlocked = state.nostalgiaUnlockedItems.includes(unlockId);
+                        const canBuy = canBuyNostalgiaUnlock(state, unlockId);
+                        const canRefund = canRefundNostalgiaUnlock(state, unlockId);
+                        const previousId = index > 0 ? nostalgiaUnlockIds[index - 1] : null;
+                        const missingPrereq =
+                          previousId && !state.nostalgiaUnlockedItems.includes(previousId);
+                        const nostalgiaGap = Math.max(0, cost - state.nostalgiaPoints);
+                        const lockReason = !unlocked
+                          ? missingPrereq
+                            ? `Unlock ${watchItemsById.get(previousId)?.name ?? previousId} first`
+                            : nostalgiaGap > 0
+                              ? `Need ${nostalgiaGap.toLocaleString()} more Nostalgia`
+                              : null
+                          : null;
+
+                        return (
+                          <div
+                            className={`card nostalgia-unlock-card ${unlocked ? "nostalgia-unlock-owned" : ""}`}
+                            key={unlockId}
+                            data-testid={`nostalgia-unlock-card-${unlockId}`}
+                          >
+                            <div className="card-header">
+                              <div>
+                                <h4>{item.name}</h4>
+                                <p>{item.description}</p>
+                              </div>
+                              <div className="nostalgia-unlock-status">
+                                {unlocked ? (
+                                  <span className="nostalgia-unlock-badge">Unlocked</span>
+                                ) : (
+                                  <span className="nostalgia-unlock-status-text">Locked</span>
+                                )}
+                              </div>
+                            </div>
+                            <p className="nostalgia-unlock-cost">
+                              Cost: {cost.toLocaleString()} Nostalgia
+                            </p>
+                            {lockReason && <p className="nostalgia-unlock-hint">{lockReason}</p>}
+                            <div className="card-actions">
+                              <button
+                                type="button"
+                                data-testid={`nostalgia-unlock-buy-${unlockId}`}
+                                disabled={unlocked || !canBuy}
+                                onClick={() => {
+                                  if (settings.confirmNostalgiaUnlocks) {
+                                    setNostalgiaUnlockPending(unlockId);
+                                    return;
+                                  }
+                                  handlePurchase(buyNostalgiaUnlock(state, unlockId));
+                                }}
+                              >
+                                {unlocked ? "Unlocked" : `Unlock (${cost.toLocaleString()})`}
+                              </button>
+                              <button
+                                type="button"
+                                className="secondary"
+                                data-testid={`nostalgia-unlock-refund-${unlockId}`}
+                                disabled={!canRefund}
+                                onClick={() =>
+                                  handlePurchase(refundNostalgiaUnlock(state, unlockId))
+                                }
+                              >
+                                Refund +{cost.toLocaleString()}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {nostalgiaModalOpen && (
                   <div
                     className="nostalgia-modal"
@@ -2148,6 +2276,47 @@ export default function App() {
                           type="button"
                           className="secondary"
                           onClick={() => setNostalgiaModalOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {nostalgiaUnlockPending && pendingNostalgiaUnlock && (
+                  <div
+                    className="nostalgia-modal"
+                    data-testid="nostalgia-unlock-modal"
+                    role="dialog"
+                    aria-modal="true"
+                  >
+                    <div className="nostalgia-modal-card">
+                      <h3>Confirm nostalgia unlock</h3>
+                      <p className="muted">
+                        Spend {pendingNostalgiaUnlockCost.toLocaleString()} Nostalgia to unlock{" "}
+                        {pendingNostalgiaUnlock.name} permanently?
+                      </p>
+                      <ul>
+                        <li>Unlocks the watch line for every future reset</li>
+                        <li>Refunds are available for the most recent unlock</li>
+                      </ul>
+                      <div className="card-actions">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!nostalgiaUnlockPending) {
+                              return;
+                            }
+                            handlePurchase(buyNostalgiaUnlock(state, nostalgiaUnlockPending));
+                            setNostalgiaUnlockPending(null);
+                          }}
+                        >
+                          Confirm unlock
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={() => setNostalgiaUnlockPending(null)}
                         >
                           Cancel
                         </button>
