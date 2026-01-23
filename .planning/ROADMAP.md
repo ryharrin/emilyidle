@@ -203,10 +203,10 @@ Plans:
 **Goal:** Redesign prestige to reset enjoyment/money and award nostalgia points.
 **Depends on:** Phase 15
 **Research:** Unlikely (internal systems)
-**Plans:** 0/3 plans complete
+**Plans:** 1/3 plans complete
 
 Plans:
-- [ ] 16-01-PLAN.md — Core nostalgia prestige state + save-compatible reset logic
+- [x] 16-01-PLAN.md — Core nostalgia prestige state + save-compatible reset logic
 - [ ] 16-02-PLAN.md — Nostalgia tab UI with progress, confirmation modal, and results screen
 - [ ] 16-03-PLAN.md — Tests: unit + e2e coverage for nostalgia prestige flow
 
