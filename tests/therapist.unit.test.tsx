@@ -4,11 +4,15 @@ import { decodeSaveString, encodeSaveString } from "../src/game/persistence";
 
 import {
   createInitialState,
+  getTherapistCashRateCentsPerSec,
   getTherapistSessionCashPayoutCents,
   getTherapistSessionEnjoymentCostCents,
+  getTotalCashRateCentsPerSec,
   getTherapistXpRequiredForNextLevel,
   performTherapistSession,
 } from "../src/game/state";
+
+import { step } from "../src/game/sim";
 
 describe("therapist career", () => {
   it("starts with defaults on a fresh state", () => {
@@ -53,6 +57,24 @@ describe("therapist career", () => {
 
     const nextState = performTherapistSession(seededState, 1_000);
     expect(nextState.therapistCareer.level).toBeGreaterThanOrEqual(2);
+  });
+
+  it("adds passive salary to cash rate and sim ticks", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        level: 2,
+      },
+    };
+
+    const therapistRate = getTherapistCashRateCentsPerSec(seededState);
+    expect(therapistRate).toBeGreaterThan(0);
+
+    const totalRate = getTotalCashRateCentsPerSec(seededState, 1);
+    const nextState = step(seededState, 1_000, 0);
+    expect(nextState.currencyCents).toBe(seededState.currencyCents + totalRate);
   });
 });
 
