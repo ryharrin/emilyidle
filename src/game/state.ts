@@ -1903,6 +1903,15 @@ export function getUpgradePriceCents(state: GameState, id: UpgradeId, quantity =
 }
 
 export function getMaxAffordableItemCount(state: GameState, id: WatchItemId): number {
+  if (!isItemUnlocked(state, id)) {
+    return 0;
+  }
+
+  const gate = getWatchPurchaseGate(state, id, 1);
+  if (!gate.ok && gate.blocksBy === "enjoyment") {
+    return 0;
+  }
+
   const item = requireWatchItem(id);
   const owned = getItemCount(state, id);
   const startPrice = item.basePriceCents * item.priceGrowth ** owned;
@@ -1911,7 +1920,11 @@ export function getMaxAffordableItemCount(state: GameState, id: WatchItemId): nu
 }
 
 export function canBuyItem(state: GameState, id: WatchItemId, quantity = 1): boolean {
-  return state.currencyCents >= getItemPriceCents(state, id, quantity);
+  if (!isItemUnlocked(state, id)) {
+    return false;
+  }
+
+  return getWatchPurchaseGate(state, id, quantity).ok;
 }
 
 export function canBuyUpgrade(state: GameState, id: UpgradeId, quantity = 1): boolean {
@@ -1923,14 +1936,14 @@ export function buyItem(state: GameState, id: WatchItemId, quantity = 1): GameSt
     return state;
   }
 
-  const priceCents = getItemPriceCents(state, id, quantity);
-  if (state.currencyCents < priceCents) {
+  const gate = getWatchPurchaseGate(state, id, quantity);
+  if (!gate.ok) {
     return state;
   }
 
   const nextState: GameState = {
     ...state,
-    currencyCents: state.currencyCents - priceCents,
+    currencyCents: state.currencyCents - gate.cashPriceCents,
     items: {
       ...state.items,
       [id]: getItemCount(state, id) + quantity,
