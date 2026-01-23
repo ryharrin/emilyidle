@@ -686,6 +686,7 @@ const CRAFTING_RECIPES: ReadonlyArray<{
 
 const WORKSHOP_PRESTIGE_THRESHOLD_CENTS = 800_000;
 const MAISON_PRESTIGE_THRESHOLD_CENTS = 4_000_000;
+const NOSTALGIA_PRESTIGE_THRESHOLD_CENTS = 12_000_000;
 const REVEAL_THRESHOLD_RATIO = 0.8;
 
 const CRAFTING_PARTS_PER_WATCH: Record<WatchItemId, number> = {
@@ -1199,6 +1200,60 @@ export function applyCraftedBoostIncome(state: GameState): number {
 
 export function applyCraftedBoostCollection(state: GameState): number {
   return getCraftedBoostCollectionMultiplier(state);
+}
+
+export function getNostalgiaPrestigeThresholdCents(): number {
+  return NOSTALGIA_PRESTIGE_THRESHOLD_CENTS;
+}
+
+export function getNostalgiaPrestigeGain(state: GameState): number {
+  const earned = Math.max(0, Math.floor(state.nostalgiaEnjoymentEarnedCents));
+  if (earned < NOSTALGIA_PRESTIGE_THRESHOLD_CENTS) {
+    return 0;
+  }
+  return Math.max(1, Math.floor((earned / NOSTALGIA_PRESTIGE_THRESHOLD_CENTS) ** 0.5));
+}
+
+export function canNostalgiaPrestige(state: GameState): boolean {
+  return getNostalgiaPrestigeGain(state) > 0;
+}
+
+export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
+  const gain = getNostalgiaPrestigeGain(state);
+  if (gain <= 0) {
+    return state;
+  }
+
+  return {
+    ...state,
+    currencyCents: 0,
+    enjoymentCents: 0,
+    nostalgiaPoints: state.nostalgiaPoints + gain,
+    nostalgiaResets: state.nostalgiaResets + 1,
+    nostalgiaEnjoymentEarnedCents: 0,
+    nostalgiaLastGain: gain,
+    nostalgiaLastPrestigedAtMs: Math.max(0, Math.floor(nowMs)),
+    therapistCareer: {
+      level: 1,
+      xp: 0,
+      nextAvailableAtMs: 0,
+    },
+    upgrades: createUpgradeLevels(),
+    workshopBlueprints: 0,
+    workshopPrestigeCount: 0,
+    workshopUpgrades: createWorkshopUpgradeStates(),
+    maisonHeritage: 0,
+    maisonReputation: 0,
+    maisonUpgrades: createMaisonUpgradeStates(),
+    maisonLines: createMaisonLineStates(),
+    eventStates: createEventStates(),
+    craftingParts: 0,
+    craftedBoosts: {
+      "polished-tools": 0,
+      "heritage-springs": 0,
+      "artisan-jig": 0,
+    },
+  };
 }
 
 export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): GameState {
