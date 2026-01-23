@@ -13,7 +13,7 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 Phase: 14 of 19 (therapist-career-economy)
 Plan: 1 of 2 in current phase
 Status: In progress
-Last activity: 2026-01-23 - Completed 14-01 therapist career economy (sessions model)
+Last activity: 2026-01-23 - Completed 14-01 therapist career economy (hybrid model)
 Progress: █████████░ 93%
 Next Phase: 14 (therapist-career-economy) Plan 2 (14-02); appended tail: 19 (refactor-phase-13-code-with-phase-13-research-in-mind)
 
@@ -40,7 +40,7 @@ Next Phase: 14 (therapist-career-economy) Plan 2 (14-02); appended tail: 19 (ref
 | 12-10 | Aligned GitHub Pages deploy workflow and verified /emilyidle build output | Pages artifact upload v4 |
 | 13-01 | Use explicit per-watch enjoyment rates and sum owned watches | Stable per-watch display and tier-driven enjoyment economy |
 | 13-02 | Make enjoyment the primary Collection currency in UI and stats | Align player-facing copy with enjoyment-first economy |
-| 14-01 | Therapist earnings via cooldown sessions; payouts separate from vault math | Adds a second faucet without softcap/multiplier confusion |
+| 14-01 | Therapist earnings are hybrid: passive salary + cooldown sessions; salary affected by events but not the vault softcap | Keeps vault math stable while making "cash / sec" reflect both faucets |
 
 ### Deferred Issues
 - None
@@ -49,7 +49,7 @@ Next Phase: 14 (therapist-career-economy) Plan 2 (14-02); appended tail: 19 (ref
 - None
 
 ### Session Continuity
-Last session: 2026-01-23T03:13:29Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-01-23T03:29:55Z
+Stopped at: Completed 14-01-PLAN.md (hybrid update)
 
 Resume file: None
