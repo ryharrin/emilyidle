@@ -230,6 +230,9 @@ const BASE_INCOME_CENTS_PER_SEC = 10;
 const INCOME_SOFTCAP_CENTS_PER_SEC = 60_000;
 const INCOME_SOFTCAP_EXPONENT = 0.6;
 
+const THERAPIST_BASE_SALARY_CENTS_PER_SEC = 4;
+const THERAPIST_SALARY_CENTS_PER_SEC_PER_LEVEL = 2;
+
 const THERAPIST_BASE_SESSION_COOLDOWN_MS = 30_000;
 const THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS = 150;
 const THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS = 500;
@@ -1604,15 +1607,18 @@ export function getEffectiveIncomeRateCentsPerSec(state: GameState, eventMultipl
   return applySoftcap(rawIncome, getWorkshopSoftcapValue(state), getWorkshopSoftcapExponent(state));
 }
 
-export function getTherapistCashRateCentsPerSec(_state: GameState): number {
-  // Earning model is discrete sessions (not per-second).
-  return 0;
+export function getTherapistCashRateCentsPerSec(state: GameState): number {
+  const clampedLevel = Math.max(1, Math.floor(state.therapistCareer.level));
+  const baseSalary =
+    THERAPIST_BASE_SALARY_CENTS_PER_SEC +
+    (clampedLevel - 1) * THERAPIST_SALARY_CENTS_PER_SEC_PER_LEVEL;
+  return Math.max(0, Math.floor(baseSalary)) * getPrestigeLegacyMultiplier(state);
 }
 
 export function getTotalCashRateCentsPerSec(state: GameState, eventMultiplier = 1): number {
   return (
     getEffectiveIncomeRateCentsPerSec(state, eventMultiplier) +
-    getTherapistCashRateCentsPerSec(state)
+    getTherapistCashRateCentsPerSec(state) * eventMultiplier
   );
 }
 
