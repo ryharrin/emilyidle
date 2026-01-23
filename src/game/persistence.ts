@@ -95,6 +95,9 @@ function sanitizeState(value: unknown): GameState | null {
     nostalgiaResets: isFiniteNumber(record.nostalgiaResets)
       ? Math.max(0, Math.floor(record.nostalgiaResets))
       : 0,
+    nostalgiaUnlockedItems: Array.isArray(record.nostalgiaUnlockedItems)
+      ? record.nostalgiaUnlockedItems.filter((entry): entry is string => typeof entry === "string")
+      : undefined,
     nostalgiaEnjoymentEarnedCents: isFiniteNumber(record.nostalgiaEnjoymentEarnedCents)
       ? Math.max(0, Math.floor(record.nostalgiaEnjoymentEarnedCents))
       : 0,

@@ -184,6 +184,7 @@ export type GameState = {
   enjoymentCents: number;
   nostalgiaPoints: number;
   nostalgiaResets: number;
+  nostalgiaUnlockedItems: WatchItemId[];
   nostalgiaEnjoymentEarnedCents: number;
   nostalgiaLastGain: number;
   nostalgiaLastPrestigedAtMs: number;
@@ -211,6 +212,7 @@ export type PersistedGameState = {
   enjoymentCents?: number;
   nostalgiaPoints?: number;
   nostalgiaResets?: number;
+  nostalgiaUnlockedItems?: string[];
   nostalgiaEnjoymentEarnedCents?: number;
   nostalgiaLastGain?: number;
   nostalgiaLastPrestigedAtMs?: number;
@@ -416,6 +418,8 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     unlockMilestoneId: "atelier",
   },
 ];
+
+export const NOSTALGIA_UNLOCK_ORDER: WatchItemId[] = ["classic", "chronograph", "tourbillon"];
 
 const WATCH_ENJOYMENT_REQUIREMENTS_CENTS: Record<WatchItemId, number> = {
   starter: 0,
@@ -714,6 +718,10 @@ export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
   return WATCH_ITEMS;
 }
 
+export function getNostalgiaUnlockIds(): WatchItemId[] {
+  return NOSTALGIA_UNLOCK_ORDER;
+}
+
 export function getWatchItemEnjoymentRateCentsPerSec(item: WatchItemDefinition): number {
   return item.enjoymentCentsPerSec;
 }
@@ -978,6 +986,7 @@ export function createInitialState(): GameState {
     enjoymentCents: 0,
     nostalgiaPoints: 0,
     nostalgiaResets: 0,
+    nostalgiaUnlockedItems: [],
     nostalgiaEnjoymentEarnedCents: 0,
     nostalgiaLastGain: 0,
     nostalgiaLastPrestigedAtMs: 0,
@@ -1103,6 +1112,16 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
         ALL_MILESTONE_IDS.includes(entry as MilestoneId),
       )
     : [];
+  const nostalgiaUnlockIds = getNostalgiaUnlockIds();
+  const nostalgiaUnlockedItemsRaw = Array.isArray(saved.nostalgiaUnlockedItems)
+    ? saved.nostalgiaUnlockedItems.filter((entry): entry is WatchItemId =>
+        nostalgiaUnlockIds.includes(entry as WatchItemId),
+      )
+    : [];
+  const nostalgiaUnlockedItemsSet = new Set(nostalgiaUnlockedItemsRaw);
+  const nostalgiaUnlockedItems = NOSTALGIA_UNLOCK_ORDER.filter((id) =>
+    nostalgiaUnlockedItemsSet.has(id),
+  );
 
   const workshopBlueprints = Number.isFinite(saved.workshopBlueprints ?? 0)
     ? Math.max(0, Math.floor(saved.workshopBlueprints ?? 0))
@@ -1165,6 +1184,7 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     enjoymentCents,
     nostalgiaPoints,
     nostalgiaResets,
+    nostalgiaUnlockedItems,
     nostalgiaEnjoymentEarnedCents,
     nostalgiaLastGain,
     nostalgiaLastPrestigedAtMs,
@@ -1230,6 +1250,7 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
     enjoymentCents: 0,
     nostalgiaPoints: state.nostalgiaPoints + gain,
     nostalgiaResets: state.nostalgiaResets + 1,
+    nostalgiaUnlockedItems: state.nostalgiaUnlockedItems,
     nostalgiaEnjoymentEarnedCents: 0,
     nostalgiaLastGain: gain,
     nostalgiaLastPrestigedAtMs: Math.max(0, Math.floor(nowMs)),
