@@ -68,6 +68,8 @@ import {
   getUpgradePriceCents,
   getEventStatusLabel,
   getEnjoymentThresholdLabel,
+  getNostalgiaPrestigeGain,
+  getNostalgiaPrestigeThresholdCents,
   getCollectionValueCents,
   getWorkshopPrestigeGain,
   getWorkshopPrestigeThresholdCents,
@@ -85,6 +87,7 @@ import {
   getTherapistSessionEnjoymentCostCents,
   getTherapistXpRequiredForNextLevel,
   performTherapistSession,
+  canNostalgiaPrestige,
   prestigeMaison,
   prestigeWorkshop,
   shouldShowUnlockTag,
@@ -103,6 +106,7 @@ const TAB_DEFINITIONS = [
   { id: "career", label: "Career" },
   { id: "workshop", label: "Atelier" },
   { id: "maison", label: "Maison" },
+  { id: "nostalgia", label: "Nostalgia" },
   { id: "catalog", label: "Catalog" },
   { id: "stats", label: "Stats" },
   { id: "save", label: "Save" },
@@ -608,8 +612,10 @@ export default function App() {
   const discoveredCatalogIds = useMemo(() => getCatalogDiscovery(state), [state]);
   const workshopPrestigeGain = useMemo(() => getWorkshopPrestigeGain(state), [state]);
   const maisonPrestigeGain = useMemo(() => getMaisonPrestigeGain(state), [state]);
+  const nostalgiaPrestigeGain = useMemo(() => getNostalgiaPrestigeGain(state), [state]);
   const canPrestigeWorkshop = useMemo(() => canWorkshopPrestige(state), [state]);
   const canPrestigeMaison = useMemo(() => canMaisonPrestige(state), [state]);
+  const canPrestigeNostalgia = useMemo(() => canNostalgiaPrestige(state), [state]);
   const showWorkshopPanel =
     canPrestigeWorkshop || state.workshopPrestigeCount > 0 || state.workshopBlueprints > 0;
   const showWorkshopTeaser = !showWorkshopPanel && isWorkshopRevealReady(state);
@@ -618,6 +624,12 @@ export default function App() {
     canPrestigeMaison || state.maisonHeritage > 0 || state.maisonReputation > 0;
   const showMaisonTeaser = !showMaisonPanel && isMaisonRevealReady(state);
   const showMaisonSection = showMaisonPanel || showMaisonTeaser;
+  const nostalgiaPrestigeThreshold = getNostalgiaPrestigeThresholdCents();
+  const nostalgiaEarned = state.nostalgiaEnjoymentEarnedCents;
+  const nostalgiaProgress = Math.min(1, nostalgiaEarned / nostalgiaPrestigeThreshold);
+  const showNostalgiaPanel = state.nostalgiaPoints > 0 || canPrestigeNostalgia;
+  const showNostalgiaTeaser = !showNostalgiaPanel && nostalgiaProgress >= 0.8;
+  const showNostalgiaSection = showNostalgiaPanel || showNostalgiaTeaser;
   const workshopRevealProgress = Math.min(
     1,
     state.enjoymentCents / getWorkshopPrestigeThresholdCents(),
@@ -647,6 +659,7 @@ export default function App() {
       collection: true,
       career: state.unlockedMilestones.includes("collector-shelf"),
       save: true,
+      nostalgia: showNostalgiaSection,
       catalog: showcaseVisibilityRatio >= 0.8,
       stats: statsVisibilityRatio >= 0.8,
       workshop: showWorkshopSection,
@@ -657,6 +670,7 @@ export default function App() {
       statsVisibilityRatio,
       showWorkshopSection,
       showMaisonSection,
+      showNostalgiaSection,
       state.unlockedMilestones,
     ],
   );
@@ -665,6 +679,7 @@ export default function App() {
     () => ({
       collection: true,
       save: true,
+      nostalgia: tabVisibility.nostalgia,
       career: tabVisibility.career && !hiddenTabsSet.has("career"),
       catalog: tabVisibility.catalog && !hiddenTabsSet.has("catalog"),
       stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
@@ -1018,6 +1033,7 @@ export default function App() {
                     aria-selected={selected}
                     aria-controls={tab.id}
                     tabIndex={focusable ? 0 : -1}
+                    data-testid={tab.id === "nostalgia" ? "nostalgia-tab" : undefined}
                     onClick={() => activateTab(tab.id)}
                     onFocus={() => {
                       if (isTestEnvironment()) {
@@ -1976,6 +1992,104 @@ export default function App() {
               </section>
             )}
           </>
+        )}
+      </section>
+
+      <section
+        id="nostalgia"
+        role="tabpanel"
+        aria-labelledby="nostalgia-tab"
+        hidden={activeTab !== "nostalgia"}
+      >
+        {activeTab === "nostalgia" && showNostalgiaSection && (
+          <section
+            className={`panel ${showNostalgiaPanel ? "" : "panel-teaser"}`}
+            data-testid="nostalgia-panel"
+            aria-labelledby="nostalgia-title"
+          >
+            {showNostalgiaPanel ? (
+              <>
+                <header className="panel-header">
+                  <div>
+                    <p className="eyebrow">Prestige loop</p>
+                    <h3 id="nostalgia-title">Nostalgia</h3>
+                    <p className="muted">
+                      Reset your vault to bank Nostalgia points and carry your collection forward.
+                    </p>
+                  </div>
+                  <div className="results-count" data-testid="nostalgia-balance">
+                    {state.nostalgiaPoints.toLocaleString()} Nostalgia
+                  </div>
+                </header>
+
+                <div className="nostalgia-progress" data-testid="nostalgia-progress">
+                  <div className="nostalgia-progress-track">
+                    <div
+                      className="nostalgia-progress-fill"
+                      style={{ width: `${Math.round(nostalgiaProgress * 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="nostalgia-progress-meta">
+                    <span>{Math.round(nostalgiaProgress * 100)}% to prestige</span>
+                    <span>
+                      {formatMoneyFromCents(nostalgiaEarned)} enjoyment /{" "}
+                      {getEnjoymentThresholdLabel(nostalgiaPrestigeThreshold)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="card" data-testid="nostalgia-preview">
+                  <h4>Projected nostalgia</h4>
+                  <p className="muted">Reset now to gain +{nostalgiaPrestigeGain} Nostalgia.</p>
+                  <p>Current balance: {state.nostalgiaPoints.toLocaleString()} Nostalgia</p>
+                </div>
+
+                <div className="card-stack">
+                  <div className="card">
+                    <h4>Resets</h4>
+                    <ul>
+                      <li>Vault cash and enjoyment totals</li>
+                      <li>Career levels and session progress</li>
+                      <li>Atelier and Maison prestige progress</li>
+                      <li>Upgrades and crafted boosts</li>
+                    </ul>
+                  </div>
+                  <div className="card">
+                    <h4>Keeps</h4>
+                    <ul>
+                      <li>Owned watches in your collection</li>
+                      <li>Catalog discoveries and achievements</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="card-actions">
+                  <button
+                    type="button"
+                    data-testid="nostalgia-prestige"
+                    disabled={!canPrestigeNostalgia}
+                  >
+                    Prestige for Nostalgia
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="panel-teaser-content" data-testid="nostalgia-teaser">
+                <p className="eyebrow">Prestige loop</p>
+                <h3>Nostalgia</h3>
+                <p className="muted">Your vault is nearing its first nostalgia reset.</p>
+                <div className="teaser-progress">
+                  <div className="teaser-track">
+                    <div
+                      className="teaser-fill"
+                      style={{ width: `${Math.round(nostalgiaProgress * 100)}%` }}
+                    ></div>
+                  </div>
+                  <span>{Math.round(nostalgiaProgress * 100)}% to nostalgia prestige</span>
+                </div>
+              </div>
+            )}
+          </section>
         )}
       </section>
 
