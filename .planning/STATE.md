@@ -6,21 +6,23 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Phase 13 - enjoyment-economy-foundation
+**Current focus:** Phase 14 - therapist-career-economy
 
 ## Current Position
 
-Phase: 13 of 18 (enjoyment-economy-foundation)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-22 - Completed Phase 13 enjoyment economy foundation (13-01, 13-02)
-Progress: ██████████ 100%
+Phase: 14 of 19 (therapist-career-economy)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-23 - Completed 14-01 therapist career economy (sessions model)
+Progress: █████████░ 93%
+Next Phase: 14 (therapist-career-economy) Plan 2 (14-02); appended tail: 19 (refactor-phase-13-code-with-phase-13-research-in-mind)
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 - Phase 12 added: major-updates-01-21
 - Milestone v2.0 created: upcoming major changes to game design, 6 phases (Phase 13-18)
+- Phase 19 added: Refactor phase 13 code with phase 13 research in mind
 
 ### Decisions
 | Phase | Decision | Rationale |
@@ -38,6 +40,7 @@ Progress: ██████████ 100%
 | 12-10 | Aligned GitHub Pages deploy workflow and verified /emilyidle build output | Pages artifact upload v4 |
 | 13-01 | Use explicit per-watch enjoyment rates and sum owned watches | Stable per-watch display and tier-driven enjoyment economy |
 | 13-02 | Make enjoyment the primary Collection currency in UI and stats | Align player-facing copy with enjoyment-first economy |
+| 14-01 | Therapist earnings via cooldown sessions; payouts separate from vault math | Adds a second faucet without softcap/multiplier confusion |
 
 ### Deferred Issues
 - None
@@ -46,7 +49,7 @@ Progress: ██████████ 100%
 - None
 
 ### Session Continuity
-Last session: 2026-01-22T22:40:56Z
-Stopped at: Completed Phase 13 enjoyment economy foundation; ready for Phase 14 planning
+Last session: 2026-01-23T03:13:29Z
+Stopped at: Completed 14-01-PLAN.md
 
 Resume file: None
