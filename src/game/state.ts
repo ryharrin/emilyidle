@@ -420,6 +420,12 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
 ];
 
 export const NOSTALGIA_UNLOCK_ORDER: WatchItemId[] = ["classic", "chronograph", "tourbillon"];
+const NOSTALGIA_UNLOCK_COSTS: Record<WatchItemId, number> = {
+  starter: 0,
+  classic: 1,
+  chronograph: 3,
+  tourbillon: 6,
+};
 
 const WATCH_ENJOYMENT_REQUIREMENTS_CENTS: Record<WatchItemId, number> = {
   starter: 0,
@@ -720,6 +726,10 @@ export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
 
 export function getNostalgiaUnlockIds(): WatchItemId[] {
   return NOSTALGIA_UNLOCK_ORDER;
+}
+
+export function getNostalgiaUnlockCost(id: WatchItemId): number {
+  return NOSTALGIA_UNLOCK_COSTS[id] ?? 0;
 }
 
 export function getWatchItemEnjoymentRateCentsPerSec(item: WatchItemDefinition): number {
@@ -1236,6 +1246,71 @@ export function getNostalgiaPrestigeGain(state: GameState): number {
 
 export function canNostalgiaPrestige(state: GameState): boolean {
   return getNostalgiaPrestigeGain(state) > 0;
+}
+
+export function canBuyNostalgiaUnlock(state: GameState, id: WatchItemId): boolean {
+  if (state.nostalgiaResets < 1) {
+    return false;
+  }
+
+  if (!NOSTALGIA_UNLOCK_ORDER.includes(id)) {
+    return false;
+  }
+
+  if (state.nostalgiaUnlockedItems.includes(id)) {
+    return false;
+  }
+
+  const nextUnlock = NOSTALGIA_UNLOCK_ORDER.find(
+    (entry) => !state.nostalgiaUnlockedItems.includes(entry),
+  );
+  if (nextUnlock !== id) {
+    return false;
+  }
+
+  return state.nostalgiaPoints >= getNostalgiaUnlockCost(id);
+}
+
+export function buyNostalgiaUnlock(state: GameState, id: WatchItemId): GameState {
+  if (!canBuyNostalgiaUnlock(state, id)) {
+    return state;
+  }
+
+  const cost = getNostalgiaUnlockCost(id);
+  const unlocked = new Set([...state.nostalgiaUnlockedItems, id]);
+
+  return {
+    ...state,
+    nostalgiaPoints: state.nostalgiaPoints - cost,
+    nostalgiaUnlockedItems: NOSTALGIA_UNLOCK_ORDER.filter((entry) => unlocked.has(entry)),
+  };
+}
+
+export function canRefundNostalgiaUnlock(state: GameState, id: WatchItemId): boolean {
+  if (!state.nostalgiaUnlockedItems.includes(id)) {
+    return false;
+  }
+
+  const lastUnlocked = [...NOSTALGIA_UNLOCK_ORDER]
+    .reverse()
+    .find((entry) => state.nostalgiaUnlockedItems.includes(entry));
+  return lastUnlocked === id;
+}
+
+export function refundNostalgiaUnlock(state: GameState, id: WatchItemId): GameState {
+  if (!canRefundNostalgiaUnlock(state, id)) {
+    return state;
+  }
+
+  const cost = getNostalgiaUnlockCost(id);
+  const unlocked = new Set(state.nostalgiaUnlockedItems);
+  unlocked.delete(id);
+
+  return {
+    ...state,
+    nostalgiaPoints: state.nostalgiaPoints + cost,
+    nostalgiaUnlockedItems: NOSTALGIA_UNLOCK_ORDER.filter((entry) => unlocked.has(entry)),
+  };
 }
 
 export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
@@ -1933,7 +2008,10 @@ export function isItemUnlocked(state: GameState, id: WatchItemId): boolean {
     return true;
   }
 
-  return state.unlockedMilestones.includes(item.unlockMilestoneId);
+  return (
+    state.unlockedMilestones.includes(item.unlockMilestoneId) ||
+    state.nostalgiaUnlockedItems.includes(id)
+  );
 }
 
 export function isUpgradeUnlocked(state: GameState, id: UpgradeId): boolean {
