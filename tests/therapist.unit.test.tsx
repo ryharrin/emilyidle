@@ -105,7 +105,8 @@ describe("therapist persistence", () => {
   it("defaults therapist fields when missing from payload", () => {
     const baseState = createInitialState();
 
-    const { therapistCareer: _therapistCareer, ...stateWithoutTherapist } = baseState;
+    const { therapistCareer, ...stateWithoutTherapist } = baseState;
+    void therapistCareer;
 
     const raw = JSON.stringify({
       version: 2,

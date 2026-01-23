@@ -247,6 +247,49 @@ strong {
   gap: 8px;
 }
 
+.purchase-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 198, 147, 0.35);
+  background: rgba(15, 17, 21, 0.7);
+  color: #e2c6a8;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+[data-theme="light"] .purchase-locked {
+  border-color: rgba(170, 130, 86, 0.45);
+  background: rgba(255, 255, 255, 0.8);
+  color: #6a5135;
+}
+
+.purchase-lock-icon {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1.5px solid currentColor;
+  box-sizing: border-box;
+}
+
+.purchase-lock-icon::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 8px;
+  height: 6px;
+  border: 1.5px solid currentColor;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+}
+
 button {
   border-radius: 999px;
   border: 1px solid transparent;
@@ -397,8 +440,7 @@ button:not(:disabled):hover {
   border-color: #2b2f3a;
   background:
     linear-gradient(150deg, rgba(26, 30, 38, 0.92), rgba(12, 14, 18, 0.96)),
-    radial-gradient(circle at 20% 0%, rgba(164, 128, 86, 0.12), transparent 55%),
-    #12151b;
+    radial-gradient(circle at 20% 0%, rgba(164, 128, 86, 0.12), transparent 55%), #12151b;
   box-shadow:
     0 20px 45px rgba(7, 9, 12, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -408,8 +450,7 @@ button:not(:disabled):hover {
   border-color: #d6c9b9;
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(244, 236, 226, 0.8)),
-    radial-gradient(circle at 10% 0%, rgba(212, 173, 116, 0.2), transparent 55%),
-    #fbf7f0;
+    radial-gradient(circle at 10% 0%, rgba(212, 173, 116, 0.2), transparent 55%), #fbf7f0;
   box-shadow:
     0 22px 42px rgba(96, 80, 64, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -610,9 +651,7 @@ button:not(:disabled):hover {
 .catalog-card {
   border-radius: 20px;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(12, 14, 18, 0.45)),
-    #151a22;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(12, 14, 18, 0.45)), #151a22;
   border: 1px solid rgba(232, 198, 147, 0.18);
   display: grid;
   grid-template-rows: auto 1fr;
@@ -623,9 +662,7 @@ button:not(:disabled):hover {
 }
 
 [data-theme="light"] .catalog-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 235, 221, 0.7)),
-    #ffffff;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 235, 221, 0.7)), #ffffff;
   border-color: rgba(198, 169, 132, 0.6);
   box-shadow:
     0 20px 34px rgba(94, 80, 66, 0.22),

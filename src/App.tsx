@@ -28,7 +28,6 @@ import {
   createInitialState,
   getAchievementProgressRatio,
   getAchievements,
-  getEffectiveIncomeRateCentsPerSec,
   getTotalCashRateCentsPerSec,
   getEnjoymentCents,
   getEnjoymentRateCentsPerSec,
