@@ -366,8 +366,8 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "starter",
     name: "Starter Quartz",
     description: "Reliable entry pieces to seed the vault.",
-    basePriceCents: 100,
-    priceGrowth: 1.14,
+    basePriceCents: 125,
+    priceGrowth: 1.145,
     incomeCentsPerSec: 6,
     enjoymentCentsPerSec: 2,
     collectionValueCents: 140,
@@ -376,8 +376,8 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "classic",
     name: "Classic Automatic",
     description: "Self-winding classics with steady demand.",
-    basePriceCents: 1_500,
-    priceGrowth: 1.165,
+    basePriceCents: 1_800,
+    priceGrowth: 1.17,
     incomeCentsPerSec: 36,
     enjoymentCentsPerSec: 12,
     collectionValueCents: 2_400,
@@ -387,8 +387,8 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "chronograph",
     name: "Chronograph",
     description: "Complications that attract serious collectors.",
-    basePriceCents: 10_000,
-    priceGrowth: 1.175,
+    basePriceCents: 12_500,
+    priceGrowth: 1.18,
     incomeCentsPerSec: 185,
     enjoymentCentsPerSec: 60,
     collectionValueCents: 18_000,
@@ -398,14 +398,21 @@ const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "tourbillon",
     name: "Tourbillon",
     description: "Prestige pieces for the vault centerpiece.",
-    basePriceCents: 120_000,
-    priceGrowth: 1.19,
+    basePriceCents: 150_000,
+    priceGrowth: 1.195,
     incomeCentsPerSec: 980,
     enjoymentCentsPerSec: 240,
     collectionValueCents: 210_000,
     unlockMilestoneId: "atelier",
   },
 ];
+
+const WATCH_ENJOYMENT_REQUIREMENTS_CENTS: Record<WatchItemId, number> = {
+  starter: 0,
+  classic: 2_000,
+  chronograph: 15_000,
+  tourbillon: 60_000,
+};
 
 const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
   {
@@ -1836,6 +1843,51 @@ export function getItemPriceCents(state: GameState, id: WatchItemId, quantity = 
   const startPrice = item.basePriceCents * item.priceGrowth ** owned;
 
   return Math.ceil(getSeriesTotal(startPrice, item.priceGrowth, quantity));
+}
+
+export type WatchPurchaseGate =
+  | { ok: true; cashPriceCents: number; enjoymentRequiredCents: number }
+  | {
+      ok: false;
+      cashPriceCents: number;
+      enjoymentRequiredCents: number;
+      blocksBy: "enjoyment" | "cash";
+      enjoymentDeficitCents?: number;
+      cashDeficitCents?: number;
+    };
+
+export function getWatchPurchaseGate(
+  state: GameState,
+  id: WatchItemId,
+  quantity = 1,
+): WatchPurchaseGate {
+  const cashPriceCents = getItemPriceCents(state, id, quantity);
+  const enjoymentRequiredCents = WATCH_ENJOYMENT_REQUIREMENTS_CENTS[id] ?? 0;
+  const cashDeficitCents = Math.max(0, cashPriceCents - state.currencyCents);
+  const enjoymentDeficitCents = Math.max(0, enjoymentRequiredCents - state.enjoymentCents);
+  const lacksEnjoyment = enjoymentDeficitCents > 0;
+  const lacksCash = cashDeficitCents > 0;
+
+  if (!lacksEnjoyment && !lacksCash) {
+    return { ok: true, cashPriceCents, enjoymentRequiredCents };
+  }
+
+  const gate: WatchPurchaseGate = {
+    ok: false,
+    cashPriceCents,
+    enjoymentRequiredCents,
+    blocksBy: lacksEnjoyment ? "enjoyment" : "cash",
+  };
+
+  if (enjoymentDeficitCents > 0) {
+    gate.enjoymentDeficitCents = enjoymentDeficitCents;
+  }
+
+  if (cashDeficitCents > 0) {
+    gate.cashDeficitCents = cashDeficitCents;
+  }
+
+  return gate;
 }
 
 export function getUpgradePriceCents(state: GameState, id: UpgradeId, quantity = 1): number {
