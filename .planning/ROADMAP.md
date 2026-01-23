@@ -174,10 +174,11 @@ Plans:
 **Goal:** Add therapist career progression to generate money alongside enjoyment.
 **Depends on:** Phase 13
 **Research:** Unlikely (internal systems)
-**Plans:** 0 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 14 to break down)
+- [x] 14-01-PLAN.md
+- [x] 14-02-PLAN.md
 
 **Details:**
 [To be added during planning]
