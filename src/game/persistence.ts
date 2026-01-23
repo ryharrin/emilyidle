@@ -89,6 +89,33 @@ function sanitizeState(value: unknown): GameState | null {
       ? record.catalogTierUnlocks.filter((entry): entry is string => typeof entry === "string")
       : [],
     enjoymentCents: isFiniteNumber(record.enjoymentCents) ? Math.max(0, record.enjoymentCents) : 0,
+    therapistCareer:
+      typeof record.therapistCareer === "object" && record.therapistCareer !== null
+        ? {
+            level: isFiniteNumber((record.therapistCareer as Record<string, unknown>).level)
+              ? Math.max(
+                  1,
+                  Math.floor((record.therapistCareer as Record<string, unknown>).level as number),
+                )
+              : undefined,
+            xp: isFiniteNumber((record.therapistCareer as Record<string, unknown>).xp)
+              ? Math.max(
+                  0,
+                  Math.floor((record.therapistCareer as Record<string, unknown>).xp as number),
+                )
+              : undefined,
+            nextAvailableAtMs: isFiniteNumber(
+              (record.therapistCareer as Record<string, unknown>).nextAvailableAtMs,
+            )
+              ? Math.max(
+                  0,
+                  Math.floor(
+                    (record.therapistCareer as Record<string, unknown>).nextAvailableAtMs as number,
+                  ),
+                )
+              : undefined,
+          }
+        : undefined,
     craftingParts: isFiniteNumber(record.craftingParts) ? record.craftingParts : 0,
     craftedBoosts:
       typeof record.craftedBoosts === "object" && record.craftedBoosts !== null
