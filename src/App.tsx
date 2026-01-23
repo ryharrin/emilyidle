@@ -30,6 +30,7 @@ import {
   getAchievementProgressRatio,
   getAchievements,
   getEffectiveIncomeRateCentsPerSec,
+  getTotalCashRateCentsPerSec,
   getEnjoymentCents,
   getEnjoymentRateCentsPerSec,
   getSoftcapEfficiency,
@@ -80,6 +81,13 @@ import {
   isMaisonRevealReady,
   isUpgradeUnlocked,
   isWorkshopRevealReady,
+  canPerformTherapistSession,
+  getTherapistCareer,
+  getTherapistSessionCashPayoutCents,
+  getTherapistSessionCooldownMs,
+  getTherapistSessionEnjoymentCostCents,
+  getTherapistXpRequiredForNextLevel,
+  performTherapistSession,
   prestigeMaison,
   prestigeWorkshop,
   shouldShowUnlockTag,
@@ -94,6 +102,7 @@ const AUDIO_SETTINGS_KEY = "emily-idle:audio";
 const SETTINGS_KEY = "emily-idle:settings";
 const TAB_DEFINITIONS = [
   { id: "collection", label: "Vault" },
+  { id: "career", label: "Career" },
   { id: "workshop", label: "Atelier" },
   { id: "maison", label: "Maison" },
   { id: "catalog", label: "Catalog" },
@@ -388,22 +397,19 @@ export default function App() {
     stateRef.current = state;
   }, [state]);
 
-  const persistNow = useCallback(
-    (reason: string, snapshot: GameState = stateRef.current) => {
-      const nowMs = Date.now();
-      const result = persistSaveToLocalStorage(snapshot, nowMs);
+  const persistNow = useCallback((reason: string, snapshot: GameState = stateRef.current) => {
+    const nowMs = Date.now();
+    const result = persistSaveToLocalStorage(snapshot, nowMs);
 
-      if (!result.ok) {
-        console.warn(`Autosave failed (${reason}). ${result.error}`);
-        setSaveStatus(`Save failed: ${result.error}`);
-        return;
-      }
+    if (!result.ok) {
+      console.warn(`Autosave failed (${reason}). ${result.error}`);
+      setSaveStatus(`Save failed: ${result.error}`);
+      return;
+    }
 
-      lastSavedAtMsRef.current = nowMs;
-      saveDirtyRef.current = false;
-    },
-    [],
-  );
+    lastSavedAtMsRef.current = nowMs;
+    saveDirtyRef.current = false;
+  }, []);
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -573,7 +579,9 @@ export default function App() {
   };
 
   const stats = useMemo(() => {
-    const cashRate = getEffectiveIncomeRateCentsPerSec(state);
+    const nowMs = Date.now();
+    const eventMultiplier = getEventIncomeMultiplier(state, nowMs);
+    const cashRate = getTotalCashRateCentsPerSec(state, eventMultiplier);
     const enjoymentRate = getEnjoymentRateCentsPerSec(state);
 
     return {
@@ -639,19 +647,27 @@ export default function App() {
   const tabVisibility = useMemo(
     () => ({
       collection: true,
+      career: state.unlockedMilestones.includes("collector-shelf"),
       save: true,
       catalog: showcaseVisibilityRatio >= 0.8,
       stats: statsVisibilityRatio >= 0.8,
       workshop: showWorkshopSection,
       maison: showMaisonSection,
     }),
-    [showcaseVisibilityRatio, statsVisibilityRatio, showWorkshopSection, showMaisonSection],
+    [
+      showcaseVisibilityRatio,
+      statsVisibilityRatio,
+      showWorkshopSection,
+      showMaisonSection,
+      state.unlockedMilestones,
+    ],
   );
   const hiddenTabsSet = useMemo(() => new Set(settings.hiddenTabs), [settings.hiddenTabs]);
   const combinedTabVisibility = useMemo(
     () => ({
       collection: true,
       save: true,
+      career: tabVisibility.career && !hiddenTabsSet.has("career"),
       catalog: tabVisibility.catalog && !hiddenTabsSet.has("catalog"),
       stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
       workshop: tabVisibility.workshop && !hiddenTabsSet.has("workshop"),
@@ -677,10 +693,7 @@ export default function App() {
   }, [activeTab, combinedTabVisibility]);
 
   const visibleTabOptions = useMemo(
-    () =>
-      tabs.filter(
-        (tab) => HIDEABLE_TAB_IDS.includes(tab.id) && tabVisibility[tab.id],
-      ),
+    () => tabs.filter((tab) => HIDEABLE_TAB_IDS.includes(tab.id) && tabVisibility[tab.id]),
     [tabs, tabVisibility],
   );
   const coachmarks = useMemo(
@@ -1225,9 +1238,9 @@ export default function App() {
                         <div>{owned} owned</div>
                       </div>
                       <p>
-                        {formatRateFromCentsPerSec(getWatchItemEnjoymentRateCentsPerSec(item))} enjoyment each ·{" "}
-                        {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash each · Memories{" "}
-                        {formatMoneyFromCents(item.collectionValueCents)}
+                        {formatRateFromCentsPerSec(getWatchItemEnjoymentRateCentsPerSec(item))}{" "}
+                        enjoyment each · {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash
+                        each · Memories {formatMoneyFromCents(item.collectionValueCents)}
                       </p>
                       <p className="muted">Dismantle value: {partsPerWatch} parts</p>
                       <div className="card-actions">
@@ -1408,7 +1421,7 @@ export default function App() {
                   {events.map((event) => {
                     const active = isEventActive(state, event.id, nowMs);
                     const effectiveMultiplier = active
-                      ? state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier
+                      ? (state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier)
                       : event.incomeMultiplier;
                     const statusLabel = getEventStatusLabel(state, event.id, nowMs);
                     return (
@@ -1490,6 +1503,94 @@ export default function App() {
             </aside>
           </>
         )}
+      </section>
+
+      <section
+        id="career"
+        role="tabpanel"
+        aria-labelledby="career-tab"
+        hidden={activeTab !== "career"}
+      >
+        {activeTab === "career" &&
+          (() => {
+            const career = getTherapistCareer(state);
+            const nextXpRequired = getTherapistXpRequiredForNextLevel(career.level);
+            const cost = getTherapistSessionEnjoymentCostCents(career.level);
+            const payout = getTherapistSessionCashPayoutCents(career.level);
+            const cooldownMs = getTherapistSessionCooldownMs(career.level);
+            const canPerform = canPerformTherapistSession(state, nowMs);
+            const cooldownSeconds = Math.max(
+              0,
+              Math.ceil((career.nextAvailableAtMs - nowMs) / 1000),
+            );
+
+            const statusLabel = (() => {
+              if (canPerform) {
+                return "Ready";
+              }
+              if (cooldownSeconds > 0) {
+                return `Cooldown ${cooldownSeconds}s`;
+              }
+              if (state.enjoymentCents < cost) {
+                return "Need more enjoyment";
+              }
+              return "Unavailable";
+            })();
+
+            return (
+              <div className="panel" data-testid="career-panel">
+                <header className="panel-header">
+                  <div>
+                    <p className="eyebrow">Money generation</p>
+                    <h3 id="career-title">Therapist career</h3>
+                    <p className="muted">
+                      Spend enjoyment to run sessions that pay cash and advance your career.
+                    </p>
+                  </div>
+                  <div className="results-count" data-testid="career-status">
+                    {statusLabel}
+                  </div>
+                </header>
+
+                <div className="workshop-reset">
+                  <div>
+                    <p className="workshop-label">Level</p>
+                    <p className="workshop-value">{career.level.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="workshop-label">XP</p>
+                    <p className="workshop-value">
+                      {career.xp.toLocaleString()} / {nextXpRequired.toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="workshop-label">Session cost</p>
+                    <p className="workshop-value">{formatMoneyFromCents(cost)} enjoyment</p>
+                  </div>
+                  <div>
+                    <p className="workshop-label">Session payout</p>
+                    <p className="workshop-value">{formatMoneyFromCents(payout)} cash</p>
+                  </div>
+                  <div>
+                    <p className="workshop-label">Cooldown</p>
+                    <p className="workshop-value">{Math.round(cooldownMs / 1000)}s</p>
+                  </div>
+                </div>
+
+                <div className="card-actions">
+                  <button
+                    type="button"
+                    className="secondary"
+                    data-testid="career-action"
+                    disabled={!canPerform}
+                    onClick={() => handlePurchase(performTherapistSession(state, Date.now()))}
+                  >
+                    Run session
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
       </section>
 
       <section
@@ -2383,7 +2484,12 @@ export default function App() {
             <button type="button" data-testid="wind-steady" onClick={handleWindSteady}>
               Steady wind
             </button>
-            <button type="button" className="secondary" data-testid="wind-push" onClick={handleWindPush}>
+            <button
+              type="button"
+              className="secondary"
+              data-testid="wind-push"
+              onClick={handleWindPush}
+            >
               Push it
             </button>
           </div>
