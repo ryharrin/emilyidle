@@ -405,6 +405,82 @@ button:not(:disabled):hover {
   margin-bottom: 16px;
 }
 
+.nostalgia-unlocks {
+  margin-top: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.nostalgia-unlocks-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nostalgia-unlocks-toggle {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #c7ccd6;
+  background: rgba(15, 17, 21, 0.6);
+  border: 1px solid #2a2f3b;
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.nostalgia-unlock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.nostalgia-unlock-card {
+  position: relative;
+}
+
+.nostalgia-unlock-owned {
+  border-color: rgba(120, 205, 170, 0.45);
+  box-shadow: 0 0 0 1px rgba(120, 205, 170, 0.18);
+}
+
+.nostalgia-unlock-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nostalgia-unlock-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(120, 205, 170, 0.2);
+  color: #b8f3d4;
+  border: 1px solid rgba(120, 205, 170, 0.5);
+}
+
+.nostalgia-unlock-status-text {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9da3ad;
+}
+
+.nostalgia-unlock-cost {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.nostalgia-unlock-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b6bcc7;
+}
+
 [data-theme="light"] .nostalgia-progress-track {
   background: #ffffff;
   border-color: #d7cfc5;
@@ -427,6 +503,32 @@ button:not(:disabled):hover {
 [data-theme="light"] .nostalgia-results {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(170, 130, 86, 0.45);
+}
+
+[data-theme="light"] .nostalgia-unlocks-toggle {
+  color: #50463b;
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #d7cfc5;
+  box-shadow: 0 10px 24px rgba(88, 74, 60, 0.12);
+}
+
+[data-theme="light"] .nostalgia-unlock-owned {
+  border-color: rgba(82, 156, 121, 0.55);
+  box-shadow: 0 0 0 1px rgba(82, 156, 121, 0.2);
+}
+
+[data-theme="light"] .nostalgia-unlock-badge {
+  background: rgba(82, 156, 121, 0.16);
+  color: #2f5a45;
+  border-color: rgba(82, 156, 121, 0.5);
+}
+
+[data-theme="light"] .nostalgia-unlock-status-text {
+  color: #6f6559;
+}
+
+[data-theme="light"] .nostalgia-unlock-hint {
+  color: #5b5348;
 }
 
 .catalog-tier-panel {
