@@ -1718,7 +1718,8 @@ export function getTherapistCareer(state: GameState): TherapistCareerState {
   return state.therapistCareer;
 }
 
-export function getTherapistSessionCooldownMs(_level: number): number {
+export function getTherapistSessionCooldownMs(level: number): number {
+  void level;
   return THERAPIST_BASE_SESSION_COOLDOWN_MS;
 }
 

@@ -420,8 +420,7 @@ describe("maison prestige", () => {
       getWatchItems().map((item) => [item.id, getWatchItemEnjoymentRateCentsPerSec(item)]),
     );
     const expectedEnjoyment =
-      (enjoymentRates.get("starter") ?? 0) * 10 +
-      (enjoymentRates.get("chronograph") ?? 0) * 5;
+      (enjoymentRates.get("starter") ?? 0) * 10 + (enjoymentRates.get("chronograph") ?? 0) * 5;
     expect(getEnjoymentRateCentsPerSec(stackedHigh)).toBe(expectedEnjoyment);
   });
 
@@ -555,8 +554,9 @@ describe("crafting persistence", () => {
   it("defaults crafting fields when missing from payload", () => {
     const baseState = createInitialState();
 
-    const { craftingParts: _craftingParts, craftedBoosts: _craftedBoosts, ...stateWithoutCrafting } =
-      baseState;
+    const { craftingParts, craftedBoosts, ...stateWithoutCrafting } = baseState;
+    void craftingParts;
+    void craftedBoosts;
 
     const raw = JSON.stringify({
       version: 2,
