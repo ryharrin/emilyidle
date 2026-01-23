@@ -29,6 +29,7 @@ export function step(state: GameState, dtMs: number, nowMs = Date.now()): GameSt
     ...withEvents,
     currencyCents: withEvents.currencyCents + earnedCents,
     enjoymentCents: withEvents.enjoymentCents + earnedEnjoyment,
+    nostalgiaEnjoymentEarnedCents: withEvents.nostalgiaEnjoymentEarnedCents + earnedEnjoyment,
   };
 
   const withDiscovery = discoverCatalogEntries(withIncome, getCatalogEntryIdsForItems(withIncome));
