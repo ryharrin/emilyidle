@@ -218,10 +218,12 @@ Plans:
 **Goal:** Use nostalgia points to permanently unlock watches across runs.
 **Depends on:** Phase 16
 **Research:** Unlikely (internal systems)
-**Plans:** 0 plans
+**Plans:** 0/3 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 17 to break down)
+- [ ] 17-01-PLAN.md — Persist nostalgia unlocks + wire isItemUnlocked
+- [ ] 17-02-PLAN.md — Nostalgia tab unlock store UI + confirmation toggle
+- [ ] 17-03-PLAN.md — Tests: unit + e2e coverage for nostalgia unlocks
 
 **Details:**
 [To be added during planning]
