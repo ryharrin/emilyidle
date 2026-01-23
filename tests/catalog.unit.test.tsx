@@ -34,6 +34,7 @@ describe("primary navigation tabs", () => {
     expect(within(tabList).queryByRole("tab", { name: /Stats/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Atelier/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Maison/i })).toBeNull();
+    expect(within(tabList).queryByRole("tab", { name: /Career/i })).toBeNull();
   });
 
   it("moves focus between visible tabs without activating", async () => {
@@ -89,6 +90,52 @@ describe("primary navigation tabs", () => {
     expect(vaultTab.getAttribute("aria-selected")).toBe("false");
     expect(saveTab.getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("tabpanel", { name: /Save/i })).toBeTruthy();
+  });
+});
+
+describe("career tab unlock", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 5,
+      },
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders the Career tab and panel when unlocked", async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+
+    const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
+    expect(careerTab.getAttribute("id")).toBe("career-tab");
+    expect(careerTab.getAttribute("aria-controls")).toBe("career");
+
+    await user.click(careerTab);
+
+    expect(screen.getByRole("tabpanel", { name: /Career/i })).toBeTruthy();
+    expect(screen.getByTestId("career-panel")).toBeTruthy();
+    expect(screen.getByTestId("career-status")).toBeTruthy();
+    expect(screen.getByTestId("career-action")).toBeTruthy();
   });
 });
 
@@ -1072,7 +1119,9 @@ describe("coachmarks", () => {
     expect(coachmarks.length).toBeGreaterThan(0);
 
     const titles = coachmarks.map((card) =>
-      within(card as HTMLElement).getByRole("heading", { level: 4 }).textContent?.trim(),
+      within(card as HTMLElement)
+        .getByRole("heading", { level: 4 })
+        .textContent?.trim(),
     );
 
     expect(titles).toContain("Vault basics");
