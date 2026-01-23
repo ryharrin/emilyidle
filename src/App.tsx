@@ -19,7 +19,6 @@ import {
   buyMaisonUpgrade,
   buyUpgrade,
   buyWorkshopUpgrade,
-  canBuyItem,
   canBuyMaisonLine,
   canBuyMaisonUpgrade,
   canBuyUpgrade,
@@ -66,7 +65,6 @@ import {
   getAutoBuyEnabled,
   getMaisonReputationGain,
   getMaxAffordableItemCount,
-  getItemPriceCents,
   getMilestoneRequirementLabel,
   getUpgradePriceCents,
   getEventStatusLabel,
@@ -91,6 +89,7 @@ import {
   prestigeMaison,
   prestigeWorkshop,
   shouldShowUnlockTag,
+  getWatchPurchaseGate,
 } from "./game/state";
 import { getCatalogEntryTags, getCatalogImageUrl } from "./game/catalog";
 import type { GameState, WatchItemId } from "./game/state";
@@ -1057,11 +1056,11 @@ export default function App() {
               <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
             </div>
             <div>
-              <dt>Vault cash</dt>
+              <dt>Vault dollars</dt>
               <dd id="currency">{stats.cash}</dd>
             </div>
             <div>
-              <dt>Cash / sec</dt>
+              <dt>Dollars / sec</dt>
               <dd id="income">{stats.cashRate}</dd>
             </div>
             <div>
@@ -1221,12 +1220,12 @@ export default function App() {
               <div id="collection-list" className="card-stack">
                 {watchItems.map((item) => {
                   const owned = state.items[item.id] ?? 0;
-                  const price = getItemPriceCents(state, item.id, 1);
                   const maxAffordable = getMaxAffordableItemCount(state, item.id);
                   const bulkQty = Math.min(10, Math.max(1, maxAffordable));
-                  const bulkPrice = getItemPriceCents(state, item.id, bulkQty);
                   const unlocked = isItemUnlocked(state, item.id);
                   const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
+                  const singleGate = getWatchPurchaseGate(state, item.id, 1);
+                  const bulkGate = getWatchPurchaseGate(state, item.id, bulkQty);
 
                   return (
                     <div className="card" key={item.id}>
@@ -1239,7 +1238,7 @@ export default function App() {
                       </div>
                       <p>
                         {formatRateFromCentsPerSec(getWatchItemEnjoymentRateCentsPerSec(item))}{" "}
-                        enjoyment each · {formatRateFromCentsPerSec(item.incomeCentsPerSec)} cash
+                        enjoyment each · {formatRateFromCentsPerSec(item.incomeCentsPerSec)} dollars
                         each · Memories {formatMoneyFromCents(item.collectionValueCents)}
                       </p>
                       <p className="muted">Dismantle value: {partsPerWatch} parts</p>
@@ -1266,21 +1265,26 @@ export default function App() {
                         </button>
                         <button
                           type="button"
-                          disabled={!canBuyItem(state, item.id, 1) || !unlocked}
+                          disabled={!unlocked || !singleGate.ok}
                           onClick={() => handlePurchase(buyItem(state, item.id, 1))}
                         >
-                          Buy ({formatMoneyFromCents(price)})
+                          Buy ({formatMoneyFromCents(singleGate.cashPriceCents)})
                         </button>
                         <button
                           type="button"
                           className="secondary"
-                          disabled={
-                            bulkQty <= 1 || !canBuyItem(state, item.id, bulkQty) || !unlocked
-                          }
+                          disabled={!unlocked || bulkQty <= 1 || !bulkGate.ok}
                           onClick={() => handlePurchase(buyItem(state, item.id, bulkQty))}
                         >
-                          Buy {bulkQty} ({formatMoneyFromCents(bulkPrice)})
+                          Buy {bulkQty} ({formatMoneyFromCents(bulkGate.cashPriceCents)})
                         </button>
+                        {unlocked && !singleGate.ok && singleGate.blocksBy === "enjoyment" && (
+                          <div className="purchase-locked" data-testid={`purchase-gate-${item.id}`}>
+                            <span className="purchase-lock-icon" aria-hidden="true" />
+                            Requires {formatMoneyFromCents(singleGate.enjoymentRequiredCents)}{" "}
+                            enjoyment
+                          </div>
+                        )}
                         {!unlocked &&
                           item.unlockMilestoneId &&
                           shouldShowUnlockTag(state, item.unlockMilestoneId) && (
@@ -2397,11 +2401,11 @@ export default function App() {
                 <dd data-testid="stats-enjoyment-rate">{stats.enjoymentRate}</dd>
               </div>
               <div>
-                <dt>Vault cash</dt>
+                <dt>Vault dollars</dt>
                 <dd data-testid="stats-cash">{stats.cash}</dd>
               </div>
               <div>
-                <dt>Cash / sec</dt>
+                <dt>Dollars / sec</dt>
                 <dd data-testid="stats-cash-rate">{stats.cashRate}</dd>
               </div>
               <div>
