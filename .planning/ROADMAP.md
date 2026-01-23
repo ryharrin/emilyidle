@@ -188,10 +188,12 @@ Plans:
 **Goal:** Gate watch purchases by enjoyment while spending career-earned money.
 **Depends on:** Phase 14
 **Research:** Unlikely (internal systems)
-**Plans:** 0 plans
+**Plans:** 1/3 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 15 to break down)
+- [x] 15-01-PLAN.md — Dual-gate purchase logic (cash spent, enjoyment threshold)
+- [ ] 15-02-PLAN.md — Vault UI: dollars price always, enjoyment lock messaging + icon
+- [ ] 15-03-PLAN.md — Tests: unit + e2e coverage for dual-currency acquisition
 
 **Details:**
 [To be added during planning]
