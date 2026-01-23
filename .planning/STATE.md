@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-01-21)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Phase 15 - dual-currency-acquisition
+**Current focus:** Phase 16 - nostalgia-prestige-reset
 
 ## Current Position
 
-Phase: 15 of 19 (dual-currency-acquisition)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-23 - Completed 15-03-PLAN.md
+Phase: 16 of 19 (nostalgia-prestige-reset)
+Plan: 0 of 0 in current phase (unplanned)
+Status: In progress
+Last activity: 2026-01-23 - Completed Phase 15 dual-currency acquisition (15-01, 15-02, 15-03)
 Progress: ██████████ 100%
-Next Phase: 16 (TBD); appended tail: 19 (refactor-phase-13-code-with-phase-13-research-in-mind)
+Next Phase: 16 (nostalgia-prestige-reset) Plan 1 (TBD); appended tail: 19 (refactor-phase-13-code-with-phase-13-research-in-mind)
 
 ## Accumulated Context
 
@@ -44,6 +44,7 @@ Next Phase: 16 (TBD); appended tail: 19 (refactor-phase-13-code-with-phase-13-re
 | 14-02 | Gate Career tab via milestone unlock and add stable UI anchors | Preserve fresh-save tabs while exposing therapist progression |
 | 15-01 | None - followed plan as specified | No deviations |
 | 15-02 | None - followed plan as specified | No deviations |
+| 15-03 | None - followed plan as specified | No deviations |
 
 ### Deferred Issues
 - None
