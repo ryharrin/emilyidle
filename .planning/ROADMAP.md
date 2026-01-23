@@ -233,10 +233,16 @@ Plans:
 **Goal:** Refactor game files for clearer separation of logic, UI, and data models.
 **Depends on:** Phase 17
 **Research:** Unlikely (internal systems)
-**Plans:** 0 plans
+**Plans:** 0/7 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 18 to break down)
+- [ ] 18-01-PLAN.md — Introduce game model layer + start state.ts facade
+- [ ] 18-02-PLAN.md — Split state.ts into data/selectors/actions modules
+- [ ] 18-03-PLAN.md — Extract UI tab panels into src/ui/tabs/*
+- [ ] 18-04-PLAN.md — Extract runtime orchestration into useGameRuntime hook
+- [ ] 18-05-PLAN.md — Cleanup + docs (align internal docs with new structure)
+- [ ] 18-06-PLAN.md — Full automated gates (lint/typecheck/unit/e2e/build)
+- [ ] 18-07-PLAN.md — Manual smoke check
 
 **Details:**
 [To be added during planning]
