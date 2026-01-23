@@ -134,6 +134,7 @@ type Settings = {
   hideCompletedAchievements: boolean;
   hiddenTabs: TabId[];
   coachmarksDismissed: Record<string, boolean>;
+  confirmNostalgiaUnlocks: boolean;
 };
 
 const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
@@ -146,6 +147,7 @@ const DEFAULT_SETTINGS: Settings = {
   hideCompletedAchievements: false,
   hiddenTabs: [],
   coachmarksDismissed: {},
+  confirmNostalgiaUnlocks: true,
 };
 
 const loadAudioSettings = (): AudioSettings => {
@@ -222,12 +224,15 @@ const loadSettings = (): Settings => {
       }
       return acc;
     }, {});
+    const confirmNostalgiaUnlocks =
+      typeof parsed.confirmNostalgiaUnlocks === "boolean" ? parsed.confirmNostalgiaUnlocks : true;
 
     return {
       themeMode,
       hideCompletedAchievements,
       hiddenTabs,
       coachmarksDismissed,
+      confirmNostalgiaUnlocks,
     };
   } catch {
     return DEFAULT_SETTINGS;
