@@ -182,6 +182,11 @@ export type CatalogEntryId = CatalogEntry["id"];
 export type GameState = {
   currencyCents: number;
   enjoymentCents: number;
+  nostalgiaPoints: number;
+  nostalgiaResets: number;
+  nostalgiaEnjoymentEarnedCents: number;
+  nostalgiaLastGain: number;
+  nostalgiaLastPrestigedAtMs: number;
   therapistCareer: TherapistCareerState;
   items: Record<WatchItemId, number>;
   upgrades: Record<UpgradeId, number>;
@@ -204,6 +209,11 @@ export type GameState = {
 export type PersistedGameState = {
   currencyCents: number;
   enjoymentCents?: number;
+  nostalgiaPoints?: number;
+  nostalgiaResets?: number;
+  nostalgiaEnjoymentEarnedCents?: number;
+  nostalgiaLastGain?: number;
+  nostalgiaLastPrestigedAtMs?: number;
   therapistCareer?: { level?: number; xp?: number; nextAvailableAtMs?: number };
   items?: Record<string, number>;
   upgrades?: Record<string, number>;
@@ -965,6 +975,11 @@ export function createInitialState(): GameState {
   return {
     currencyCents: 0,
     enjoymentCents: 0,
+    nostalgiaPoints: 0,
+    nostalgiaResets: 0,
+    nostalgiaEnjoymentEarnedCents: 0,
+    nostalgiaLastGain: 0,
+    nostalgiaLastPrestigedAtMs: 0,
     therapistCareer: {
       level: 1,
       xp: 0,
@@ -1097,6 +1112,21 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const enjoymentCents = Number.isFinite(saved.enjoymentCents ?? 0)
     ? Math.max(0, Math.floor(saved.enjoymentCents ?? 0))
     : 0;
+  const nostalgiaPoints = Number.isFinite(saved.nostalgiaPoints ?? 0)
+    ? Math.max(0, Math.floor(saved.nostalgiaPoints ?? 0))
+    : 0;
+  const nostalgiaResets = Number.isFinite(saved.nostalgiaResets ?? 0)
+    ? Math.max(0, Math.floor(saved.nostalgiaResets ?? 0))
+    : 0;
+  const nostalgiaEnjoymentEarnedCents = Number.isFinite(saved.nostalgiaEnjoymentEarnedCents ?? 0)
+    ? Math.max(0, Math.floor(saved.nostalgiaEnjoymentEarnedCents ?? 0))
+    : 0;
+  const nostalgiaLastGain = Number.isFinite(saved.nostalgiaLastGain ?? 0)
+    ? Math.max(0, Math.floor(saved.nostalgiaLastGain ?? 0))
+    : 0;
+  const nostalgiaLastPrestigedAtMs = Number.isFinite(saved.nostalgiaLastPrestigedAtMs ?? 0)
+    ? Math.max(0, Math.floor(saved.nostalgiaLastPrestigedAtMs ?? 0))
+    : 0;
   const achievementUnlocks = Array.isArray(saved.achievementUnlocks)
     ? saved.achievementUnlocks.filter((entry): entry is AchievementId =>
         ACHIEVEMENTS.some((achievement) => achievement.id === entry),
@@ -1132,6 +1162,11 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const restoredState = applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
     enjoymentCents,
+    nostalgiaPoints,
+    nostalgiaResets,
+    nostalgiaEnjoymentEarnedCents,
+    nostalgiaLastGain,
+    nostalgiaLastPrestigedAtMs,
     therapistCareer,
     items,
     upgrades,
