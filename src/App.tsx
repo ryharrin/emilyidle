@@ -89,6 +89,7 @@ import {
   performTherapistSession,
   canNostalgiaPrestige,
   prestigeMaison,
+  prestigeNostalgia,
   prestigeWorkshop,
   shouldShowUnlockTag,
   getWatchPurchaseGate,
@@ -253,6 +254,8 @@ export default function App() {
   const [catalogTab, setCatalogTab] = useState<"unowned" | "owned">("unowned");
   const [workshopResetArmed, setWorkshopResetArmed] = useState(false);
   const [maisonResetArmed, setMaisonResetArmed] = useState(false);
+  const [nostalgiaModalOpen, setNostalgiaModalOpen] = useState(false);
+  const [nostalgiaResultsDismissed, setNostalgiaResultsDismissed] = useState(false);
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
@@ -962,6 +965,12 @@ export default function App() {
       return nextState;
     });
   }, [autoBuyEnabled, state.currencyCents, state.unlockedMilestones, watchItems]);
+
+  useEffect(() => {
+    if (state.nostalgiaLastGain > 0) {
+      setNostalgiaResultsDismissed(false);
+    }
+  }, [state.nostalgiaLastGain]);
 
   const renderCraftingRecipes = (testId: string) => (
     <div className="card-stack" data-testid={testId}>
@@ -2022,6 +2031,30 @@ export default function App() {
                   </div>
                 </header>
 
+                {state.nostalgiaLastGain > 0 && !nostalgiaResultsDismissed && (
+                  <div className="nostalgia-results" data-testid="nostalgia-results">
+                    <h4>Reset complete</h4>
+                    <p>
+                      +{state.nostalgiaLastGain.toLocaleString()} Nostalgia · New total{" "}
+                      {state.nostalgiaPoints.toLocaleString()}
+                    </p>
+                    {state.nostalgiaLastPrestigedAtMs > 0 && (
+                      <p className="muted">
+                        {new Date(state.nostalgiaLastPrestigedAtMs).toLocaleString()}
+                      </p>
+                    )}
+                    <div className="card-actions">
+                      <button
+                        type="button"
+                        className="secondary"
+                        onClick={() => setNostalgiaResultsDismissed(true)}
+                      >
+                        Back to progress
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="nostalgia-progress" data-testid="nostalgia-progress">
                   <div className="nostalgia-progress-track">
                     <div
@@ -2068,10 +2101,55 @@ export default function App() {
                     type="button"
                     data-testid="nostalgia-prestige"
                     disabled={!canPrestigeNostalgia}
+                    onClick={() => {
+                      if (!canPrestigeNostalgia) {
+                        return;
+                      }
+                      setNostalgiaModalOpen(true);
+                    }}
                   >
                     Prestige for Nostalgia
                   </button>
                 </div>
+
+                {nostalgiaModalOpen && (
+                  <div
+                    className="nostalgia-modal"
+                    data-testid="nostalgia-modal"
+                    role="dialog"
+                    aria-modal="true"
+                  >
+                    <div className="nostalgia-modal-card">
+                      <h3>Confirm nostalgia prestige</h3>
+                      <p className="muted">
+                        You will gain +{nostalgiaPrestigeGain} Nostalgia and reset vault progress.
+                      </p>
+                      <ul>
+                        <li>Resets cash, enjoyment, and career progress</li>
+                        <li>Resets Atelier + Maison prestige progress</li>
+                        <li>Clears upgrades and crafted boosts</li>
+                      </ul>
+                      <div className="card-actions">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handlePurchase(prestigeNostalgia(state, Date.now()));
+                            setNostalgiaModalOpen(false);
+                          }}
+                        >
+                          Confirm reset
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary"
+                          onClick={() => setNostalgiaModalOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <div className="panel-teaser-content" data-testid="nostalgia-teaser">
