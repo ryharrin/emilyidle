@@ -105,6 +105,64 @@ test.describe("collection loop", () => {
     await expect(buyButton).toBeDisabled();
   });
 
+  test("enjoyment gate locks classic purchase", async ({ page }) => {
+    const seededState = {
+      currencyCents: 1_000_000,
+      enjoymentCents: 0,
+      items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
+      upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+      unlockedMilestones: [],
+      workshopBlueprints: 0,
+      workshopPrestigeCount: 0,
+      workshopUpgrades: {
+        "etched-ledgers": false,
+        "vault-calibration": false,
+        "heritage-templates": false,
+        "automation-blueprints": false,
+      },
+      maisonHeritage: 0,
+      maisonReputation: 0,
+      maisonUpgrades: {
+        "atelier-charter": false,
+        "heritage-loom": false,
+        "global-vitrine": false,
+      },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": false,
+        "complication-line": false,
+      },
+      achievementUnlocks: [],
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+      discoveredCatalogEntries: [],
+      catalogTierUnlocks: [],
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now() },
+    );
+
+    await page.goto("/");
+    await page.getByRole("tab", { name: "Vault" }).click();
+
+    const classicCard = page.locator(selectors.collectionCards).nth(1);
+    const buyButton = classicCard.getByRole("button", { name: /Buy \(/ });
+
+    await expect(buyButton).toBeDisabled();
+    await expect(page.getByTestId("purchase-gate-classic")).toBeVisible();
+  });
+
   test("export and import save round trip", async ({ page }) => {
     await page.getByRole("tab", { name: "Save" }).click();
     await page.getByRole("button", { name: "Export" }).click();
