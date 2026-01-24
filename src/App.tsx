@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { CatalogTab } from "./ui/tabs/CatalogTab";
 import { CareerTab } from "./ui/tabs/CareerTab";
@@ -21,6 +21,8 @@ import {
   loadSaveFromLocalStorage,
   persistSaveToLocalStorage,
 } from "./game/persistence";
+import { isTestEnvironment } from "./game/runtime/isTestEnvironment";
+import { useGameRuntime } from "./game/runtime/useGameRuntime";
 import {
   applyWindSessionRewards,
   buyItem,
@@ -79,10 +81,8 @@ import {
 } from "./game/state";
 import { getCatalogEntryTags } from "./game/catalog";
 import type { GameState, WatchItemId } from "./game/state";
-import { SIM_TICK_MS, step } from "./game/sim";
+import { step } from "./game/sim";
 
-const MAX_FRAME_DELTA_MS = 250;
-const AUTO_SAVE_INTERVAL_MS = 2_000;
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
 const SETTINGS_KEY = "emily-idle:settings";
 const TAB_DEFINITIONS = [
@@ -97,12 +97,6 @@ const TAB_DEFINITIONS = [
 ] as const;
 
 type TabId = (typeof TAB_DEFINITIONS)[number]["id"];
-
-const isTestEnvironment = () =>
-  import.meta.env.MODE === "test" ||
-  import.meta.env.VITEST ||
-  (typeof navigator !== "undefined" && navigator.userAgent.includes("jsdom")) ||
-  (typeof globalThis !== "undefined" && "__vitest_worker__" in globalThis);
 
 type AudioSettings = {
   sfxEnabled: boolean;
@@ -223,7 +217,6 @@ const loadSettings = (): Settings => {
 };
 
 export default function App() {
-  const [state, setState] = useState<GameState>(() => createInitialState());
   const [windActiveItemId, setWindActiveItemId] = useState<null | WatchItemId>(null);
   const [windRound, setWindRound] = useState(0);
   const [windTension, setWindTension] = useState(0);
@@ -255,6 +248,15 @@ export default function App() {
   const [coachmarksDismissed, setCoachmarksDismissed] = useState<Record<string, boolean>>(
     () => settings.coachmarksDismissed,
   );
+  const { state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
+    initialState: createInitialState,
+    step,
+    loadSave: loadSaveFromLocalStorage,
+    clearSave: clearLocalStorageSave,
+    persistSave: persistSaveToLocalStorage,
+    devSettings,
+    onPersistError: (message) => setSaveStatus(message),
+  });
 
   const persistSettings = (nextSettings: Settings) => {
     setSettings(nextSettings);
@@ -358,132 +360,10 @@ export default function App() {
     }
   };
 
-  const saveDirtyRef = useRef(false);
-  const lastSavedAtMsRef = useRef(0);
-  const lastFrameAtMsRef = useRef<number | null>(null);
-  const accumulatorMsRef = useRef(0);
-  const rafRef = useRef<number | null>(null);
-  const stateRef = useRef(state);
-
-  useEffect(() => {
-    const loadResult = loadSaveFromLocalStorage();
-    if (loadResult.ok) {
-      setState(loadResult.save.state);
-      console.info(
-        `Loaded save v${loadResult.save.version} from ${loadResult.save.savedAt} (last simulated at ${new Date(loadResult.save.lastSimulatedAtMs).toISOString()})`,
-      );
-      return;
-    }
-
-    if ("empty" in loadResult) {
-      console.info("No save found; starting new game.");
-      return;
-    }
-
-    console.warn(`Save was invalid; resetting state. ${loadResult.error}`);
-    const clearResult = clearLocalStorageSave();
-    if (!clearResult.ok) {
-      console.warn(`Failed to clear invalid save. ${clearResult.error}`);
-    }
-  }, []);
-
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
-  const persistNow = useCallback((reason: string, snapshot: GameState = stateRef.current) => {
-    const nowMs = Date.now();
-    const result = persistSaveToLocalStorage(snapshot, nowMs);
-
-    if (!result.ok) {
-      console.warn(`Autosave failed (${reason}). ${result.error}`);
-      setSaveStatus(`Save failed: ${result.error}`);
-      return;
-    }
-
-    lastSavedAtMsRef.current = nowMs;
-    saveDirtyRef.current = false;
-  }, []);
-
-  useEffect(() => {
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden" && saveDirtyRef.current) {
-        persistNow("visibilitychange:hidden");
-      }
-    };
-
-    const onPageHide = () => {
-      if (saveDirtyRef.current) {
-        persistNow("pagehide");
-      }
-    };
-
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    window.addEventListener("pagehide", onPageHide);
-
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.removeEventListener("pagehide", onPageHide);
-    };
-  }, [persistNow]);
-
-  useEffect(() => {
-    if (isTestEnvironment()) {
-      return;
-    }
-
-    const frame = (nowMs: number) => {
-      let stepped = false;
-
-      if (lastFrameAtMsRef.current !== null) {
-        const rawElapsedMs = nowMs - lastFrameAtMsRef.current;
-        const elapsedMs = Math.max(0, Math.min(rawElapsedMs, MAX_FRAME_DELTA_MS));
-
-        accumulatorMsRef.current += elapsedMs;
-
-        while (accumulatorMsRef.current >= SIM_TICK_MS) {
-          stepped = true;
-          setState((current: GameState) => {
-            const nextState = step(current, SIM_TICK_MS);
-            stateRef.current = nextState;
-            return nextState;
-          });
-          accumulatorMsRef.current -= SIM_TICK_MS;
-        }
-      }
-
-      lastFrameAtMsRef.current = nowMs;
-
-      if (stepped) {
-        saveDirtyRef.current = true;
-      }
-
-      if (devSettings.enabled && devSettings.speedMultiplier !== 1) {
-        if (devSettings.speedMultiplier > 1) {
-          accumulatorMsRef.current += SIM_TICK_MS * (devSettings.speedMultiplier - 1);
-        }
-      }
-
-      if (saveDirtyRef.current && Date.now() - lastSavedAtMsRef.current >= AUTO_SAVE_INTERVAL_MS) {
-        persistNow("interval");
-      }
-
-      rafRef.current = requestAnimationFrame(frame);
-    };
-
-    rafRef.current = requestAnimationFrame(frame);
-
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, [devSettings.enabled, devSettings.speedMultiplier, persistNow]);
-
   const handlePurchase = (nextState: GameState) => {
     if (nextState !== state) {
       setState(nextState);
-      saveDirtyRef.current = true;
+      markSaveDirty();
       persistNow("purchase", nextState);
     }
   };
@@ -575,10 +455,8 @@ export default function App() {
     }
 
     setState(decoded.save.state);
-    lastFrameAtMsRef.current = null;
-    accumulatorMsRef.current = 0;
-
-    saveDirtyRef.current = true;
+    resetSimulationClock();
+    markSaveDirty();
     persistNow("import", decoded.save.state);
     setSaveStatus(`Imported save from ${decoded.save.savedAt}.`);
   };
@@ -971,15 +849,21 @@ export default function App() {
         }
 
         nextState = candidateState;
-        saveDirtyRef.current = true;
       }
 
       if (nextState !== current) {
-        stateRef.current = nextState;
+        markSaveDirty();
       }
       return nextState;
     });
-  }, [autoBuyEnabled, state.currencyCents, state.unlockedMilestones, watchItems]);
+  }, [
+    autoBuyEnabled,
+    markSaveDirty,
+    setState,
+    state.currencyCents,
+    state.unlockedMilestones,
+    watchItems,
+  ]);
 
   useEffect(() => {
     if (state.nostalgiaLastGain > 0) {
