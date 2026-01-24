@@ -33,7 +33,6 @@ export type {
 
 export {
   ALL_MILESTONE_IDS,
-  NOSTALGIA_UNLOCK_ORDER,
   applyMilestoneUnlocks,
   createInitialState,
   createStateFromSave,
@@ -45,7 +44,18 @@ export {
   updateCatalogTierUnlocks,
 } from "./model/state";
 
+export { NOSTALGIA_UNLOCK_ORDER } from "./data/items";
+
 import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "./catalog";
+import { MILESTONES } from "./data/milestones";
+import {
+  NOSTALGIA_UNLOCK_COSTS,
+  NOSTALGIA_UNLOCK_ORDER,
+  WATCH_ENJOYMENT_REQUIREMENTS_CENTS,
+  WATCH_ITEMS,
+} from "./data/items";
+import { SET_BONUSES } from "./data/setBonuses";
+import { UPGRADES } from "./data/upgrades";
 import { formatMoneyFromCents } from "./format";
 import {
   ACHIEVEMENTS,
@@ -54,10 +64,6 @@ import {
   EVENTS,
   MAISON_LINES,
   MAISON_UPGRADES,
-  MILESTONES,
-  NOSTALGIA_UNLOCK_ORDER,
-  UPGRADES,
-  WATCH_ITEMS,
   WORKSHOP_UPGRADES,
   applyMilestoneUnlocks,
   createEventStates,
@@ -115,86 +121,6 @@ const COLLECTION_BONUS_STEPS: Array<{ thresholdCents: number; multiplier: number
   { thresholdCents: 35_000, multiplier: 1.05 },
   { thresholdCents: 150_000, multiplier: 1.1 },
   { thresholdCents: 700_000, multiplier: 1.2 },
-];
-
-const NOSTALGIA_UNLOCK_COSTS: Record<WatchItemId, number> = {
-  starter: 0,
-  classic: 1,
-  chronograph: 3,
-  tourbillon: 6,
-};
-
-const WATCH_ENJOYMENT_REQUIREMENTS_CENTS: Record<WatchItemId, number> = {
-  starter: 0,
-  classic: 2_000,
-  chronograph: 15_000,
-  tourbillon: 60_000,
-};
-
-const SET_BONUSES: ReadonlyArray<SetBonusDefinition> = [
-  {
-    id: "starter-set",
-    name: "Starter set",
-    description: "Own 5 quartz + 1 automatic for a 5% boost.",
-    requirements: { starter: 5, classic: 1 },
-    incomeMultiplier: 1.05,
-  },
-  {
-    id: "precision-set",
-    name: "Precision set",
-    description: "Own 5 automatics + 2 chronographs for 10% boost.",
-    requirements: { classic: 5, chronograph: 2 },
-    incomeMultiplier: 1.1,
-  },
-  {
-    id: "complication-set",
-    name: "Complication set",
-    description: "Own 3 chronographs + 1 tourbillon for 15% boost.",
-    requirements: { chronograph: 3, tourbillon: 1 },
-    incomeMultiplier: 1.15,
-  },
-  {
-    id: "oyster-society",
-    name: "Oyster society",
-    description: "Build 12 quartz + 4 automatics for 8% boost.",
-    requirements: { starter: 12, classic: 4 },
-    incomeMultiplier: 1.08,
-  },
-  {
-    id: "crown-chronicle",
-    name: "Crown chronicle",
-    description: "Hold 4 chronographs + 1 tourbillon for 12% boost.",
-    requirements: { chronograph: 4, tourbillon: 1 },
-    incomeMultiplier: 1.12,
-  },
-  {
-    id: "seamaster-society",
-    name: "Seamaster society",
-    description: "Keep 8 automatics + 3 chronographs for 9% boost.",
-    requirements: { classic: 8, chronograph: 3 },
-    incomeMultiplier: 1.09,
-  },
-  {
-    id: "dress-circle",
-    name: "Dress circle",
-    description: "Maintain 10 quartz + 2 automatics for 7% boost.",
-    requirements: { starter: 10, classic: 2 },
-    incomeMultiplier: 1.07,
-  },
-  {
-    id: "diver-crew",
-    name: "Diver crew",
-    description: "Keep 6 automatics + 2 chronographs for 8% boost.",
-    requirements: { classic: 6, chronograph: 2 },
-    incomeMultiplier: 1.08,
-  },
-  {
-    id: "collector-quartet",
-    name: "Collector quartet",
-    description: "Hold 18 quartz + 4 automatics + 2 chronographs + 1 tourbillon for 13% boost.",
-    requirements: { starter: 18, classic: 4, chronograph: 2, tourbillon: 1 },
-    incomeMultiplier: 1.13,
-  },
 ];
 
 const CRAFTING_RECIPES: ReadonlyArray<{
