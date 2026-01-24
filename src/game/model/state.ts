@@ -1,4 +1,7 @@
 import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "../catalog";
+import { MILESTONES } from "../data/milestones";
+import { NOSTALGIA_UNLOCK_ORDER, WATCH_ITEMS } from "../data/items";
+import { UPGRADES } from "../data/upgrades";
 import type {
   AchievementDefinition,
   AchievementId,
@@ -24,6 +27,10 @@ import type {
   WorkshopUpgradeDefinition,
   WorkshopUpgradeId,
 } from "./types";
+
+export { MILESTONES } from "../data/milestones";
+export { NOSTALGIA_UNLOCK_ORDER, WATCH_ITEMS } from "../data/items";
+export { UPGRADES } from "../data/upgrades";
 
 export const ALL_MILESTONE_IDS: MilestoneId[] = [
   "collector-shelf",
@@ -145,123 +152,6 @@ export const CATALOG_TIER_BONUSES: CatalogTierBonusDefinition[] = [
     description: "Secure 2 tourbillon references for elite income.",
     requiredCount: 2,
     incomeMultiplier: 1.1,
-  },
-];
-
-export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
-  {
-    id: "starter",
-    name: "Starter Quartz",
-    description: "Reliable entry pieces to seed the vault.",
-    basePriceCents: 125,
-    priceGrowth: 1.145,
-    incomeCentsPerSec: 6,
-    enjoymentCentsPerSec: 2,
-    collectionValueCents: 140,
-  },
-  {
-    id: "classic",
-    name: "Classic Automatic",
-    description: "Self-winding classics with steady demand.",
-    basePriceCents: 1_800,
-    priceGrowth: 1.17,
-    incomeCentsPerSec: 36,
-    enjoymentCentsPerSec: 12,
-    collectionValueCents: 2_400,
-    unlockMilestoneId: "collector-shelf",
-  },
-  {
-    id: "chronograph",
-    name: "Chronograph",
-    description: "Complications that attract serious collectors.",
-    basePriceCents: 12_500,
-    priceGrowth: 1.18,
-    incomeCentsPerSec: 185,
-    enjoymentCentsPerSec: 60,
-    collectionValueCents: 18_000,
-    unlockMilestoneId: "showcase",
-  },
-  {
-    id: "tourbillon",
-    name: "Tourbillon",
-    description: "Prestige pieces for the vault centerpiece.",
-    basePriceCents: 150_000,
-    priceGrowth: 1.195,
-    incomeCentsPerSec: 980,
-    enjoymentCentsPerSec: 240,
-    collectionValueCents: 210_000,
-    unlockMilestoneId: "atelier",
-  },
-];
-
-export const NOSTALGIA_UNLOCK_ORDER: WatchItemId[] = ["classic", "chronograph", "tourbillon"];
-
-export const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
-  {
-    id: "polishing-tools",
-    name: "Polishing tools",
-    description: "Refined finishing yields more revenue per piece.",
-    basePriceCents: 500,
-    priceGrowth: 1.6,
-    incomeMultiplierPerLevel: 0.05,
-  },
-  {
-    id: "assembly-jigs",
-    name: "Assembly jigs",
-    description: "Speed up production with repeatable fixtures.",
-    basePriceCents: 5_000,
-    priceGrowth: 1.7,
-    incomeMultiplierPerLevel: 0.08,
-    unlockMilestoneId: "collector-shelf",
-  },
-  {
-    id: "guild-contracts",
-    name: "Guild contracts",
-    description: "Exclusive partnerships compound prestige earnings.",
-    basePriceCents: 50_000,
-    priceGrowth: 1.8,
-    incomeMultiplierPerLevel: 0.12,
-    unlockMilestoneId: "showcase",
-  },
-  {
-    id: "archive-guides",
-    name: "Archive guides",
-    description: "Cataloged references deepen vault earnings.",
-    basePriceCents: 85_000,
-    priceGrowth: 1.85,
-    incomeMultiplierPerLevel: 0.1,
-    unlockMilestoneId: "archive-curator",
-  },
-];
-
-export const MILESTONES: ReadonlyArray<MilestoneDefinition> = [
-  {
-    id: "collector-shelf",
-    name: "Collector shelf",
-    description: "Showcase five pieces to unlock classic automatics.",
-    requirement: { type: "totalItems", threshold: 5 },
-    unlocks: { items: ["classic"], upgrades: ["assembly-jigs"] },
-  },
-  {
-    id: "showcase",
-    name: "Vault showcase",
-    description: "Reach $25k Memories to unlock chronographs.",
-    requirement: { type: "collectionValue", thresholdCents: 25_000 },
-    unlocks: { items: ["chronograph"], upgrades: ["guild-contracts"] },
-  },
-  {
-    id: "atelier",
-    name: "Master atelier",
-    description: "Collect 50 pieces to unlock tourbillons.",
-    requirement: { type: "totalItems", threshold: 50 },
-    unlocks: { items: ["tourbillon"] },
-  },
-  {
-    id: "archive-curator",
-    name: "Archive curator",
-    description: "Discover 12 catalog references to unlock archive guides.",
-    requirement: { type: "catalogDiscovery", threshold: 12 },
-    unlocks: { upgrades: ["archive-guides"] },
   },
 ];
 
