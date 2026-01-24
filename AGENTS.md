@@ -12,7 +12,7 @@ Emily Idle is a Vite + React + TypeScript idle game. This repo also vendors a fu
 
 ```
 watch-idle/
-├── src/                 # React UI + game logic
+├── src/                 # React UI + runtime + game domain
 ├── tests/               # Vitest unit + Playwright e2e
 ├── public/              # static assets (catalog images)
 ├── vite/                # Vite monorepo snapshot
@@ -26,18 +26,20 @@ watch-idle/
 
 ## WHERE TO LOOK
 
-| Task           | Location                   | Notes                             |
-| -------------- | -------------------------- | --------------------------------- |
-| App entry      | `src/main.tsx`             | imports styles + renders App      |
-| UI + game loop | `src/App.tsx`              | ids/testids used by tests         |
-| Game rules     | `src/game/state.ts`        | definitions + selectors           |
-| Simulation     | `src/game/sim.ts`          | `step()` tick loop                |
-| Persistence    | `src/game/persistence.ts`  | save v2 + localStorage            |
-| Catalog data   | `src/game/catalog.ts`      | maps Wikimedia URLs to `/catalog` |
-| Styles         | `src/style.css`            | global layout/theme               |
-| Unit tests     | `tests/**/*.unit.test.tsx` | Vitest (jsdom)                    |
-| E2E tests      | `tests/**/*.spec.ts`       | Playwright, port 5177             |
-| Vite monorepo  | `vite/`                    | separate tooling + rules          |
+| Task          | Location                   | Notes                             |
+| ------------- | -------------------------- | --------------------------------- |
+| App entry     | `src/main.tsx`             | imports styles + renders App      |
+| UI root       | `src/App.tsx`              | composes tabs + runtime hook      |
+| UI tabs       | `src/ui/tabs/*`            | tab panels + test selectors       |
+| Runtime       | `src/game/runtime/*`       | RAF tick + autosave + lifecycle   |
+| Game facade   | `src/game/state.ts`        | re-exports model/data/actions     |
+| Simulation    | `src/game/sim.ts`          | `step()` tick loop                |
+| Persistence   | `src/game/persistence.ts`  | save v2 + localStorage            |
+| Catalog data  | `src/game/catalog.ts`      | maps Wikimedia URLs to `/catalog` |
+| Styles        | `src/style.css`            | global layout/theme               |
+| Unit tests    | `tests/**/*.unit.test.tsx` | Vitest (jsdom)                    |
+| E2E tests     | `tests/**/*.spec.ts`       | Playwright, port 5177             |
+| Vite monorepo | `vite/`                    | separate tooling + rules          |
 
 ## CONVENTIONS
 
@@ -46,6 +48,8 @@ watch-idle/
 - TypeScript `strict: true`; `src` and `tests` are included (`tsconfig.json`).
 - Entry point is `src/main.tsx`; `src/main.ts` is an empty stub.
 - Keep `id` and `data-testid` values stable for Playwright/Vitest selectors.
+- Keep domain logic pure in `src/game/model`, `src/game/data`, `src/game/selectors`, `src/game/actions`.
+- Keep runtime side effects isolated in `src/game/runtime`.
 
 ## ANTI-PATTERNS
 
