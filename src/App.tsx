@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { CatalogTab } from "./ui/tabs/CatalogTab";
+import { CareerTab } from "./ui/tabs/CareerTab";
+import { CollectionTab } from "./ui/tabs/CollectionTab";
+import { MaisonTab } from "./ui/tabs/MaisonTab";
+import { NostalgiaTab } from "./ui/tabs/NostalgiaTab";
+import { SaveTab } from "./ui/tabs/SaveTab";
+import { StatsTab } from "./ui/tabs/StatsTab";
+import { WorkshopTab } from "./ui/tabs/WorkshopTab";
+
 import {
   formatMoneyFromCents,
   formatRateFromCentsPerSec,
@@ -15,16 +24,9 @@ import {
 import {
   applyWindSessionRewards,
   buyItem,
-  buyMaisonLine,
-  buyMaisonUpgrade,
-  buyUpgrade,
-  buyWorkshopUpgrade,
-  canBuyMaisonLine,
-  canBuyMaisonUpgrade,
-  canBuyUpgrade,
-  canBuyWorkshopUpgrade,
   canMaisonPrestige,
   canWorkshopPrestige,
+  canNostalgiaPrestige,
   createInitialState,
   getAchievementProgressRatio,
   getAchievements,
@@ -45,13 +47,11 @@ import {
   getCraftingRecipes,
   getUnlockVisibilityRatio,
   craftBoost,
-  dismantleItem,
   canCraftBoost,
   getCraftedBoostIncomeMultiplier,
   getCraftedBoostCollectionMultiplier,
   getCraftedBoostPrestigeMultiplier,
   getWatchItems,
-  getWatchItemEnjoymentRateCentsPerSec,
   getUpgrades,
   getSetBonuses,
   getEvents,
@@ -64,10 +64,6 @@ import {
   getAutoBuyEnabled,
   getMaisonReputationGain,
   getMaxAffordableItemCount,
-  getMilestoneRequirementLabel,
-  getUpgradePriceCents,
-  getEventStatusLabel,
-  getEnjoymentThresholdLabel,
   getNostalgiaUnlockCost,
   getNostalgiaUnlockIds,
   getNostalgiaPrestigeGain,
@@ -77,30 +73,11 @@ import {
   getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
   getMilestones,
-  isEventActive,
   isItemUnlocked,
   isMaisonRevealReady,
-  isUpgradeUnlocked,
   isWorkshopRevealReady,
-  canPerformTherapistSession,
-  getTherapistCareer,
-  getTherapistSessionCashPayoutCents,
-  getTherapistSessionCooldownMs,
-  getTherapistSessionEnjoymentCostCents,
-  getTherapistXpRequiredForNextLevel,
-  performTherapistSession,
-  canBuyNostalgiaUnlock,
-  buyNostalgiaUnlock,
-  canRefundNostalgiaUnlock,
-  refundNostalgiaUnlock,
-  canNostalgiaPrestige,
-  prestigeMaison,
-  prestigeNostalgia,
-  prestigeWorkshop,
-  shouldShowUnlockTag,
-  getWatchPurchaseGate,
 } from "./game/state";
-import { getCatalogEntryTags, getCatalogImageUrl } from "./game/catalog";
+import { getCatalogEntryTags } from "./game/catalog";
 import type { GameState, WatchItemId } from "./game/state";
 import { SIM_TICK_MS, step } from "./game/sim";
 
@@ -511,6 +488,16 @@ export default function App() {
     }
   };
 
+  const handleToggleAutoBuy = () => {
+    setAutoBuyToggle((value) => !value);
+  };
+
+  const handleInteract = (itemId: WatchItemId) => {
+    setWindActiveItemId(itemId);
+    setWindRound(0);
+    setWindTension(0);
+  };
+
   const closeWindModal = () => {
     setWindActiveItemId(null);
     setWindRound(0);
@@ -546,12 +533,13 @@ export default function App() {
     resolveWindRound(windRound + 1, Math.min(10, windTension + 2));
   };
 
-  const handleDismantle = (itemId: (typeof watchItems)[number]["id"]) => {
-    handlePurchase(dismantleItem(state, itemId, 1));
-  };
-
   const handleCraftBoost = (boostId: (typeof craftedBoosts)[number]["id"]) => {
     handlePurchase(craftBoost(state, boostId));
+  };
+
+  const handleUpdateAudioSettings = (nextSettings: AudioSettings) => {
+    setAudioSettings(nextSettings);
+    window.localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(nextSettings));
   };
 
   const handleExport = async () => {
@@ -932,7 +920,7 @@ export default function App() {
     [state],
   );
   const pendingNostalgiaUnlock = nostalgiaUnlockPending
-    ? watchItemsById.get(nostalgiaUnlockPending)
+    ? (watchItemsById.get(nostalgiaUnlockPending) ?? null)
     : null;
   const pendingNostalgiaUnlockCost = nostalgiaUnlockPending
     ? getNostalgiaUnlockCost(nostalgiaUnlockPending)
@@ -1126,1709 +1114,139 @@ export default function App() {
         </section>
       </header>
 
-      <section
-        className="collection"
-        id="collection"
-        role="tabpanel"
-        aria-labelledby="collection-tab"
-        hidden={activeTab !== "collection"}
-      >
-        {activeTab === "collection" && (
-          <>
-            <div>
-              <h2>Collection</h2>
-              <p className="muted">Acquire pieces to grow enjoyment and cash.</p>
-              <div className="collection-setup" data-testid="collection-setup">
-                <fieldset className="automation-toggle" data-testid="automation-controls">
-                  <legend className="automation-label">Automation controls</legend>
-                  {autoBuyUnlocked ? (
-                    <button
-                      type="button"
-                      className={autoBuyEnabled ? "" : "secondary"}
-                      onClick={() => setAutoBuyToggle((value) => !value)}
-                    >
-                      {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
-                    </button>
-                  ) : (
-                    <p className="muted">Unlock automation with Atelier blueprints.</p>
-                  )}
-                </fieldset>
-                <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
-                  <header className="panel-header">
-                    <div>
-                      <p className="eyebrow">Catalog bonuses</p>
-                      <h3>Tier bonuses</h3>
-                      <p className="muted">Unlock archive tiers by discovering references.</p>
-                    </div>
-                    <div className="results-count" data-testid="catalog-tier-count">
-                      {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
-                    </div>
-                  </header>
-                  {archiveCuratorMilestone && (
-                    <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
-                      <p className="muted">
-                        Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold} ·
-                        Unlock Archive guides to boost vault income.
-                      </p>
-                      <p className="catalog-tier-curator-status">
-                        {archiveCuratorUnlocked
-                          ? "Archive guides are available in Upgrades."
-                          : `Next milestone: ${archiveCuratorMilestone.name}.`}
-                      </p>
-                    </div>
-                  )}
-                  <div className="card-stack" data-testid="catalog-tier-list">
-                    {catalogTierDefinitions.map((tier) => {
-                      const unlocked = catalogTierUnlocks.includes(tier.id);
-                      const progress = catalogTierProgress[tier.id];
-                      return (
-                        <div
-                          className={`card catalog-tier-card ${unlocked ? "catalog-tier-unlocked" : ""}`}
-                          key={tier.id}
-                          data-testid="catalog-tier-card"
-                        >
-                          <div className="card-header">
-                            <div>
-                              <h4>{tier.name}</h4>
-                              <p>{tier.description}</p>
-                            </div>
-                            <div>
-                              {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
-                            </div>
-                          </div>
-                          <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
-                    {catalogTierBonuses.length > 0
-                      ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
-                      : "Discover references to unlock tier bonuses."}
-                  </p>
-                </div>
-              </div>
-              {showMaisonLines && (
-                <div className="panel maison-lines" data-testid="maison-lines">
-                  <header className="panel-header">
-                    <div>
-                      <p className="eyebrow">Maison expansion</p>
-                      <h3>Maison lines</h3>
-                      <p className="muted">Invest Heritage or Reputation to expand your house.</p>
-                    </div>
-                    <div className="results-count" data-testid="maison-lines-count">
-                      {Object.values(state.maisonLines).filter(Boolean).length} /{" "}
-                      {maisonLines.length} active
-                    </div>
-                  </header>
-                  <div className="card-stack" data-testid="maison-lines-list">
-                    {maisonLines.map((line) => {
-                      const owned = state.maisonLines[line.id] ?? false;
-                      const canAfford = canBuyMaisonLine(state, line.id);
-                      const costLabel =
-                        line.currency === "heritage"
-                          ? `${line.cost} Heritage`
-                          : `${line.cost} Reputation`;
-                      const effectLabel = (() => {
-                        if (line.incomeMultiplier) {
-                          return `+${Math.round((line.incomeMultiplier - 1) * 100)}% cash`;
-                        }
-                        if (line.collectionBonusMultiplier) {
-                          return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                        }
-                        if (line.workshopBlueprintBonus) {
-                          return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
-                        }
-                        return "Maison line";
-                      })();
+      <CollectionTab
+        isActive={activeTab === "collection"}
+        state={state}
+        watchItems={watchItems}
+        watchItemLabels={watchItemLabels}
+        autoBuyUnlocked={autoBuyUnlocked}
+        autoBuyEnabled={autoBuyEnabled}
+        onToggleAutoBuy={handleToggleAutoBuy}
+        catalogTierUnlocks={catalogTierUnlocks}
+        catalogTierDefinitions={catalogTierDefinitions}
+        catalogTierProgress={catalogTierProgress}
+        catalogTierBonuses={catalogTierBonuses}
+        catalogTierBonusMultiplier={catalogTierBonusMultiplier}
+        archiveCuratorMilestone={archiveCuratorMilestone}
+        archiveCuratorProgress={archiveCuratorProgress}
+        archiveCuratorThreshold={archiveCuratorThreshold}
+        archiveCuratorUnlocked={archiveCuratorUnlocked}
+        showMaisonLines={showMaisonLines}
+        maisonLines={maisonLines}
+        craftingParts={craftingParts}
+        renderCraftingRecipes={renderCraftingRecipes}
+        renderCraftingBoosts={renderCraftingBoosts}
+        craftingPartsPerWatch={craftingPartsPerWatch}
+        activeCoachmarks={activeCoachmarks}
+        settings={settings}
+        persistSettings={persistSettings}
+        upgrades={upgrades}
+        milestones={milestones}
+        achievements={achievements}
+        events={events}
+        setBonuses={setBonuses}
+        currentEventMultiplier={currentEventMultiplier}
+        nowMs={nowMs}
+        onPurchase={handlePurchase}
+        onInteract={handleInteract}
+      />
 
-                      return (
-                        <div className="card" key={line.id} data-testid="maison-line-card">
-                          <div className="card-header">
-                            <div>
-                              <h4>{line.name}</h4>
-                              <p>{line.description}</p>
-                            </div>
-                            <div>{owned ? "Active" : costLabel}</div>
-                          </div>
-                          <p>{effectLabel}</p>
-                          <div className="card-actions">
-                            <button
-                              type="button"
-                              className="secondary"
-                              disabled={owned || !canAfford}
-                              onClick={() => handlePurchase(buyMaisonLine(state, line.id))}
-                            >
-                              {owned ? "Live" : `Activate (${costLabel})`}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              <div id="collection-list" className="card-stack">
-                {watchItems.map((item) => {
-                  const owned = state.items[item.id] ?? 0;
-                  const maxAffordable = getMaxAffordableItemCount(state, item.id);
-                  const bulkQty = Math.min(10, Math.max(1, maxAffordable));
-                  const unlocked = isItemUnlocked(state, item.id);
-                  const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
-                  const singleGate = getWatchPurchaseGate(state, item.id, 1);
-                  const bulkGate = getWatchPurchaseGate(state, item.id, bulkQty);
+      <CareerTab
+        isActive={activeTab === "career"}
+        state={state}
+        nowMs={nowMs}
+        onPurchase={handlePurchase}
+      />
 
-                  return (
-                    <div className="card" key={item.id}>
-                      <div className="card-header">
-                        <div>
-                          <h3>{item.name}</h3>
-                          <p>{item.description}</p>
-                        </div>
-                        <div>{owned} owned</div>
-                      </div>
-                      <p>
-                        {formatRateFromCentsPerSec(getWatchItemEnjoymentRateCentsPerSec(item))}{" "}
-                        enjoyment each · {formatRateFromCentsPerSec(item.incomeCentsPerSec)} dollars
-                        each · Memories {formatMoneyFromCents(item.collectionValueCents)}
-                      </p>
-                      <p className="muted">Dismantle value: {partsPerWatch} parts</p>
-                      <div className="card-actions">
-                        <button
-                          type="button"
-                          className="secondary"
-                          disabled={owned <= 0}
-                          onClick={() => {
-                            setWindActiveItemId(item.id);
-                            setWindRound(0);
-                            setWindTension(0);
-                          }}
-                        >
-                          Interact
-                        </button>
-                        <button
-                          type="button"
-                          className="secondary"
-                          disabled={owned <= 0 || partsPerWatch <= 0}
-                          onClick={() => handleDismantle(item.id)}
-                        >
-                          Dismantle
-                        </button>
-                        <button
-                          type="button"
-                          data-testid={`vault-buy-${item.id}`}
-                          disabled={!unlocked || !singleGate.ok}
-                          onClick={() => handlePurchase(buyItem(state, item.id, 1))}
-                        >
-                          Buy ({formatMoneyFromCents(singleGate.cashPriceCents)})
-                        </button>
-                        <button
-                          type="button"
-                          className="secondary"
-                          data-testid={`vault-buy-bulk-${item.id}`}
-                          disabled={!unlocked || bulkQty <= 1 || !bulkGate.ok}
-                          onClick={() => handlePurchase(buyItem(state, item.id, bulkQty))}
-                        >
-                          Buy {bulkQty} ({formatMoneyFromCents(bulkGate.cashPriceCents)})
-                        </button>
-                        {unlocked && !singleGate.ok && singleGate.blocksBy === "enjoyment" && (
-                          <div className="purchase-locked" data-testid={`purchase-gate-${item.id}`}>
-                            <span className="purchase-lock-icon" aria-hidden="true" />
-                            Requires {formatMoneyFromCents(singleGate.enjoymentRequiredCents)}{" "}
-                            enjoyment
-                          </div>
-                        )}
-                        {!unlocked &&
-                          item.unlockMilestoneId &&
-                          shouldShowUnlockTag(state, item.unlockMilestoneId) && (
-                            <div className="unlock-tag">
-                              Unlocking soon ·{" "}
-                              {getMilestoneRequirementLabel(item.unlockMilestoneId)}
-                            </div>
-                          )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+      <WorkshopTab
+        isActive={activeTab === "workshop"}
+        state={state}
+        showWorkshopSection={showWorkshopSection}
+        showWorkshopPanel={showWorkshopPanel}
+        workshopPrestigeGain={workshopPrestigeGain}
+        workshopRevealProgress={workshopRevealProgress}
+        workshopResetArmed={workshopResetArmed}
+        onToggleWorkshopResetArmed={(next) => setWorkshopResetArmed(next)}
+        canPrestigeWorkshop={canPrestigeWorkshop}
+        onPurchase={handlePurchase}
+        workshopUpgrades={workshopUpgrades}
+        craftingParts={craftingParts}
+        watchItems={watchItems}
+        craftingPartsPerWatch={craftingPartsPerWatch}
+        renderCraftingRecipes={renderCraftingRecipes}
+        renderCraftingBoosts={renderCraftingBoosts}
+      />
 
-            <aside className="side-panel">
-              {activeCoachmarks.length > 0 && (
-                <div className="panel" data-testid="coachmarks">
-                  <h3>Coachmarks</h3>
-                  <div className="card-stack">
-                    {activeCoachmarks.map((mark) => (
-                      <div className="card" key={mark.id} data-testid="coachmark">
-                        <div className="card-header">
-                          <div>
-                            <h4>{mark.title}</h4>
-                            <p>{mark.text}</p>
-                          </div>
-                          <button
-                            type="button"
-                            className="secondary"
-                            onClick={() => {
-                              const nextDismissed = {
-                                ...coachmarksDismissed,
-                                [mark.id]: true,
-                              };
-                              persistSettings({
-                                ...settings,
-                                coachmarksDismissed: nextDismissed,
-                              });
-                            }}
-                          >
-                            Dismiss
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="panel">
-                <h3>Upgrades</h3>
-                <div id="upgrade-list" className="card-stack">
-                  {upgrades.map((upgrade) => {
-                    const level = state.upgrades[upgrade.id] ?? 0;
-                    const price = getUpgradePriceCents(state, upgrade.id, 1);
-                    const unlocked = isUpgradeUnlocked(state, upgrade.id);
+      <MaisonTab
+        isActive={activeTab === "maison"}
+        state={state}
+        showMaisonSection={showMaisonSection}
+        showMaisonPanel={showMaisonPanel}
+        maisonPrestigeGain={maisonPrestigeGain}
+        maisonReputationGain={maisonReputationGain}
+        maisonRevealProgress={maisonRevealProgress}
+        maisonResetArmed={maisonResetArmed}
+        onToggleMaisonResetArmed={(next) => setMaisonResetArmed(next)}
+        canPrestigeMaison={canPrestigeMaison}
+        onPurchase={handlePurchase}
+        maisonUpgrades={maisonUpgrades}
+      />
 
-                    return (
-                      <div className="card" key={upgrade.id}>
-                        <div className="card-header">
-                          <div>
-                            <h3>{upgrade.name}</h3>
-                            <p>{upgrade.description}</p>
-                          </div>
-                          <div>Level {level}</div>
-                        </div>
-                        <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% cash per level</p>
-                        <div className="card-actions">
-                          <button
-                            type="button"
-                            disabled={!canBuyUpgrade(state, upgrade.id, 1) || !unlocked}
-                            onClick={() => handlePurchase(buyUpgrade(state, upgrade.id))}
-                          >
-                            Upgrade ({formatMoneyFromCents(price)})
-                          </button>
-                          {!unlocked &&
-                            upgrade.unlockMilestoneId &&
-                            shouldShowUnlockTag(state, upgrade.unlockMilestoneId) && (
-                              <div className="unlock-tag">
-                                Unlocking soon ·{" "}
-                                {getMilestoneRequirementLabel(upgrade.unlockMilestoneId)}
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="panel">
-                <h3>Milestones</h3>
-                <div id="milestone-list" className="card-stack">
-                  {milestones.map((milestone) => {
-                    const unlocked = state.unlockedMilestones.includes(milestone.id);
-                    return (
-                      <div className="card" key={milestone.id}>
-                        <h3>{milestone.name}</h3>
-                        <p>{milestone.description}</p>
-                        <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
-                        <p>{unlocked ? "Unlocked" : "Locked"}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="panel">
-                <h3>Achievements</h3>
-                <p className="muted">Permanent proof of your vault milestones.</p>
-                <div className="card-stack">
-                  {achievements
-                    .filter((achievement) => {
-                      if (!settings.hideCompletedAchievements) {
-                        return true;
-                      }
-                      return !state.achievementUnlocks.includes(achievement.id);
-                    })
-                    .map((achievement) => {
-                      const unlocked = state.achievementUnlocks.includes(achievement.id);
-                      return (
-                        <div className="card" key={achievement.id}>
-                          <h3>{achievement.name}</h3>
-                          <p>{achievement.description}</p>
-                          <p className="muted" aria-live="polite">
-                            {unlocked ? "Unlocked" : "Locked"}
-                          </p>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-              <div className="panel">
-                <h3>Events</h3>
-                <p className="muted">
-                  Live boosts cycle in and out. Current multiplier x
-                  {currentEventMultiplier.toFixed(2)}.
-                </p>
-                <div className="card-stack">
-                  {events.map((event) => {
-                    const active = isEventActive(state, event.id, nowMs);
-                    const effectiveMultiplier = active
-                      ? (state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier)
-                      : event.incomeMultiplier;
-                    const statusLabel = getEventStatusLabel(state, event.id, nowMs);
-                    return (
-                      <div className="card" key={event.id}>
-                        <div className="card-header">
-                          <div>
-                            <h3>{event.name}</h3>
-                            <p>{event.description}</p>
-                          </div>
-                          <div>{active ? "Live" : "Idle"}</div>
-                        </div>
-                        <p>Income x{effectiveMultiplier.toFixed(2)}</p>
-                        <p className="muted" aria-live="polite">
-                          {statusLabel}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="panel">
-                <h3>Set bonuses</h3>
-                <div id="set-bonus-list" className="card-stack" data-testid="set-bonus-list">
-                  {setBonuses.map((bonus) => {
-                    const requirements = Object.entries(bonus.requirements) as Array<
-                      [keyof GameState["items"], number]
-                    >;
-                    const progress = requirements.map(([itemId, required]) => {
-                      const requiredCount = required ?? 0;
-                      const currentCount = state.items[itemId] ?? 0;
-                      return {
-                        itemId,
-                        label: watchItemLabels.get(itemId) ?? itemId,
-                        currentCount,
-                        requiredCount,
-                        met: currentCount >= requiredCount,
-                      };
-                    });
-                    const active = progress.every((entry) => entry.met);
-                    const bonusPercent = Math.round((bonus.incomeMultiplier - 1) * 100);
-                    return (
-                      <div
-                        className="card"
-                        key={bonus.id}
-                        data-testid="set-bonus-card"
-                        data-bonus-id={bonus.id}
-                      >
-                        <div className="card-header">
-                          <div>
-                            <h3>{bonus.name}</h3>
-                            <p>{bonus.description}</p>
-                          </div>
-                          <div>{active ? "Active" : "Inactive"}</div>
-                        </div>
-                        <div className="set-bonus-progress">
-                          {progress.map((entry) => (
-                            <p className={entry.met ? "" : "muted"} key={entry.itemId}>
-                              {entry.label} {entry.currentCount} / {entry.requiredCount}
-                            </p>
-                          ))}
-                        </div>
-                        <p className="muted">Income +{bonusPercent}%</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="panel" data-testid="crafting-panel">
-                <h3>Crafting workshop</h3>
-                <p className="muted">
-                  Break down watches into parts, then craft permanent vault boosts.
-                </p>
-                <div className="results-count" data-testid="crafting-parts">
-                  {craftingParts} parts
-                </div>
-                {renderCraftingRecipes("crafting-recipes")}
-                {renderCraftingBoosts("crafting-boosts")}
-              </div>
-            </aside>
-          </>
-        )}
-      </section>
+      <NostalgiaTab
+        isActive={activeTab === "nostalgia"}
+        state={state}
+        showNostalgiaSection={showNostalgiaSection}
+        showNostalgiaPanel={showNostalgiaPanel}
+        nostalgiaResultsDismissed={nostalgiaResultsDismissed}
+        onDismissResults={() => setNostalgiaResultsDismissed(true)}
+        nostalgiaProgress={nostalgiaProgress}
+        nostalgiaEarned={nostalgiaEarned}
+        nostalgiaPrestigeThreshold={nostalgiaPrestigeThreshold}
+        nostalgiaPrestigeGain={nostalgiaPrestigeGain}
+        canPrestigeNostalgia={canPrestigeNostalgia}
+        nostalgiaUnlockIds={nostalgiaUnlockIds}
+        watchItemsById={watchItemsById}
+        nostalgiaModalOpen={nostalgiaModalOpen}
+        onToggleNostalgiaModal={(open) => setNostalgiaModalOpen(open)}
+        nostalgiaUnlockPending={nostalgiaUnlockPending}
+        pendingNostalgiaUnlock={pendingNostalgiaUnlock}
+        pendingNostalgiaUnlockCost={pendingNostalgiaUnlockCost}
+        onSetNostalgiaUnlockPending={(next) => setNostalgiaUnlockPending(next)}
+        settings={settings}
+        persistSettings={persistSettings}
+        onPurchase={handlePurchase}
+      />
 
-      <section
-        id="career"
-        role="tabpanel"
-        aria-labelledby="career-tab"
-        hidden={activeTab !== "career"}
-      >
-        {activeTab === "career" &&
-          (() => {
-            const career = getTherapistCareer(state);
-            const nextXpRequired = getTherapistXpRequiredForNextLevel(career.level);
-            const cost = getTherapistSessionEnjoymentCostCents(career.level);
-            const payout = getTherapistSessionCashPayoutCents(career.level);
-            const cooldownMs = getTherapistSessionCooldownMs(career.level);
-            const canPerform = canPerformTherapistSession(state, nowMs);
-            const cooldownSeconds = Math.max(
-              0,
-              Math.ceil((career.nextAvailableAtMs - nowMs) / 1000),
-            );
+      <CatalogTab
+        isActive={activeTab === "catalog"}
+        catalogSearch={catalogSearch}
+        onCatalogSearchChange={setCatalogSearch}
+        catalogBrand={catalogBrand}
+        onCatalogBrandChange={setCatalogBrand}
+        catalogStyle={catalogStyle}
+        onCatalogStyleChange={setCatalogStyle}
+        catalogSort={catalogSort}
+        onCatalogSortChange={setCatalogSort}
+        catalogEra={catalogEra}
+        onCatalogEraChange={setCatalogEra}
+        catalogType={catalogType}
+        onCatalogTypeChange={setCatalogType}
+        catalogTab={catalogTab}
+        onCatalogTabChange={setCatalogTab}
+        catalogBrands={catalogBrands}
+        filteredCatalogEntries={filteredCatalogEntries}
+        discoveredCatalogEntries={discoveredCatalogEntries}
+        discoveredCatalogIds={discoveredCatalogIds}
+        catalogEntries={catalogEntries}
+        hasOwnedCatalogTiers={hasOwnedCatalogTiers}
+      />
 
-            const statusLabel = (() => {
-              if (canPerform) {
-                return "Ready";
-              }
-              if (cooldownSeconds > 0) {
-                return `Cooldown ${cooldownSeconds}s`;
-              }
-              if (state.enjoymentCents < cost) {
-                return "Need more enjoyment";
-              }
-              return "Unavailable";
-            })();
-
-            return (
-              <div className="panel" data-testid="career-panel">
-                <header className="panel-header">
-                  <div>
-                    <p className="eyebrow">Money generation</p>
-                    <h3 id="career-title">Therapist career</h3>
-                    <p className="muted">
-                      Spend enjoyment to run sessions that pay cash and advance your career.
-                    </p>
-                  </div>
-                  <div className="results-count" data-testid="career-status">
-                    {statusLabel}
-                  </div>
-                </header>
-
-                <div className="workshop-reset">
-                  <div>
-                    <p className="workshop-label">Level</p>
-                    <p className="workshop-value">{career.level.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="workshop-label">XP</p>
-                    <p className="workshop-value">
-                      {career.xp.toLocaleString()} / {nextXpRequired.toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="workshop-label">Session cost</p>
-                    <p className="workshop-value">{formatMoneyFromCents(cost)} enjoyment</p>
-                  </div>
-                  <div>
-                    <p className="workshop-label">Session payout</p>
-                    <p className="workshop-value">{formatMoneyFromCents(payout)} cash</p>
-                  </div>
-                  <div>
-                    <p className="workshop-label">Cooldown</p>
-                    <p className="workshop-value">{Math.round(cooldownMs / 1000)}s</p>
-                  </div>
-                </div>
-
-                <div className="card-actions">
-                  <button
-                    type="button"
-                    className="secondary"
-                    data-testid="career-action"
-                    disabled={!canPerform}
-                    onClick={() => handlePurchase(performTherapistSession(state, Date.now()))}
-                  >
-                    Run session
-                  </button>
-                </div>
-              </div>
-            );
-          })()}
-      </section>
-
-      <section
-        id="workshop"
-        role="tabpanel"
-        aria-labelledby="workshop-tab"
-        hidden={activeTab !== "workshop"}
-      >
-        {activeTab === "workshop" && (
-          <div className="workshop-layout">
-            {showWorkshopSection && (
-              <section
-                className={`panel workshop-panel ${showWorkshopPanel ? "" : "panel-teaser"}`}
-                data-testid="workshop-panel"
-                aria-labelledby="workshop-title"
-              >
-                {showWorkshopPanel ? (
-                  <>
-                    <header className="panel-header">
-                      <div>
-                        <p className="eyebrow">Reset loop</p>
-                        <h3 id="workshop-title">Atelier</h3>
-                        <p className="muted">
-                          Trade enjoyment for Blueprints and permanent boosts.
-                        </p>
-                      </div>
-                      <div className="results-count" data-testid="workshop-balance">
-                        {state.workshopBlueprints.toLocaleString()} Blueprints
-                      </div>
-                    </header>
-                    <div className="workshop-reset" data-testid="workshop-reset">
-                      <div>
-                        <p className="workshop-label">Reset threshold</p>
-                        <p className="workshop-value">
-                          {getEnjoymentThresholdLabel(getWorkshopPrestigeThresholdCents())}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="workshop-label">Current gain</p>
-                        <p className="workshop-value">+{workshopPrestigeGain} Blueprints</p>
-                      </div>
-                    </div>
-                    <fieldset className="workshop-cta">
-                      <legend className="visually-hidden">Reset atelier</legend>
-                      {workshopResetArmed ? (
-                        <div className="workshop-confirm">
-                          <button
-                            type="button"
-                            disabled={!canPrestigeWorkshop}
-                            onClick={() => {
-                              if (!canPrestigeWorkshop) {
-                                return;
-                              }
-                              handlePurchase(prestigeWorkshop(state, workshopPrestigeGain));
-                              setWorkshopResetArmed(false);
-                            }}
-                          >
-                            Confirm reset
-                          </button>
-                          <button
-                            type="button"
-                            className="secondary"
-                            onClick={() => setWorkshopResetArmed(false)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          className="secondary"
-                          disabled={!canPrestigeWorkshop}
-                          onClick={() => setWorkshopResetArmed(true)}
-                        >
-                          Reset atelier
-                        </button>
-                      )}
-                      <p className="muted" aria-live="polite">
-                        {workshopResetArmed
-                          ? "Confirming will reset progress and grant Blueprints."
-                          : canPrestigeWorkshop
-                            ? "Resetting trades your enjoyment for Blueprints and permanent boosts."
-                            : "Requires reaching the enjoyment threshold."}
-                      </p>
-                    </fieldset>
-                    <div className="workshop-upgrades">
-                      <h4>Upgrades</h4>
-                      <div className="card-stack">
-                        {workshopUpgrades.map((upgrade) => {
-                          const owned = state.workshopUpgrades[upgrade.id] ?? false;
-                          const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
-                          const effectLabel = (() => {
-                            if (upgrade.incomeMultiplier) {
-                              return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
-                            }
-                            if (upgrade.softcapMultiplier) {
-                              return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                            }
-                            if (upgrade.softcapExponentBonus) {
-                              return `Softcap exponent +${upgrade.softcapExponentBonus}`;
-                            }
-                            if (upgrade.unlocks?.autoBuyEnabled) {
-                              return "Unlocks automation";
-                            }
-                            return "Permanent upgrade";
-                          })();
-
-                          return (
-                            <div
-                              className="card workshop-upgrade-card"
-                              key={upgrade.id}
-                              data-testid="workshop-upgrade-card"
-                            >
-                              <div className="card-header">
-                                <div>
-                                  <h3>{upgrade.name}</h3>
-                                  <p>{upgrade.description}</p>
-                                </div>
-                                <div>{owned ? "Owned" : `${upgrade.blueprintCost} Blueprints`}</div>
-                              </div>
-                              <p>{effectLabel}</p>
-                              <div className="card-actions">
-                                <button
-                                  type="button"
-                                  className="secondary"
-                                  disabled={owned || !canAfford}
-                                  onClick={() =>
-                                    handlePurchase(buyWorkshopUpgrade(state, upgrade.id))
-                                  }
-                                >
-                                  {owned
-                                    ? "Installed"
-                                    : `Buy (${upgrade.blueprintCost} Blueprints)`}
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="panel-teaser-content" data-testid="workshop-teaser">
-                    <p className="eyebrow">Reset loop</p>
-                    <h3>Atelier</h3>
-                    <p className="muted">Your vault is close to yielding Blueprints.</p>
-                    <div className="teaser-progress">
-                      <div className="teaser-track">
-                        <div
-                          className="teaser-fill"
-                          style={{ width: `${Math.round(workshopRevealProgress * 100)}%` }}
-                        ></div>
-                      </div>
-                      <span>{Math.round(workshopRevealProgress * 100)}% to first reset</span>
-                    </div>
-                  </div>
-                )}
-              </section>
-            )}
-            <section className="panel workshop-crafting" data-testid="workshop-crafting">
-              <h3>Crafting workshop</h3>
-              <p className="muted">
-                Break down watches into parts, then craft permanent vault boosts.
-              </p>
-              <div className="results-count" data-testid="workshop-crafting-parts">
-                {craftingParts} parts
-              </div>
-              <div className="workshop-crafting-section" data-testid="workshop-dismantle">
-                <p className="workshop-label">Dismantle watches</p>
-                <p className="muted">Convert owned watches into parts for recipes.</p>
-                <div className="card-stack" data-testid="workshop-dismantle-list">
-                  {watchItems.map((item) => {
-                    const owned = getItemCount(state, item.id);
-                    const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
-                    const canDismantle = owned > 0 && partsPerWatch > 0;
-                    return (
-                      <div
-                        className="card"
-                        key={item.id}
-                        data-testid="workshop-dismantle-card"
-                        data-item-id={item.id}
-                      >
-                        <div className="card-header">
-                          <div>
-                            <h4>{item.name}</h4>
-                            <p>{partsPerWatch} parts per watch</p>
-                          </div>
-                          <div>{owned} owned</div>
-                        </div>
-                        <div className="card-actions">
-                          <button
-                            type="button"
-                            className="secondary"
-                            disabled={!canDismantle}
-                            onClick={() => handleDismantle(item.id)}
-                          >
-                            Dismantle
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="workshop-crafting-section">
-                <p className="workshop-label">Recipes</p>
-                {renderCraftingRecipes("workshop-crafting-recipes")}
-              </div>
-              <div className="workshop-crafting-section">
-                <p className="workshop-label">Active boosts</p>
-                {renderCraftingBoosts("workshop-crafting-boosts")}
-              </div>
-            </section>
-          </div>
-        )}
-      </section>
-
-      <section
-        id="maison"
-        role="tabpanel"
-        aria-labelledby="maison-tab"
-        hidden={activeTab !== "maison"}
-      >
-        {activeTab === "maison" && (
-          <>
-            {showMaisonSection && (
-              <section
-                className={`panel maison-panel ${showMaisonPanel ? "" : "panel-teaser"}`}
-                data-testid="maison-panel"
-                aria-labelledby="maison-title"
-              >
-                {showMaisonPanel ? (
-                  <>
-                    <header className="panel-header">
-                      <div>
-                        <p className="eyebrow">Meta progression</p>
-                        <h3 id="maison-title">Maison</h3>
-                        <p className="muted">
-                          Prestige the atelier to earn Heritage and strengthen long-term enjoyment.
-                        </p>
-                      </div>
-                      <div className="results-count" data-testid="maison-balance">
-                        {state.maisonHeritage.toLocaleString()} Heritage ·{" "}
-                        {state.maisonReputation.toLocaleString()} Reputation
-                      </div>
-                    </header>
-                    <div className="workshop-reset maison-reset" data-testid="maison-reset">
-                      <div>
-                        <p className="workshop-label">Reset threshold</p>
-                        <p className="workshop-value">
-                          {getEnjoymentThresholdLabel(getMaisonPrestigeThresholdCents())}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="workshop-label">Current gain</p>
-                        <p className="workshop-value">+{maisonPrestigeGain} Heritage</p>
-                      </div>
-                      <div>
-                        <p className="workshop-label">Legacy credit</p>
-                        <p className="workshop-value">+{maisonReputationGain} Reputation</p>
-                      </div>
-                    </div>
-                    <p className="muted maison-reset-detail">
-                      Resets Collection + Atelier progress. Maison lines remain active.
-                    </p>
-                    <fieldset className="workshop-cta">
-                      <legend className="visually-hidden">Reset atelier</legend>
-                      {maisonResetArmed ? (
-                        <div className="workshop-confirm">
-                          <button
-                            type="button"
-                            disabled={!canPrestigeMaison}
-                            onClick={() => {
-                              if (!canPrestigeMaison) {
-                                return;
-                              }
-                              handlePurchase(prestigeMaison(state));
-                              setMaisonResetArmed(false);
-                            }}
-                          >
-                            Confirm prestige
-                          </button>
-                          <button
-                            type="button"
-                            className="secondary"
-                            onClick={() => setMaisonResetArmed(false)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          className="secondary"
-                          disabled={!canPrestigeMaison}
-                          onClick={() => setMaisonResetArmed(true)}
-                        >
-                          Prestige atelier
-                        </button>
-                      )}
-                      <p className="muted" aria-live="polite">
-                        {maisonResetArmed
-                          ? "Confirming resets Collection + Atelier and grants Heritage & Reputation."
-                          : canPrestigeMaison
-                            ? "Prestiging converts your enjoyment engine into Maison legacy."
-                            : "Requires reaching the enjoyment threshold."}
-                      </p>
-                    </fieldset>
-                    <div className="workshop-upgrades">
-                      <h4>Maison upgrades</h4>
-                      <div className="card-stack">
-                        {maisonUpgrades.map((upgrade) => {
-                          const owned = state.maisonUpgrades[upgrade.id] ?? false;
-                          const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
-                          const costLabel =
-                            upgrade.currency === "heritage"
-                              ? `${upgrade.cost} Heritage`
-                              : `${upgrade.cost} Reputation`;
-                          const effectLabel = (() => {
-                            if (upgrade.incomeMultiplier) {
-                              return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
-                            }
-                            if (upgrade.collectionBonusMultiplier) {
-                              return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                            }
-                            if (upgrade.softcapMultiplier) {
-                              return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                            }
-                            return "Permanent upgrade";
-                          })();
-
-                          return (
-                            <div
-                              className="card workshop-upgrade-card"
-                              key={upgrade.id}
-                              data-testid="maison-upgrade-card"
-                            >
-                              <div className="card-header">
-                                <div>
-                                  <h3>{upgrade.name}</h3>
-                                  <p>{upgrade.description}</p>
-                                </div>
-                                <div>{owned ? "Owned" : costLabel}</div>
-                              </div>
-                              <p>{effectLabel}</p>
-                              <div className="card-actions">
-                                <button
-                                  type="button"
-                                  className="secondary"
-                                  disabled={owned || !canAfford}
-                                  onClick={() =>
-                                    handlePurchase(buyMaisonUpgrade(state, upgrade.id))
-                                  }
-                                >
-                                  {owned ? "Installed" : `Buy (${costLabel})`}
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="panel-teaser-content" data-testid="maison-teaser">
-                    <p className="eyebrow">Meta progression</p>
-                    <h3>Maison</h3>
-                    <p className="muted">Your maison is almost ready for legacy prestige.</p>
-                    <div className="teaser-progress">
-                      <div className="teaser-track">
-                        <div
-                          className="teaser-fill"
-                          style={{ width: `${Math.round(maisonRevealProgress * 100)}%` }}
-                        ></div>
-                      </div>
-                      <span>{Math.round(maisonRevealProgress * 100)}% to Maison reset</span>
-                    </div>
-                  </div>
-                )}
-              </section>
-            )}
-          </>
-        )}
-      </section>
-
-      <section
-        id="nostalgia"
-        role="tabpanel"
-        aria-labelledby="nostalgia-tab"
-        hidden={activeTab !== "nostalgia"}
-      >
-        {activeTab === "nostalgia" && showNostalgiaSection && (
-          <section
-            className={`panel ${showNostalgiaPanel ? "" : "panel-teaser"}`}
-            data-testid="nostalgia-panel"
-            aria-labelledby="nostalgia-title"
-          >
-            {showNostalgiaPanel ? (
-              <>
-                <header className="panel-header">
-                  <div>
-                    <p className="eyebrow">Prestige loop</p>
-                    <h3 id="nostalgia-title">Nostalgia</h3>
-                    <p className="muted">
-                      Reset your vault to bank Nostalgia points and carry your collection forward.
-                    </p>
-                  </div>
-                  <div className="results-count" data-testid="nostalgia-balance">
-                    {state.nostalgiaPoints.toLocaleString()} Nostalgia
-                  </div>
-                </header>
-
-                {state.nostalgiaLastGain > 0 && !nostalgiaResultsDismissed && (
-                  <div className="nostalgia-results" data-testid="nostalgia-results">
-                    <h4>Reset complete</h4>
-                    <p>
-                      +{state.nostalgiaLastGain.toLocaleString()} Nostalgia · New total{" "}
-                      {state.nostalgiaPoints.toLocaleString()}
-                    </p>
-                    {state.nostalgiaLastPrestigedAtMs > 0 && (
-                      <p className="muted">
-                        {new Date(state.nostalgiaLastPrestigedAtMs).toLocaleString()}
-                      </p>
-                    )}
-                    <div className="card-actions">
-                      <button
-                        type="button"
-                        className="secondary"
-                        onClick={() => setNostalgiaResultsDismissed(true)}
-                      >
-                        Back to progress
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="nostalgia-progress" data-testid="nostalgia-progress">
-                  <div className="nostalgia-progress-track">
-                    <div
-                      className="nostalgia-progress-fill"
-                      style={{ width: `${Math.round(nostalgiaProgress * 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="nostalgia-progress-meta">
-                    <span>{Math.round(nostalgiaProgress * 100)}% to prestige</span>
-                    <span>
-                      {formatMoneyFromCents(nostalgiaEarned)} enjoyment /{" "}
-                      {getEnjoymentThresholdLabel(nostalgiaPrestigeThreshold)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="card" data-testid="nostalgia-preview">
-                  <h4>Projected nostalgia</h4>
-                  <p className="muted">Reset now to gain +{nostalgiaPrestigeGain} Nostalgia.</p>
-                  <p>Current balance: {state.nostalgiaPoints.toLocaleString()} Nostalgia</p>
-                </div>
-
-                <div className="card-stack">
-                  <div className="card">
-                    <h4>Resets</h4>
-                    <ul>
-                      <li>Vault cash and enjoyment totals</li>
-                      <li>Career levels and session progress</li>
-                      <li>Atelier and Maison prestige progress</li>
-                      <li>Upgrades and crafted boosts</li>
-                    </ul>
-                  </div>
-                  <div className="card">
-                    <h4>Keeps</h4>
-                    <ul>
-                      <li>Owned watches in your collection</li>
-                      <li>Catalog discoveries and achievements</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="card-actions">
-                  <button
-                    type="button"
-                    data-testid="nostalgia-prestige"
-                    disabled={!canPrestigeNostalgia}
-                    onClick={() => {
-                      if (!canPrestigeNostalgia) {
-                        return;
-                      }
-                      setNostalgiaModalOpen(true);
-                    }}
-                  >
-                    Prestige for Nostalgia
-                  </button>
-                </div>
-
-                {state.nostalgiaResets >= 1 && (
-                  <div className="nostalgia-unlocks" data-testid="nostalgia-unlocks">
-                    <header className="nostalgia-unlocks-header">
-                      <div>
-                        <p className="eyebrow">Permanent unlocks</p>
-                        <h4>Unlock store</h4>
-                        <p className="muted">
-                          Spend Nostalgia to unlock new watch lines across every reset.
-                        </p>
-                      </div>
-                      <label className="nostalgia-unlocks-toggle">
-                        <input
-                          type="checkbox"
-                          checked={settings.confirmNostalgiaUnlocks}
-                          data-testid="nostalgia-unlock-confirm-toggle"
-                          onChange={() =>
-                            persistSettings({
-                              ...settings,
-                              confirmNostalgiaUnlocks: !settings.confirmNostalgiaUnlocks,
-                            })
-                          }
-                        />
-                        Confirm unlock purchases
-                      </label>
-                    </header>
-                    <div className="nostalgia-unlock-grid">
-                      {nostalgiaUnlockIds.map((unlockId, index) => {
-                        const item = watchItemsById.get(unlockId);
-                        if (!item) {
-                          return null;
-                        }
-                        const cost = getNostalgiaUnlockCost(unlockId);
-                        const unlocked = state.nostalgiaUnlockedItems.includes(unlockId);
-                        const canBuy = canBuyNostalgiaUnlock(state, unlockId);
-                        const canRefund = canRefundNostalgiaUnlock(state, unlockId);
-                        const previousId = index > 0 ? nostalgiaUnlockIds[index - 1] : null;
-                        const missingPrereq =
-                          previousId && !state.nostalgiaUnlockedItems.includes(previousId);
-                        const nostalgiaGap = Math.max(0, cost - state.nostalgiaPoints);
-                        const lockReason = !unlocked
-                          ? missingPrereq
-                            ? `Unlock ${watchItemsById.get(previousId)?.name ?? previousId} first`
-                            : nostalgiaGap > 0
-                              ? `Need ${nostalgiaGap.toLocaleString()} more Nostalgia`
-                              : null
-                          : null;
-
-                        return (
-                          <div
-                            className={`card nostalgia-unlock-card ${unlocked ? "nostalgia-unlock-owned" : ""}`}
-                            key={unlockId}
-                            data-testid={`nostalgia-unlock-card-${unlockId}`}
-                          >
-                            <div className="card-header">
-                              <div>
-                                <h4>{item.name}</h4>
-                                <p>{item.description}</p>
-                              </div>
-                              <div className="nostalgia-unlock-status">
-                                {unlocked ? (
-                                  <span className="nostalgia-unlock-badge">Unlocked</span>
-                                ) : (
-                                  <span className="nostalgia-unlock-status-text">Locked</span>
-                                )}
-                              </div>
-                            </div>
-                            <p className="nostalgia-unlock-cost">
-                              Cost: {cost.toLocaleString()} Nostalgia
-                            </p>
-                            {lockReason && <p className="nostalgia-unlock-hint">{lockReason}</p>}
-                            <div className="card-actions">
-                              <button
-                                type="button"
-                                data-testid={`nostalgia-unlock-buy-${unlockId}`}
-                                disabled={unlocked || !canBuy}
-                                onClick={() => {
-                                  if (settings.confirmNostalgiaUnlocks) {
-                                    setNostalgiaUnlockPending(unlockId);
-                                    return;
-                                  }
-                                  handlePurchase(buyNostalgiaUnlock(state, unlockId));
-                                }}
-                              >
-                                {unlocked ? "Unlocked" : `Unlock (${cost.toLocaleString()})`}
-                              </button>
-                              <button
-                                type="button"
-                                className="secondary"
-                                data-testid={`nostalgia-unlock-refund-${unlockId}`}
-                                disabled={!canRefund}
-                                onClick={() =>
-                                  handlePurchase(refundNostalgiaUnlock(state, unlockId))
-                                }
-                              >
-                                Refund +{cost.toLocaleString()}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {nostalgiaModalOpen && (
-                  <div
-                    className="nostalgia-modal"
-                    data-testid="nostalgia-modal"
-                    role="dialog"
-                    aria-modal="true"
-                  >
-                    <div className="nostalgia-modal-card">
-                      <h3>Confirm nostalgia prestige</h3>
-                      <p className="muted">
-                        You will gain +{nostalgiaPrestigeGain} Nostalgia and reset vault progress.
-                      </p>
-                      <ul>
-                        <li>Resets cash, enjoyment, and career progress</li>
-                        <li>Resets Atelier + Maison prestige progress</li>
-                        <li>Clears upgrades and crafted boosts</li>
-                      </ul>
-                      <div className="card-actions">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handlePurchase(prestigeNostalgia(state, Date.now()));
-                            setNostalgiaModalOpen(false);
-                          }}
-                        >
-                          Confirm reset
-                        </button>
-                        <button
-                          type="button"
-                          className="secondary"
-                          onClick={() => setNostalgiaModalOpen(false)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {nostalgiaUnlockPending && pendingNostalgiaUnlock && (
-                  <div
-                    className="nostalgia-modal"
-                    data-testid="nostalgia-unlock-modal"
-                    role="dialog"
-                    aria-modal="true"
-                  >
-                    <div className="nostalgia-modal-card">
-                      <h3>Confirm nostalgia unlock</h3>
-                      <p className="muted">
-                        Spend {pendingNostalgiaUnlockCost.toLocaleString()} Nostalgia to unlock{" "}
-                        {pendingNostalgiaUnlock.name} permanently?
-                      </p>
-                      <ul>
-                        <li>Unlocks the watch line for every future reset</li>
-                        <li>Refunds are available for the most recent unlock</li>
-                      </ul>
-                      <div className="card-actions">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!nostalgiaUnlockPending) {
-                              return;
-                            }
-                            handlePurchase(buyNostalgiaUnlock(state, nostalgiaUnlockPending));
-                            setNostalgiaUnlockPending(null);
-                          }}
-                        >
-                          Confirm unlock
-                        </button>
-                        <button
-                          type="button"
-                          className="secondary"
-                          onClick={() => setNostalgiaUnlockPending(null)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="panel-teaser-content" data-testid="nostalgia-teaser">
-                <p className="eyebrow">Prestige loop</p>
-                <h3>Nostalgia</h3>
-                <p className="muted">Your vault is nearing its first nostalgia reset.</p>
-                <div className="teaser-progress">
-                  <div className="teaser-track">
-                    <div
-                      className="teaser-fill"
-                      style={{ width: `${Math.round(nostalgiaProgress * 100)}%` }}
-                    ></div>
-                  </div>
-                  <span>{Math.round(nostalgiaProgress * 100)}% to nostalgia prestige</span>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-      </section>
-
-      <section
-        className="panel catalog-panel"
-        id="catalog"
-        role="tabpanel"
-        aria-labelledby="catalog-tab"
-        hidden={activeTab !== "catalog"}
-      >
-        {activeTab === "catalog" && (
-          <>
-            <header className="panel-header catalog-header">
-              <div>
-                <p className="eyebrow">Archive</p>
-                <h2>Catalog</h2>
-                <p className="muted">Explore reference pieces and track licensing sources.</p>
-              </div>
-              <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-                {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length}{" "}
-                discovered
-              </div>
-            </header>
-            <form
-              className="catalog-filters"
-              data-testid="catalog-filters"
-              onSubmit={(event) => event.preventDefault()}
-            >
-              <div className="filter-field">
-                <label className="filter-label" htmlFor="catalog-search">
-                  Search
-                </label>
-                <input
-                  id="catalog-search"
-                  data-testid="catalog-search"
-                  type="search"
-                  placeholder="Search by model, year, tags"
-                  value={catalogSearch}
-                  onChange={(event) => setCatalogSearch(event.target.value)}
-                />
-              </div>
-              <div className="filter-field">
-                <label className="filter-label" htmlFor="catalog-brand">
-                  Brand
-                </label>
-                <select
-                  id="catalog-brand"
-                  data-testid="catalog-brand"
-                  value={catalogBrand}
-                  onChange={(event) => setCatalogBrand(event.target.value)}
-                >
-                  {catalogBrands.map((brand) => (
-                    <option key={brand} value={brand}>
-                      {brand}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="filter-field">
-                <label className="filter-label" htmlFor="catalog-style">
-                  Style
-                </label>
-                <select
-                  id="catalog-style"
-                  data-testid="catalog-style"
-                  value={catalogStyle}
-                  onChange={(event) => setCatalogStyle(event.target.value as typeof catalogStyle)}
-                >
-                  <option value="all">All</option>
-                  <option value="womens">Womens</option>
-                </select>
-              </div>
-              <div className="filter-field">
-                <label className="filter-label" htmlFor="catalog-sort">
-                  Sort
-                </label>
-                <select
-                  id="catalog-sort"
-                  data-testid="catalog-sort"
-                  value={catalogSort}
-                  onChange={(event) => setCatalogSort(event.target.value as typeof catalogSort)}
-                >
-                  <option value="default">Default</option>
-                  <option value="brand">Brand (A→Z)</option>
-                  <option value="year">Year (newest→oldest)</option>
-                  <option value="tier">Tier (starter→tourbillon)</option>
-                </select>
-              </div>
-              <div className="filter-field">
-                <label className="filter-label" htmlFor="catalog-era">
-                  Era
-                </label>
-                <select
-                  id="catalog-era"
-                  data-testid="catalog-era"
-                  value={catalogEra}
-                  onChange={(event) => setCatalogEra(event.target.value as typeof catalogEra)}
-                >
-                  <option value="all">All</option>
-                  <option value="pre-1970">Pre-1970</option>
-                  <option value="1970-1999">1970-1999</option>
-                  <option value="2000+">2000+</option>
-                  <option value="unknown">Unknown</option>
-                </select>
-              </div>
-              <div className="filter-field">
-                <label className="filter-label" htmlFor="catalog-type">
-                  Type
-                </label>
-                <select
-                  id="catalog-type"
-                  data-testid="catalog-type"
-                  value={catalogType}
-                  onChange={(event) => setCatalogType(event.target.value as typeof catalogType)}
-                >
-                  <option value="all">All</option>
-                  <option value="gmt">GMT</option>
-                  <option value="chronograph">Chronograph</option>
-                  <option value="dress">Dress</option>
-                  <option value="diver">Diver</option>
-                </select>
-              </div>
-              <div className="filter-field" data-testid="catalog-owned-tabs">
-                <span className="filter-label">View</span>
-                <div className="catalog-tablist" role="tablist" aria-label="Catalog ownership">
-                  {(
-                    [
-                      { id: "unowned", label: "Unowned" },
-                      { id: "owned", label: "Owned" },
-                    ] as const
-                  ).map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      role="tab"
-                      className={`catalog-tab ${catalogTab === tab.id ? "catalog-tab-active" : ""}`}
-                      aria-selected={catalogTab === tab.id}
-                      aria-controls={`catalog-${tab.id}`}
-                      id={`catalog-${tab.id}-tab`}
-                      tabIndex={catalogTab === tab.id ? 0 : -1}
-                      onClick={() => setCatalogTab(tab.id)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </form>
-            <section className="catalog-collection" aria-labelledby="catalog-collection-title">
-              <header className="panel-header">
-                <div>
-                  <p className="eyebrow">Collection book</p>
-                  <h3 id="catalog-collection-title">Archive shelf</h3>
-                  <p className="muted">Discovered references appear here for quick review.</p>
-                </div>
-                <div className="results-count" data-testid="catalog-discovered-count">
-                  {discoveredCatalogEntries.length} / {catalogEntries.length} discovered
-                </div>
-              </header>
-              {discoveredCatalogEntries.length > 0 ? (
-                <div className="catalog-grid" data-testid="catalog-discovered-grid">
-                  {discoveredCatalogEntries.map((entry) => {
-                    const tags = getCatalogEntryTags(entry);
-                    return (
-                      <article
-                        key={entry.id}
-                        className="catalog-card catalog-discovered"
-                        data-testid="catalog-card"
-                      >
-                        <div className="catalog-media">
-                          <img
-                            src={getCatalogImageUrl(entry)}
-                            alt={`${entry.brand} ${entry.model}`}
-                            loading="lazy"
-                            onError={(event) => {
-                              const target = event.currentTarget;
-                              const placeholder =
-                                "data:image/svg+xml;utf8," +
-                                encodeURIComponent(
-                                  `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                                    `<rect width='100%' height='100%' fill='#131720'/>` +
-                                    `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                                    `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                                    `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                                    `</svg>`,
-                                );
-
-                              if (target.dataset.fallback !== "true") {
-                                target.dataset.fallback = "true";
-                                target.src = placeholder;
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="catalog-content">
-                          <div className="catalog-title">
-                            <div>
-                              <p className="catalog-brand">{entry.brand}</p>
-                              <h3>{entry.model}</h3>
-                            </div>
-                            <p className="catalog-year">{entry.year}</p>
-                          </div>
-                          <p>{entry.description}</p>
-                          <p className="catalog-tags">{tags.join(" · ")}</p>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="catalog-empty" data-testid="catalog-discovered-empty">
-                  No discoveries yet. Track down references in the archive to fill this shelf.
-                </p>
-              )}
-            </section>
-            <section
-              id="catalog-unowned"
-              role="tabpanel"
-              aria-labelledby="catalog-unowned-tab"
-              hidden={catalogTab !== "unowned"}
-            >
-              {catalogTab === "unowned" && (
-                <div className="catalog-grid" data-testid="catalog-grid">
-                  {filteredCatalogEntries.map((entry) => {
-                    const discovered = discoveredCatalogIds.includes(entry.id);
-                    const tags = getCatalogEntryTags(entry);
-                    return (
-                      <article
-                        key={entry.id}
-                        className={`catalog-card ${discovered ? "catalog-discovered" : "catalog-locked"}`}
-                        data-testid="catalog-card"
-                      >
-                        <div className="catalog-media">
-                          <img
-                            src={getCatalogImageUrl(entry)}
-                            alt={`${entry.brand} ${entry.model}`}
-                            loading="lazy"
-                            onError={(event) => {
-                              const target = event.currentTarget;
-                              const placeholder =
-                                "data:image/svg+xml;utf8," +
-                                encodeURIComponent(
-                                  `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                                    `<rect width='100%' height='100%' fill='#131720'/>` +
-                                    `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                                    `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                                    `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                                    `</svg>`,
-                                );
-
-                              if (target.dataset.fallback !== "true") {
-                                target.dataset.fallback = "true";
-                                target.src = placeholder;
-                              }
-                            }}
-                          />
-                          {!discovered && <span className="catalog-badge">Undiscovered</span>}
-                        </div>
-                        <div className="catalog-content">
-                          <div className="catalog-title">
-                            <div>
-                              <p className="catalog-brand">{entry.brand}</p>
-                              <h3>{entry.model}</h3>
-                            </div>
-                            <p className="catalog-year">{entry.year}</p>
-                          </div>
-                          <p>{entry.description}</p>
-                          <p className="catalog-tags">{tags.join(" · ")}</p>
-                          <p className="catalog-attribution">{entry.image.attribution}</p>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-            <section
-              id="catalog-owned"
-              role="tabpanel"
-              aria-labelledby="catalog-owned-tab"
-              hidden={catalogTab !== "owned"}
-            >
-              {catalogTab === "owned" && (
-                <>
-                  {!hasOwnedCatalogTiers ? (
-                    <p className="catalog-empty" data-testid="catalog-owned-empty">
-                      No owned tiers yet—add pieces to your vault to start the archive.
-                    </p>
-                  ) : (
-                    <div className="catalog-grid" data-testid="catalog-grid">
-                      {filteredCatalogEntries.map((entry) => {
-                        const discovered = discoveredCatalogIds.includes(entry.id);
-                        const tags = getCatalogEntryTags(entry);
-                        return (
-                          <article
-                            key={entry.id}
-                            className={`catalog-card ${discovered ? "catalog-discovered" : "catalog-locked"}`}
-                            data-testid="catalog-card"
-                          >
-                            <div className="catalog-media">
-                              <img
-                                src={getCatalogImageUrl(entry)}
-                                alt={`${entry.brand} ${entry.model}`}
-                                loading="lazy"
-                                onError={(event) => {
-                                  const target = event.currentTarget;
-                                  const placeholder =
-                                    "data:image/svg+xml;utf8," +
-                                    encodeURIComponent(
-                                      `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                                        `<rect width='100%' height='100%' fill='#131720'/>` +
-                                        `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                                        `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                                        `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                                        `</svg>`,
-                                    );
-
-                                  if (target.dataset.fallback !== "true") {
-                                    target.dataset.fallback = "true";
-                                    target.src = placeholder;
-                                  }
-                                }}
-                              />
-                              {!discovered && <span className="catalog-badge">Undiscovered</span>}
-                            </div>
-                            <div className="catalog-content">
-                              <div className="catalog-title">
-                                <div>
-                                  <p className="catalog-brand">{entry.brand}</p>
-                                  <h3>{entry.model}</h3>
-                                </div>
-                                <p className="catalog-year">{entry.year}</p>
-                              </div>
-                              <p>{entry.description}</p>
-                              {entry.facts && entry.facts.length > 0 && (
-                                <details className="catalog-facts" data-testid="catalog-facts">
-                                  <summary>Collector notes</summary>
-                                  <ul>
-                                    {entry.facts.map((fact) => (
-                                      <li key={fact}>{fact}</li>
-                                    ))}
-                                  </ul>
-                                </details>
-                              )}
-                              <p className="catalog-tags">{tags.join(" · ")}</p>
-                              <p className="catalog-attribution">{entry.image.attribution}</p>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
-            </section>
-
-            <section className="panel catalog-sources" data-testid="catalog-sources">
-              <h2>Sources &amp; Licenses</h2>
-              <p className="muted">
-                Every image in the archive lists its original source and license for compliance.
-              </p>
-
-              <ul className="sources-list" data-testid="sources-list">
-                {catalogEntries.map((entry) => (
-                  <li key={entry.id} data-testid="source-item">
-                    <strong className="source-title">
-                      {entry.brand} {entry.model}
-                    </strong>
-                    <span className="muted">{entry.image.attribution}</span>
-                    <div className="source-links" data-testid="source-links">
-                      <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
-                        Source
-                      </a>
-                      {entry.image.licenseUrl ? (
-                        <a href={entry.image.licenseUrl} target="_blank" rel="noreferrer">
-                          {entry.image.licenseName}
-                        </a>
-                      ) : (
-                        <span>{entry.image.licenseName}</span>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="panel catalog-dealers" data-testid="catalog-dealers">
-                <h3>Trusted dealers (external)</h3>
-                <p className="muted">
-                  Dealer names are provided for reference only; no affiliation or endorsement is
-                  implied.
-                </p>
-                <ul className="card-stack" data-testid="dealer-list">
-                  {["Hodinkee", "Crown & Caliber", "WatchBox", "Bob's Watches", "Tourneau"].map(
-                    (dealer) => (
-                      <li key={dealer}>{dealer}</li>
-                    ),
-                  )}
-                </ul>
-              </div>
-            </section>
-          </>
-        )}
-      </section>
-
-      <section
-        id="stats"
-        role="tabpanel"
-        aria-labelledby="stats-tab"
-        hidden={activeTab !== "stats"}
-      >
-        {activeTab === "stats" && (
-          <div className="panel">
-            <h2>Stats</h2>
-            <p className="muted">Derived metrics from your current state.</p>
-            <dl className="stats-grid" data-testid="stats-metrics">
-              <div>
-                <dt>Vault enjoyment</dt>
-                <dd data-testid="stats-enjoyment">{stats.enjoyment}</dd>
-              </div>
-              <div>
-                <dt>Enjoyment / sec</dt>
-                <dd data-testid="stats-enjoyment-rate">{stats.enjoymentRate}</dd>
-              </div>
-              <div>
-                <dt>Vault dollars</dt>
-                <dd data-testid="stats-cash">{stats.cash}</dd>
-              </div>
-              <div>
-                <dt>Dollars / sec</dt>
-                <dd data-testid="stats-cash-rate">{stats.cashRate}</dd>
-              </div>
-              <div>
-                <dt>Memories</dt>
-                <dd data-testid="stats-memories">{stats.sentimentalValue}</dd>
-              </div>
-              <div>
-                <dt>Atelier resets</dt>
-                <dd data-testid="stats-workshop-prestige">{state.workshopPrestigeCount}</dd>
-              </div>
-              <div>
-                <dt>Maison heritage</dt>
-                <dd data-testid="stats-maison-heritage">{state.maisonHeritage}</dd>
-              </div>
-              <div>
-                <dt>Maison reputation</dt>
-                <dd data-testid="stats-maison-reputation">{state.maisonReputation}</dd>
-              </div>
-              <div>
-                <dt>Event multiplier</dt>
-                <dd data-testid="stats-event-multiplier">x{currentEventMultiplier.toFixed(2)}</dd>
-              </div>
-            </dl>
-
-            <section className="panel stats-journal" data-testid="stats-journal">
-              <h3>Journal</h3>
-              <div className="card-stack" data-testid="lore-chapters">
-                {(
-                  [
-                    {
-                      id: "collector-shelf",
-                      title: "First arrivals",
-                      text: "The first pieces find their way into the vault, still warm from wrists and stories. You learn their rhythms, their quirks, and the quiet pull of the next addition.",
-                    },
-                    {
-                      id: "showcase",
-                      title: "The cabinet grows",
-                      text: "The vault starts to feel curated instead of accidental. A pattern emerges: what you seek, what you keep, and what you let go as the collection takes shape.",
-                    },
-                    {
-                      id: "atelier",
-                      title: "Atelier nights",
-                      text: "Late hours in the atelier turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the vault responds in kind.",
-                    },
-                  ] as const
-                )
-                  .filter((chapter) => state.unlockedMilestones.includes(chapter.id))
-                  .map((chapter) => (
-                    <article className="card" key={chapter.id} data-testid="lore-chapter">
-                      <h4>{chapter.title}</h4>
-                      <p>{chapter.text}</p>
-                    </article>
-                  ))}
-              </div>
-            </section>
-          </div>
-        )}
-      </section>
+      <StatsTab
+        isActive={activeTab === "stats"}
+        state={state}
+        stats={stats}
+        currentEventMultiplier={currentEventMultiplier}
+      />
 
       {windActiveItemId && (
         <div role="dialog" aria-modal="true" className="panel">
@@ -2865,204 +1283,25 @@ export default function App() {
         </div>
       )}
 
-      <section
-        className="panel"
-        id="save"
-        role="tabpanel"
-        aria-labelledby="save-tab"
-        hidden={activeTab !== "save"}
-      >
-        {activeTab === "save" && (
-          <>
-            <h2>Save</h2>
-            <div className="controls">
-              <button type="button" onClick={handleExport}>
-                Export
-              </button>
-            </div>
-
-            <fieldset className="controls" data-testid="audio-controls">
-              <legend>Audio settings</legend>
-              <label>
-                <input
-                  type="checkbox"
-                  data-testid="audio-sfx-toggle"
-                  checked={audioSettings.sfxEnabled}
-                  onChange={(event) => {
-                    const nextSettings = {
-                      ...audioSettings,
-                      sfxEnabled: event.target.checked,
-                    };
-                    setAudioSettings(nextSettings);
-                    window.localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(nextSettings));
-                  }}
-                />
-                Enable SFX
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  data-testid="audio-bgm-toggle"
-                  checked={audioSettings.bgmEnabled}
-                  onChange={(event) => {
-                    const nextSettings = {
-                      ...audioSettings,
-                      bgmEnabled: event.target.checked,
-                    };
-                    setAudioSettings(nextSettings);
-                    window.localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(nextSettings));
-                  }}
-                />
-                Enable BGM
-              </label>
-            </fieldset>
-
-            <fieldset className="controls" data-testid="settings-controls">
-              <legend>Preferences</legend>
-              <label>
-                Theme mode
-                <select
-                  data-testid="settings-theme"
-                  value={settings.themeMode}
-                  onChange={(event) => {
-                    persistSettings({
-                      ...settings,
-                      themeMode: event.target.value as ThemeMode,
-                    });
-                  }}
-                >
-                  <option value="system">System</option>
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </select>
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  data-testid="settings-hide-achievements"
-                  checked={settings.hideCompletedAchievements}
-                  onChange={(event) => {
-                    persistSettings({
-                      ...settings,
-                      hideCompletedAchievements: event.target.checked,
-                    });
-                  }}
-                />
-                Hide completed achievements
-              </label>
-              <div className="controls">
-                <span className="muted">Visible tabs</span>
-                {visibleTabOptions.map((tab) => (
-                  <label key={tab.id}>
-                    <input
-                      type="checkbox"
-                      data-testid={`tab-visibility-${tab.id}`}
-                      checked={!hiddenTabsSet.has(tab.id)}
-                      onChange={(event) => {
-                        const nextHiddenTabs = event.target.checked
-                          ? settings.hiddenTabs.filter((hiddenTab) => hiddenTab !== tab.id)
-                          : Array.from(new Set([...settings.hiddenTabs, tab.id]));
-                        persistSettings({
-                          ...settings,
-                          hiddenTabs: nextHiddenTabs,
-                        });
-                      }}
-                    />
-                    {tab.label}
-                  </label>
-                ))}
-              </div>
-              {devSettings.enabled && (
-                <div className="controls" data-testid="dev-controls">
-                  <span className="muted">Dev mode</span>
-                  <label>
-                    Speed
-                    <select
-                      value={String(devSettings.speedMultiplier)}
-                      onChange={(event) => {
-                        const value = Number(event.target.value);
-                        setDevSettings((current) => ({
-                          ...current,
-                          speedMultiplier: Number.isFinite(value) ? value : 1,
-                        }));
-                      }}
-                    >
-                      <option value="1">1x</option>
-                      <option value="2">2x</option>
-                      <option value="4">4x</option>
-                    </select>
-                  </label>
-                  <div className="card-actions">
-                    <button
-                      type="button"
-                      className="secondary"
-                      onClick={() =>
-                        handlePurchase({
-                          ...state,
-                          currencyCents: state.currencyCents + 500_000,
-                        })
-                      }
-                    >
-                      Grant $500k
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary"
-                      onClick={() => {
-                        const boostedItems = watchItems.reduce<Record<string, number>>(
-                          (acc, item) => {
-                            acc[item.id] = Math.max(state.items[item.id] ?? 0, 10);
-                            return acc;
-                          },
-                          {},
-                        );
-                        handlePurchase({
-                          ...state,
-                          items: {
-                            ...state.items,
-                            ...boostedItems,
-                          },
-                          unlockedMilestones: getMilestones().map((milestone) => milestone.id),
-                        });
-                      }}
-                    >
-                      Unlock watches
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary"
-                      onClick={() => {
-                        handlePurchase(createInitialState());
-                      }}
-                    >
-                      Reset save
-                    </button>
-                  </div>
-                </div>
-              )}
-            </fieldset>
-
-            <div className="controls">
-              <label htmlFor="import-save-text">Import data</label>
-              <textarea
-                id="import-save-text"
-                rows={3}
-                placeholder="Paste exported data here"
-                aria-describedby="save-status"
-                value={importText}
-                onChange={(event) => setImportText(event.target.value)}
-              ></textarea>
-              <button type="button" onClick={handleImport}>
-                Import
-              </button>
-            </div>
-
-            <output id="save-status" aria-live="polite">
-              {saveStatus}
-            </output>
-          </>
-        )}
-      </section>
+      <SaveTab
+        isActive={activeTab === "save"}
+        state={state}
+        watchItems={watchItems}
+        audioSettings={audioSettings}
+        onUpdateAudioSettings={handleUpdateAudioSettings}
+        settings={settings}
+        persistSettings={persistSettings}
+        visibleTabOptions={visibleTabOptions}
+        hiddenTabsSet={hiddenTabsSet}
+        devSettings={devSettings}
+        setDevSettings={setDevSettings}
+        onPurchase={handlePurchase}
+        importText={importText}
+        onImportTextChange={setImportText}
+        onExport={handleExport}
+        onImport={handleImport}
+        saveStatus={saveStatus}
+      />
     </main>
   );
 }
