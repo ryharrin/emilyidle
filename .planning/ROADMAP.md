@@ -234,7 +234,7 @@ Plans:
 **Goal:** Refactor game files for clearer separation of logic, UI, and data models.
 **Depends on:** Phase 17
 **Research:** Unlikely (internal systems)
-**Plans:** 0/8 plans complete
+**Plans:** 0/10 plans complete
 
 Plans:
 - [ ] 18-01-PLAN.md — Introduce game model layer + start state.ts facade
@@ -242,21 +242,24 @@ Plans:
 - [ ] 18-03-PLAN.md — Split state.ts into selectors/actions + facade re-exports
 - [ ] 18-04-PLAN.md — Extract UI tab panels into src/ui/tabs/*
 - [ ] 18-05-PLAN.md — Extract runtime orchestration into useGameRuntime hook
-- [ ] 18-06-PLAN.md — Cleanup + docs (align internal docs with new structure)
+- [ ] 18-06-PLAN.md — Update internal AGENTS docs for new structure
 - [ ] 18-07-PLAN.md — Full automated gates (lint/typecheck/unit/e2e/build)
 - [ ] 18-08-PLAN.md — Manual smoke check
+- [ ] 18-09-PLAN.md — Cleanup game-module refactor leftovers + lint
+- [ ] 18-10-PLAN.md — Lint fix: unused imports in model state
 
 **Details:**
 [To be added during planning]
 
 ### Phase 19: Refactor phase 13 code with phase 13 research in mind
 
-**Goal:** [To be planned]
+**Goal:** Refactor the Phase 13 enjoyment economy code into clearer, more navigable modules and lock in research-informed invariants with unit tests (no gameplay changes).
 **Depends on:** Phase 18
-**Plans:** 0 plans
+**Plans:** 0/2 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 19 to break down)
+- [ ] 19-01-PLAN.md — Extract enjoyment economy selectors into dedicated module
+- [ ] 19-02-PLAN.md — Add unit coverage for prestige-scaled enjoyment + purchase gating
 
 **Details:**
 [To be added during planning]
