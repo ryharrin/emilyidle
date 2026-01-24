@@ -17,6 +17,7 @@ Vitest unit tests and Playwright e2e coverage for Emily Idle.
 - E2E tests seed localStorage via `page.addInitScript`.
 - Base URL and dev server port are `5177`.
 - Keep selectors stable (`id`, `data-testid`, roles).
+- Runtime side effects are gated in tests via `isTestEnvironment` to avoid flakiness.
 
 ## Anti-patterns
 
