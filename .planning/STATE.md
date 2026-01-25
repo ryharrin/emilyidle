@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-21)
+See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Phase 18 - codebase-refactor
+**Current focus:** Planning next milestone (starting with Phase 19)
 
 ## Current Position
 
-Phase: 18 of 19 (codebase-refactor)
-Plan: 10 of 10 in current phase
-Status: Phase complete
-Last activity: 2026-01-24 - Completed Phase 18 Plan 9
-Progress: ██████████ 100%
-Next Phase: 19 (refactor-phase-13-code-with-phase-13-research-in-mind) Plan 1 (pending)
+Phase: 19 of 19 (refactor-phase-13-code-with-phase-13-research-in-mind)
+Plan: 0 of 2 in current phase
+Status: Ready to plan
+Last activity: 2026-01-25 - v2.0 milestone completion (archives created)
+Progress: ░░░░░░░░░░ 0%
+Next Phase: TBD (after Phase 19 planning)
 
 ## Accumulated Context
 
@@ -23,6 +23,7 @@ Next Phase: 19 (refactor-phase-13-code-with-phase-13-research-in-mind) Plan 1 (p
 - Phase 12 added: major-updates-01-21
 - Milestone v2.0 created: upcoming major changes to game design, 6 phases (Phase 13-18)
 - Phase 19 added: Refactor phase 13 code with phase 13 research in mind
+- Milestone v2.0 archived under .planning/milestones/
 
 ### Decisions
 | Phase | Decision | Rationale |
@@ -49,13 +50,15 @@ Next Phase: 19 (refactor-phase-13-code-with-phase-13-research-in-mind) Plan 1 (p
 | 18-01 | None - followed plan as specified | No deviations |
 
 ### Deferred Issues
-- None
+- Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
+- Verification gap: phases 13 and 18 missing verification reports
+- Test gap: no dedicated Playwright E2E for therapist session deltas/cooldown
 
 ### Blockers/Concerns Carried Forward
 - None
 
 ### Session Continuity
-Last session: 2026-01-24T19:25:05Z
-Stopped at: Completed 18-09-PLAN.md
+Last session: 2026-01-25T19:45:25Z
+Stopped at: v2.0 milestone archival edits
 
 Resume file: None
