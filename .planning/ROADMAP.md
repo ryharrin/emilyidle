@@ -1,6 +1,10 @@
 # Roadmap
 
-## Current Milestone: v2.0 Upcoming Major Changes to Game Design
+## Shipped Milestones
+
+- ✅ **v2.0 Upcoming Major Changes to Game Design** — Phases 13-18 (shipped 2026-01-25) — `.planning/milestones/v2.0-ROADMAP.md`
+
+## Current Milestone: TBD (Planning)
 
 ### Phase 1: Foundation
 
@@ -151,102 +155,6 @@ Plans:
 - [x] 12-08-PLAN.md
 - [x] 12-09-PLAN.md
 - [x] 12-10-PLAN.md
-
-**Details:**
-[To be added during planning]
-
-### Phase 13: Enjoyment Economy Foundation
-
-**Goal:** Shift core currency to enjoyment with watch tier modifiers.
-**Depends on:** Phase 12
-**Research:** Unlikely (internal systems)
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 13-01-PLAN.md
-- [x] 13-02-PLAN.md
-
-**Details:**
-[To be added during planning]
-
-### Phase 14: Therapist Career Economy
-
-**Goal:** Add therapist career progression to generate money alongside enjoyment.
-**Depends on:** Phase 13
-**Research:** Unlikely (internal systems)
-**Plans:** 2/2 plans complete
-
-Plans:
-- [x] 14-01-PLAN.md
-- [x] 14-02-PLAN.md
-
-**Details:**
-[To be added during planning]
-
-### Phase 15: Dual-Currency Acquisition
-
-**Goal:** Gate watch purchases by enjoyment while spending career-earned money.
-**Depends on:** Phase 14
-**Research:** Unlikely (internal systems)
-**Plans:** 3/3 plans complete
-**Status:** Complete (2026-01-23)
-
-Plans:
-- [x] 15-01-PLAN.md — Dual-gate purchase logic (cash spent, enjoyment threshold)
-- [x] 15-02-PLAN.md — Vault UI: dollars price always, enjoyment lock messaging + icon
-- [x] 15-03-PLAN.md — Tests: unit + e2e coverage for dual-currency acquisition
-
-**Details:**
-[To be added during planning]
-
-### Phase 16: Nostalgia Prestige Reset
-
-**Goal:** Redesign prestige to reset enjoyment/money and award nostalgia points.
-**Depends on:** Phase 15
-**Research:** Unlikely (internal systems)
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 16-01-PLAN.md — Core nostalgia prestige state + save-compatible reset logic
-- [x] 16-02-PLAN.md — Nostalgia tab UI with progress, confirmation modal, and results screen
-- [x] 16-03-PLAN.md — Tests: unit + e2e coverage for nostalgia prestige flow
-
-**Details:**
-[To be added during planning]
-
-### Phase 17: Nostalgia Unlocks
-
-**Goal:** Use nostalgia points to permanently unlock watches across runs.
-**Depends on:** Phase 16
-**Research:** Unlikely (internal systems)
-**Plans:** 3/3 plans complete
-
-Plans:
-- [x] 17-01-PLAN.md — Persist nostalgia unlocks + wire isItemUnlocked
-- [x] 17-02-PLAN.md — Nostalgia tab unlock store UI + confirmation toggle
-- [x] 17-03-PLAN.md — Tests: unit + e2e coverage for nostalgia unlocks
-
-**Details:**
-[To be added during planning]
-
-### Phase 18: Codebase Refactor
-
-**Goal:** Refactor game files for clearer separation of logic, UI, and data models.
-**Depends on:** Phase 17
-**Research:** Unlikely (internal systems)
-**Plans:** 0/10 plans complete
-
-Plans:
-- [ ] 18-01-PLAN.md — Introduce game model layer + start state.ts facade
-- [ ] 18-02-PLAN.md — Extract static game definition data into src/game/data/*
-- [ ] 18-03-PLAN.md — Split state.ts into selectors/actions + facade re-exports
-- [ ] 18-04-PLAN.md — Extract UI tab panels into src/ui/tabs/*
-- [ ] 18-05-PLAN.md — Extract runtime orchestration into useGameRuntime hook
-- [ ] 18-06-PLAN.md — Update internal AGENTS docs for new structure
-- [ ] 18-07-PLAN.md — Full automated gates (lint/typecheck/unit/e2e/build)
-- [ ] 18-08-PLAN.md — Manual smoke check
-- [ ] 18-09-PLAN.md — Cleanup game-module refactor leftovers + lint
-- [ ] 18-10-PLAN.md — Lint fix: unused imports in model state
 
 **Details:**
 [To be added during planning]
