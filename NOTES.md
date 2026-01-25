@@ -37,6 +37,14 @@ x Add more detailed information about the watches, their specs, and historical c
 x Introduce a crafting system where players can combine certain watches or parts to create new, unique watches with special attributes.
 x Set up github pages for hosting the game online.
 x Deploy the game to github pages for easy access and sharing.
+x Make enjoyment the main currency. Make better watches increase enjoyment rate. Quartz watches give very small enjoyment, mechanical more, and complications even more.
+x Money should be earned separately. It is earned by a second parallel mechanic, working as a therapist/psychologist. Start as grad student, then advance through career stages ending at running a private practice. Money is used to buy watches, but they are gated by having enough enjoyment.
+x Refactor prestige mechanics to fit new dual-currency model. Prestige resets enjoyment and money, but gives nostalgia points based on total enjoyment earned. Nostalgia points are used to unlock watches permanently.
+x Introduce nostalgia points as a new currency earned through prestige, used to unlock watches permanently.
+x Refactory prestige mechanics to fit new dual-currency model. Prestige resets enjoyment and money, but gives nostalgia points based on total enjoyment earned. Nostalgia points are used to unlock watches permanently.
+x Watches are unlocked permanently via nostalgia points, rather than being re-bought each run.
+x Refactor game files for clarity and maintainability. There should be clear separation between core game logic, UI components, and data/models. Files should be organized into appropriate directories and be relatively small and focused.
+
 
 Completed Bug Fixes:
 x Replace the catalog filter <search> wrapper with a standard form element to avoid invalid tag warnings.
@@ -68,10 +76,3 @@ Bug fixes:
 - Atelier bonuses should be more powerful to make them feel more impactful. The second vault run should be significantly faster than the first. (Planned fix: adjust the bonus scaling for atelier upgrades.)
 
 Upcoming Major Changes to Game Design:
-- Make enjoyment the main currency. Make better watches increase enjoyment rate. Quartz watches give very small enjoyment, mechanical more, and complications even more.
-- Money should be earned separately. It is earned by a second parallel mechanic, working as a therapist/psychologist. Start as grad student, then advance through career stages ending at running a private practice. Money is used to buy watches, but they are gated by having enough enjoyment.
-- Refactor prestige mechanics to fit new dual-currency model. Prestige resets enjoyment and money, but gives nostalgia points based on total enjoyment earned. Nostalgia points are used to unlock watches permanently.
-- Introduce nostalgia points as a new currency earned through prestige, used to unlock watches permanently.
-- Refactory prestige mechanics to fit new dual-currency model. Prestige resets enjoyment and money, but gives nostalgia points based on total enjoyment earned. Nostalgia points are used to unlock watches permanently.
-- Watches are unlocked permanently via nostalgia points, rather than being re-bought each run.
-- Refactor game files for clarity and maintainability. There should be clear separation between core game logic, UI components, and data/models. Files should be organized into appropriate directories and be relatively small and focused.
