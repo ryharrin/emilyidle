@@ -177,10 +177,14 @@ Plans:
 **Goal:** Users can access game help from anywhere and recognize core UI cues (help/lock/prestige) consistently.
 **Depends on:** Phase 19
 **Requirements:** GUIDE-01, POLISH-05
-**Plans:** 0 plans
+**Plans:** 0/5 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 20 to break down)
+- [ ] 20-01-PLAN.md — Add shared lucide-react icon wrappers
+- [ ] 20-02-PLAN.md — Add global Help modal + persistence + header entry point
+- [ ] 20-03-PLAN.md — Standardize lock/prestige cues using shared icons
+- [ ] 20-04-PLAN.md — Add Playwright coverage for Help + icon cues
+- [ ] 20-05-PLAN.md — Human verify mobile Help usability + icon consistency
 
 **Success criteria:**
 1. User can open a Help/Glossary entry point from any tab.
@@ -188,17 +192,22 @@ Plans:
 3. Help entry point is discoverable and usable on both desktop and mobile.
 
 **Details:**
-[To be added during planning]
+Add a global Help/Glossary entry point (mobile full-screen modal) and unify the icon language for help/lock/prestige cues.
 
 ### Phase 21: Explanations & Rate Transparency
 
 **Goal:** Users can understand what currencies/gates mean and why their enjoyment/cash rates are what they are.
 **Depends on:** Phase 20
 **Requirements:** GUIDE-02, GUIDE-03, CLAR-03
-**Plans:** 0 plans
+**Plans:** 0/6 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 21 to break down)
+- [ ] 21-01-PLAN.md — Add selector-level cash/enjoyment rate breakdown exports
+- [ ] 21-02-PLAN.md — Add help section ids + ExplainButton + help wiring for point-of-use explanations
+- [ ] 21-03-PLAN.md — Show purchase gate explanations (cash vs enjoyment) in Vault
+- [ ] 21-04-PLAN.md — Add rate breakdown disclosure UI in Stats
+- [ ] 21-05-PLAN.md — Explain Nostalgia unlock order from the unlock store
+- [ ] 21-06-PLAN.md — Add Playwright coverage for explain triggers + rate breakdown
 
 **Success criteria:**
 1. User can view contextual explanations for currencies and jargon at the point of use.
@@ -206,7 +215,7 @@ Plans:
 3. User can view a basic rate breakdown (base + modifiers) for enjoyment and cash.
 
 **Details:**
-[To be added during planning]
+Surface existing rules at point-of-use: contextual explanations for currencies/gates and a basic rate breakdown (base + modifiers) for cash and enjoyment.
 
 ### Phase 22: Unlock Clarity & Next Actions
 
