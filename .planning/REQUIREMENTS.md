@@ -3,7 +3,7 @@
 **Defined:** 2026-01-25
 **Core Value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-## v1 Requirements
+## v2.1 Requirements
 
 Requirements for this milestone (v2.1 Onboarding & UX).
 
@@ -64,25 +64,25 @@ Deferred to a future milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GUIDE-01 | Phase TBD | Pending |
-| GUIDE-02 | Phase TBD | Pending |
-| GUIDE-03 | Phase TBD | Pending |
-| CLAR-01 | Phase TBD | Pending |
-| CLAR-02 | Phase TBD | Pending |
-| CLAR-03 | Phase TBD | Pending |
-| CLAR-04 | Phase TBD | Pending |
-| PRES-01 | Phase TBD | Pending |
-| PRES-02 | Phase TBD | Pending |
-| POLISH-01 | Phase TBD | Pending |
-| POLISH-02 | Phase TBD | Pending |
-| POLISH-03 | Phase TBD | Pending |
-| POLISH-04 | Phase TBD | Pending |
-| POLISH-05 | Phase TBD | Pending |
+| GUIDE-01 | Phase 20 | Pending |
+| GUIDE-02 | Phase 21 | Pending |
+| GUIDE-03 | Phase 21 | Pending |
+| CLAR-01 | Phase 22 | Pending |
+| CLAR-02 | Phase 22 | Pending |
+| CLAR-03 | Phase 21 | Pending |
+| CLAR-04 | Phase 22 | Pending |
+| PRES-01 | Phase 23 | Pending |
+| PRES-02 | Phase 23 | Pending |
+| POLISH-01 | Phase 24 | Pending |
+| POLISH-02 | Phase 24 | Pending |
+| POLISH-03 | Phase 24 | Pending |
+| POLISH-04 | Phase 24 | Pending |
+| POLISH-05 | Phase 20 | Pending |
 
 **Coverage:**
-- v1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14
+- v2.1 requirements: 14 total
+- Mapped to phases: 14
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-25*
