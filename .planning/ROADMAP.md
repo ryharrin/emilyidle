@@ -244,10 +244,12 @@ Add a consistent lock explanation pattern: a Vault-visible Next unlocks panel fo
 **Goal:** Users can prestige confidently and re-orient immediately after a reset.
 **Depends on:** Phase 22
 **Requirements:** PRES-01, PRES-02
-**Plans:** 0 plans
+**Plans:** 0/3 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 23 to break down)
+- [ ] 23-01-PLAN.md — Add shared Gain/Keep/Lose prestige summary helpers + renderer
+- [ ] 23-02-PLAN.md — Integrate summary into Atelier/Maison/Nostalgia confirmation UI
+- [ ] 23-03-PLAN.md — Add post-prestige onboarding modal + Playwright coverage
 
 **Success criteria:**
 1. Before prestiging, user sees a clear lose/keep/gain summary with a safe confirmation.
@@ -255,7 +257,10 @@ Plans:
 3. User can back out of prestiging without committing the reset.
 
 **Details:**
-[To be added during planning]
+Standardize the prestige UX for Atelier, Maison, and Nostalgia:
+- Before prestiging: show a clear Gain/Keep/Lose summary and a safe confirmation that can be canceled.
+- After prestiging: show an immediate re-onboarding surface with one recommended next action.
+- Keep Workshop/Maison results session-scoped (UI-only state in `src/App.tsx`); reuse Nostalgia's existing persisted last-gain fields.
 
 ### Phase 24: UI Polish Pass
 

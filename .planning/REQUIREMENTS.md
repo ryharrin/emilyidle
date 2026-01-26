@@ -16,7 +16,7 @@ Requirements for this milestone (v2.1 Onboarding & UX).
 ### Clarity & Progress
 
 - [ ] **CLAR-01**: User can see why a tab/system is locked and the unlock condition.
-- [ ] **CLAR-02**: Empty states explain what the panel is for and provide one clear next action.
+- [ ] **CLAR-02**: Catalog empty states explain what the panel is for and provide one clear next action.
 - [ ] **CLAR-03**: User can see a basic rate breakdown (base + modifiers) for enjoyment and cash.
 - [ ] **CLAR-04**: User can see progress feedback toward next unlocks (progress bar + "next unlock" callout).
 
