@@ -1,5 +1,7 @@
 import React from "react";
 
+import { PrestigeIcon } from "../icons/coreIcons";
+
 import {
   buyWorkshopUpgrade,
   canBuyWorkshopUpgrade,
@@ -115,10 +117,11 @@ export function WorkshopTab({
                     ) : (
                       <button
                         type="button"
-                        className="secondary"
+                        className="secondary inline-icon-button"
                         disabled={!canPrestigeWorkshop}
                         onClick={() => onToggleWorkshopResetArmed(true)}
                       >
+                        <PrestigeIcon className="inline-icon" />
                         Reset atelier
                       </button>
                     )}
