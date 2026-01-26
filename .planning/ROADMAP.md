@@ -4,7 +4,7 @@
 
 - ✅ **v2.0 Upcoming Major Changes to Game Design** — Phases 13-18 (shipped 2026-01-25) — `.planning/milestones/v2.0-ROADMAP.md`
 
-## Current Milestone: TBD (Planning)
+## Current Milestone: v2.1 Onboarding & UX (Planning)
 
 ### Phase 1: Foundation
 
@@ -168,6 +168,97 @@ Plans:
 Plans:
 - [ ] 19-01-PLAN.md — Extract enjoyment economy selectors into dedicated module
 - [ ] 19-02-PLAN.md — Add unit coverage for prestige-scaled enjoyment + purchase gating
+
+**Details:**
+[To be added during planning]
+
+### Phase 20: Help & Iconography
+
+**Goal:** Users can access game help from anywhere and recognize core UI cues (help/lock/prestige) consistently.
+**Depends on:** Phase 19
+**Requirements:** GUIDE-01, POLISH-05
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 20 to break down)
+
+**Success criteria:**
+1. User can open a Help/Glossary entry point from any tab.
+2. Help/lock/prestige cues use a consistent icon language across tabs.
+3. Help entry point is discoverable and usable on both desktop and mobile.
+
+**Details:**
+[To be added during planning]
+
+### Phase 21: Explanations & Rate Transparency
+
+**Goal:** Users can understand what currencies/gates mean and why their enjoyment/cash rates are what they are.
+**Depends on:** Phase 20
+**Requirements:** GUIDE-02, GUIDE-03, CLAR-03
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 21 to break down)
+
+**Success criteria:**
+1. User can view contextual explanations for currencies and jargon at the point of use.
+2. User can see explanations for enjoyment gates vs cash spend and nostalgia unlock order.
+3. User can view a basic rate breakdown (base + modifiers) for enjoyment and cash.
+
+**Details:**
+[To be added during planning]
+
+### Phase 22: Unlock Clarity & Next Actions
+
+**Goal:** Users always see what is locked, why it is locked, and what to do next to progress.
+**Depends on:** Phase 21
+**Requirements:** CLAR-01, CLAR-02, CLAR-04
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 22 to break down)
+
+**Success criteria:**
+1. User can see why a tab/system is locked and the unlock condition.
+2. Empty states explain what the panel is for and provide one clear next action.
+3. User can see progress feedback toward next unlocks (progress bar + "next unlock" callout).
+
+**Details:**
+[To be added during planning]
+
+### Phase 23: Prestige Confirmation & Re-Onboarding
+
+**Goal:** Users can prestige confidently and re-orient immediately after a reset.
+**Depends on:** Phase 22
+**Requirements:** PRES-01, PRES-02
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 23 to break down)
+
+**Success criteria:**
+1. Before prestiging, user sees a clear lose/keep/gain summary with a safe confirmation.
+2. After prestige, user sees a re-onboarding summary and a recommended next action.
+3. User can back out of prestiging without committing the reset.
+
+**Details:**
+[To be added during planning]
+
+### Phase 24: UI Polish Pass
+
+**Goal:** The UI feels consistent, readable, and responsive, improving scanability and reducing friction.
+**Depends on:** Phase 23
+**Requirements:** POLISH-01, POLISH-02, POLISH-03, POLISH-04
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 24 to break down)
+
+**Success criteria:**
+1. Key stats and primary CTAs have clear visual hierarchy (typography/spacing emphasis).
+2. Card/layout styling is consistent across tabs with reduced clutter.
+3. Color/contrast changes improve readability for typical play on desktop and mobile.
+4. Primary buttons and progress transitions provide clear micro-interaction feedback.
 
 **Details:**
 [To be added during planning]

@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** v2.1 Onboarding & UX (defining requirements)
+**Current focus:** v2.1 Onboarding & UX (roadmap ready)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (ready to plan Phase 20)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-01-25 - v2.1 milestone kickoff (Onboarding & UX)
+Status: Roadmap created
+Last activity: 2026-01-26 - v2.1 roadmap created (Phases 20-24)
 Progress: ░░░░░░░░░░ 0%
-Next Phase: TBD (after roadmap)
+Next Phase: Phase 20 (Help & Iconography)
 
 ## Accumulated Context
 
@@ -23,6 +23,7 @@ Next Phase: TBD (after roadmap)
 - Phase 12 added: major-updates-01-21
 - Milestone v2.0 created: upcoming major changes to game design, 6 phases (Phase 13-18)
 - Phase 19 added: Refactor phase 13 code with phase 13 research in mind
+- v2.1 roadmap added: Phases 20-24 (Onboarding & UX)
 - Milestone v2.0 archived under .planning/milestones/
 
 ### Decisions
