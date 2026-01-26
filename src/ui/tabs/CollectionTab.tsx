@@ -1,5 +1,7 @@
 import React from "react";
 
+import { LockIcon } from "../icons/coreIcons";
+
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
   buyItem,
@@ -336,7 +338,7 @@ export function CollectionTab({
                       </button>
                       {unlocked && !singleGate.ok && singleGate.blocksBy === "enjoyment" && (
                         <div className="purchase-locked" data-testid={`purchase-gate-${item.id}`}>
-                          <span className="purchase-lock-icon" aria-hidden="true" />
+                          <LockIcon className="inline-icon" />
                           Requires {formatMoneyFromCents(singleGate.enjoymentRequiredCents)}{" "}
                           enjoyment
                         </div>
