@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Planning next milestone (starting with Phase 19)
+**Current focus:** v2.1 Onboarding & UX (defining requirements)
 
 ## Current Position
 
-Phase: 19 of 19 (refactor-phase-13-code-with-phase-13-research-in-mind)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-01-25 - v2.0 milestone completion (archives created)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-25 - v2.1 milestone kickoff (Onboarding & UX)
 Progress: ░░░░░░░░░░ 0%
-Next Phase: TBD (after Phase 19 planning)
+Next Phase: TBD (after roadmap)
 
 ## Accumulated Context
 
