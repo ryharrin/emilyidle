@@ -1,5 +1,7 @@
 import React from "react";
 
+import { LockIcon, PrestigeIcon } from "../icons/coreIcons";
+
 import { formatMoneyFromCents } from "../../game/format";
 import {
   buyNostalgiaUnlock,
@@ -168,6 +170,7 @@ export function NostalgiaTab({
               <div className="card-actions">
                 <button
                   type="button"
+                  className="inline-icon-button"
                   data-testid="nostalgia-prestige"
                   disabled={!canPrestigeNostalgia}
                   onClick={() => {
@@ -177,6 +180,7 @@ export function NostalgiaTab({
                     onToggleNostalgiaModal(true);
                   }}
                 >
+                  <PrestigeIcon className="inline-icon" />
                   Prestige for Nostalgia
                 </button>
               </div>
@@ -245,7 +249,10 @@ export function NostalgiaTab({
                               {unlocked ? (
                                 <span className="nostalgia-unlock-badge">Unlocked</span>
                               ) : (
-                                <span className="nostalgia-unlock-status-text">Locked</span>
+                                <>
+                                  <LockIcon className="inline-icon" />
+                                  <span className="nostalgia-unlock-status-text">Locked</span>
+                                </>
                               )}
                             </div>
                           </div>

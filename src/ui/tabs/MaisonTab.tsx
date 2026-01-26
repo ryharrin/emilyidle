@@ -1,5 +1,7 @@
 import React from "react";
 
+import { PrestigeIcon } from "../icons/coreIcons";
+
 import {
   buyMaisonUpgrade,
   canBuyMaisonUpgrade,
@@ -110,10 +112,11 @@ export function MaisonTab({
                     ) : (
                       <button
                         type="button"
-                        className="secondary"
+                        className="secondary inline-icon-button"
                         disabled={!canPrestigeMaison}
                         onClick={() => onToggleMaisonResetArmed(true)}
                       >
+                        <PrestigeIcon className="inline-icon" />
                         Prestige atelier
                       </button>
                     )}
