@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 ## Current Position
 
-Phase: Not started (ready to plan Phase 20)
+Phase: Planning Phase 22 (Unlock Clarity & Next Actions)
 Plan: —
 Status: Roadmap created
 Last activity: 2026-01-26 - v2.1 roadmap created (Phases 20-24)
 Progress: ░░░░░░░░░░ 0%
-Next Phase: Phase 20 (Help & Iconography)
+Next Phase: Phase 20 (Help & Iconography) -> Phase 21 -> Phase 22
 
 ## Accumulated Context
 

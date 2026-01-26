@@ -222,10 +222,14 @@ Surface existing rules at point-of-use: contextual explanations for currencies/g
 **Goal:** Users always see what is locked, why it is locked, and what to do next to progress.
 **Depends on:** Phase 21
 **Requirements:** CLAR-01, CLAR-02, CLAR-04
-**Plans:** 0 plans
+**Plans:** 0/5 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 22 to break down)
+- [ ] 22-01-PLAN.md — Add selector helpers for unlock progress detail
+- [ ] 22-02-PLAN.md — Add shared unlock hint + next unlock panel + empty CTA components
+- [ ] 22-03-PLAN.md — Integrate next unlocks panel + lock reasons into Vault (Collection)
+- [ ] 22-04-PLAN.md — Add Catalog empty states with a single next-action CTA
+- [ ] 22-05-PLAN.md — Add e2e coverage + human verify unlock clarity UX
 
 **Success criteria:**
 1. User can see why a tab/system is locked and the unlock condition.
@@ -233,7 +237,7 @@ Plans:
 3. User can see progress feedback toward next unlocks (progress bar + "next unlock" callout).
 
 **Details:**
-[To be added during planning]
+Add a consistent lock explanation pattern: a Vault-visible Next unlocks panel for hidden tabs/systems, always-on lock reasons for locked cards, and empty states that include one clear next action.
 
 ### Phase 23: Prestige Confirmation & Re-Onboarding
 
