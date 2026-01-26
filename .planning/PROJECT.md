@@ -36,6 +36,17 @@ Emily Idle is a browser-based idle/incremental game themed around luxury watch c
 - `pnpm run test:e2e`
 - `pnpm run build`
 
+## Current Milestone: v2.1 Onboarding & UX
+
+**Goal:** Make the early game and prestige systems clearer and smoother, so new players understand loops and can progress without confusion.
+
+**Target features:**
+- Guided onboarding steps for first watch purchase, Career unlock, and first Nostalgia prestige
+- Contextual tooltips for enjoyment gates, cash vs enjoyment spend, and nostalgia unlock order
+- Progress feedback improvements (milestone progress badges, “next unlock” callouts)
+- Prestige clarity (reset impact summary, post-prestige tips)
+- UX polish for tab visibility and empty states
+
 ## Current State
 
 Shipped v2.0 on 2026-01-25:
@@ -51,11 +62,6 @@ Shipped v2.0 on 2026-01-25:
 - Verification process: missing phase verification reports for phases 13 and 18.
 - Test gap: no dedicated Playwright E2E asserting therapist session deltas (cash/enjoyment) and cooldown UX.
 
-## Next Milestone Goals
-
-- Define a fresh requirements spec for the next milestone.
-- Plan and execute Phase 19 (Phase 13 refactor + unit coverage).
-
 ---
 
-*Last updated: 2026-01-25 after v2.0 milestone completion*
+*Last updated: 2026-01-25 after v2.1 milestone kickoff*
