@@ -260,34 +260,23 @@ strong {
   letter-spacing: 0.04em;
 }
 
+.inline-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  vertical-align: -0.1em;
+}
+
+.inline-icon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 [data-theme="light"] .purchase-locked {
   border-color: rgba(170, 130, 86, 0.45);
   background: rgba(255, 255, 255, 0.8);
   color: #6a5135;
-}
-
-.purchase-lock-icon {
-  position: relative;
-  display: inline-block;
-  width: 10px;
-  height: 8px;
-  border-radius: 2px;
-  border: 1.5px solid currentColor;
-  box-sizing: border-box;
-}
-
-.purchase-lock-icon::before {
-  content: "";
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  width: 8px;
-  height: 6px;
-  border: 1.5px solid currentColor;
-  border-bottom: 0;
-  border-radius: 6px 6px 0 0;
-  transform: translateX(-50%);
-  box-sizing: border-box;
 }
 
 button {
