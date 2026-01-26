@@ -177,12 +177,12 @@ Plans:
 **Goal:** Users can access game help from anywhere and recognize core UI cues (help/lock/prestige) consistently.
 **Depends on:** Phase 19
 **Requirements:** GUIDE-01, POLISH-05
-**Plans:** 0/5 plans complete
+**Plans:** 2/5 plans complete
 
 Plans:
-- [ ] 20-01-PLAN.md — Add shared lucide-react icon wrappers
+- [x] 20-01-PLAN.md — Add shared lucide-react icon wrappers
 - [ ] 20-02-PLAN.md — Add global Help modal + persistence + header entry point
-- [ ] 20-03-PLAN.md — Standardize lock/prestige cues using shared icons
+- [x] 20-03-PLAN.md — Standardize lock/prestige cues using shared icons
 - [ ] 20-04-PLAN.md — Add Playwright coverage for Help + icon cues
 - [ ] 20-05-PLAN.md — Human verify mobile Help usability + icon consistency
 
@@ -267,10 +267,15 @@ Standardize the prestige UX for Atelier, Maison, and Nostalgia:
 **Goal:** The UI feels consistent, readable, and responsive, improving scanability and reducing friction.
 **Depends on:** Phase 23
 **Requirements:** POLISH-01, POLISH-02, POLISH-03, POLISH-04
-**Plans:** 0 plans
+**Plans:** 0/6 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 24 to break down)
+- [ ] 24-01-PLAN.md — Harden global CSS primitives (focus, motion, responsive helpers)
+- [ ] 24-02-PLAN.md — Reuse stats grid + nav styling hooks in App header
+- [ ] 24-03-PLAN.md — Polish Vault + Career hierarchy and CTA emphasis
+- [ ] 24-04-PLAN.md — Polish prestige tabs CTA hierarchy (Workshop/Maison/Nostalgia)
+- [ ] 24-05-PLAN.md — Polish Catalog/Stats/Save hierarchy and responsiveness
+- [ ] 24-06-PLAN.md — Run smoke checks + human verify polish pass
 
 **Success criteria:**
 1. Key stats and primary CTAs have clear visual hierarchy (typography/spacing emphasis).
@@ -279,7 +284,7 @@ Plans:
 4. Primary buttons and progress transitions provide clear micro-interaction feedback.
 
 **Details:**
-[To be added during planning]
+Harden global CSS primitives (focus-visible rings, reduced-motion handling, pressed states, responsive header helpers, missing layout utilities like `.stats-grid`) and then apply low-risk class/markup tweaks per tab to improve hierarchy, reduce clutter, and preserve stable selectors.
 
 ---
 
