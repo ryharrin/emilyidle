@@ -119,8 +119,8 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests cover visibility threshold boundaries (just below 80%, at/above 80%).
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests cover visibility threshold boundaries (just below 80%, at/above 80%).
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES
 
@@ -153,11 +153,11 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: fresh save shows only Vault + Save tabs.
-- [ ] Unit tests: setting up state near each threshold makes corresponding tab appear.
-- [ ] E2E: at least one seeded state validates Catalog/Atelier/Maison gating doesn’t break navigation.
-- [ ] `pnpm run test:unit` → PASS
-- [ ] `pnpm run test:e2e` → PASS
+- [x] Unit tests: fresh save shows only Vault + Save tabs.
+- [x] Unit tests: setting up state near each threshold makes corresponding tab appear.
+- [x] E2E: at least one seeded state validates Catalog/Atelier/Maison gating doesn’t break navigation.
+- [x] `pnpm run test:unit` → PASS
+- [x] `pnpm run test:e2e` → PASS
 
 **Parallelizable**: NO (foundational UI behavior)
 
@@ -179,9 +179,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: defaults used when localStorage empty/invalid.
-- [ ] Unit tests: toggling settings persists and reloads correctly.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests: defaults used when localStorage empty/invalid.
+- [x] Unit tests: toggling settings persists and reloads correctly.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: NO (needed by multiple later tasks)
 
@@ -202,9 +202,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests verify theme state changes update DOM attribute/class.
-- [ ] Manual check: toggling theme changes visible palette.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests verify theme state changes update DOM attribute/class.
+- [x] Manual check: toggling theme changes visible palette.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES (after settings infrastructure)
 
@@ -224,8 +224,8 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests cover both settings states and expected rendered list.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests cover both settings states and expected rendered list.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES (after settings infrastructure)
 
@@ -247,9 +247,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: user hides a tab and it disappears from tablist and tab order.
-- [ ] Unit tests: active tab fallback to Vault when hidden.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests: user hides a tab and it disappears from tablist and tab order.
+- [x] Unit tests: active tab fallback to Vault when hidden.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES (after settings infrastructure)
 
@@ -270,10 +270,10 @@ High-level ordering constraints:
 
 **Acceptance Criteria**
 
-- [ ] No selector changes (or tests updated if unavoidable).
-- [ ] `pnpm run test:unit` → PASS
-- [ ] `pnpm run test:e2e` → PASS
-- [ ] `pnpm run build` → PASS
+- [x] No selector changes (or tests updated if unavoidable).
+- [x] `pnpm run test:unit` → PASS
+- [x] `pnpm run test:e2e` → PASS
+- [x] `pnpm run build` → PASS
 
 **Parallelizable**: YES
 
@@ -294,8 +294,8 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: owned entry shows extra facts/specs; unowned does not.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests: owned entry shows extra facts/specs; unowned does not.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES
 
@@ -316,9 +316,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: each set activates at the intended thresholds and modifies derived multipliers.
-- [ ] Unit tests: UI shows active bonuses and progress.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests: each set activates at the intended thresholds and modifies derived multipliers.
+- [x] Unit tests: UI shows active bonuses and progress.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES (but coordinate with crafting if overlapping bonuses)
 
@@ -342,11 +342,11 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: dismantle increases parts and decreases watch counts.
-- [ ] Unit tests: crafting consumes inputs and produces outputs deterministically.
-- [ ] Unit tests: save/load includes new crafting fields; invalid payloads fall back safely.
-- [ ] `pnpm run test:unit` → PASS
-- [ ] `pnpm run test:e2e` → PASS (at least one journey if UI is substantial)
+- [x] Unit tests: dismantle increases parts and decreases watch counts.
+- [x] Unit tests: crafting consumes inputs and produces outputs deterministically.
+- [x] Unit tests: save/load includes new crafting fields; invalid payloads fall back safely.
+- [x] `pnpm run test:unit` → PASS
+- [x] `pnpm run test:e2e` → PASS (at least one journey if UI is substantial)
 
 **Parallelizable**: NO (touches core state + persistence)
 
@@ -367,9 +367,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: coachmarks render for new players and can be dismissed.
-- [ ] Unit tests: dismissal persists via localStorage.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests: coachmarks render for new players and can be dismissed.
+- [x] Unit tests: dismissal persists via localStorage.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES
 
@@ -393,9 +393,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria (TDD)**
 
-- [ ] Unit tests: dev mode off → controls hidden/inert.
-- [ ] Unit tests: dev actions produce expected state changes.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Unit tests: dev mode off → controls hidden/inert.
+- [x] Unit tests: dev actions produce expected state changes.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES
 
@@ -418,9 +418,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria**
 
-- [ ] Spike output lists concrete mechanics + tests.
-- [ ] Implementation changes covered by unit tests.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Spike output lists concrete mechanics + tests.
+- [x] Implementation changes covered by unit tests.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES
 
@@ -443,9 +443,9 @@ High-level ordering constraints:
 
 **Acceptance Criteria**
 
-- [ ] Spike output lists concrete mechanics + tests.
-- [ ] Implementation changes covered by unit tests.
-- [ ] `pnpm run test:unit` → PASS
+- [x] Spike output lists concrete mechanics + tests.
+- [x] Implementation changes covered by unit tests.
+- [x] `pnpm run test:unit` → PASS
 
 **Parallelizable**: YES
 
@@ -472,8 +472,8 @@ High-level ordering constraints:
 
 **Acceptance Criteria**
 
-- [ ] `pnpm run build` produces valid assets under `/emily-idle/` base path.
-- [ ] GitHub Actions workflow configured for Pages and runs on push to `main`.
+- [x] `pnpm run build` produces valid assets under `/emily-idle/` base path.
+- [x] GitHub Actions workflow configured for Pages and runs on push to `main`.
 
 **Parallelizable**: YES
 
@@ -481,9 +481,9 @@ High-level ordering constraints:
 
 ## Plan-wide Success Criteria
 
-- [ ] `pnpm run typecheck` → PASS
-- [ ] `pnpm run lint` → PASS
-- [ ] `pnpm run test:unit` → PASS
-- [ ] `pnpm run test:e2e` → PASS
-- [ ] `pnpm run build` → PASS
-- [ ] GitHub Pages deploy workflow present and configured for `/emily-idle/`.
+- [x] `pnpm run typecheck` → PASS
+- [x] `pnpm run lint` → PASS
+- [x] `pnpm run test:unit` → PASS
+- [x] `pnpm run test:e2e` → PASS
+- [x] `pnpm run build` → PASS
+- [x] GitHub Pages deploy workflow present and configured for `/emily-idle/`.
