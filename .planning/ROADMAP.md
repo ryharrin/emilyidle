@@ -177,13 +177,13 @@ Plans:
 **Goal:** Users can access game help from anywhere and recognize core UI cues (help/lock/prestige) consistently.
 **Depends on:** Phase 19
 **Requirements:** GUIDE-01, POLISH-05
-**Plans:** 2/5 plans complete
+**Plans:** 4/5 plans complete
 
 Plans:
 - [x] 20-01-PLAN.md — Add shared lucide-react icon wrappers
-- [ ] 20-02-PLAN.md — Add global Help modal + persistence + header entry point
+- [x] 20-02-PLAN.md — Add global Help modal + persistence + header entry point
 - [x] 20-03-PLAN.md — Standardize lock/prestige cues using shared icons
-- [ ] 20-04-PLAN.md — Add Playwright coverage for Help + icon cues
+- [x] 20-04-PLAN.md — Add Playwright coverage for Help + icon cues
 - [ ] 20-05-PLAN.md — Human verify mobile Help usability + icon consistency
 
 **Success criteria:**
