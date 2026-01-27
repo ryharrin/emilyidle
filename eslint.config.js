@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", ".planning/**"],
+    ignores: [".openchamber/**", "dist/**", ".planning/**"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
