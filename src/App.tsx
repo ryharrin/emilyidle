@@ -8,6 +8,9 @@ import { NostalgiaTab } from "./ui/tabs/NostalgiaTab";
 import { SaveTab } from "./ui/tabs/SaveTab";
 import { StatsTab } from "./ui/tabs/StatsTab";
 import { WorkshopTab } from "./ui/tabs/WorkshopTab";
+import { HelpModal, loadHelpState, persistHelpState } from "./ui/help/HelpModal";
+import { HELP_SECTIONS } from "./ui/help/helpContent";
+import { HelpIcon } from "./ui/icons/coreIcons";
 
 import {
   formatMoneyFromCents,
@@ -238,6 +241,8 @@ export default function App() {
   const [nostalgiaModalOpen, setNostalgiaModalOpen] = useState(false);
   const [nostalgiaResultsDismissed, setNostalgiaResultsDismissed] = useState(false);
   const [nostalgiaUnlockPending, setNostalgiaUnlockPending] = useState<WatchItemId | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [helpSectionId, setHelpSectionId] = useState<string | null>(null);
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
@@ -420,6 +425,29 @@ export default function App() {
   const handleUpdateAudioSettings = (nextSettings: AudioSettings) => {
     setAudioSettings(nextSettings);
     window.localStorage.setItem(AUDIO_SETTINGS_KEY, JSON.stringify(nextSettings));
+  };
+
+  const helpSections = HELP_SECTIONS;
+
+  const resolveHelpSectionId = (candidate: string | null) => {
+    if (helpSections.length === 0) {
+      return null;
+    }
+
+    const matched = helpSections.find((section) => section.id === candidate);
+    return matched ? matched.id : helpSections[0].id;
+  };
+
+  const handleOpenHelp = () => {
+    const stored = loadHelpState();
+    const nextId = resolveHelpSectionId(stored?.lastSectionId ?? null);
+    setHelpSectionId(nextId);
+    setHelpOpen(true);
+  };
+
+  const handleSelectHelpSection = (nextId: string) => {
+    setHelpSectionId(nextId);
+    persistHelpState({ lastSectionId: nextId });
   };
 
   const handleExport = async () => {
@@ -927,7 +955,7 @@ export default function App() {
           <h1>Emily Idle</h1>
           <p className="muted">Build your vault, unlock new lines, and stack bonuses.</p>
           <nav className="page-nav" aria-label="Primary navigation">
-            <div role="tablist" aria-label="Primary navigation">
+            <div role="tablist" aria-label="Primary navigation" className="page-nav-tabs">
               {visibleTabs.map((tab) => {
                 const selected = tab.id === activeTab;
                 const focusable = tab.id === focusedTab;
@@ -963,6 +991,15 @@ export default function App() {
                 );
               })}
             </div>
+            <button
+              type="button"
+              className="page-nav-link help-open-button"
+              aria-label="Open help"
+              data-testid="help-open"
+              onClick={handleOpenHelp}
+            >
+              <HelpIcon size={18} />
+            </button>
           </nav>
         </div>
         <section className="stats" aria-labelledby="vault-stats-title">
@@ -1185,6 +1222,14 @@ export default function App() {
         onExport={handleExport}
         onImport={handleImport}
         saveStatus={saveStatus}
+      />
+
+      <HelpModal
+        open={helpOpen}
+        sections={helpSections}
+        activeSectionId={helpSectionId}
+        onSelectSectionId={handleSelectHelpSection}
+        onClose={() => setHelpOpen(false)}
       />
     </main>
   );
