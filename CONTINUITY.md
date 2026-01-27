@@ -3,8 +3,8 @@
 ## Snapshot (2026-01-26) [USER]
 
 - Goal: v2.1 Onboarding & UX planning (Phases 20-24).
-- Now: Phase 23 plans drafted (Prestige Confirmation & Re-Onboarding).
-- Next: Execute Phase 20 -> 21 -> 22 -> 23 once plans are accepted.
+- Now: Phase 24 plans drafted (UI Polish Pass).
+- Next: Execute Phase 20 -> 21 -> 22 -> 23 -> 24 once plans are accepted.
 - Open questions: UNCONFIRMED (none captured).
 
 ## Decisions
@@ -15,6 +15,7 @@
 
 - (2026-01-26) [USER]: Provided Phase 22 planning context + research summary.
 - (2026-01-26) [TOOL]: Created Phase 23 PLAN.md files and updated .planning/ROADMAP.md.
+- (2026-01-26) [TOOL]: Created Phase 24 PLAN.md files and updated .planning/ROADMAP.md.
 
 ## Working set
 
@@ -23,6 +24,12 @@
 - .planning/phases/23-prestige-confirmation-and-re-onboarding/23-01-PLAN.md
 - .planning/phases/23-prestige-confirmation-and-re-onboarding/23-02-PLAN.md
 - .planning/phases/23-prestige-confirmation-and-re-onboarding/23-03-PLAN.md
+- .planning/phases/24-ui-polish-pass/24-01-PLAN.md
+- .planning/phases/24-ui-polish-pass/24-02-PLAN.md
+- .planning/phases/24-ui-polish-pass/24-03-PLAN.md
+- .planning/phases/24-ui-polish-pass/24-04-PLAN.md
+- .planning/phases/24-ui-polish-pass/24-05-PLAN.md
+- .planning/phases/24-ui-polish-pass/24-06-PLAN.md
 
 ## Receipts
 
