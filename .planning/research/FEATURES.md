@@ -1,140 +1,118 @@
 # Feature Research
 
-**Domain:** Idle / incremental game onboarding + UX clarity (existing web idle game)
-**Researched:** 2026-01-25
-**Confidence:** MEDIUM
+**Domain:** Idle/incremental watch-collecting game — v3.0 "Catalog-First Economy & Interactions"
+**Researched:** 2026-01-27
+**Confidence:** MEDIUM (grounded in current repo behavior + common incremental patterns; exact tuning is design-dependent)
 
 ## Feature Landscape
 
 ### Table Stakes (Users Expect These)
 
-Features players assume exist in a modern idle/incremental game. Missing these = confusion, early churn, and “I don’t get what to do next.”
+Features users assume exist. Missing these = product feels incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| First-session guidance (short) | Idle games often start “blank”; players need the first 30-120 seconds structured | MEDIUM | 3-7 steps max; step-by-step not a wall of text; ideally action-based (advance only after doing the thing). Reuse existing `coachmarks` + settings persistence patterns (`coachmarksDismissed`). |
-| Clear “what to do next” CTA | Players expect a single next action and a visible goal | LOW | A small “Next:” block per tab, or a top-level ribbon pointing at the highest-impact action; should degrade gracefully into “explore” once familiar. |
-| Contextual hints/tooltips for currencies + jargon | Incremental games introduce many nouns quickly; players expect in-place explanations | MEDIUM | Prefer inline “What is this?” links / info drawer over hover-only tooltips for mobile; keep hints 1-2 sentences. |
-| Rate transparency | Players expect to understand “why number went up” (rates, multipliers, sources) | MEDIUM | Show current per-sec rates with breakdown (base + bonuses). Add “recent change” callouts when unlocks affect rates. |
-| Locked content clarity | Tabs/systems unlock over time; players expect to see what’s locked and why | LOW | Show locked tabs with preview + unlock condition, not “missing.” Existing tabs already have some gating/teaser copy; standardize tone and placement. |
-| Empty-state polish | Many states are “you have none yet”; players expect friendly empty states + a way forward | LOW | Empty state should include: what it is, why it matters, one CTA. Avoid scolding. |
-| Prestige/reset clarity + safe confirmations | Prestiging is core loop; players expect “what resets / what carries” and a clear confirmation | MEDIUM | Confirmation dialog should show: items lost, items kept, rewards gained (and estimate), plus a “don’t ask again” toggle (already exists for nostalgia unlock confirms). |
-| Progress feedback for long goals | Progress bars/percentages are expected for “almost there” loops | LOW | Already present in Nostalgia progress; extend same pattern to other prestige loops and unlock store thresholds. |
-| Lightweight notifications (in-place) | Players expect to notice unlocks/bonuses without hunting | LOW | Prefer in-tab banners or a compact “Recent” feed; avoid intrusive toast spam. Reuse existing `aria-live` patterns (Save/Nostalgia tabs). |
-| Help access is always available | Players expect to re-check rules later | LOW | A consistent Help entry point (icon/tab section) linking to glossary, prestige rules, and “how this tab works.” |
+| Catalog-first purchase hub (buy from Catalog) | If "catalog-first" is the headline, players expect the catalog is the shop | HIGH | Default landing view shows a catalog grid/list; each entry has price + "Buy" CTA + owned count; clear locked/unlocked states; aligns with existing Catalog UI patterns (`src/ui/tabs/CatalogTab.tsx`) but adds purchase affordances |
+| Default view = Catalog (or Catalog-centric hub) | Players expect the "main loop" screen on load | MEDIUM | App currently defaults to Collection (`src/App.tsx` activeTab "collection"); expected behavior: new saves land on catalog hub; existing saves may preserve last-tab or migrate safely |
+| Clear progression signals inside Catalog | Catalog browsing needs "what's next" guidance | MEDIUM | Expect: filters/search/sort persist; entry badges (Owned, Undiscovered, Locked); "Next unlock" pointers similar to Collection's next-unlock patterns |
+| Career-first cash loop that avoids deadlocks | If "career-first cash economy" is a goal, cash must be reachable early and reliably | HIGH | Current therapist loop converts enjoyment -> cash; session cost rule changes must preserve visible cost/payout/cooldown and avoid circular dependencies |
+| Watch models (more than 4 coarse tiers) | A catalog-first experience implies variety and identity | HIGH | Today: 4 item IDs (generic tiers). Expected: explicit model IDs with deterministic mapping + stats + unlock gates |
+| Diminishing returns on duplicates (transparent) | Players accept nerfs if explained; they reject hidden nerfs | HIGH | Expected UI: shows base stats + "marginal gain next copy" or "efficiency %"; explains why copy #10 is weaker; avoids breaking satisfaction of buying in bulk |
+| Wear-one-watch (equip slot) + clear active bonus | Equipping is only fun if it's obvious what changes | MEDIUM | Expected: one active "worn" slot with swap UX; worn watch bonus is immediate + visible in rate breakdowns; equipping should not turn off income from the rest of the vault |
+| Interactions from owned/worn watches | Players expect "interactions" to be actionable and rewarding | MEDIUM | Current Interact always opens wind session; expected: interactions vary by watch model/type and/or worn watch; interaction availability (cooldown/charges) must be communicated |
+| Mini-games: winding polish + automatics (accessible + optional) | New mini-games are only "content" if they're reachable and repeatable | HIGH | Expected: short (10-60s), optional, yields burst reward (cash/enjoyment) and/or temporary buff; clear failure/partial-success outcomes; caps/cooldowns to prevent mandatory grinding |
 
 ### Differentiators (Competitive Advantage)
 
-Features that make the game feel unusually “legible” compared to typical idle games.
+Features that set the product apart. Not required, but valuable.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Action-gated onboarding (“learn by doing”) | Higher retention than skimmable tours; makes systems feel earned | MEDIUM | Coachmarks don’t just dismiss; they resolve when the user takes the action (buy first item, switch tab, confirm first prestige). |
-| Adaptive hints for “stuck” moments | Helps players when they stall without feeling hand-holdy | HIGH | Define “stuck” heuristics (no purchases, no unlocks, idle too long, currency capped) and show one hint at a time; must be easy to dismiss. |
-| “Why did this change?” explanations | Turns a mathy economy into something intuitive and satisfying | MEDIUM | When a multiplier/unlock applies, show a small diff panel: “+12% from X” and link to details. |
-| Prestige planner + recommendations | Reduces fear of resets; improves “I know when to prestige” clarity | HIGH | Show projected prestige gain now vs. after milestones; optionally “recommended” based on marginal gain/time. Validate calculations carefully. |
-| Meta-loop map (Atelier → Maison → Nostalgia) | Players understand progression and don’t get lost across multiple prestiges | MEDIUM | A visual or structured checklist showing loops, what each resets, and what permanent power it adds. |
-| Post-prestige re-onboarding | Makes resets feel purposeful and faster, not repetitive | MEDIUM | On new run, highlight “newly unlocked since last run” and one new best action. |
-| “Explain like I’m new” mode | Players self-select more guidance; avoids annoying veterans | MEDIUM | A settings toggle that increases hint density, shows extra breakdowns, and re-enables key coachmarks. |
+| Catalog entries are real references and economic objects | Makes the catalog feel meaningful, not just a gallery | HIGH | "Owned reference" = something you bought; "Discovered reference" = something you've encountered; discovery is experienced as a direct result of catalog play |
+| Wear-one-watch bonus tied to brand/era/type tags | Creates identity + build variety beyond pure numbers | HIGH | Use tags to drive perk families, but avoid combinatorial explosion; ensure readability |
+| Interaction-driven discovery | "Doing things" finds references faster than passive accumulation | MEDIUM | Interactions can grant a discovery roll or temporary "archive focus" buff |
+| Careers as the spender | Shifts feel from "career is a side button" to a core decision loop | HIGH | Make sessions influence catalog economy (dealer access, price growth tweaks, discovery rate) while keeping cost->reward legible |
+| Model sets / collections as goals | Encourages collecting for theme, not only ROI | MEDIUM | Builds on existing set-bonus patterns; show progress and rewards |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
+Features that seem good but create problems.
+
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Unskippable long tutorial | “Users must learn everything” | Players disengage; feels like homework; blocks fun loop | Short first-session steps + always-available help + contextual hints |
-| Popups/toasts for every unlock | “Make sure they see it” | Notification fatigue; covers UI; breaks idle flow | In-place banners + a compact “Recent unlocks” feed |
-| Hover-only explanations | “Tooltips are easy” | Mobile/touch users can’t access; discoverability is poor | Clickable info drawer / glossary entries with optional hover tooltip |
-| Hiding the reset consequences | “Prestige should be mysterious” | Leads to rage-quits; feels like a trap | Always show “lose/keep/gain” summary with an optional “details” expand |
-| Over-explaining formulas in the UI | “Show the math” | Cognitive overload; players want meaning, not derivations | Show breakdown contributors; link formulas to a Help/Glossary section |
+| Gacha / lootbox packs | Feels exciting; easy content scaling | Undermines catalog-first intentionality; fairness concerns | Deterministic catalog with unlock gates + curated rotations |
+| Punitive durability decay | Adds realism | Turns idle into chores; negative loops | Wear as a soft cap on active bonus only (temporary fatigue) |
+| Only the worn watch produces income | Makes equipping feel important | Breaks idle accumulation fantasy; encourages micromanagement | Entire vault produces; worn watch grants a multiplier/utility perk |
+| Player-to-player trading | Auctions are thematic | Huge scope + exploit risk | NPC dealer + periodic events |
+| Too many new currencies | Tuning knobs | Cognitive overload | Keep currencies minimal; use buffs/flags/perks |
 
 ## Feature Dependencies
 
 ```
-[Onboarding step system]
-    └──requires──> [Persistent settings/state]
-                       └──exists──> [SETTINGS_KEY + settings UI]
+[Catalog-first purchase hub]
+    -> [Watch models (explicit mapping to catalog entries)]
+           -> [Save/state schema update + migration]
 
-[Contextual hints + tooltips]
-    └──requires──> [Help/Glossary content model]
+[Wear-one-watch slot] -> enhances -> [Mini-games + interactions]
 
-[Prestige clarity UI]
-    └──requires──> [Accurate prestige gain calculation]
-                       └──requires──> [State selectors for reset deltas]
+[Career-first cash economy]
+    -> [Session rule changes (cost, payout, cooldown)]
+    -> enhances -> [Catalog buy loop (affordability, rotations, discounts)]
 
-[Adaptive stuck detection]
-    └──requires──> [Telemetry signals / heuristics]
-                       └──requires──> [Event log or derived activity]
-
-[Meta-loop map]
-    └──enhances──> [Locked content clarity]
+[Diminishing returns]
+    -> conflicts -> [Bulk-buy "always optimal" purchasing]
 ```
-
-### Dependency Notes
-
-- **Onboarding step system requires persistent settings/state:** needs per-step dismissal/completion stored similarly to `coachmarksDismissed`, plus a reset/re-enable entry in settings.
-- **Contextual hints require a help/glossary content model:** keep content centralized (ids + strings) so hints/tooltips can be reused consistently across tabs.
-- **Prestige clarity UI requires accurate gain + reset deltas:** UI should be driven by selectors (what resets, what stays, reward estimate) so copy stays correct as balance changes.
-- **Adaptive stuck detection requires heuristics:** can be done without full analytics by deriving “recent actions” from game state or a small in-memory event log.
 
 ## MVP Definition
 
-### Launch With (v1)
+### Launch With (v3.0)
 
-- [ ] First-session guidance (short) — ensures a smooth first 2 minutes
-- [ ] Prestige/reset clarity + safe confirmations — prevents “I lost everything” shocks
-- [ ] Empty-state + locked content polish — prevents “this tab is pointless” impressions
-- [ ] Rate transparency (basic breakdown) — makes the economy feel fair and learnable
-- [ ] Always-available Help/Glossary entry point — makes learning self-serve
+- Catalog-first default view + purchase from Catalog entries
+- Watch model ownership + worn slot with one clear, visible bonus
+- One new interaction/mini-game path beyond current winding (e.g., polishing)
+- Career session rule changes that keep early cash reliable
+- Diminishing returns v1 (simple, explainable)
 
-### Add After Validation (v1.x)
+### Add After Validation (v3.0.x)
 
-- [ ] Action-gated onboarding — increases completion of critical learning steps
-- [ ] “Why did this change?” panels — supports deeper mastery without clutter
-- [ ] Post-prestige re-onboarding — reduces reset fatigue
+- Model sets/collections with progress rewards
+- Automatics mini-game + model-specific interaction table
+- Dealer rotations (curated offers)
 
-### Future Consideration (v2+)
+### Future Consideration (v4+)
 
-- [ ] Prestige planner + recommendations — high leverage but correctness-sensitive
-- [ ] Adaptive stuck hints — high effort; must avoid feeling naggy
-- [ ] Meta-loop map — best once loops stabilize and terminology is final
+- Deep condition/maintenance systems (only if "wear" proves fun)
+- Complex market simulation (only if economy is stable)
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| First-session guidance (short) | HIGH | MEDIUM | P1 |
-| Prestige/reset clarity + safe confirmations | HIGH | MEDIUM | P1 |
-| Empty-state + locked content polish | HIGH | LOW | P1 |
-| Rate transparency (basic breakdown) | HIGH | MEDIUM | P1 |
-| Always-available Help/Glossary entry point | MEDIUM | LOW | P1 |
-| Action-gated onboarding | MEDIUM | MEDIUM | P2 |
-| Post-prestige re-onboarding | MEDIUM | MEDIUM | P2 |
-| “Why did this change?” panels | MEDIUM | MEDIUM | P2 |
-| Prestige planner + recommendations | HIGH | HIGH | P3 |
-| Adaptive stuck hints | MEDIUM | HIGH | P3 |
-| Meta-loop map | MEDIUM | MEDIUM | P3 |
+| Catalog-first purchase hub + default view | HIGH | HIGH | P1 |
+| Watch models (explicit mapping + stats) | HIGH | HIGH | P1 |
+| Wear-one-watch slot + visible bonus | HIGH | MEDIUM | P1 |
+| Career-first cash loop (session rule change) | HIGH | HIGH | P1 |
+| Diminishing returns (transparent v1) | MEDIUM | HIGH | P1 |
+| Polishing mini-game | MEDIUM | MEDIUM | P2 |
+| Automatics mini-game | MEDIUM | HIGH | P2 |
+| Dealer rotations | MEDIUM | MEDIUM | P2 |
+| Model collections/sets | MEDIUM | MEDIUM | P2 |
+| Tag-based perk families | HIGH | HIGH | P3 |
 
 **Priority key:**
-- P1: Must have for launch
+- P1: Must have for v3.0 launch
 - P2: Should have, add when possible
 - P3: Nice to have, future consideration
 
-## Competitor Feature Analysis
-
-| Feature | Cookie Clicker (Ascension) | AdVenture Capitalist | Our Approach |
-|---------|----------------------------|----------------------|--------------|
-| Prestige clarity | Legacy/Ascension screen summarizes rewards + reset | Multiple loops introduced gradually | “Lose/keep/gain” summary for each prestige loop + progress % + confirmations |
-| Onboarding | Minimal, learn-by-doing | Simple early flow; introduce systems over time | Short guided steps + coachmarks that point at the next action |
-| Help/explanations | Community/wiki-heavy; some in-game explanation | In-game UI cues + frequent unlock prompts | Always-available glossary + contextual explanations, no toast spam |
-
 ## Sources
 
-- Apple: “Onboarding for Games” (2025) https://developer.apple.com/app-store/onboarding-for-games/ (MEDIUM)
-- Livefront: “Put me in coach (marks)” (2024) https://livefront.com/writing/put-me-in-coach-marks/ (MEDIUM)
-- Nielsen Norman Group: “Instructional Overlays and Coach Marks for Mobile Apps” https://www.nngroup.com/articles/mobile-instructional-overlay/ (MEDIUM; older but still relevant patterns)
-- Global Games Forum: “Idle Game Design Lessons From developing AdVenture Capitalist” (2021) https://www.globalgamesforum.com/features/idle-game-design-lessons-from-developing-adventure-capitalist (LOW/MEDIUM; older)
-- Cookie Clicker Wiki (wiki.gg): “Ascension” (2024) https://cookieclicker.wiki.gg/wiki/Ascension (LOW/MEDIUM; community-maintained)
+- Repo behavior and UI structure:
+  - `src/ui/tabs/CatalogTab.tsx`
+  - `src/ui/tabs/CollectionTab.tsx`
+  - `src/ui/tabs/CareerTab.tsx`
+  - `src/game/selectors/index.ts`
+  - `src/game/actions/index.ts`
 
 ---
-*Feature research for: idle/incremental onboarding + UX clarity*
-*Researched: 2026-01-25*
+*Feature research for: v3.0 Catalog-First Economy & Interactions*
+*Researched: 2026-01-27*

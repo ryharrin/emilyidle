@@ -1,150 +1,116 @@
 # Project Research Summary
 
-**Project:** Emily Idle
-**Domain:** Onboarding + UX clarity for a React/Vite idle game (multi-layer prestige)
-**Researched:** 2026-01-25
-**Confidence:** MEDIUM
+**Project:** Emily Idle (watch-idle)
+**Domain:** Browser-based idle/incremental game — v3.0 "Catalog-First Economy & Interactions"
+**Researched:** 2026-01-27
+**Confidence:** MEDIUM-HIGH
 
 ## Executive Summary
 
-This project is a UX/onboarding layer for an existing idle game: the goal is to make the first session, unlock pacing, and prestige loops legible without turning the game into a modal tutorial. The winning pattern in this domain is to keep guidance contextual (tied to real unlock/state signals), short (one idea + one action), and always recallable later (help entry point + re-enable toggles).
+v3.0 is a structural shift: the Catalog becomes the primary shop/progression surface (default landing + purchase CTAs), while the economy and interactions evolve from coarse tier items into explicit watch models with ownership, equip-one bonuses, and short repeatable activities/mini-games. The most robust approach keeps domain logic pure and centralized (selectors/actions), treats catalog metadata and gameplay tuning as separate layers, and introduces inventory + activities as first-class subdomains rather than scattering logic across UI components.
 
-The recommended approach is to extend the existing settings-backed coachmarks pattern (already present in `src/App.tsx` / Collection tab) into a small, explicit “guidance” subsystem in UI land (`src/ui/guidance/*`). Guidance should read `GameState` via existing selectors (gates, reveal ratios, prestige readiness) and persist only UI onboarding state in settings (versioned), not in the core save.
+Recommended approach: preserve the existing architecture split (UI vs `src/game/*`), add an inventory slice for model ownership/equip, add an activities slice for interactions, and derive per-model gameplay stats from lightweight archetypes/tags (not bespoke tuning per catalog entry). This keeps the catalog scalable, the economy testable, and UI changes mostly about moving purchase affordances to the catalog.
 
-Main risks are (1) tips firing before mechanics are usable, (2) tooltip fatigue / intrusive “push tours”, (3) reset-related confusion (prestige re-onboarding), and (4) performance regressions from doing guidance work on every RAF tick. Mitigate by gating all steps with the same unlock signals the UI uses, preferring inline callouts/help drawers over floating overlays, versioning onboarding state per “layer”, and making guidance computations O(1) + transition-triggered.
+Key risks are semantic save drift (old saves load but feel wrong), double-application/missed application of costs/rewards in the sim loop, and conflating discovered with owned once the catalog becomes the shop. Mitigate with migration invariants + golden saves, centralizing rate-based earnings (apply once), keeping discrete costs in actions only, and maintaining separate state for discovery vs ownership vs equip.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The current stack (React 18 + Vite 6 + TS 5.8 + Vitest + Playwright) is already well-suited; onboarding improvements are mostly UI primitives + testing. The most pragmatic add is Radix primitives for accessible tooltip/popover/dialog/toast, plus optional Storybook and axe tooling for rapid iteration and regression coverage.
+Keep the current stack; v3.0 is primarily a domain/model refactor plus UI surface shift, not a platform rewrite. Add optional libraries only if they unlock concrete risk reduction or scalability.
 
-**Core technologies:**
-- React 18.3.1: UI runtime — already in use; stable baseline for guidance surfaces.
-- Vite 6.0.0: tooling — fast iteration, aligns with Storybook Vite framework.
-- TypeScript 5.8.0: safety — makes onboarding settings/state refactors safe.
-- Playwright 1.49.1: E2E — best fit for “new user” flows and tooltip placement.
-- Vitest 1.6.0: unit tests — cheap coverage for trigger logic + persistence.
+Core technologies:
+- React 18.3.1: UI + catalog-first purchase surface.
+- Vite 6.0.0: build/dev server.
+- TypeScript 5.8.0: safe domain modeling for itemization, diminishing returns, equip rules, and migrations.
+
+Selective adds (only if needed):
+- zod 4.3.6: runtime validation for save migration + invariants.
+- @tanstack/react-virtual 3.13.18: virtualization if the catalog grows large enough to cause perf issues.
+- xstate 5.26.0: only if mini-games become multi-step/interruptible and state logic becomes complex.
 
 ### Expected Features
 
-**Must have (table stakes):**
-- First-session guidance (short, 3-7 steps) — avoid blank-start confusion.
-- Prestige/reset clarity + safe confirmations — reduce “I lost everything” shock.
-- Empty-state + locked content polish — always provide a clear next action.
-- Rate transparency (basic breakdown) — players understand why numbers changed.
-- Always-available Help/Glossary entry point — guidance is recallable.
+Must have (table stakes):
+- Catalog-first default view + purchase CTAs on catalog entries (owned counts, locked/unlocked clarity).
+- Explicit watch models (beyond 4 tiers) with stable IDs and deterministic mapping to catalog entries.
+- Career-first cash loop that is reliable early (no deadlocks) with transparent session cost/payout rules.
+- Diminishing returns on duplicates (v1) with UI transparency.
+- Wear-one-watch (equip slot) with a visible, immediate bonus (vault still produces).
 
-**Should have (competitive):**
-- Action-gated onboarding (“learn by doing”) — steps resolve on actions, not dismissals.
-- “Why did this change?” explanations — show contributors to rate/multiplier deltas.
-- Post-prestige re-onboarding — highlight what changed and the new best action.
+Should have (competitive):
+- Interactions vary by model/type/tags; interactions can drive discovery.
+- Owned vs discovered vs locked remain distinct and meaningful.
+- Model sets/collections as goals once core economy is stable.
 
-**Defer (v2+):**
-- Prestige planner + recommendations — high leverage but correctness-sensitive.
-- Adaptive “stuck” hints — high effort; must avoid nagging.
-- Meta-loop map — best once loops and terminology stabilize.
+Defer (v3.0.x / v4+):
+- Dealer rotations, deeper interaction tables, automatics mini-game (after validating v1 activities + economy).
+- Maintenance/condition systems and market simulation (high tuning risk).
 
 ### Architecture Approach
 
-This repo already has clean boundaries: domain math lives in selectors/actions; runtime owns RAF + autosave; UI owns settings and presentation. Onboarding should stay UI-only and be driven by selector “signals,” with persistence in settings (not save) and transition detection handled via small previous snapshots (not the tick loop).
+The existing separation is strong enough; v3.0 should extend it by adding inventory + activities modules and avoiding monolithic growth in `selectors/index.ts` and `actions/index.ts`.
 
-**Major components:**
-1. `src/App.tsx` — composition root (game state + settings + tab orchestration).
-2. `src/ui/guidance/*` (new) — computes and renders onboarding/callouts/tooltips.
-3. `src/game/selectors/index.ts` — source of truth for gates, reveal ratios, readiness.
+Major components:
+1. `src/game/data/catalogEconomy.ts` — derive gameplay stats/prices from catalog tags/archetypes.
+2. `src/game/selectors/inventory.ts` + `src/game/actions/inventory.ts` — ownership/equip rules and purchase gates.
+3. `src/game/selectors/activities.ts` + `src/game/actions/activities.ts` + `src/game/data/activities.ts` — interaction gating/cooldowns/rewards as data.
+4. `src/game/persistence.ts` + `src/game/model/state.ts` — migration seam; new fields with defaults; golden-save verification.
+5. UI (`src/ui/tabs/CatalogTab.tsx`, `src/ui/tabs/CollectionTab.tsx`, `src/App.tsx`) — move purchase surface, add equip/interaction entrypoints, keep UI state ephemeral.
 
 ### Critical Pitfalls
 
-1. **Tips before mechanics unlock** — gate steps by the same signals that gate tabs/unlocks.
-2. **Tooltip fatigue / intrusive tours** — keep tips sparse and action-oriented; prefer recallable help.
-3. **Onboarding state vs resets** — split per-browser dismissal (settings) from per-run “did action” flags; version onboarding so new tips can ship without wiping old.
-4. **Misleading progress cues** — pair % with concrete targets; time-to-target only as “estimate”.
-5. **Brittle anchors** — attach to stable `id`/`data-testid`; cover with Playwright.
+1. Economy semantic drift breaks saves.
+2. Session costs vs non-negative currency semantics.
+3. Double-application/missed application in sim loop.
+4. Discovery/ownership conflation.
+5. ID churn orphaning inventories.
+6. Equip-one bonus stacking/reset bugs.
+7. Mini-game reroll exploits / nondeterminism.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Front-load save safety + domain boundaries, then shift UI surfaces, then layer interactions, and only then do major economy rebalance/balancing.
 
-### Phase 1: UX Audit + Content Model
-**Rationale:** Reduces complexity before adding guidance; prevents tooltip fatigue and wrong/contradictory advice.
-**Delivers:** Glossary/help content model (ids + copy), per-tab “Next action” definition, naming/terminology pass.
-**Addresses:** Help entry point, empty-state polish, locked content clarity.
-**Avoids:** Tooltip fatigue, guidance contradicting optimal loop.
+### Phase 1: Save-Safe v3 State + Migration Scaffolding
+Rationale: biggest irreversible risk is player trust via broken/"wrong" saves.
 
-### Phase 2: Guidance State + Triggers (Settings-Backed)
-**Rationale:** All other guidance depends on a durable, versioned persistence model and correct gating.
-**Delivers:** Versioned `Settings.onboarding` schema, `useGuidance(...)` producing steps/callouts from selector signals, first-session short flow.
-**Uses:** Existing settings persistence in `src/App.tsx` (don’t touch the core save).
-**Avoids:** Teaching locked systems, per-tick expensive computation, reset-related spam.
+### Phase 2: Catalog Economy Mapping (Archetype + Instance)
+Rationale: defines what a watch model means economically without UI changes.
 
-### Phase 3: Contextual Help Surfaces (Tooltips/Popovers/Dialogs)
-**Rationale:** Once triggers exist, surface explanations at the point of need with accessible primitives.
-**Delivers:** Radix-based Tooltip/Popover/Dialog (or equivalent), mobile-friendly “what is this?” affordances, in-tab callouts.
-**Implements:** `src/ui/guidance/*` rendering components anchored on stable ids/testids.
-**Avoids:** Brittle anchors, hover-only UX, portal/z-index regressions.
+### Phase 3: Inventory Slice + Catalog-First Purchase Surface
+Rationale: ship the headline (catalog-first shop) once domain primitives exist.
 
-### Phase 4: Prestige Clarity + Re-Onboarding
-**Rationale:** Prestige is the highest-risk confusion point; requires consistent copy and layer-aware re-entry cues.
-**Delivers:** Centralized “lose/keep/gain” copy, confirmation dialogs, post-prestige summary + a single recommended next action, progress cues tied to concrete thresholds.
-**Addresses:** Prestige/reset clarity, progress feedback, returning-player reorientation.
-**Avoids:** Onboarding state not surviving the right resets, progress cues that feel like they lie.
+### Phase 4: Wear-One Equip + Visible Bonus
+Rationale: high-salience mechanic that anchors interactions.
 
-### Phase 5: Verification (E2E + A11y + Perf)
-**Rationale:** Guidance is easy to regress with small UI tweaks; tests are the guardrails.
-**Delivers:** Unit tests for trigger/gating logic, Playwright new-user + prestige flows, representative tooltip placement checks; optional axe checks on onboarding screens.
-**Avoids:** Broken guidance after refactors, hidden accessibility failures, slowdowns from guidance logic.
+### Phase 5: Activities Framework + First New Mini-Game
+Rationale: shared gating/cooldown/reward patterns prevent bespoke state per interaction.
 
-### Phase Ordering Rationale
-
-- Do content/IA first so guidance clarifies, not compensates.
-- Build persistence + trigger logic next so all UI surfaces share consistent gating.
-- Add UI primitives after trigger logic exists; keep anchors stable to protect tests.
-- Tackle prestige/re-onboarding after the system can represent “layer-aware” onboarding.
-- Add E2E/a11y coverage as soon as surfaces exist; treat guidance anchors as API.
-
-### Research Flags
-
-Phases likely needing deeper research during planning:
-- **Phase 4:** time-to-target estimates, “optimal” recommendations, and reset deltas are correctness-sensitive; validate against current selectors/balance.
-- **Post-v1 (v2+):** prestige planner and adaptive “stuck” hints need dedicated validation and guardrails.
-
-Phases with standard patterns (skip research-phase):
-- **Phase 2:** settings-backed UI state + selector-driven signals is already idiomatic in this repo.
-- **Phase 3:** Radix tooltip/popover/dialog usage is well-documented; integration is straightforward.
+### Phase 6: Career-First Economy Rules + Balancing Pass
+Rationale: easiest to validate after migration + UI surfaces are stable.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | MEDIUM | Solid, but optional additions (Radix/Storybook/axe) are recommendations, not verified in-repo yet. |
-| Features | MEDIUM | Derived from domain best-practices; needs player validation and tuning to this game’s economy. |
-| Architecture | HIGH | Grounded in current repo boundaries and proven patterns already present. |
-| Pitfalls | MEDIUM | Patterns are consistent across sources; exact impact needs playtest feedback. |
+| Stack | HIGH | Grounded in current repo versions; optional deps are scoped. |
+| Features | MEDIUM | Genre norms; tuning is design-dependent. |
+| Architecture | MEDIUM | Based on current code structure; implementation will validate boundaries. |
+| Pitfalls | MEDIUM | Rooted in persistence/sim patterns; mitigations are standard. |
 
-**Overall confidence:** MEDIUM
+## Gaps to Address
 
-### Gaps to Address
-
-- Mobile/touch interaction model for help (tooltip vs popover vs drawer) needs an explicit decision and testing.
-- Which prestige actions need per-run flags (save) vs per-browser dismissal (settings) needs careful mapping per prestige layer.
-- “Rate transparency” scope needs definition (basic breakdown first; avoid formula dumps).
+- Exact v3.0 economy targets (rates, time-to-first-afford, prestige pacing).
+- Catalog model ID source of truth (existing catalog entry IDs vs curated subset).
+- Discovery rules under catalog-first shop (gate purchases vs informational).
+- Mini-game reward structure (deterministic vs random) to choose persistence/seed strategy.
 
 ## Sources
 
-### Primary (HIGH confidence)
-- Local codebase: `src/App.tsx`, `src/game/selectors/index.ts`, `src/game/runtime/useGameRuntime.ts`, `src/game/persistence.ts`.
-- /radix-ui/website (Context7) — Tooltip/Popover/Dialog/Toast patterns and Portal behavior.
-- /storybookjs/storybook (Context7) — `@storybook/react-vite` configuration + a11y addon.
-- /dequelabs/axe-core (Context7) — Playwright + axe integration.
-
-### Secondary (MEDIUM confidence)
-- Apple “Onboarding for Games” — early-session guidance expectations.
-- Nielsen Norman Group — coachmark/overlay patterns and pitfalls.
-
-### Tertiary (LOW confidence)
-- Community/wiki sources (Cookie Clicker, older idle game talks) — useful comparisons; validate against current game design.
+- Internal repo: `src/game/persistence.ts`, `src/game/model/state.ts`, `src/game/model/types.ts`, `src/game/sim.ts`, `src/ui/tabs/CatalogTab.tsx`, `src/ui/tabs/CollectionTab.tsx`, `src/ui/tabs/CareerTab.tsx`, `src/game/selectors/index.ts`, `src/game/actions/index.ts`
+- Package verification: https://registry.npmjs.org/zod/latest, https://registry.npmjs.org/@tanstack/react-virtual/latest, https://registry.npmjs.org/xstate/latest
 
 ---
-*Research completed: 2026-01-25*
+*Research completed: 2026-01-27*
 *Ready for roadmap: yes*

@@ -1,301 +1,152 @@
 # Pitfalls Research
 
-**Domain:** Onboarding + contextual help (tooltips/coachmarks) + progress cues for an incremental/idle game with multi-layer prestige
-**Researched:** 2026-01-25
-**Confidence:** MEDIUM
+**Domain:** Incremental/idle game — adding a catalog-first shop + economy overhaul + equipment bonuses + mini-games to an existing save-based architecture
+**Researched:** 2026-01-27
+**Confidence:** MEDIUM (grounded in current codebase patterns like `src/game/persistence.ts` + `src/game/sim.ts`)
 
 ## Critical Pitfalls
 
-### Pitfall 1: Teaching systems the player cannot use yet
+### Pitfall 1: Economy rewrite breaks save compatibility (semantic drift, not just schema drift)
 
-**What goes wrong:**
-Onboarding steps/coachmarks fire before the relevant mechanic is unlocked (or when the tab is still hidden), so players see advice they cannot act on and learn to ignore guidance.
-
-**Why it happens:**
-Tutorial triggers are built off “first session” timing instead of game state (milestones/unlocks/tab visibility).
+**What goes wrong:** Old saves load but "feel wrong" (players lose progress, get softlocked, or skip content) because what currency, rates, and thresholds mean changed under them.
 
 **How to avoid:**
-Gate every onboarding step by the same unlock signals the UI uses (milestones, reveal ratios, tab visibility). Prefer “pull” contextual help triggered by intent/state over forced “push” tours.
+- Define migration invariants (progress still possible in minutes, no softlocks).
+- Maintain a set of golden saves (early/mid/late) and assert post-migration KPIs.
+- Consider versioned economy formulas if needed to preserve prior semantics.
 
-**Warning signs:**
-Players report “I saw a tip but didn’t know where to go.” Analytics show coachmarks dismissed quickly without correlated actions (buy, upgrade, prestige).
+**Warning signs:** scattered v<->v3 conditionals across selectors/actions; playtest reports like "my money is gone".
 
-**Phase to address:**
-Phase 2 (Onboarding state + triggers).
+**Phase to address:** Phase 1 (migration design).
 
 ---
 
-### Pitfall 2: Over-explaining and creating tooltip fatigue
+### Pitfall 2: Session costs conflict with "no negative money" assumptions
 
-**What goes wrong:**
-Too many tooltips/steps (or ones that explain obvious UI) creates “banner blindness”; players skip everything, including the one tip that matters.
-
-**Why it happens:**
-Teams respond to confusion by adding more hints instead of fixing the underlying comprehension problem.
+**What goes wrong:** Costs silently disappear or behave inconsistently because sanitization clamps values (non-negative currency).
 
 **How to avoid:**
-Limit to a small number of high-leverage moments (first buy, first upgrade, first prestige preview, first prestige confirmation). Keep each tip to one idea + one action.
+- Decide: currency never below 0 (guard spends) vs explicit debt field.
+- Enforce the rule in actions and in sanitization.
 
-**Warning signs:**
-High skip/dismiss rates; support reports “tutorial is annoying”; usability sessions show users understand navigation without tips.
+**Warning signs:** players can start sessions with 0 and still benefit; reload removes costs.
 
-**Phase to address:**
-Phase 1 (UX audit + copy/IA) and Phase 3 (Tooltips).
+**Phase to address:** Phase 2 (economy rules) + Phase 1 (migration updates).
 
 ---
 
-### Pitfall 3: “Push tutorials” that interrupt play and are quickly forgotten
+### Pitfall 3: Double-application (or missed application) of new cash sources/costs in the sim loop
 
-**What goes wrong:**
-A multi-step forced tour blocks interaction or steals focus, causing churn and poor retention of information.
-
-**Why it happens:**
-It’s cheaper to build a modal tour than to add in-context help, and it feels “complete” in demos.
+**What goes wrong:** Income/costs apply twice per tick or not at all under offline catch-up/clamped dt.
 
 **How to avoid:**
-Prefer contextual help that is easy to dismiss and easy to recall later (e.g., a Coachmarks panel, a Help drawer, or per-feature “?” affordances).
+- Centralize rate-based earnings in one selector and apply once per step.
+- Apply discrete costs only in actions (sessions, purchases).
+- Define and test order-of-operations in `step()`.
 
-**Warning signs:**
-Players bounce during first session; people cannot repeat the task after the tour ends.
+**Warning signs:** small dt vs large dt produces different totals beyond rounding.
 
-**Phase to address:**
-Phase 3 (Tooltips/coachmarks UX) and Phase 5 (QA + iteration).
+**Phase to address:** Phase 2 (economy pipeline).
 
 ---
 
-### Pitfall 4: Tooltip/coachmark state doesn’t survive the right resets
+### Pitfall 4: Catalog-first shop conflates discovery with ownership and breaks gating
 
-**What goes wrong:**
-On prestige, the tutorial either resets (re-spams experienced players) or never reappears (players are lost after a reset introduces new dynamics).
+**What goes wrong:** players can buy items they haven’t discovered, or can’t buy items they own.
 
-**Why it happens:**
-Tutorial state is stored in the wrong persistence bucket (game save vs user settings) or keyed too broadly (only “dismissed once ever”).
+**How to avoid:** keep separate state for discovery, ownership/inventory, and equip; base purchase eligibility on explicit rules.
 
-**How to avoid:**
-Model onboarding state explicitly per layer:
-- Per-account/per-browser (Settings): “I know the UI patterns” (dismissal).
-- Per-run (Save): “I have done this action this run” (e.g., first purchase after Nostalgia prestige).
-Add versioning so new onboarding can appear without wiping old state.
+**Warning signs:** UI uses discovered to render both inventory and shop.
 
-**Warning signs:**
-Playtests: after prestige, players ask “what changed?”; returning players complain they keep seeing the same tips.
-
-**Phase to address:**
-Phase 2 (Persistence model) and Phase 4 (Prestige re-onboarding).
+**Phase to address:** Phase 3 (catalog shop integration).
 
 ---
 
-### Pitfall 5: Progress cues lie (or feel inconsistent)
+### Pitfall 5: Watch model expansion causes ID churn and orphaned inventories
 
-**What goes wrong:**
-Progress bars/teasers show 80-90% but the last 10% takes much longer, or “next milestone soon” appears too early/too late. Players feel manipulated or confused.
+**What goes wrong:** legacy holdings disappear because IDs were renamed/split.
 
-**Why it happens:**
-Idle economies are nonlinear (exponential costs, multipliers). A naive linear ratio doesn’t match perceived time-to-goal.
+**How to avoid:** treat IDs as immutable; maintain deprecated ID mapping; test every deprecated ID migrates.
 
-**How to avoid:**
-Pair % progress with a concrete “what to do next” and a tangible target (e.g., “Earn X enjoyment to unlock Atelier”). Where possible, show time-to-target using current rates, but label it as an estimate.
+**Warning signs:** renaming IDs in `data/` without explicit migration mapping.
 
-**Warning signs:**
-Players stall around prestige thresholds; feedback like “the bar is stuck”; users repeatedly click locked buttons to "check".
-
-**Phase to address:**
-Phase 4 (Progress cues + pacing).
+**Phase to address:** Phase 1 (migration scaffolding).
 
 ---
 
-### Pitfall 6: Onboarding contradicts the game’s actual optimal loop
+### Pitfall 6: Equip-one bonuses stack, persist incorrectly, or break prestige/reset flows
 
-**What goes wrong:**
-Tips encourage spending the wrong currency, buying the wrong items, or prestiging too early/late, resulting in slower progression and mistrust.
+**What goes wrong:** bonuses stack across equips or persist after unequip/reset.
 
-**Why it happens:**
-Copy is written from a design doc, but the live balance has drifted (or differs per milestone/unlock).
+**How to avoid:** single equipped id enforced by actions; bonus applied in one selector path; explicitly define reset behavior.
 
-**How to avoid:**
-Derive tip text from the same selectors that compute gates and thresholds (and keep tips generic when balance-sensitive). Add at least one unit test per “critical tip trigger” to prevent regressions.
+**Warning signs:** bonus math scattered in multiple selectors.
 
-**Warning signs:**
-Players say “your tip was wrong”; guide content needs constant manual edits after balance changes.
-
-**Phase to address:**
-Phase 1 (UX + economy alignment) and Phase 5 (tests).
+**Phase to address:** Phase 4 (equipment).
 
 ---
 
-### Pitfall 7: Tooltips break when UI changes (brittle anchors)
+### Pitfall 7: Mini-games introduce non-determinism that breaks offline progress and fairness
 
-**What goes wrong:**
-Tooltips/coachmarks render off-screen, cover the wrong element, or fail to appear after refactors.
+**What goes wrong:** outcomes vary by refresh/frame rate; players reroll rewards.
 
-**Why it happens:**
-Anchoring relies on fragile CSS selectors or DOM structure rather than stable IDs/test IDs.
+**How to avoid:** seeded RNG tied to persisted run id; persist in-flight mini-game state; grant rewards once as discrete actions.
 
-**How to avoid:**
-Anchor to stable, semantic targets (consistent ids/data-testid) and treat these as API. Add Playwright checks for at least one representative tip per tab.
+**Warning signs:** "I can reroll rewards by refreshing".
 
-**Warning signs:**
-Random reports like “tooltip is floating in the middle”; small layout tweaks cause large onboarding regressions.
-
-**Phase to address:**
-Phase 3 (Implementation) and Phase 5 (E2E tests).
+**Phase to address:** Phase 5 (mini-games).
 
 ---
 
-### Pitfall 8: No clear “end” or re-entry for onboarding
+### Pitfall 8: Sanitizer/migration omissions drop new fields or accept corrupted ones
 
-**What goes wrong:**
-Players don’t know when the tutorial is finished, and later cannot find help again when they forget.
+**What goes wrong:** new fields reset each reload or corrupted saves creep in.
 
-**Why it happens:**
-Onboarding is treated as a one-time linear tour, not a help system.
+**How to avoid:** round-trip encode/decode tests; strict sanitize coverage for v3 fields.
 
-**How to avoid:**
-Provide:
-- A visible “You’re set” completion moment.
-- A way to revisit help (Settings toggle, Help tab/section, reset coachmarks).
-
-**Warning signs:**
-Users ask the same questions repeatedly; “I skipped it, how do I see it again?”
-
-**Phase to address:**
-Phase 3 (Help UX) and Phase 4 (Re-onboarding moments).
+**Phase to address:** Phase 1 + ongoing.
 
 ---
 
-### Pitfall 9: Ignoring the returning-player context (offline gains + reorientation)
+### Pitfall 9: UI-driven logic leaks into the pure domain layer
 
-**What goes wrong:**
-Players come back after time away and can’t tell what changed: what they earned, what to buy next, what new system unlocked.
+**What goes wrong:** actions/selectors depend on UI-only state (filters, current tab), creating impossible states.
 
-**Why it happens:**
-Design focuses on first-time onboarding only; idle games need “re-entry UX” every session.
+**How to avoid:** keep UI state ephemeral; keep selectors/actions pure (no browser APIs).
 
-**How to avoid:**
-Add lightweight session-start cues: highlight the next upgrade/milestone, show “since you were away” deltas, and surface the single best next action.
-
-**Warning signs:**
-Players reopen the game, stare at numbers, and close it; churn is high for returning sessions.
-
-**Phase to address:**
-Phase 4 (Progress cues + re-entry).
+**Phase to address:** Phase 3 (catalog shop UX) + guardrails.
 
 ---
 
-### Pitfall 10: Adding guidance instead of reducing complexity
+### Pitfall 10: Rebalancing breaks prestige pacing and invalidates progression layers
 
-**What goes wrong:**
-Tooltips become a crutch for confusing UI (dual currency, prestige layers, unlock order), increasing cognitive load rather than reducing it.
+**What goes wrong:** prestige thresholds become unreachable or trivial after economy shift.
 
-**Why it happens:**
-It’s faster to add text than to change information architecture or visual hierarchy.
+**How to avoid:** define target time-to-prestige bands; validate with golden saves; recalibrate thresholds with new economy.
 
-**How to avoid:**
-Use onboarding findings to drive UI fixes: clearer labels, better grouping, stronger affordances, and progressive disclosure. Tooltips should clarify edge cases, not explain the main loop.
-
-**Warning signs:**
-Tooltip text grows over time; new players still fail the same tasks even with more help.
-
-**Phase to address:**
-Phase 1 (UX audit) and Phase 5 (iteration).
-
----
-
-## Technical Debt Patterns
-
-Shortcuts that seem reasonable but create long-term problems.
-
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Hardcode tooltip copy/IDs throughout tab components | Fast to ship | Impossible to evolve onboarding; inconsistent phrasing | Only for one-off labels; otherwise centralize definitions |
-| Store onboarding completion only as booleans (no versioning) | Simple persistence | You can’t introduce new tips without wiping state | Never; add a schema version for onboarding state |
-| Tie tooltips to DOM structure/CSS selectors | Avoids adding stable anchors | Refactors break guidance | Never; use stable ids/data-testid |
-| Recompute onboarding/progress cue logic on every sim tick | Easy access to `state` | Jank/rerenders; difficult to test | Only if memoized and scoped to active tab |
-
-## Integration Gotchas
-
-Common mistakes when connecting onboarding/progress cues to existing game systems.
-
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Settings vs Save persistence | Tutorial state stored in save and wiped/reset unexpectedly | Split: per-browser settings for dismissals; per-run save flags for “did action this run”; version both |
-| Prestige resets (Workshop/Maison/Nostalgia) | Same onboarding shown pre- and post-reset; or never shown for new meta systems | Re-onboard at each new layer with minimal steps, triggered by first unlock/first visit |
-| Unlock visibility ratios / teaser panels | “Soon” hints spammed or mismatch actual availability | Reuse existing reveal thresholds consistently; include concrete next goal label |
-| Playwright selectors | Tooltips introduce unstable DOM or reorder elements, breaking tests | Keep `data-testid` stable; add dedicated test IDs for onboarding targets |
-| Import/export save | Onboarding flags not migrated on save version bumps | Treat onboarding state as first-class schema with migration/sanitization |
-
-## Performance Traps
-
-Patterns that work at small scale but fail as usage grows.
-
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Tooltip overlays cause layout thrash | Flicker, shifting UI, scroll jumps | Prefer non-layout-affecting overlays; avoid measuring on every render | On low-end mobile / lots of UI cards |
-| Re-rendering tooltip layers every tick | High CPU; fan noise; dropped frames | Memoize tip computations; update only on relevant state changes | Always noticeable on long sessions |
-| Highlight animations stacked with idle counters | Visual noise; motion sickness complaints | Use restrained animation; throttle attention-drawing effects | When many unlocks trigger together |
-
-## Security Mistakes
-
-Domain-specific security issues beyond general web security.
-
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Rendering tooltip content from imported saves or external data as HTML | XSS in a static app context | Keep tooltip content plain text/React nodes; never `dangerouslySetInnerHTML` for help content |
-| Over-collecting analytics/events for onboarding | Privacy expectations mismatch for a casual game | Keep instrumentation minimal, transparent, and local-only unless explicitly adding telemetry |
-
-## UX Pitfalls
-
-Common user experience mistakes in this domain.
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Tooltips use internal jargon (e.g., names of layers/currencies without grounding) | Confusion, misinterpretation | Use player-facing language, tie to visible UI labels |
-| No "what next" after completing a step | Players stall | Each cue ends with a single next action and points to the relevant control |
-| Progress cues focus only on percentages | Players don’t know what to do | Show target labels, unlock names, and concrete thresholds |
-| One-size-fits-all onboarding | Experienced players annoyed, new players lost | Segment by progress (first session vs first prestige vs returning) |
-
-## "Looks Done But Isn't" Checklist
-
-- [ ] **Onboarding triggers:** Don’t fire when a tab is hidden/locked; verify with milestone gating.
-- [ ] **Skip + recall:** Every multi-step flow is skippable and has a way to revisit later.
-- [ ] **Prestige re-onboarding:** After each reset layer, the player gets reoriented on what changed.
-- [ ] **Persistence:** Onboarding state survives reloads and doesn’t corrupt/migrate badly across save versions.
-- [ ] **Mobile:** Tooltips never render off-screen; scrolling doesn’t break anchors.
-- [ ] **Tests:** At least one unit test for trigger logic and one Playwright test for a representative tooltip path.
-
-## Recovery Strategies
-
-When pitfalls occur despite prevention, how to recover.
-
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Premature tips / wrong context | MEDIUM | Add gating conditions; add a "later" queue (show on first eligible state) |
-| Tooltip fatigue | MEDIUM | Remove low-value tips; add per-session cap; consolidate into a help panel |
-| Brittle anchors | LOW/MEDIUM | Switch to stable anchors; add tests to catch regressions |
-| Misleading progress cues | HIGH | Rework cues to show concrete targets; add time-to-target estimate; A/B test copy |
-| Reset-related confusion | HIGH | Add post-reset summary and re-entry prompts; ensure onboarding is layer-aware |
+**Phase to address:** Phase 6 (balancing + regression).
 
 ## Pitfall-to-Phase Mapping
 
 | Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Teaching systems the player cannot use yet | Phase 2 | New save: no tips for locked tabs; tips appear after unlock |
-| Tooltip fatigue | Phase 1/3 | Dismiss rate decreases; users complete key actions faster |
-| Push tutorials interrupt play | Phase 3 | Tutorial completion without increased churn; help is recallable |
-| Onboarding state doesn’t survive resets | Phase 2/4 | After prestige, only relevant new-layer tips appear |
-| Progress cues lie | Phase 4 | Players reach first prestige with fewer stalls; fewer "stuck" reports |
-| Guidance contradicts optimal loop | Phase 1/5 | Tips match selectors; tests prevent regression |
-| Brittle anchors | Phase 3/5 | Layout tweaks don’t break tooltip placement in e2e |
-| No end/re-entry | Phase 3/4 | Users can restart onboarding; help usage persists over time |
+|--------|------------------|--------------|
+| Economy semantic drift breaks saves | Phase 1 | Golden saves load; KPI assertions pass |
+| Session costs vs non-negative currency | Phase 2 | Can’t start without funds (or debt tracked); reload doesn’t remove penalties |
+| Double-counted sources/costs | Phase 2 | dt invariance tests |
+| Discovery vs ownership conflation | Phase 3 | Tests: discovered != owned; purchase eligibility matches rules |
+| ID churn orphans inventory | Phase 1 | Deprecated ID mapping coverage |
+| Equip bonus stacking/reset bugs | Phase 4 | Equip idempotent; reset rules tested |
+| Mini-game reroll exploits | Phase 5 | Seeded runs persist; rewards granted once |
+| Sanitizer omissions | Phase 1 + ongoing | Round-trip tests include v3 fields |
+| UI state leaks into domain | Phase 3 | Code review guardrails + tests |
+| Prestige pacing breaks | Phase 6 | Time-to-prestige bands validated |
 
 ## Sources
 
-- https://www.nngroup.com/articles/onboarding-tutorials/ (contextual help vs disruptive tutorials; pull vs push revelations)
-- https://jayzipursky.com/2023/09/26/onboarding-part-3-pitfalls/ (common tooltip/tour pitfalls: timing, excess, forced flows, brittle triggers)
-- https://apptrove.com/how-to-make-an-idle-game/ (idle game UI guidance: show progression, introduce complexity gradually; marketing source)
-- https://adriancrook.com/passive-resource-systems-in-idle-games/ (idle game progress indicators + reset mechanics; marketing/consulting source)
-- https://cjleo.com/blog/we-are-addicted-to-progress/ (why progress feedback matters; older but relevant)
+- `src/game/persistence.ts` (sanitize/clamping behavior)
+- `src/game/sim.ts` (rate-based tick application)
+- `src/game/model/state.ts` (save->state construction)
 
 ---
-*Pitfalls research for: onboarding/tooltips/progress cues in an idle game*
-*Researched: 2026-01-25*
+*Pitfalls research for: v3.0 Catalog-First Economy & Interactions*
+*Researched: 2026-01-27*

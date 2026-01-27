@@ -1,242 +1,263 @@
 # Architecture Research
 
-**Domain:** Incremental idle game (onboarding + UX guidance layer)
-**Researched:** 2026-01-25
-**Confidence:** HIGH
+**Domain:** Idle/incremental game — catalog-first economy + interactions
+**Researched:** 2026-01-27
+**Confidence:** MEDIUM (based on direct code reads; design intent inferred)
 
 ## Standard Architecture
 
 ### System Overview
 
+Current architecture is already "clean-ish": pure domain in `src/game/*`, UI in `src/ui/*`, runtime/persistence isolated.
+
+For v3.0, keep that split, but introduce a new "catalog-as-inventory" subdomain and an "activities" subsystem.
+
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ UI (React)                                                                    │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  App shell: src/App.tsx                                                       │
-│   - tab nav + tab visibility gating                                           │
-│   - orchestration: derives props from selectors                               │
-│   - UI-only settings persistence (localStorage)                               │
-│                                                                              │
-│  Tabs: src/ui/tabs/*Tab.tsx                                                   │
-│   - render panels, CTAs, empty/teaser states                                  │
-│   - call onPurchase(nextState)                                                │
-│                                                                              │
-│  Guidance layer (recommended): src/ui/guidance/*                              │
-│   - onboarding steps / coachmarks / callouts / tooltips                       │
-│   - driven by GameState + persisted Settings                                  │
-└──────────────────────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ Runtime + Persistence                                                         │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  RAF + autosave: src/game/runtime/useGameRuntime.ts                           │
-│  Save v2 (game state): src/game/persistence.ts (localStorage emily-idle:save) │
-│  UI settings (not in save): src/App.tsx (localStorage emily-idle:settings)    │
-└──────────────────────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ Domain (pure TS)                                                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  Facade: src/game/state.ts (re-exports model/data/selectors/actions)          │
-│  Selectors: src/game/selectors/index.ts (derived math + gates)                │
-│  Actions: src/game/actions/index.ts (state transitions: buy/reset/prestige)   │
-│  Model: src/game/model/state.ts + src/game/model/types.ts                     │
-└──────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ UI (React)                                                                     │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ App.tsx                                                                        │
+│  - owns runtime hook + persistence triggering + tab composition                │
+│  - owns modal routing (today: wind modal)                                      │
+│                                                                               │
+│ Tabs                                                                           │
+│  - CollectionTab: show owned inventory + equip + interact entrypoints          │
+│  - CatalogTab: marketplace + archive views; buys happen here                   │
+│  - CareerTab / WorkshopTab / MaisonTab / NostalgiaTab: prestige/upgrades       │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ Domain Facade                                                                  │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ src/game/state.ts (re-exports model/data/selectors/actions)                    │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ Pure Domain                                                                    │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ model/                                                                         │
+│  - types.ts: GameState/PersistedGameState                                      │
+│  - state.ts: createInitialState/createStateFromSave + model-level helpers      │
+│ data/                                                                          │
+│  - items.ts: current tier items + gates                                        │
+│  - (new) catalog-economy.ts: map catalog entries -> gameplay archetype/stats   │
+│ selectors/                                                                     │
+│  - index.ts: derived computations (income, gates, discovery, etc.)             │
+│  - (new) inventory.ts: owned/equipped selectors + tagging/type gating          │
+│  - (new) activities.ts: canStart/resolve costs/payouts/cooldowns               │
+│ actions/                                                                       │
+│  - index.ts: state transitions (buy, prestige, sessions)                       │
+│  - (new) inventory.ts: buyCatalogWatch/equipWatch/sell/scrap                   │
+│  - (new) activities.ts: start/resolve mini-games (pure transitions)            │
+│ runtime/                                                                       │
+│  - useGameRuntime: tick + autosave                                             │
+│ sim.ts: step() tick loop                                                       │
+│ persistence.ts: save decode/encode + sanitize                                  │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
 | Component | Responsibility | Typical Implementation |
 |-----------|----------------|------------------------|
-| `src/App.tsx` | Composition root: wires runtime + state → tabs; owns tab/nav UI state and UI-only settings | React state + `useMemo` for selector-derived props; localStorage settings key `emily-idle:settings` |
-| `src/ui/tabs/*Tab.tsx` | Presentational + interaction surfaces (CTAs, modals, teasers) | Receives `state` and derived props; calls `onPurchase(nextState)` |
-| `src/game/runtime/useGameRuntime.ts` | Simulation clock (RAF), autosave, save load/clear | Hook with `requestAnimationFrame` loop + dirty tracking |
-| `src/game/persistence.ts` | Save encode/decode/sanitize and localStorage IO | Save v2 JSON + schema-ish sanitization |
-| `src/game/state.ts` | Public API boundary for UI: `selectors` + `actions` | Barrel export |
-| `src/game/selectors/index.ts` | Derived values + “can X?” gates + thresholds | Pure functions over `GameState` |
-| `src/game/actions/index.ts` | Game transitions (buy, prestige, rewards) | Pure functions returning next `GameState` |
+| `src/App.tsx` | Composition root; owns runtime hook, persistence triggers, modal routing | Keeps game state in hook; passes `state` + `onPurchase` down |
+| `src/ui/tabs/CatalogTab.tsx` | "Catalog-first" purchase surface + archive browsing | Adds buy/equip CTA per entry; filters/search remain local UI state |
+| `src/ui/tabs/CollectionTab.tsx` | Owned inventory + equip + interact entrypoints | Lists owned watches; delegates to activity modals |
+| `src/game/data/*` | Static definitions | Catalog metadata stays in `catalog.ts`; gameplay mapping lives separately |
+| `src/game/selectors/*` | Derived values and gates | Computes price, unlock visibility, activity eligibility, multipliers |
+| `src/game/actions/*` | Pure state transitions | Buy/equip/activities return new `GameState` |
+| `src/game/persistence.ts` + `src/game/model/state.ts` | Save sanitization + migration | Accepts old shapes, produces valid current `GameState` |
 
 ## Recommended Project Structure
 
-Keep onboarding/UX logic out of domain `GameState` and out of the runtime tick loop itself.
+Add new code as new modules rather than further bloating existing large files (notably `src/App.tsx`, `src/game/selectors/index.ts`, `src/game/actions/index.ts`).
 
 ```
-src/
-├── ui/
-│   ├── tabs/                       # Existing tab panels
-│   ├── guidance/                   # NEW: onboarding + UX clarity layer
-│   │   ├── useGuidance.ts          # Computes “what to show now” from state+settings
-│   │   ├── guidanceSignals.ts      # Pure helpers for thresholds / transitions
-│   │   ├── CoachmarksPanel.tsx     # Renders coachmarks list (extends current pattern)
-│   │   ├── Callout.tsx             # Inline callout component (progress + next action)
-│   │   ├── Tooltip.tsx             # Optional lightweight tooltip/popover
-│   │   └── prestigeCopy.ts         # Single-source copy for resets/keeps explanations
-│   └── ...
-├── game/
-│   ├── selectors/                  # Add UX-friendly selectors only if truly general
-│   ├── actions/
-│   ├── runtime/
-│   └── ...
-└── App.tsx
+src/game/
+├── catalog.ts                  # existing: licensing metadata + tags + image URLs
+├── data/
+│   ├── items.ts                # existing: tier archetypes + legacy gates
+│   ├── catalogEconomy.ts       # NEW: derive purchasable watch stats from catalog entry tags
+│   └── activities.ts           # NEW: mini-game definitions (ids, types, tuning)
+├── model/
+│   ├── types.ts                # MODIFY: add inventory/equip/activity state
+│   └── state.ts                # MODIFY: createInitialState + createStateFromSave migration
+├── selectors/
+│   ├── index.ts                # MODIFY: re-export new selector modules + integrate multipliers
+│   ├── inventory.ts            # NEW: owned/equipped helpers + watch-type classification
+│   └── activities.ts           # NEW: gates (cooldown/cost/watch-type) + payouts
+├── actions/
+│   ├── index.ts                # MODIFY: re-export new action modules
+│   ├── inventory.ts            # NEW: buyCatalogWatch/equipCatalogWatch/scrapCatalogWatch
+│   └── activities.ts           # NEW: applyActivityResult/startActivity/etc
+└── persistence.ts              # MODIFY: sanitize/migrate new fields + optional version bump
 ```
 
 ### Structure Rationale
 
-- **`src/ui/guidance/`:** onboarding is UI policy (what to teach, when, and how), so keep it next to UI. It may read `GameState`, but it should not mutate it.
-- **`src/game/selectors/`:** only add onboarding-oriented selectors when they encode domain truth (threshold math, gating), not UI policy.
+- Keep `catalog.ts` "real-world metadata only": licensing/attribution concerns stay separate from gameplay tuning.
+- Introduce an inventory slice: v3.0 adds "own specific models" + "equip exactly one"; this is a coherent boundary.
+- Introduce an activities slice: mini-games + gating/costs/cooldowns are cross-cutting; centralizing prevents one-off state shapes.
 
 ## Architectural Patterns
 
-### Pattern 1: UI-Only Persistent Guidance State
+### Pattern 1: "Archetype + Instance" (Catalog Entry -> Gameplay Archetype)
 
-**What:** Persist onboarding progress in UI settings (localStorage `emily-idle:settings`), not in the main save (`emily-idle:save`).
-**When to use:** Coachmarks dismissed, tooltips dismissed, “saw prestige intro”, onboarding versioning.
-**Trade-offs:** Not portable with save exports/imports (fine for onboarding); avoids save schema churn and preserves domain purity.
+**What:** Treat each catalog entry as a "watch model instance" but derive its gameplay stats from an archetype (tier/type tags), instead of hand-defining stats for every entry.
 
-**Anchor in repo:** `src/App.tsx` already persists `Settings.coachmarksDismissed` and other prefs.
+**When to use:** When "all catalog entries are purchasable" but tuning must stay tractable.
 
-**Example:**
+**Trade-offs:** Less bespoke per-watch balancing; faster to expand catalog; consistent economy.
+
+Example (pseudo):
+
 ```ts
-type Settings = {
-  // existing
-  coachmarksDismissed: Record<string, boolean>;
+type WatchArchetypeId = "starter" | "classic" | "chronograph" | "tourbillon";
 
-  // recommended new
-  onboarding: {
-    version: number;
-    completed: Record<string, boolean>;
-    dismissedTooltips: Record<string, boolean>;
-  };
+type CatalogWatchStats = {
+  archetype: WatchArchetypeId;
+  basePriceCents: number;
+  incomeCentsPerSec: number;
+  enjoymentCentsPerSec: number;
+  scrapParts: number;
+  equipBonus?: { type: "incomeMultiplier"; value: number };
 };
 ```
 
-### Pattern 2: “Guidance Signals” Separate From Rendering
+### Pattern 2: "Pure Action, Derived Gate"
 
-**What:** Compute a small, stable set of “signals” (facts) from `GameState` and current UI context; render callouts/tooltips based on signals + settings.
-**When to use:** Progress callouts (near unlock thresholds), prestige clarity, empty-state nudges.
-**Trade-offs:** Slight up-front structure, but avoids scattering threshold logic across tabs.
+**What:** UI queries selectors for eligibility (price, enjoyment gate, cooldown), then calls a pure action that re-checks and returns either unchanged state or next state.
 
-**Signals in this codebase (already exist):**
-- Prestige readiness: `canWorkshopPrestige`, `canMaisonPrestige`, `canNostalgiaPrestige` (`src/game/selectors/index.ts`)
-- “Near unlock” ratios: `isWorkshopRevealReady`, `isMaisonRevealReady`, `getUnlockVisibilityRatio`, `shouldShowUnlockTag` (`src/game/selectors/index.ts`)
+**When to use:** Purchases, equip, and every activity/mini-game resolution.
 
-### Pattern 3: Transition Detection Without Polluting the Tick Loop
+**Trade-offs:** Some duplication; big win in testability and save safety.
 
-**What:** In `useGuidance`, track a small previous snapshot (via `useRef`) to detect “first time” transitions (first workshop tease, first prestige available, first unlock store visible).
-**When to use:** Triggering one-time onboarding steps.
-**Trade-offs:** Must be careful: `state` changes frequently (RAF tick), so compute transitions cheaply and update settings only when a transition is observed.
+```ts
+const gate = getCatalogWatchPurchaseGate(state, catalogEntryId);
+if (!gate.ok) return state;
+return buyCatalogWatch(state, catalogEntryId);
+```
 
-**Key rule:** never do DOM measurement or expensive scanning on every tick.
+### Pattern 3: "Activities as First-Class Definitions"
 
-### Pattern 4: Centralize Prestige Explanations
+**What:** Define mini-games as data: id, required watch types/tags, costs, cooldown, rewards; implement shared selectors/actions.
 
-**What:** Put the “Resets / Keeps / Why prestige?” copy in one place so callouts, modals, and coachmarks stay consistent.
-**When to use:** Prestige clarity improvements across `WorkshopTab`, `MaisonTab`, `NostalgiaTab`.
-**Trade-offs:** Small indirection; big UX consistency win.
+**When to use:** Multiple mini-games gated by watch type.
+
+**Trade-offs:** Slight upfront abstraction; prevents N bespoke states and UI forks.
 
 ## Data Flow
 
-### Request Flow (Gameplay)
+### Purchase + Equip
 
 ```
-[User click in tab]
-  ↓
-Tab component (src/ui/tabs/*Tab.tsx)
-  ↓  calls action: buy/prestige/etc (src/game/actions/index.ts)
-App.handlePurchase(nextState) (src/App.tsx)
-  ↓
-setState(nextState) + markSaveDirty() + persistNow("purchase")
-  ↓
-useGameRuntime RAF tick continues (src/game/runtime/useGameRuntime.ts)
+[CatalogTab Buy Button]
+    ↓
+selectors: getCatalogWatchPurchaseGate(state, entryId)
+    ↓
+actions: buyCatalogWatch(state, entryId)
+    ↓
+App.onPurchase(nextState) → persistNow("purchase", nextState)
 ```
 
-### Guidance Flow (Onboarding + Callouts)
+### Interact / Mini-game
 
 ```
-GameState update (tick or purchase)
-  ↓
-useGuidance(state, uiContext, settings)
-  ↓
-guidance model: { activeSteps, callouts, tooltips }
-  ↓
-render in App / tabs (CoachmarksPanel + inline Callout/Tooltip components)
-  ↓  user dismisses/completes
-persistSettings(updated settings) (src/App.tsx)
+[CollectionTab Interact] or [CatalogTab Interact]
+    ↓
+App opens Activity modal (activityId + context: equipped watch or chosen watch)
+    ↓
+selectors: canStartActivity(state, activityId, watchId, nowMs) + cost breakdown
+    ↓
+actions: applyActivityResult(state, activityId, watchId, outcome, nowMs)
+    ↓
+(optional) actions: activateManualEvent(...) for temporary buffs
+    ↓
+App.onPurchase(nextState) → persistNow("purchase", nextState)
 ```
 
-## Scaling Considerations
+## Save Migration Strategy Impacts
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-1k users | Current monolith is fine; focus on responsiveness during RAF ticks |
-| 1k-100k users | Still static frontend; main “scale” risk is perf on low-end devices (avoid heavy guidance computations per tick) |
-| 100k+ users | No backend here; treat as performance/UX scaling (bundle size, render cost, avoid expensive layout work) |
+### Current Save Pipeline (observed)
 
-### Scaling Priorities
+- `persistence.ts` encodes `SaveV2` with `state: GameState`.
+- On decode, `sanitizeState()` reconstructs a persisted shape by picking known fields, then calls `createStateFromSave(persisted)` (in `src/game/model/state.ts`).
 
-1. **First bottleneck:** rerenders during RAF tick; keep guidance calculations O(1) and only persist settings on transitions.
-2. **Second bottleneck:** DOM-measured tooltips/coachmarks; prefer inline callouts inside panels unless a floating overlay is essential.
+This is already a robust migration seam: unknown fields are ignored; missing fields default.
 
-## Anti-Patterns
+### v3 changes that stress saves
 
-### Anti-Pattern 1: Store onboarding in `GameState`
+- Replacing tier-based `items: Record<WatchItemId, number>` with specific-model ownership
+- Adding `equippedWatchId`
+- Adding new mini-game/activity state (cooldowns/results)
+- Changing economy rules (cash sources + gating + session costs)
 
-**What people do:** Add `onboardingStep` to `GameState` and save it with `emily-idle:save`.
-**Why it's wrong:** Couples UX policy to domain model + save migrations; makes tests brittle; encourages “game logic depends on onboarding”.
-**Do this instead:** Keep onboarding in settings (`src/App.tsx` localStorage) and derive “what to show” from state.
+### Recommended migration approach (minimize risk)
 
-### Anti-Pattern 2: Duplicate threshold math across tabs
-
-**What people do:** Hardcode `0.8` or prestige thresholds in UI repeatedly.
-**Why it's wrong:** UX gets inconsistent and breaks when tuning thresholds.
-**Do this instead:** Reuse selectors like `isWorkshopRevealReady`, `getUnlockVisibilityRatio`, and add new selector helpers only when they encode domain truth.
-
-### Anti-Pattern 3: Floating overlays anchored by brittle selectors
-
-**What people do:** Attach a tooltip to `.some-css-class` and rely on layout/DOM structure.
-**Why it's wrong:** Small UI refactors break onboarding.
-**Do this instead:** Anchor callouts to stable `id` or `data-testid` already used by tests (e.g. `data-testid="workshop-reset"`, `data-testid="nostalgia-prestige"`).
+1. Avoid destructive field renames in-place.
+2. Introduce new fields with defaults in `createStateFromSave`:
+   - `ownedCatalogWatches: CatalogEntryId[]` or `Record<CatalogEntryId, number>`
+   - `equippedCatalogWatchId: CatalogEntryId | null`
+   - `activityStates: Record<ActivityId, { nextAvailableAtMs: number; ... }>`
+3. Only bump save version if you truly break shape.
+4. Migration of legacy tier counts should be non-lossy:
+   - Do not fabricate many owned models.
+   - Keep legacy tier holdings contributing until players naturally transition.
+   - Consider a one-time conversion UI later if retiring legacy.
+5. Add unit tests around decode/migrate paths.
 
 ## Integration Points
 
-### Internal Boundaries
+### New vs modified modules/components
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| `src/ui/guidance/*` ↔ `src/game/state.ts` | direct calls to selectors (read-only) | Guidance reads `GameState`, never mutates it |
-| `src/ui/guidance/*` ↔ `src/App.tsx` | props + callbacks (`settings`, `persistSettings`, `activeTab`) | App remains the owner of settings persistence |
-| `src/ui/tabs/*` ↔ guidance | shared components (Callout/Tooltip) + stable anchors | Tabs keep rendering; guidance adds UX affordances |
+Modify (domain):
+- `src/game/model/types.ts`
+- `src/game/model/state.ts`
+- `src/game/persistence.ts`
+- `src/game/selectors/index.ts`
 
-### Concrete Hook-In Locations
+Add (domain):
+- `src/game/data/catalogEconomy.ts`
+- `src/game/selectors/inventory.ts`
+- `src/game/actions/inventory.ts`
+- `src/game/data/activities.ts`
+- `src/game/selectors/activities.ts`
+- `src/game/actions/activities.ts`
 
-- **Top-level orchestration:** `src/App.tsx` is the natural place to instantiate `useGuidance(...)` because it already owns `settings`, `activeTab`, and the derived “reveal/progress” values.
-- **Coachmarks surface:** `src/ui/tabs/CollectionTab.tsx` already renders coachmarks in a side panel; extend this into a more general “Next steps / coachmarks” panel (or keep coachmarks there and add per-tab callouts elsewhere).
-- **Prestige clarity:**
-  - Workshop: `src/ui/tabs/WorkshopTab.tsx` (`data-testid="workshop-reset"`, `canPrestigeWorkshop`, `workshopRevealProgress`)
-  - Maison: `src/ui/tabs/MaisonTab.tsx` (`data-testid="maison-reset"`, `canPrestigeMaison`, `maisonRevealProgress`)
-  - Nostalgia: `src/ui/tabs/NostalgiaTab.tsx` (`data-testid="nostalgia-prestige"`, `nostalgiaProgress`)
-- **Tab/empty-state polish:** Use existing “teaser” states (`panel-teaser`) as onboarding triggers; they already encode “near unlock” thresholds via selectors.
+Modify (UI):
+- `src/ui/tabs/CatalogTab.tsx`
+- `src/ui/tabs/CollectionTab.tsx`
+- `src/App.tsx`
 
-## Suggested Build Order (Roadmap-Oriented)
+## Build Order (minimize risk)
 
-1. **Guidance state model + settings migration**
-   - Extend `Settings` in `src/App.tsx` (load + persist); keep backwards compatible defaults.
-2. **`src/ui/guidance/useGuidance.ts` + minimal rendering surface**
-   - Start by driving existing coachmarks with a more structured step model.
-3. **Prestige clarity pass**
-   - Centralize prestige copy; add contextual callouts when `canPrestige*` flips true and when teasers appear.
-4. **Tooltips + progress callouts**
-   - Add lightweight tooltip/callout components; avoid layout-measured overlays until needed.
-5. **Tab + empty-state polish**
-   - Improve copy and “what to do next” in each tab; ensure anchors remain stable for tests.
+1. Add new state fields + migrations first (save safety).
+2. Introduce catalog-economy derivation (no UI changes yet).
+3. Add inventory actions/selectors (minimal UI).
+4. Move purchase surface to CatalogTab.
+5. Refactor CollectionTab to inventory-first.
+6. Generalize activities (wind session -> activity framework).
+7. Economy rule changes last (after surfaces and migration are stable).
+
+## Scaling Considerations
+
+- Avoid O(N) catalog scans every tick; replace heuristic matching with explicit ids.
+- Add virtualization only if catalog size/perf warrants it.
+
+## Anti-Patterns
+
+- Keep fuzzy mapping from owned watches to catalog discovery after switching to model IDs.
+- Add bespoke mini-game state slices per activity.
+- Let UI-only state leak into `GameState`.
 
 ## Sources
 
-- `src/App.tsx` (tabs + settings + coachmarks)
-- `src/ui/tabs/CollectionTab.tsx` (coachmarks surface)
-- `src/ui/tabs/WorkshopTab.tsx`, `src/ui/tabs/MaisonTab.tsx`, `src/ui/tabs/NostalgiaTab.tsx` (prestige UX)
-- `src/game/runtime/useGameRuntime.ts` (tick + autosave)
-- `src/game/persistence.ts` (save IO)
-- `src/game/state.ts`, `src/game/selectors/index.ts`, `src/game/actions/index.ts` (domain boundaries)
+- Internal code (direct reads):
+  - `src/App.tsx`
+  - `src/game/persistence.ts`
+  - `src/game/model/types.ts`
+  - `src/game/model/state.ts`
+  - `src/game/selectors/index.ts`
+  - `src/game/actions/index.ts`
+  - `src/ui/tabs/CollectionTab.tsx`
+  - `src/ui/tabs/CatalogTab.tsx`
 
 ---
-*Architecture research for: onboarding + UX clarity in Emily Idle*
-*Researched: 2026-01-25*
+*Architecture research for: v3.0 Catalog-First Economy & Interactions*
+*Researched: 2026-01-27*
