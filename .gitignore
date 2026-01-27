@@ -4,6 +4,8 @@ node_modules
 dist
 *.log
 test-results/
+tmp/
+target/
 
 # editor
 .vscode
