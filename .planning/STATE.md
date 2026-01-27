@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** v2.1 Onboarding & UX (roadmap ready)
+**Current focus:** v3.0 Catalog-First Economy & Interactions (starting)
 
 ## Current Position
 
-Phase: 24 of 24 (UI Polish Pass)
-Plan: 6 of 6
-Status: Complete
-Last activity: 2026-01-27 - Completed 24-06-PLAN.md
-Progress: ██████████ 100%
-Next Phase: Milestone complete
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-27 — Milestone v3.0 started
+Progress: ░░░░░░░░░░ 0%
+Next Phase: TBD (roadmap generation pending)
 
 ## Accumulated Context
 
@@ -25,6 +25,7 @@ Next Phase: Milestone complete
 - Phase 19 added: Refactor phase 13 code with phase 13 research in mind
 - v2.1 roadmap added: Phases 20-24 (Onboarding & UX)
 - Milestone v2.0 archived under .planning/milestones/
+- Milestone v3.0 kickoff: catalog-first economy + interactions (requirements pending)
 
 ### Decisions
 | Phase | Decision | Rationale |

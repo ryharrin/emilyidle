@@ -36,16 +36,16 @@ Emily Idle is a browser-based idle/incremental game themed around luxury watch c
 - `pnpm run test:e2e`
 - `pnpm run build`
 
-## Current Milestone: v2.1 Onboarding & UX
+## Current Milestone: v3.0 Catalog-First Economy & Interactions
 
-**Goal:** Make the early game and prestige systems clearer and smoother, so new players understand loops and can progress without confusion.
+**Goal:** Ship the remaining NOTES.md backlog with a focus on a catalog-first purchase flow, career-first cash economy, and deeper watch interactions.
 
 **Target features:**
-- Guided onboarding steps for first watch purchase, Career unlock, and first Nostalgia prestige
-- Contextual tooltips for enjoyment gates, cash vs enjoyment spend, and nostalgia unlock order
-- Progress feedback improvements (milestone progress badges, “next unlock” callouts)
-- Prestige clarity (reset impact summary, post-prestige tips)
-- UX polish for tab visibility and empty states
+- Catalog becomes the default starting view; watch purchases move into the catalog experience.
+- Career progression becomes the primary (or only) money faucet; therapist session cost rules updated (first session free).
+- Watch itemization moves from generic tiers toward specific models, including wear-one-watch bonuses and diminishing returns for duplicates.
+- Watch interaction improvements: richer winding feedback/animation, plus additional mini-games for automatic watches.
+- Workshop/Atelier clarity + balance: hide dismantle until unlocked, show next blueprint cost, and adjust atelier bonuses to make the 2nd vault run meaningfully faster.
 
 ## Current State
 
@@ -64,4 +64,4 @@ Shipped v2.0 on 2026-01-25:
 
 ---
 
-*Last updated: 2026-01-25 after v2.1 milestone kickoff*
+*Last updated: 2026-01-27 after v3.0 milestone kickoff*

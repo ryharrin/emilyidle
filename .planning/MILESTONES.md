@@ -25,3 +25,20 @@
 **What's next:** Define v2.1+ requirements and plan Phase 19 (phase-13 refactor + tests).
 
 ---
+
+## v2.1 Onboarding & UX (Shipped: 2026-01-27)
+
+**Delivered:** Improved onboarding clarity and player-facing explanations, plus a consistent UI polish pass to reduce early-game confusion.
+
+**Phases completed:** 20-24
+
+**Key accomplishments:**
+- Added a global Help/Glossary entry point and consistent help/lock/prestige icon language.
+- Surfaced point-of-use explanations for enjoyment gates vs cash spend and nostalgia unlock order.
+- Improved unlock clarity and "next actions" UX (lock reasons, progress to next unlocks, catalog empty-state CTAs).
+- Standardized prestige confirmation and post-prestige re-onboarding.
+- Completed a UI polish pass focused on hierarchy, responsiveness, and micro-interactions.
+
+**What's next:** Start v3.0 requirements and roadmap for the NOTES backlog (catalog-first economy + deeper watch interactions).
+
+---
