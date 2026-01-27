@@ -9,6 +9,7 @@ import {
 import { SET_BONUSES } from "../data/setBonuses";
 import { UPGRADES } from "../data/upgrades";
 import { formatMoneyFromCents } from "../format";
+import { getEnjoymentThresholdLabel } from "./enjoyment";
 import {
   ACHIEVEMENTS,
   CATALOG_TIER_BONUSES,
@@ -45,6 +46,15 @@ import type {
   WorkshopUpgradeDefinition,
   WorkshopUpgradeId,
 } from "../model/types";
+
+import {
+  getEnjoymentCents,
+  getEnjoymentRateCentsPerSec,
+  getPrestigeLegacyMultiplier,
+  getWatchItemEnjoymentRateCentsPerSec,
+} from "./enjoyment";
+
+export * from "./enjoyment";
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
 const INCOME_SOFTCAP_CENTS_PER_SEC = 60_000;
@@ -122,10 +132,6 @@ export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
 
 export function getNostalgiaUnlockCost(id: WatchItemId): number {
   return NOSTALGIA_UNLOCK_COSTS[id] ?? 0;
-}
-
-export function getWatchItemEnjoymentRateCentsPerSec(item: WatchItemDefinition): number {
-  return item.enjoymentCentsPerSec;
 }
 
 export function getUpgrades(): ReadonlyArray<UpgradeDefinition> {
@@ -453,6 +459,130 @@ export function getAchievementProgressRatio(
     : 0;
 }
 
+export type UnlockProgressDetail = {
+  label: string;
+  current: number;
+  threshold: number;
+  ratio: number;
+};
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+export function getUnlockRevealProgressRatio(rawRatio: number): number {
+  return clampNumber(rawRatio / REVEAL_THRESHOLD_RATIO, 0, 1);
+}
+
+export function getMilestoneUnlockProgressDetail(
+  state: GameState,
+  milestoneId: MilestoneId,
+): UnlockProgressDetail {
+  const milestone = MILESTONE_LOOKUP.get(milestoneId);
+  if (!milestone) {
+    return { label: "", current: 0, threshold: 0, ratio: 0 };
+  }
+
+  const requirement = milestone.requirement;
+  const threshold =
+    requirement.type === "collectionValue" ? requirement.thresholdCents : requirement.threshold;
+
+  const rawCurrent =
+    requirement.type === "totalItems"
+      ? getTotalItemCount(state)
+      : requirement.type === "collectionValue"
+        ? getCollectionValueCents(state)
+        : state.discoveredCatalogEntries.length;
+
+  const current = clampNumber(rawCurrent, 0, threshold);
+  const ratio = threshold > 0 ? clampNumber(rawCurrent / threshold, 0, 1) : 0;
+
+  return {
+    label: getMilestoneRequirementLabel(milestoneId),
+    current,
+    threshold,
+    ratio,
+  };
+}
+
+export function getAchievementRequirementLabel(achievementId: AchievementId): string {
+  const achievement = ACHIEVEMENTS.find((entry) => entry.id === achievementId);
+  if (!achievement) {
+    return "";
+  }
+
+  const requirement = achievement.requirement;
+  if (requirement.type === "totalItems") {
+    return `Hold ${requirement.threshold} watches in the vault`;
+  }
+
+  if (requirement.type === "collectionValue") {
+    return `Reach ${formatMoneyFromCents(requirement.thresholdCents)} Memories`;
+  }
+
+  if (requirement.type === "workshopPrestigeCount") {
+    return `Prestige the Atelier ${requirement.threshold} time${requirement.threshold === 1 ? "" : "s"}`;
+  }
+
+  return `Discover ${requirement.threshold} catalog references`;
+}
+
+export function getAchievementUnlockProgressDetail(
+  state: GameState,
+  achievementId: AchievementId,
+): UnlockProgressDetail {
+  const achievement = ACHIEVEMENTS.find((entry) => entry.id === achievementId);
+  if (!achievement) {
+    return { label: "", current: 0, threshold: 0, ratio: 0 };
+  }
+
+  const requirement = achievement.requirement;
+  const threshold =
+    requirement.type === "collectionValue" ? requirement.thresholdCents : requirement.threshold;
+
+  const rawCurrent =
+    requirement.type === "totalItems"
+      ? getTotalItemCount(state)
+      : requirement.type === "collectionValue"
+        ? getCollectionValueCents(state)
+        : requirement.type === "workshopPrestigeCount"
+          ? state.workshopPrestigeCount
+          : state.discoveredCatalogEntries.length;
+
+  const current = clampNumber(rawCurrent, 0, threshold);
+  const ratio = threshold > 0 ? clampNumber(rawCurrent / threshold, 0, 1) : 0;
+
+  return {
+    label: getAchievementRequirementLabel(achievementId),
+    current,
+    threshold,
+    ratio,
+  };
+}
+
+export function getPrestigeUnlockProgressDetail(
+  state: GameState,
+  prestigeId: "workshop" | "maison" | "nostalgia",
+): UnlockProgressDetail {
+  const threshold =
+    prestigeId === "workshop"
+      ? getWorkshopPrestigeThresholdCents()
+      : prestigeId === "maison"
+        ? getMaisonPrestigeThresholdCents()
+        : getNostalgiaPrestigeThresholdCents();
+
+  const rawCurrent = state.enjoymentCents;
+  const current = clampNumber(rawCurrent, 0, threshold);
+  const ratio = threshold > 0 ? clampNumber(rawCurrent / threshold, 0, 1) : 0;
+
+  return {
+    label: `Reach ${getEnjoymentThresholdLabel(threshold)}`,
+    current,
+    threshold,
+    ratio,
+  };
+}
+
 export function shouldShowUnlockTag(state: GameState, milestoneId: MilestoneId): boolean {
   return getUnlockVisibilityRatio(state, milestoneId) >= REVEAL_THRESHOLD_RATIO;
 }
@@ -463,37 +593,6 @@ export function hasMaisonUpgrade(state: GameState, id: MaisonUpgradeId): boolean
 
 export function hasMaisonLine(state: GameState, id: MaisonLineId): boolean {
   return state.maisonLines[id] ?? false;
-}
-
-export function getEnjoymentCents(state: GameState): number {
-  return state.enjoymentCents;
-}
-
-export function getPrestigeLegacyMultiplier(state: GameState): number {
-  const workshopPrestigeCount = Number.isFinite(state.workshopPrestigeCount)
-    ? Math.max(0, Math.floor(state.workshopPrestigeCount))
-    : 0;
-  const maisonHeritage = Number.isFinite(state.maisonHeritage)
-    ? Math.max(0, Math.floor(state.maisonHeritage))
-    : 0;
-
-  const atelierLegacy = Math.pow(1.05, workshopPrestigeCount);
-  const maisonLegacy = Math.pow(1.03, maisonHeritage);
-
-  return Math.min(10, atelierLegacy * maisonLegacy);
-}
-
-export function getEnjoymentRateCentsPerSec(state: GameState): number {
-  const baseRate = WATCH_ITEMS.reduce(
-    (total, item) =>
-      total + getItemCount(state, item.id) * getWatchItemEnjoymentRateCentsPerSec(item),
-    0,
-  );
-  return baseRate * getPrestigeLegacyMultiplier(state);
-}
-
-export function getEnjoymentThresholdLabel(cents: number): string {
-  return `${formatMoneyFromCents(cents)} enjoyment`;
 }
 
 export function getMilestoneRequirementLabel(milestoneId: MilestoneId): string {
@@ -605,6 +704,139 @@ export function getTotalCashRateCentsPerSec(state: GameState, eventMultiplier = 
     getEffectiveIncomeRateCentsPerSec(state, eventMultiplier) +
     getTherapistCashRateCentsPerSec(state) * eventMultiplier
   );
+}
+
+export type RateBreakdownMultiplierTerm = {
+  id: string;
+  label: string;
+  multiplier: number;
+};
+
+export type RateBreakdownAddendTerm = {
+  id: string;
+  label: string;
+  centsPerSec: number;
+};
+
+export type EnjoymentRateBreakdown = {
+  baseCentsPerSec: number;
+  multiplierTerms: RateBreakdownMultiplierTerm[];
+  eventMultiplier: number;
+  effectiveCentsPerSec: number;
+};
+
+export function getEnjoymentRateBreakdown(
+  state: GameState,
+  eventMultiplier = 1,
+): EnjoymentRateBreakdown {
+  const baseCentsPerSec = WATCH_ITEMS.reduce(
+    (total, item) =>
+      total + getItemCount(state, item.id) * getWatchItemEnjoymentRateCentsPerSec(item),
+    0,
+  );
+
+  const multiplierTerms: RateBreakdownMultiplierTerm[] = [
+    {
+      id: "prestige-legacy",
+      label: "Prestige legacy",
+      multiplier: getPrestigeLegacyMultiplier(state),
+    },
+    { id: "event", label: "Event", multiplier: eventMultiplier },
+  ];
+
+  return {
+    baseCentsPerSec,
+    multiplierTerms,
+    eventMultiplier,
+    effectiveCentsPerSec: getEnjoymentRateCentsPerSec(state) * eventMultiplier,
+  };
+}
+
+export type CashRateBreakdown = {
+  eventMultiplier: number;
+  vaultAddends: RateBreakdownAddendTerm[];
+  vaultMultiplierTerms: RateBreakdownMultiplierTerm[];
+  vaultPreSoftcapCentsPerSec: number;
+  vaultEffectiveCentsPerSec: number;
+  therapistAddends: RateBreakdownAddendTerm[];
+  softcapCentsPerSec: number;
+  softcapExponent: number;
+  softcapEfficiency: number;
+  totalCentsPerSec: number;
+};
+
+export function getCashRateBreakdown(state: GameState, eventMultiplier = 1): CashRateBreakdown {
+  const itemIncome = WATCH_ITEMS.reduce(
+    (total, item) => total + getItemCount(state, item.id) * item.incomeCentsPerSec,
+    0,
+  );
+
+  const vaultBaseCentsPerSec = BASE_INCOME_CENTS_PER_SEC + itemIncome;
+
+  const upgradeMultiplier = UPGRADES.reduce(
+    (multiplier, upgrade) =>
+      multiplier + getUpgradeLevel(state, upgrade.id) * upgrade.incomeMultiplierPerLevel,
+    1,
+  );
+
+  const setBonusMultiplier = getActiveSetBonuses(state).reduce(
+    (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
+    1,
+  );
+
+  const vaultMultiplierTerms: RateBreakdownMultiplierTerm[] = [
+    { id: "upgrades", label: "Upgrades", multiplier: upgradeMultiplier },
+    { id: "sets", label: "Sets", multiplier: setBonusMultiplier },
+    { id: "collection", label: "Collection", multiplier: getCollectionBonusMultiplier(state) },
+    { id: "workshop", label: "Workshop", multiplier: getWorkshopIncomeMultiplier(state) },
+    { id: "maison", label: "Maison", multiplier: getMaisonIncomeMultiplier(state) },
+    { id: "catalog", label: "Catalog tiers", multiplier: getCatalogTierIncomeMultiplier(state) },
+    { id: "abilities", label: "Abilities", multiplier: getWatchAbilityIncomeMultiplier(state) },
+    { id: "crafted", label: "Crafted boosts", multiplier: getCraftedBoostIncomeMultiplier(state) },
+    {
+      id: "prestige-legacy",
+      label: "Prestige legacy",
+      multiplier: getPrestigeLegacyMultiplier(state),
+    },
+    { id: "event", label: "Event", multiplier: eventMultiplier },
+  ];
+
+  const vaultPreSoftcapCentsPerSec =
+    vaultBaseCentsPerSec *
+    vaultMultiplierTerms.reduce((multiplier, term) => multiplier * term.multiplier, 1);
+
+  const softcapCentsPerSec = getWorkshopSoftcapValue(state);
+  const softcapExponent = getWorkshopSoftcapExponent(state);
+  const vaultEffectiveCentsPerSec = applySoftcap(
+    vaultPreSoftcapCentsPerSec,
+    softcapCentsPerSec,
+    softcapExponent,
+  );
+
+  const softcapEfficiency =
+    vaultPreSoftcapCentsPerSec > 0
+      ? Math.min(1, Math.max(0, vaultEffectiveCentsPerSec / vaultPreSoftcapCentsPerSec))
+      : 1;
+
+  const therapistSalaryCentsPerSec = getTherapistCashRateCentsPerSec(state);
+  const therapistAddends: RateBreakdownAddendTerm[] = [
+    { id: "therapist-salary", label: "Therapist salary", centsPerSec: therapistSalaryCentsPerSec },
+  ];
+
+  const therapistEffectiveCentsPerSec = therapistSalaryCentsPerSec * eventMultiplier;
+
+  return {
+    eventMultiplier,
+    vaultAddends: [{ id: "vault-base", label: "Vault base", centsPerSec: vaultBaseCentsPerSec }],
+    vaultMultiplierTerms,
+    vaultPreSoftcapCentsPerSec,
+    vaultEffectiveCentsPerSec,
+    therapistAddends,
+    softcapCentsPerSec,
+    softcapExponent,
+    softcapEfficiency,
+    totalCentsPerSec: vaultEffectiveCentsPerSec + therapistEffectiveCentsPerSec,
+  };
 }
 
 export function getEventIncomeMultiplier(state: GameState, nowMs: number): number {

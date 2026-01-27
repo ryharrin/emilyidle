@@ -1,6 +1,10 @@
 import React from "react";
 
 import { LockIcon, PrestigeIcon } from "../icons/coreIcons";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
+import { PrestigeSummary } from "../components/PrestigeSummary";
+import { buildNostalgiaPrestigeSummary } from "../prestigeSummary";
 
 import { formatMoneyFromCents } from "../../game/format";
 import {
@@ -34,11 +38,16 @@ type Settings = {
   confirmNostalgiaUnlocks: boolean;
 };
 
+type PurchaseMeta = {
+  prestigeTier?: "workshop" | "maison" | "nostalgia";
+};
+
 type NostalgiaTabProps = {
   isActive: boolean;
   state: GameState;
   showNostalgiaSection: boolean;
   showNostalgiaPanel: boolean;
+  onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
   nostalgiaResultsDismissed: boolean;
   onDismissResults: () => void;
   nostalgiaProgress: number;
@@ -56,7 +65,7 @@ type NostalgiaTabProps = {
   onSetNostalgiaUnlockPending: (next: WatchItemId | null) => void;
   settings: Settings;
   persistSettings: (nextSettings: Settings) => void;
-  onPurchase: (nextState: GameState) => void;
+  onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
 };
 
 export function NostalgiaTab({
@@ -148,24 +157,10 @@ export function NostalgiaTab({
                 <p>Current balance: {state.nostalgiaPoints.toLocaleString()} Nostalgia</p>
               </div>
 
-              <div className="card-stack">
-                <div className="card">
-                  <h4>Resets</h4>
-                  <ul>
-                    <li>Vault cash and enjoyment totals</li>
-                    <li>Career levels and session progress</li>
-                    <li>Atelier and Maison prestige progress</li>
-                    <li>Upgrades and crafted boosts</li>
-                  </ul>
-                </div>
-                <div className="card">
-                  <h4>Keeps</h4>
-                  <ul>
-                    <li>Owned watches in your collection</li>
-                    <li>Catalog discoveries and achievements</li>
-                  </ul>
-                </div>
-              </div>
+              <PrestigeSummary
+                summary={buildNostalgiaPrestigeSummary(nostalgiaPrestigeGain)}
+                testId="nostalgia-prestige-summary"
+              />
 
               <div className="card-actions">
                 <button
@@ -190,9 +185,16 @@ export function NostalgiaTab({
                   <header className="nostalgia-unlocks-header">
                     <div>
                       <p className="eyebrow">Permanent unlocks</p>
-                      <h4>Unlock store</h4>
+                      <h4>
+                        Unlock store{" "}
+                        <ExplainButton
+                          sectionId={HELP_SECTION_IDS.nostalgiaUnlocks}
+                          label="Explain unlock order"
+                        />
+                      </h4>
                       <p className="muted">
-                        Spend Nostalgia to unlock new watch lines across every reset.
+                        Spend Nostalgia to unlock new watch lines across every reset. Unlocks are
+                        purchased in order.
                       </p>
                     </div>
                     <label className="nostalgia-unlocks-toggle">
@@ -304,16 +306,16 @@ export function NostalgiaTab({
                     <p className="muted">
                       You will gain +{nostalgiaPrestigeGain} Nostalgia and reset vault progress.
                     </p>
-                    <ul>
-                      <li>Resets cash, enjoyment, and career progress</li>
-                      <li>Resets Atelier + Maison prestige progress</li>
-                      <li>Clears upgrades and crafted boosts</li>
-                    </ul>
+                    <PrestigeSummary
+                      summary={buildNostalgiaPrestigeSummary(nostalgiaPrestigeGain)}
+                    />
                     <div className="card-actions">
                       <button
                         type="button"
                         onClick={() => {
-                          onPurchase(prestigeNostalgia(state, Date.now()));
+                          onPurchase(prestigeNostalgia(state, Date.now()), {
+                            prestigeTier: "nostalgia",
+                          });
                           onToggleNostalgiaModal(false);
                         }}
                       >

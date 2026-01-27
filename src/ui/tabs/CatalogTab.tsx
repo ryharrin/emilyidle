@@ -1,10 +1,23 @@
 import React from "react";
 
+import { EmptyStateCTA } from "../components/EmptyStateCTA";
+
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
 import type { CatalogEntry } from "../../game/catalog";
 
+type TabId =
+  | "collection"
+  | "career"
+  | "workshop"
+  | "maison"
+  | "nostalgia"
+  | "catalog"
+  | "stats"
+  | "save";
+
 type CatalogTabProps = {
   isActive: boolean;
+  onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
   catalogSearch: string;
   onCatalogSearchChange: (next: string) => void;
   catalogBrand: string;
@@ -29,6 +42,7 @@ type CatalogTabProps = {
 
 export function CatalogTab({
   isActive,
+  onNavigate,
   catalogSearch,
   onCatalogSearchChange,
   catalogBrand,
@@ -259,9 +273,14 @@ export function CatalogTab({
                 })}
               </div>
             ) : (
-              <p className="catalog-empty" data-testid="catalog-discovered-empty">
-                No discoveries yet. Track down references in the archive to fill this shelf.
-              </p>
+              <div className="catalog-empty" data-testid="catalog-discovered-empty">
+                <EmptyStateCTA
+                  title="No references discovered yet"
+                  body="Buy and interact with watches in the Vault to discover catalog references and unlock tier bonuses."
+                  ctaLabel="Go to Vault"
+                  onCta={() => onNavigate("collection", "collection-list")}
+                />
+              </div>
             )}
           </section>
           <section
@@ -336,9 +355,14 @@ export function CatalogTab({
             {catalogTab === "owned" && (
               <>
                 {!hasOwnedCatalogTiers ? (
-                  <p className="catalog-empty" data-testid="catalog-owned-empty">
-                    No owned tiers yet—add pieces to your vault to start the archive.
-                  </p>
+                  <div className="catalog-empty" data-testid="catalog-owned-empty">
+                    <EmptyStateCTA
+                      title="No owned references yet"
+                      body="Build your vault collection to start filling your archive shelf with owned references."
+                      ctaLabel="Build collection"
+                      onCta={() => onNavigate("collection", "collection-list")}
+                    />
+                  </div>
                 ) : (
                   <div className="catalog-grid" data-testid="catalog-grid">
                     {filteredCatalogEntries.map((entry) => {

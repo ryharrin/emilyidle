@@ -4,6 +4,13 @@ export type HelpSection = {
   body: string[];
 };
 
+export const HELP_SECTION_IDS = {
+  currencies: "currencies",
+  gates: "gates",
+  rates: "rates",
+  nostalgiaUnlocks: "nostalgia-unlocks",
+} as const;
+
 export const HELP_SECTIONS: HelpSection[] = [
   {
     id: "overview",
@@ -15,12 +22,30 @@ export const HELP_SECTIONS: HelpSection[] = [
     ],
   },
   {
-    id: "currencies",
+    id: HELP_SECTION_IDS.currencies,
     title: "Currencies",
     body: [
       "Enjoyment reflects your collection's momentum and unlocks new tiers.",
       "Dollars are spent on purchases and scale with careers and events.",
       "Memories track sentimental value and power catalog bonuses.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.gates,
+    title: "Gates",
+    body: [
+      "Some watches require a minimum enjoyment level to purchase.",
+      "Cash is always spent; enjoyment is a requirement you must meet.",
+      "If you're blocked, check whether the gate is enjoyment or dollars.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.rates,
+    title: "Rates",
+    body: [
+      "Rates are shown as base + modifiers.",
+      "Events can multiply both dollars/sec and enjoyment/sec.",
+      "Softcap reduces vault dollars/sec above a threshold; therapist salary is separate.",
     ],
   },
   {
@@ -30,6 +55,15 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Atelier resets vault progress for Blueprints and permanent upgrades.",
       "Maison resets further to earn Heritage and Reputation multipliers.",
       "Nostalgia converts deep progress into a new currency and unlock store.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.nostalgiaUnlocks,
+    title: "Nostalgia unlocks",
+    body: [
+      "The unlock store is ordered - unlocks must be purchased in sequence.",
+      "If an item says Locked, it usually means earlier unlocks are still missing.",
+      "Only the most recent unlock can be refunded.",
     ],
   },
   {

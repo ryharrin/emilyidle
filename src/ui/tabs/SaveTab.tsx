@@ -87,9 +87,17 @@ export function SaveTab({
     >
       {isActive && (
         <>
-          <h2>Save</h2>
+          <header className="panel-header">
+            <div>
+              <p className="eyebrow">Preferences</p>
+              <h2>Save</h2>
+              <p className="muted">
+                Back up your progress, import a save string, and tweak settings.
+              </p>
+            </div>
+          </header>
           <div className="controls">
-            <button type="button" onClick={onExport}>
+            <button type="button" className="secondary" onClick={onExport}>
               Export
             </button>
           </div>

@@ -1,5 +1,9 @@
 import React from "react";
 
+import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
+import { UnlockHint } from "../components/UnlockHint";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
 import { LockIcon } from "../icons/coreIcons";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
@@ -9,11 +13,15 @@ import {
   buyUpgrade,
   canBuyMaisonLine,
   canBuyUpgrade,
+  getAchievementUnlockProgressDetail,
   dismantleItem,
   getEventStatusLabel,
   getMaxAffordableItemCount,
+  getMilestoneUnlockProgressDetail,
   getMilestoneRequirementLabel,
+  getPrestigeUnlockProgressDetail,
   getUpgradePriceCents,
+  getUnlockRevealProgressRatio,
   getWatchItemEnjoymentRateCentsPerSec,
   getWatchPurchaseGate,
   isEventActive,
@@ -64,6 +72,7 @@ type Coachmark = {
 type CollectionTabProps = {
   isActive: boolean;
   state: GameState;
+  onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
   watchItems: ReadonlyArray<WatchItemDefinition>;
   watchItemLabels: Map<WatchItemId, string>;
   autoBuyUnlocked: boolean;
@@ -101,6 +110,7 @@ type CollectionTabProps = {
 export function CollectionTab({
   isActive,
   state,
+  onNavigate,
   watchItems,
   watchItemLabels,
   autoBuyUnlocked,
@@ -134,6 +144,133 @@ export function CollectionTab({
   onPurchase,
   onInteract,
 }: CollectionTabProps) {
+  const formatCount = (value: number) => Math.floor(value).toLocaleString();
+
+  const nextUnlockItems: NextUnlockItem[] = [];
+  const collectionListCta = {
+    tabId: "collection" as const,
+    scrollTargetId: "collection-list",
+  };
+
+  if (!state.unlockedMilestones.includes("collector-shelf")) {
+    const detail = getMilestoneUnlockProgressDetail(state, "collector-shelf");
+
+    nextUnlockItems.push({
+      id: "career",
+      eyebrow: "Next unlock",
+      title: "Career",
+      detail: detail.label,
+      currentLabel: formatCount(detail.current),
+      thresholdLabel: formatCount(detail.threshold),
+      ratio: detail.ratio,
+      cta: {
+        label: "Buy watches",
+        testId: "next-unlock-cta-career",
+        onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
+      },
+    });
+  }
+
+  {
+    const detail = getMilestoneUnlockProgressDetail(state, "showcase");
+    if (detail.ratio < 1) {
+      nextUnlockItems.push({
+        id: "catalog",
+        eyebrow: "Next unlock",
+        title: "Catalog",
+        detail: detail.label,
+        currentLabel: formatMoneyFromCents(detail.current),
+        thresholdLabel: formatMoneyFromCents(detail.threshold),
+        ratio: getUnlockRevealProgressRatio(detail.ratio),
+        cta: {
+          label: "Buy watches",
+          testId: "next-unlock-cta-catalog",
+          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
+        },
+      });
+    }
+  }
+
+  {
+    const detail = getAchievementUnlockProgressDetail(state, "first-drawer");
+    if (detail.ratio < 1) {
+      nextUnlockItems.push({
+        id: "stats",
+        eyebrow: "Next unlock",
+        title: "Stats",
+        detail: detail.label,
+        currentLabel: formatCount(detail.current),
+        thresholdLabel: formatCount(detail.threshold),
+        ratio: getUnlockRevealProgressRatio(detail.ratio),
+        cta: {
+          label: "Buy watches",
+          testId: "next-unlock-cta-stats",
+          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
+        },
+      });
+    }
+  }
+
+  {
+    const detail = getPrestigeUnlockProgressDetail(state, "workshop");
+    if (detail.ratio < 1) {
+      nextUnlockItems.push({
+        id: "workshop",
+        eyebrow: "Next unlock",
+        title: "Workshop",
+        detail: detail.label,
+        currentLabel: formatMoneyFromCents(detail.current),
+        thresholdLabel: formatMoneyFromCents(detail.threshold),
+        ratio: getUnlockRevealProgressRatio(detail.ratio),
+        cta: {
+          label: "Build collection",
+          testId: "next-unlock-cta-workshop",
+          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
+        },
+      });
+    }
+  }
+
+  {
+    const detail = getPrestigeUnlockProgressDetail(state, "maison");
+    if (detail.ratio < 1) {
+      nextUnlockItems.push({
+        id: "maison",
+        eyebrow: "Next unlock",
+        title: "Maison",
+        detail: detail.label,
+        currentLabel: formatMoneyFromCents(detail.current),
+        thresholdLabel: formatMoneyFromCents(detail.threshold),
+        ratio: getUnlockRevealProgressRatio(detail.ratio),
+        cta: {
+          label: "Build collection",
+          testId: "next-unlock-cta-maison",
+          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
+        },
+      });
+    }
+  }
+
+  {
+    const detail = getPrestigeUnlockProgressDetail(state, "nostalgia");
+    if (detail.ratio < 1) {
+      nextUnlockItems.push({
+        id: "nostalgia",
+        eyebrow: "Next unlock",
+        title: "Nostalgia",
+        detail: detail.label,
+        currentLabel: formatMoneyFromCents(detail.current),
+        thresholdLabel: formatMoneyFromCents(detail.threshold),
+        ratio: getUnlockRevealProgressRatio(detail.ratio),
+        cta: {
+          label: "Build collection",
+          testId: "next-unlock-cta-nostalgia",
+          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
+        },
+      });
+    }
+  }
+
   return (
     <section
       className="collection"
@@ -147,6 +284,7 @@ export function CollectionTab({
           <div>
             <h2>Collection</h2>
             <p className="muted">Acquire pieces to grow enjoyment and cash.</p>
+            <NextUnlockPanel items={nextUnlockItems} />
             <div className="collection-setup" data-testid="collection-setup">
               <fieldset className="automation-toggle" data-testid="automation-controls">
                 <legend className="automation-label">Automation controls</legend>
@@ -203,7 +341,9 @@ export function CollectionTab({
                             <h4>{tier.name}</h4>
                             <p>{tier.description}</p>
                           </div>
-                          <div>{unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}</div>
+                          <div className="muted">
+                            {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
+                          </div>
                         </div>
                         <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
                       </div>
@@ -258,7 +398,7 @@ export function CollectionTab({
                             <h4>{line.name}</h4>
                             <p>{line.description}</p>
                           </div>
-                          <div>{owned ? "Active" : costLabel}</div>
+                          <div className="muted">{owned ? "Active" : costLabel}</div>
                         </div>
                         <p>{effectLabel}</p>
                         <div className="card-actions">
@@ -283,6 +423,21 @@ export function CollectionTab({
                 const maxAffordable = getMaxAffordableItemCount(state, item.id);
                 const bulkQty = Math.min(10, Math.max(1, maxAffordable));
                 const unlocked = isItemUnlocked(state, item.id);
+                const unlockMilestoneId = item.unlockMilestoneId;
+                const unlockDetail = unlockMilestoneId
+                  ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+                  : null;
+                const unlockUsesCents = unlockMilestoneId === "showcase";
+                const unlockCurrentLabel = unlockDetail
+                  ? unlockUsesCents
+                    ? formatMoneyFromCents(unlockDetail.current)
+                    : formatCount(unlockDetail.current)
+                  : "0";
+                const unlockThresholdLabel = unlockDetail
+                  ? unlockUsesCents
+                    ? formatMoneyFromCents(unlockDetail.threshold)
+                    : formatCount(unlockDetail.threshold)
+                  : "0";
                 const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
                 const singleGate = getWatchPurchaseGate(state, item.id, 1);
                 const bulkGate = getWatchPurchaseGate(state, item.id, bulkQty);
@@ -294,7 +449,7 @@ export function CollectionTab({
                         <h3>{item.name}</h3>
                         <p>{item.description}</p>
                       </div>
-                      <div>{owned} owned</div>
+                      <div className="muted">{owned} owned</div>
                     </div>
                     <p>
                       {formatRateFromCentsPerSec(getWatchItemEnjoymentRateCentsPerSec(item))}{" "}
@@ -302,6 +457,18 @@ export function CollectionTab({
                       each · Memories {formatMoneyFromCents(item.collectionValueCents)}
                     </p>
                     <p className="muted">Dismantle value: {partsPerWatch} parts</p>
+                    {!unlocked && unlockDetail && (
+                      <div data-testid={`locked-item-hint-${item.id}`}>
+                        <UnlockHint
+                          eyebrow="Locked"
+                          title="Unlock requirement"
+                          detail={unlockDetail.label}
+                          currentLabel={unlockCurrentLabel}
+                          thresholdLabel={unlockThresholdLabel}
+                          ratio={unlockDetail.ratio}
+                        />
+                      </div>
+                    )}
                     <div className="card-actions">
                       <button
                         type="button"
@@ -336,11 +503,31 @@ export function CollectionTab({
                       >
                         Buy {bulkQty} ({formatMoneyFromCents(bulkGate.cashPriceCents)})
                       </button>
-                      {unlocked && !singleGate.ok && singleGate.blocksBy === "enjoyment" && (
+                      {unlocked && !singleGate.ok && (
                         <div className="purchase-locked" data-testid={`purchase-gate-${item.id}`}>
                           <LockIcon className="inline-icon" />
-                          Requires {formatMoneyFromCents(singleGate.enjoymentRequiredCents)}{" "}
-                          enjoyment
+                          {singleGate.blocksBy === "enjoyment" && (
+                            <>
+                              Requires {formatMoneyFromCents(singleGate.enjoymentRequiredCents)}{" "}
+                              enjoyment
+                              {singleGate.enjoymentDeficitCents !== undefined && (
+                                <>
+                                  {" "}
+                                  (need {formatMoneyFromCents(
+                                    singleGate.enjoymentDeficitCents,
+                                  )}{" "}
+                                  more)
+                                </>
+                              )}
+                            </>
+                          )}
+                          {singleGate.blocksBy === "cash" && (
+                            <>
+                              Need {formatMoneyFromCents(singleGate.cashDeficitCents ?? 0)} more
+                              dollars
+                            </>
+                          )}
+                          <ExplainButton sectionId={HELP_SECTION_IDS.gates} label="Explain gates" />
                         </div>
                       )}
                       {!unlocked &&
@@ -398,6 +585,21 @@ export function CollectionTab({
                   const level = state.upgrades[upgrade.id] ?? 0;
                   const price = getUpgradePriceCents(state, upgrade.id, 1);
                   const unlocked = isUpgradeUnlocked(state, upgrade.id);
+                  const unlockMilestoneId = upgrade.unlockMilestoneId;
+                  const unlockDetail = unlockMilestoneId
+                    ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+                    : null;
+                  const unlockUsesCents = unlockMilestoneId === "showcase";
+                  const unlockCurrentLabel = unlockDetail
+                    ? unlockUsesCents
+                      ? formatMoneyFromCents(unlockDetail.current)
+                      : formatCount(unlockDetail.current)
+                    : "0";
+                  const unlockThresholdLabel = unlockDetail
+                    ? unlockUsesCents
+                      ? formatMoneyFromCents(unlockDetail.threshold)
+                      : formatCount(unlockDetail.threshold)
+                    : "0";
 
                   return (
                     <div className="card" key={upgrade.id}>
@@ -406,9 +608,21 @@ export function CollectionTab({
                           <h3>{upgrade.name}</h3>
                           <p>{upgrade.description}</p>
                         </div>
-                        <div>Level {level}</div>
+                        <div className="muted">Level {level}</div>
                       </div>
                       <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% cash per level</p>
+                      {!unlocked && unlockDetail && (
+                        <div data-testid={`locked-upgrade-hint-${upgrade.id}`}>
+                          <UnlockHint
+                            eyebrow="Locked"
+                            title="Unlock requirement"
+                            detail={unlockDetail.label}
+                            currentLabel={unlockCurrentLabel}
+                            thresholdLabel={unlockThresholdLabel}
+                            ratio={unlockDetail.ratio}
+                          />
+                        </div>
+                      )}
                       <div className="card-actions">
                         <button
                           type="button"
@@ -492,7 +706,7 @@ export function CollectionTab({
                           <h3>{event.name}</h3>
                           <p>{event.description}</p>
                         </div>
-                        <div>{active ? "Live" : "Idle"}</div>
+                        <div className="muted">{active ? "Live" : "Idle"}</div>
                       </div>
                       <p>Income x{effectiveMultiplier.toFixed(2)}</p>
                       <p className="muted" aria-live="polite">
@@ -535,7 +749,7 @@ export function CollectionTab({
                           <h3>{bonus.name}</h3>
                           <p>{bonus.description}</p>
                         </div>
-                        <div>{active ? "Active" : "Inactive"}</div>
+                        <div className="muted">{active ? "Active" : "Inactive"}</div>
                       </div>
                       <div className="set-bonus-progress">
                         {progress.map((entry) => (

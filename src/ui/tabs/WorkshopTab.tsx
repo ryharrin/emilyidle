@@ -1,6 +1,8 @@
 import React from "react";
 
 import { PrestigeIcon } from "../icons/coreIcons";
+import { PrestigeSummary } from "../components/PrestigeSummary";
+import { buildWorkshopPrestigeSummary } from "../prestigeSummary";
 
 import {
   buyWorkshopUpgrade,
@@ -18,17 +20,32 @@ import type {
   WorkshopUpgradeDefinition,
 } from "../../game/state";
 
+type TabId =
+  | "collection"
+  | "career"
+  | "workshop"
+  | "maison"
+  | "nostalgia"
+  | "catalog"
+  | "stats"
+  | "save";
+
+type PurchaseMeta = {
+  prestigeTier?: "workshop" | "maison" | "nostalgia";
+};
+
 type WorkshopTabProps = {
   isActive: boolean;
   state: GameState;
   showWorkshopSection: boolean;
   showWorkshopPanel: boolean;
+  onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
   workshopPrestigeGain: number;
   workshopRevealProgress: number;
   workshopResetArmed: boolean;
   onToggleWorkshopResetArmed: (next: boolean) => void;
   canPrestigeWorkshop: boolean;
-  onPurchase: (nextState: GameState) => void;
+  onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
   workshopUpgrades: ReadonlyArray<WorkshopUpgradeDefinition>;
   craftingParts: number;
   watchItems: ReadonlyArray<WatchItemDefinition>;
@@ -100,7 +117,9 @@ export function WorkshopTab({
                             if (!canPrestigeWorkshop) {
                               return;
                             }
-                            onPurchase(prestigeWorkshop(state, workshopPrestigeGain));
+                            onPurchase(prestigeWorkshop(state, workshopPrestigeGain), {
+                              prestigeTier: "workshop",
+                            });
                             onToggleWorkshopResetArmed(false);
                           }}
                         >
@@ -117,7 +136,7 @@ export function WorkshopTab({
                     ) : (
                       <button
                         type="button"
-                        className="secondary inline-icon-button"
+                        className={`${canPrestigeWorkshop ? "" : "secondary "}inline-icon-button`}
                         disabled={!canPrestigeWorkshop}
                         onClick={() => onToggleWorkshopResetArmed(true)}
                       >
@@ -133,6 +152,14 @@ export function WorkshopTab({
                           : "Requires reaching the enjoyment threshold."}
                     </p>
                   </fieldset>
+
+                  {workshopResetArmed && (
+                    <PrestigeSummary
+                      summary={buildWorkshopPrestigeSummary(workshopPrestigeGain)}
+                      testId="workshop-prestige-summary"
+                    />
+                  )}
+
                   <div className="workshop-upgrades">
                     <h4>Upgrades</h4>
                     <div className="card-stack">

@@ -1,6 +1,8 @@
 import React from "react";
 
 import { PrestigeIcon } from "../icons/coreIcons";
+import { PrestigeSummary } from "../components/PrestigeSummary";
+import { buildMaisonPrestigeSummary } from "../prestigeSummary";
 
 import {
   buyMaisonUpgrade,
@@ -11,18 +13,33 @@ import {
 } from "../../game/state";
 import type { GameState, MaisonUpgradeDefinition } from "../../game/state";
 
+type TabId =
+  | "collection"
+  | "career"
+  | "workshop"
+  | "maison"
+  | "nostalgia"
+  | "catalog"
+  | "stats"
+  | "save";
+
+type PurchaseMeta = {
+  prestigeTier?: "workshop" | "maison" | "nostalgia";
+};
+
 type MaisonTabProps = {
   isActive: boolean;
   state: GameState;
   showMaisonSection: boolean;
   showMaisonPanel: boolean;
+  onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
   maisonPrestigeGain: number;
   maisonReputationGain: number;
   maisonRevealProgress: number;
   maisonResetArmed: boolean;
   onToggleMaisonResetArmed: (next: boolean) => void;
   canPrestigeMaison: boolean;
-  onPurchase: (nextState: GameState) => void;
+  onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
   maisonUpgrades: ReadonlyArray<MaisonUpgradeDefinition>;
 };
 
@@ -95,7 +112,7 @@ export function MaisonTab({
                             if (!canPrestigeMaison) {
                               return;
                             }
-                            onPurchase(prestigeMaison(state));
+                            onPurchase(prestigeMaison(state), { prestigeTier: "maison" });
                             onToggleMaisonResetArmed(false);
                           }}
                         >
@@ -112,7 +129,7 @@ export function MaisonTab({
                     ) : (
                       <button
                         type="button"
-                        className="secondary inline-icon-button"
+                        className={`${canPrestigeMaison ? "" : "secondary "}inline-icon-button`}
                         disabled={!canPrestigeMaison}
                         onClick={() => onToggleMaisonResetArmed(true)}
                       >
@@ -128,6 +145,14 @@ export function MaisonTab({
                           : "Requires reaching the enjoyment threshold."}
                     </p>
                   </fieldset>
+
+                  {maisonResetArmed && (
+                    <PrestigeSummary
+                      summary={buildMaisonPrestigeSummary(maisonPrestigeGain, maisonReputationGain)}
+                      testId="maison-prestige-summary"
+                    />
+                  )}
+
                   <div className="workshop-upgrades">
                     <h4>Maison upgrades</h4>
                     <div className="card-stack">
