@@ -68,10 +68,26 @@ Will not implement Features:
 * Implement a feature where players can create and join watch clubs or communities within the game to discuss
 
 Planned Features:
-
+- The winding mini-game should be more interactive, allowing players to control the winding process rather than it being automatic. (Planned feature: add a mini-game where players must time their actions to successfully wind the watch.)
+- Add more feedback and interactivity when using the winding mini-game to make it more engaging.
+- Add a visual watch winding animation for the winding mini-game. (Planned feature: create an animation that shows the watch being wound up as the player interacts with the mini-game.)
+- Watches should only be purchasable by money earned through the career progression system and should only provide enjoyment and memories. (Planned feature: restrict watch purchases to money earned from career activities, removing any other money sources.)
+- The career progression system should have more depth, with additional career paths or specializations available to the player. (Planned feature: introduce branching career paths that offer different benefits and challenges.)
+- Careers should be the only way to earn money. It should be unlocked from the beginning. The first session should not cost any enjoyment, but ones afterwards should. (Planned feature: redesign the money-earning mechanics to be solely based on career progression, removing any other money sources.)
+- Watches that are purchased should not be generic. They should be specific models from real brands. You can buy more than one of each, but the enjoyment/memories provided by after the first should be reduced progressively as you buy more. (Planned feature: implement a system where players can purchase specific watch models, with diminishing returns on enjoyment/memories for multiple purchases of the same model.)
+- The catalog view should be the default view when starting the game, rather than the main game view. It should be where all watch purchases should be made. Move the help tips to the catalog page. Move other upgrades to a separate tab. (Planned feature: set the catalog as the default starting view and reorganize the UI to separate watch purchases and upgrades.)
+- There should be other mini-games for automatics watches, such as setting the time/date or changing the strap. (Planned fix: develop additional mini-games tailored to automatic watches.)
+- The user can wear one watch at a time, which provides a different bonus for each watch. (Planned feature: implement a system where players can select one watch to wear, granting specific bonuses based on the chosen watch.)
+- Upgrades should display the effect that buying them will have on currency rates. (Planned feature: add detailed descriptions to upgrade options, showing their impact on gameplay metrics.)
+- Add more detailed help documentation to explain the dual-currency system and career progression mechanics. (Planned feature: create comprehensive help sections that clarify how enjoyment, money, and nostalgia points work together.)
+- All help sections should be updated to reflect the new dual-currency system and career progression mechanics. (Planned feature: revise help documentation to accurately describe the updated game mechanics.)
 
 Bug fixes:
-- The 'interact' button doesn't seem to do anything yet. (Planned fix: implement mini-game mechanics triggered by the button.)
+- The 'interact' button should create a modal popup instead of starting a 'winding session' in the background. (Planned fix: change the button action to open a modal with interaction options.)
+- The winding mini-game should provide clearer feedback on success/failure and rewards. (Planned fix: add visual and audio cues for winding outcomes.)
+- The winding mini-game should only be available for non-automatic watches. (Planned fix: implement a check to disable the mini-game for automatic watch models.)
+- The 'dismantle' button should be hidden until the workshop is unlocked. (Planned fix: implement conditional visibility for the dismantle button based on workshop unlock status.)
+- On the 'vault' screen, the place to buy watches should be more prominent and easier to find. (Planned fix: redesign the vault UI to highlight the watch purchasing area.)
 - Display how much money is needed for the next blueprint in the atelier view. (Planned fix: add a display element showing the cost of the next blueprint.)
 - Atelier bonuses should be more powerful to make them feel more impactful. The second vault run should be significantly faster than the first. (Planned fix: adjust the bonus scaling for atelier upgrades.)
 
