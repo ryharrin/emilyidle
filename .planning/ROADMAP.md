@@ -163,11 +163,11 @@ Plans:
 
 **Goal:** Refactor the Phase 13 enjoyment economy code into clearer, more navigable modules and lock in research-informed invariants with unit tests (no gameplay changes).
 **Depends on:** Phase 18
-**Plans:** 0/2 plans complete
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 19-01-PLAN.md — Extract enjoyment economy selectors into dedicated module
-- [ ] 19-02-PLAN.md — Add unit coverage for prestige-scaled enjoyment + purchase gating
+- [x] 19-01-PLAN.md — Extract enjoyment economy selectors into dedicated module
+- [x] 19-02-PLAN.md — Add unit coverage for prestige-scaled enjoyment + purchase gating
 
 **Details:**
 [To be added during planning]
@@ -177,14 +177,14 @@ Plans:
 **Goal:** Users can access game help from anywhere and recognize core UI cues (help/lock/prestige) consistently.
 **Depends on:** Phase 19
 **Requirements:** GUIDE-01, POLISH-05
-**Plans:** 4/5 plans complete
+**Plans:** 5/5 plans complete
 
 Plans:
 - [x] 20-01-PLAN.md — Add shared lucide-react icon wrappers
 - [x] 20-02-PLAN.md — Add global Help modal + persistence + header entry point
 - [x] 20-03-PLAN.md — Standardize lock/prestige cues using shared icons
 - [x] 20-04-PLAN.md — Add Playwright coverage for Help + icon cues
-- [ ] 20-05-PLAN.md — Human verify mobile Help usability + icon consistency
+- [x] 20-05-PLAN.md — Human verify mobile Help usability + icon consistency
 
 **Success criteria:**
 1. User can open a Help/Glossary entry point from any tab.
@@ -199,15 +199,15 @@ Add a global Help/Glossary entry point (mobile full-screen modal) and unify the 
 **Goal:** Users can understand what currencies/gates mean and why their enjoyment/cash rates are what they are.
 **Depends on:** Phase 20
 **Requirements:** GUIDE-02, GUIDE-03, CLAR-03
-**Plans:** 0/6 plans complete
+**Plans:** 6/6 plans complete
 
 Plans:
-- [ ] 21-01-PLAN.md — Add selector-level cash/enjoyment rate breakdown exports
-- [ ] 21-02-PLAN.md — Add help section ids + ExplainButton + help wiring for point-of-use explanations
-- [ ] 21-03-PLAN.md — Show purchase gate explanations (cash vs enjoyment) in Vault
-- [ ] 21-04-PLAN.md — Add rate breakdown disclosure UI in Stats
-- [ ] 21-05-PLAN.md — Explain Nostalgia unlock order from the unlock store
-- [ ] 21-06-PLAN.md — Add Playwright coverage for explain triggers + rate breakdown
+- [x] 21-01-PLAN.md — Add selector-level cash/enjoyment rate breakdown exports
+- [x] 21-02-PLAN.md — Add help section ids + ExplainButton + help wiring for point-of-use explanations
+- [x] 21-03-PLAN.md — Show purchase gate explanations (cash vs enjoyment) in Vault
+- [x] 21-04-PLAN.md — Add rate breakdown disclosure UI in Stats
+- [x] 21-05-PLAN.md — Explain Nostalgia unlock order from the unlock store
+- [x] 21-06-PLAN.md — Add Playwright coverage for explain triggers + rate breakdown
 
 **Success criteria:**
 1. User can view contextual explanations for currencies and jargon at the point of use.
@@ -222,14 +222,14 @@ Surface existing rules at point-of-use: contextual explanations for currencies/g
 **Goal:** Users always see what is locked, why it is locked, and what to do next to progress.
 **Depends on:** Phase 21
 **Requirements:** CLAR-01, CLAR-02, CLAR-04
-**Plans:** 0/5 plans complete
+**Plans:** 5/5 plans complete
 
 Plans:
-- [ ] 22-01-PLAN.md — Add selector helpers for unlock progress detail
-- [ ] 22-02-PLAN.md — Add shared unlock hint + next unlock panel + empty CTA components
-- [ ] 22-03-PLAN.md — Integrate next unlocks panel + lock reasons into Vault (Collection)
-- [ ] 22-04-PLAN.md — Add Catalog empty states with a single next-action CTA
-- [ ] 22-05-PLAN.md — Add e2e coverage + human verify unlock clarity UX
+- [x] 22-01-PLAN.md — Add selector helpers for unlock progress detail
+- [x] 22-02-PLAN.md — Add shared unlock hint + next unlock panel + empty CTA components
+- [x] 22-03-PLAN.md — Integrate next unlocks panel + lock reasons into Vault (Collection)
+- [x] 22-04-PLAN.md — Add Catalog empty states with a single next-action CTA
+- [x] 22-05-PLAN.md — Add e2e coverage + human verify unlock clarity UX
 
 **Success criteria:**
 1. User can see why a tab/system is locked and the unlock condition.
@@ -244,12 +244,12 @@ Add a consistent lock explanation pattern: a Vault-visible Next unlocks panel fo
 **Goal:** Users can prestige confidently and re-orient immediately after a reset.
 **Depends on:** Phase 22
 **Requirements:** PRES-01, PRES-02
-**Plans:** 0/3 plans complete
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 23-01-PLAN.md — Add shared Gain/Keep/Lose prestige summary helpers + renderer
-- [ ] 23-02-PLAN.md — Integrate summary into Atelier/Maison/Nostalgia confirmation UI
-- [ ] 23-03-PLAN.md — Add post-prestige onboarding modal + Playwright coverage
+- [x] 23-01-PLAN.md — Add shared Gain/Keep/Lose prestige summary helpers + renderer
+- [x] 23-02-PLAN.md — Integrate summary into Atelier/Maison/Nostalgia confirmation UI
+- [x] 23-03-PLAN.md — Add post-prestige onboarding modal + Playwright coverage
 
 **Success criteria:**
 1. Before prestiging, user sees a clear lose/keep/gain summary with a safe confirmation.
@@ -267,15 +267,15 @@ Standardize the prestige UX for Atelier, Maison, and Nostalgia:
 **Goal:** The UI feels consistent, readable, and responsive, improving scanability and reducing friction.
 **Depends on:** Phase 23
 **Requirements:** POLISH-01, POLISH-02, POLISH-03, POLISH-04
-**Plans:** 0/6 plans complete
+**Plans:** 6/6 plans complete
 
 Plans:
-- [ ] 24-01-PLAN.md — Harden global CSS primitives (focus, motion, responsive helpers)
-- [ ] 24-02-PLAN.md — Reuse stats grid + nav styling hooks in App header
-- [ ] 24-03-PLAN.md — Polish Vault + Career hierarchy and CTA emphasis
-- [ ] 24-04-PLAN.md — Polish prestige tabs CTA hierarchy (Workshop/Maison/Nostalgia)
-- [ ] 24-05-PLAN.md — Polish Catalog/Stats/Save hierarchy and responsiveness
-- [ ] 24-06-PLAN.md — Run smoke checks + human verify polish pass
+- [x] 24-01-PLAN.md — Harden global CSS primitives (focus, motion, responsive helpers)
+- [x] 24-02-PLAN.md — Reuse stats grid + nav styling hooks in App header
+- [x] 24-03-PLAN.md — Polish Vault + Career hierarchy and CTA emphasis
+- [x] 24-04-PLAN.md — Polish prestige tabs CTA hierarchy (Workshop/Maison/Nostalgia)
+- [x] 24-05-PLAN.md — Polish Catalog/Stats/Save hierarchy and responsiveness
+- [x] 24-06-PLAN.md — Run smoke checks + human verify polish pass
 
 **Success criteria:**
 1. Key stats and primary CTAs have clear visual hierarchy (typography/spacing emphasis).

@@ -12,10 +12,21 @@ import {
 } from "../../game/state";
 import type { GameState } from "../../game/state";
 
+type TabId =
+  | "collection"
+  | "career"
+  | "workshop"
+  | "maison"
+  | "nostalgia"
+  | "catalog"
+  | "stats"
+  | "save";
+
 type CareerTabProps = {
   isActive: boolean;
   state: GameState;
   nowMs: number;
+  onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
   onPurchase: (nextState: GameState) => void;
 };
 
@@ -88,7 +99,6 @@ export function CareerTab({ isActive, state, nowMs, onPurchase }: CareerTabProps
               <div className="card-actions">
                 <button
                   type="button"
-                  className="secondary"
                   data-testid="career-action"
                   disabled={!canPerform}
                   onClick={() => onPurchase(performTherapistSession(state, Date.now()))}

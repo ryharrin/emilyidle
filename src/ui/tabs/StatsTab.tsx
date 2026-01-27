@@ -1,6 +1,21 @@
 import React from "react";
 
+import { formatRateFromCentsPerSec, formatSoftcapEfficiency } from "../../game/format";
+import { getCashRateBreakdown, getEnjoymentRateBreakdown } from "../../game/state";
 import type { GameState } from "../../game/state";
+
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
+
+type TabId =
+  | "collection"
+  | "career"
+  | "workshop"
+  | "maison"
+  | "nostalgia"
+  | "catalog"
+  | "stats"
+  | "save";
 
 type StatsSummary = {
   cash: string;
@@ -16,15 +31,24 @@ type StatsTabProps = {
   state: GameState;
   stats: StatsSummary;
   currentEventMultiplier: number;
+  onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
 };
 
 export function StatsTab({ isActive, state, stats, currentEventMultiplier }: StatsTabProps) {
+  const enjoymentRateBreakdown = getEnjoymentRateBreakdown(state, currentEventMultiplier);
+  const cashRateBreakdown = getCashRateBreakdown(state, currentEventMultiplier);
+
   return (
     <section id="stats" role="tabpanel" aria-labelledby="stats-tab" hidden={!isActive}>
       {isActive && (
         <div className="panel">
-          <h2>Stats</h2>
-          <p className="muted">Derived metrics from your current state.</p>
+          <header className="panel-header">
+            <div>
+              <p className="eyebrow">Overview</p>
+              <h2>Stats</h2>
+              <p className="muted">Derived metrics from your current state.</p>
+            </div>
+          </header>
           <dl className="stats-grid" data-testid="stats-metrics">
             <div>
               <dt>Vault enjoyment</dt>
@@ -63,6 +87,56 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
               <dd data-testid="stats-event-multiplier">x{currentEventMultiplier.toFixed(2)}</dd>
             </div>
           </dl>
+
+          <h3>Rate breakdown</h3>
+          <p className="muted">Base + modifiers. Tap to expand.</p>
+
+          <details data-testid="enjoyment-rate-breakdown" className="card">
+            <summary>
+              Enjoyment / sec ·{" "}
+              {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
+            </summary>
+            <div className="card-actions">
+              <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
+            </div>
+            <p className="muted">
+              Base: {formatRateFromCentsPerSec(enjoymentRateBreakdown.baseCentsPerSec)}
+            </p>
+            <ul>
+              {enjoymentRateBreakdown.multiplierTerms.map((term) => (
+                <li key={term.id}>
+                  {term.label} x{term.multiplier.toFixed(2)}
+                </li>
+              ))}
+            </ul>
+          </details>
+
+          <details data-testid="cash-rate-breakdown" className="card">
+            <summary>
+              Dollars / sec · {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
+            </summary>
+            <div className="card-actions">
+              <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
+            </div>
+            <p className="muted">
+              {cashRateBreakdown.vaultAddends[0]?.label ?? "Vault base"}:{" "}
+              {formatRateFromCentsPerSec(cashRateBreakdown.vaultAddends[0]?.centsPerSec ?? 0)}
+            </p>
+            <ul>
+              {cashRateBreakdown.vaultMultiplierTerms.map((term) => (
+                <li key={term.id}>
+                  {term.label} x{term.multiplier.toFixed(2)}
+                </li>
+              ))}
+              <li>
+                Softcap efficiency {formatSoftcapEfficiency(cashRateBreakdown.softcapEfficiency)}
+              </li>
+              <li>
+                {cashRateBreakdown.therapistAddends[0]?.label ?? "Therapist salary"}:{" "}
+                {formatRateFromCentsPerSec(cashRateBreakdown.therapistAddends[0]?.centsPerSec ?? 0)}
+              </li>
+            </ul>
+          </details>
 
           <section className="panel stats-journal" data-testid="stats-journal">
             <h3>Journal</h3>

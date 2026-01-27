@@ -126,7 +126,7 @@ test.describe("icon cues", () => {
 
     const gate = page.getByTestId("purchase-gate-classic");
     await expect(gate).toBeVisible();
-    await expect(gate.locator("svg")).toHaveCount(1);
+    await expect(gate.locator("svg.lucide-lock")).toHaveCount(1);
   });
 
   test("prestige icon renders on atelier reset button", async ({ page }) => {

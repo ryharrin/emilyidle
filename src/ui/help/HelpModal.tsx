@@ -130,7 +130,7 @@ export function HelpModal({
         <div className="help-modal-content">
           {activeSection ? (
             <div className="help-modal-body">
-              <h3>{activeSection.title}</h3>
+              <h3 data-testid="help-active-section">{activeSection.title}</h3>
               <ul>
                 {activeSection.body.map((line) => (
                   <li key={line}>{line}</li>

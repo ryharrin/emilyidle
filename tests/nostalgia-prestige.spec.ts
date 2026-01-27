@@ -60,6 +60,10 @@ test("nostalgia prestige flow", async ({ page }) => {
 
   await page.addInitScript(
     ({ state, lastSimulatedAtMs }) => {
+      // Freeze the RAF-driven sim loop so currency/enjoyment values stay stable for comparisons.
+      window.requestAnimationFrame = (() => 0) as unknown as typeof window.requestAnimationFrame;
+      window.cancelAnimationFrame = (() => {}) as unknown as typeof window.cancelAnimationFrame;
+
       const payload = {
         version: 2,
         savedAt: new Date(0).toISOString(),
@@ -77,9 +81,25 @@ test("nostalgia prestige flow", async ({ page }) => {
   await expect(page.getByTestId("nostalgia-progress")).toBeVisible();
   await expect(page.getByTestId("nostalgia-preview")).toBeVisible();
 
+  await expect(page.getByTestId("nostalgia-prestige-summary")).toBeVisible();
+
+  const currencyBefore = await page.locator("#currency").innerText();
+  const enjoymentBefore = await page.locator("#enjoyment").innerText();
+
+  await page.getByTestId("nostalgia-prestige").click();
+  await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
+
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await expect(page.getByTestId("nostalgia-modal")).toHaveCount(0);
+  await expect(page.locator("#currency")).toHaveText(currencyBefore);
+  await expect(page.locator("#enjoyment")).toHaveText(enjoymentBefore);
+
   await page.getByTestId("nostalgia-prestige").click();
   await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
   await page.getByRole("button", { name: "Confirm reset" }).click();
+
+  await expect(page.getByTestId("prestige-onboarding-modal")).toBeVisible();
+  await page.getByRole("button", { name: "Close" }).click();
 
   await expect(page.getByTestId("nostalgia-results")).toBeVisible();
   await expect(page.locator("#currency")).toHaveText(/\$0/);
