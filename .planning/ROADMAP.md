@@ -3,8 +3,9 @@
 ## Shipped Milestones
 
 - ✅ **v2.0 Upcoming Major Changes to Game Design** — Phases 13-18 (shipped 2026-01-25) — `.planning/milestones/v2.0-ROADMAP.md`
+- ✅ **v2.1 Onboarding & UX** — Phases 20-24 (shipped 2026-01-27) — see phases 20-24 in this file and `.planning/phases/`
 
-## Current Milestone: v2.1 Onboarding & UX (Planning)
+## Current Milestone: v3.0 Catalog-First Economy & Interactions (Planning)
 
 ### Phase 1: Foundation
 
@@ -285,6 +286,121 @@ Plans:
 
 **Details:**
 Harden global CSS primitives (focus-visible rings, reduced-motion handling, pressed states, responsive header helpers, missing layout utilities like `.stats-grid`) and then apply low-risk class/markup tweaks per tab to improve hierarchy, reduce clutter, and preserve stable selectors.
+
+### Phase 25: Watch Models & Duplicates
+
+**Goal:** Watches are specific models and duplicates have diminishing returns.
+**Depends on:** Phase 24
+**Requirements:** WATCH-01, WATCH-02
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 25 to break down)
+
+**Success criteria:**
+1. User sees specific watch models (brand/model) as the purchasable items (not generic tiers).
+2. Buying a watch increases the owned count for that specific model.
+3. Buying duplicate copies after the first yields visibly reduced enjoyment/memories gains vs the first copy.
+
+**Details:**
+Introduce a model-level purchasable watch system (IDs stable, mapped to catalog references) and apply a transparent diminishing-returns curve for duplicates.
+
+### Phase 26: Catalog-First Shop
+
+**Goal:** Catalog is the default landing and primary purchase surface with in-context help.
+**Depends on:** Phase 25
+**Requirements:** CATALOG-01, CATALOG-02, CATALOG-03, CATALOG-04
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 26 to break down)
+
+**Success criteria:**
+1. Fresh save lands on the Catalog; existing saves open predictably.
+2. Each catalog entry shows price, owned count, and a buy CTA or clear lock reason.
+3. User can buy a watch directly from a catalog entry and immediately see ownership reflected without leaving the catalog flow.
+4. User can access catalog-relevant help tips while browsing/buying.
+
+**Details:**
+Move the watch purchase UX into the Catalog tab and make the Catalog the primary progression surface (with clear CTAs and lock explanations).
+
+### Phase 27: Career-First Economy & Upgrades Surface
+
+**Goal:** Cash economy is career-driven; upgrades are separated and transparent.
+**Depends on:** Phase 26
+**Requirements:** ECON-01, ECON-02, CAREER-01, CAREER-02, NAV-01, CLAR-05
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 27 to break down)
+
+**Success criteria:**
+1. Career progression is usable from the beginning and offers specialization/path depth the user can choose.
+2. User earns cash through career progression; owning watches does not create a parallel cash faucet.
+3. Therapist sessions: first session costs 0 enjoyment; subsequent sessions spend enjoyment (rule is visible before committing).
+4. Upgrades are accessible from a dedicated surface/tab separate from the catalog purchase flow.
+5. Before buying an upgrade, user can see the effect it will have on cash/enjoyment rates.
+
+**Details:**
+Rework cash generation to align with a career-first economy and split upgrade browsing/purchasing into a dedicated surface, with clear before/after effects.
+
+### Phase 28: Wear-One Bonus
+
+**Goal:** User can wear exactly one watch and see its unique bonus.
+**Depends on:** Phase 27
+**Requirements:** WATCH-03
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 28 to break down)
+
+**Success criteria:**
+1. User can select exactly one owned watch to wear; UI indicates which is worn.
+2. Wearing a watch provides a distinct visible bonus; switching the worn watch updates the bonus immediately.
+3. Equipping one watch always unequips the previous one (no stacking).
+
+**Details:**
+Add a single equip slot and a clear, player-visible bonus per worn watch that integrates into rate breakdowns.
+
+### Phase 29: Interactions & Mini-Games
+
+**Goal:** Watch-type interactions work (winding + automatics) with clear feedback.
+**Depends on:** Phase 28
+**Requirements:** ACT-01, ACT-02, ACT-03, ACT-04, ACT-05
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 29 to break down)
+
+**Success criteria:**
+1. Winding is available only for non-automatic watches; automatic watches do not show winding.
+2. Winding includes a visible winding animation.
+3. Winding provides clear success/failure cues and communicates rewards.
+4. Winding is skill/timing-based (player input matters beyond a single button).
+5. Automatic watches have at least one distinct interaction mini-game and its rewards are communicated.
+
+**Details:**
+Generalize interactions into watch-type gated mini-games; improve winding UX and add at least one automatic-specific interaction.
+
+### Phase 30: Workshop/Atelier + Docs
+
+**Goal:** Workshop/Atelier UX is clearer, balance improves, and help matches v3.0.
+**Depends on:** Phase 29
+**Requirements:** WORK-01, WORK-02, BAL-01, HELP-01, HELP-02
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 30 to break down)
+
+**Success criteria:**
+1. Workshop dismantle UI is hidden until the workshop system is unlocked.
+2. Atelier view shows how much money is needed for the next blueprint.
+3. Atelier bonuses are tuned so the second vault run is meaningfully faster than the first.
+4. Help documentation explains the dual-currency system and career progression mechanics in detail.
+5. Help is updated to reflect the v3.0 catalog-first economy and interaction mechanics.
+
+**Details:**
+Tighten Workshop/Atelier presentation and tune bonuses for better pacing; refresh Help content to match v3.0 systems.
 
 ---
 

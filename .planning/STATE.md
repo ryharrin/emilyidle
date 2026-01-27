@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-25)
+See: .planning/PROJECT.md (updated 2026-01-27)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** v3.0 Catalog-First Economy & Interactions (starting)
+**Current focus:** v3.0 Catalog-First Economy & Interactions (roadmap ready)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 25 of 30 (Watch Models & Duplicates)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-01-27 — Milestone v3.0 started
+Status: Roadmap ready
+Last activity: 2026-01-27 — v3.0 roadmap created
 Progress: ░░░░░░░░░░ 0%
-Next Phase: TBD (roadmap generation pending)
+Next Phase: Phase 25
 
 ## Accumulated Context
 
@@ -25,7 +25,7 @@ Next Phase: TBD (roadmap generation pending)
 - Phase 19 added: Refactor phase 13 code with phase 13 research in mind
 - v2.1 roadmap added: Phases 20-24 (Onboarding & UX)
 - Milestone v2.0 archived under .planning/milestones/
-- Milestone v3.0 kickoff: catalog-first economy + interactions (requirements pending)
+- Milestone v3.0 kickoff: catalog-first economy + interactions (phases 25-30)
 
 ### Decisions
 | Phase | Decision | Rationale |

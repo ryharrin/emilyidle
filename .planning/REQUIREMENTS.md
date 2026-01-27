@@ -115,29 +115,29 @@ Deferred to a future milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CATALOG-01 | TBD | Pending |
-| CATALOG-02 | TBD | Pending |
-| CATALOG-03 | TBD | Pending |
-| CATALOG-04 | TBD | Pending |
-| NAV-01 | TBD | Pending |
-| ECON-01 | TBD | Pending |
-| ECON-02 | TBD | Pending |
-| CAREER-01 | TBD | Pending |
-| CAREER-02 | TBD | Pending |
-| WATCH-01 | TBD | Pending |
-| WATCH-02 | TBD | Pending |
-| WATCH-03 | TBD | Pending |
-| ACT-01 | TBD | Pending |
-| ACT-02 | TBD | Pending |
-| ACT-03 | TBD | Pending |
-| ACT-04 | TBD | Pending |
-| ACT-05 | TBD | Pending |
-| WORK-01 | TBD | Pending |
-| WORK-02 | TBD | Pending |
-| BAL-01 | TBD | Pending |
-| CLAR-05 | TBD | Pending |
-| HELP-01 | TBD | Pending |
-| HELP-02 | TBD | Pending |
+| CATALOG-01 | Phase 26 | Pending |
+| CATALOG-02 | Phase 26 | Pending |
+| CATALOG-03 | Phase 26 | Pending |
+| CATALOG-04 | Phase 26 | Pending |
+| NAV-01 | Phase 27 | Pending |
+| ECON-01 | Phase 27 | Pending |
+| ECON-02 | Phase 27 | Pending |
+| CAREER-01 | Phase 27 | Pending |
+| CAREER-02 | Phase 27 | Pending |
+| WATCH-01 | Phase 25 | Pending |
+| WATCH-02 | Phase 25 | Pending |
+| WATCH-03 | Phase 28 | Pending |
+| ACT-01 | Phase 29 | Pending |
+| ACT-02 | Phase 29 | Pending |
+| ACT-03 | Phase 29 | Pending |
+| ACT-04 | Phase 29 | Pending |
+| ACT-05 | Phase 29 | Pending |
+| WORK-01 | Phase 30 | Pending |
+| WORK-02 | Phase 30 | Pending |
+| BAL-01 | Phase 30 | Pending |
+| CLAR-05 | Phase 27 | Pending |
+| HELP-01 | Phase 30 | Pending |
+| HELP-02 | Phase 30 | Pending |
 | GUIDE-01 | Phase 20 | Pending |
 | GUIDE-02 | Phase 21 | Pending |
 | GUIDE-03 | Phase 21 | Pending |
@@ -155,7 +155,7 @@ Deferred to a future milestone.
 
 **Coverage:**
 - v3.0 requirements: 23 total
-- Mapped to phases: 0 (roadmap pending)
+- Mapped to phases: 23
 - v2.1 requirements: 14 total
 - Mapped to phases: 14
 
