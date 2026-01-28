@@ -292,14 +292,16 @@ Harden global CSS primitives (focus-visible rings, reduced-motion handling, pres
 **Goal:** Watches are specific models and duplicates have diminishing returns.
 **Depends on:** Phase 24
 **Requirements:** WATCH-01, WATCH-02
-**Plans:** 0/5 plans complete
+**Plans:** 6/7 plans complete
 
 Plans:
-- [ ] 25-01-PLAN.md — Add watch model roster + state + duplicate curve helpers
-- [ ] 25-02-PLAN.md — Implement model buy/dismantle + apply diminishing returns to enjoyment/memories
-- [ ] 25-03-PLAN.md — Update Vault UI to buy models grouped by brand + show duplicate multiplier
-- [ ] 25-04-PLAN.md — Update unit + e2e coverage for model purchasing and duplicates
-- [ ] 25-05-PLAN.md — Human verify Vault model purchase UX + duplicate messaging
+- [x] 25-01-PLAN.md — Add watch model roster + state + duplicate curve helpers
+- [x] 25-02-PLAN.md — Implement model buy/dismantle + apply diminishing returns to enjoyment/memories
+- [x] 25-03-PLAN.md — Update Vault UI to buy models grouped by brand + show duplicate multiplier
+- [x] 25-04-PLAN.md — Update unit + e2e coverage for model purchasing and duplicates
+- [x] 25-05-PLAN.md — Human verify Vault model purchase UX + duplicate messaging
+- [ ] 25-06-PLAN.md — Migrate legacy watch ownership to model ownership
+- [x] 25-07-PLAN.md — Auto-buy purchases watch models instead of tiers
 
 **Success criteria:**
 1. User sees specific watch models (brand/model) as the purchasable items (not generic tiers).
