@@ -316,13 +316,13 @@ Introduce a model-level purchasable watch system (IDs stable, mapped to catalog 
 **Goal:** Catalog is the default landing and primary purchase surface with in-context help.
 **Depends on:** Phase 25
 **Requirements:** CATALOG-01, CATALOG-02, CATALOG-03, CATALOG-04
-**Plans:** 3/5 plans complete
+**Plans:** 4/5 plans complete
 
 Plans:
 - [x] 26-01-PLAN.md — Make Catalog the default landing tab (+ deep link override)
 - [x] 26-02-PLAN.md — Add catalog shopping help section (duplicates + lock reasons)
 - [x] 26-03-PLAN.md — Add catalog card buy action bar + wire purchases + owned/unowned by ownership
-- [ ] 26-04-PLAN.md — Add single Catalog help button + expandable card details + micro-feedback + unit coverage
+- [x] 26-04-PLAN.md — Add single Catalog help button + expandable card details + micro-feedback + unit coverage
 - [ ] 26-05-PLAN.md — Human verify catalog-first shop UX (desktop + mobile)
 
 **Success criteria:**
