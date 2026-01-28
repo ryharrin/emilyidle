@@ -231,6 +231,7 @@ describe("catalog tier bonuses", () => {
       watchModels: {
         ...baseState.watchModels,
         [chronographModelId]: 2,
+        "cartier-cartier-tank-must-2021": 1,
       },
     };
 
@@ -486,6 +487,7 @@ describe("catalog filters", () => {
   it("renders catalog facts as details when present", async () => {
     const baseState = createInitialState();
     const chronographModelId = getModelIdForTier("chronograph");
+    const factsModelId = "rolex-rolex-gmt-master-ii-ref-126713grnr";
     const seededState = {
       ...baseState,
       items: {
@@ -496,6 +498,7 @@ describe("catalog filters", () => {
       watchModels: {
         ...baseState.watchModels,
         [chronographModelId]: 2,
+        [factsModelId]: 1,
       },
       discoveredCatalogEntries: ["cartier-cartier-tank-must-2021"],
     };
@@ -523,7 +526,7 @@ describe("catalog filters", () => {
     await user.click(ownedTab);
 
     const searchInput = screen.getByTestId("catalog-search");
-    await user.type(searchInput, "Tank Must");
+    await user.type(searchInput, "GMT-Master");
 
     const catalogGrid = screen.getByTestId("catalog-grid");
     const details = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-facts"));
