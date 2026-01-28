@@ -181,6 +181,7 @@ export type GameState = {
   nostalgiaLastPrestigedAtMs: number;
   therapistCareer: TherapistCareerState;
   items: Record<WatchItemId, number>;
+  watchModels: Record<string, number>;
   upgrades: Record<UpgradeId, number>;
   unlockedMilestones: MilestoneId[];
   workshopBlueprints: number;
@@ -209,6 +210,7 @@ export type PersistedGameState = {
   nostalgiaLastPrestigedAtMs?: number;
   therapistCareer?: { level?: number; xp?: number; nextAvailableAtMs?: number };
   items?: Record<string, number>;
+  watchModels?: Record<string, number>;
   upgrades?: Record<string, number>;
   unlockedMilestones?: string[];
   workshopBlueprints?: number;

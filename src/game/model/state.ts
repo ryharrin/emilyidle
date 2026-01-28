@@ -1,4 +1,5 @@
 import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "../catalog";
+import { WATCH_MODELS } from "../data/watchModels";
 import { MILESTONES } from "../data/milestones";
 import { NOSTALGIA_UNLOCK_ORDER, WATCH_ITEMS } from "../data/items";
 import { UPGRADES } from "../data/upgrades";
@@ -361,6 +362,7 @@ export function createInitialState(): GameState {
       nextAvailableAtMs: 0,
     },
     items: createItemCounts(),
+    watchModels: {},
     upgrades: createUpgradeLevels(),
     unlockedMilestones: [],
     workshopBlueprints: 0,
@@ -385,6 +387,7 @@ export function createInitialState(): GameState {
 
 export function createStateFromSave(saved: PersistedGameState): GameState {
   const items = createItemCounts();
+  const watchModels: Record<string, number> = {};
   const upgrades = createUpgradeLevels();
   const workshopUpgrades = createWorkshopUpgradeStates();
   const maisonUpgrades = createMaisonUpgradeStates();
@@ -413,6 +416,17 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     for (const [key, value] of Object.entries(saved.items)) {
       if (key in items && Number.isFinite(value)) {
         items[key as WatchItemId] = Math.max(0, Math.floor(value));
+      }
+    }
+  }
+
+  const watchModelsRaw =
+    saved.watchModels && typeof saved.watchModels === "object" ? saved.watchModels : undefined;
+  if (watchModelsRaw) {
+    const validModelIds = new Set(WATCH_MODELS.map((model) => model.id));
+    for (const [key, value] of Object.entries(watchModelsRaw)) {
+      if (validModelIds.has(key) && Number.isFinite(value)) {
+        watchModels[key] = Math.max(0, Math.floor(value));
       }
     }
   }
@@ -555,6 +569,7 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     nostalgiaLastPrestigedAtMs,
     therapistCareer,
     items,
+    watchModels,
     upgrades,
     unlockedMilestones,
     workshopBlueprints,
