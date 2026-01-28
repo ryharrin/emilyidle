@@ -55,6 +55,7 @@ import {
 } from "./enjoyment";
 
 export * from "./enjoyment";
+export * from "./watchModels";
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
 const INCOME_SOFTCAP_CENTS_PER_SEC = 60_000;
