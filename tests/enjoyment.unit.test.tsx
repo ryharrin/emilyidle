@@ -10,10 +10,18 @@ import {
   getWatchItems,
 } from "../src/game/state";
 
-function getModelIdForTier(tierId: string): string {
-  const model = getWatchModels().find((entry) => entry.tierId === tierId);
+const MODEL_IDS = {
+  starter: "rolex-calibrorolex",
+  classic: "rolex-rolex-gmt-master-ii-ref-126713grnr",
+  chronograph: "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta",
+  tourbillon:
+    "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997",
+} as const;
+
+function getModelId(modelId: string): string {
+  const model = getWatchModels().find((entry) => entry.id === modelId);
   if (!model) {
-    throw new Error(`Missing model for tier: ${tierId}`);
+    throw new Error(`Missing model: ${modelId}`);
   }
   return model.id;
 }
@@ -29,10 +37,10 @@ function getTierEnjoymentRate(tierId: string): number {
 describe("enjoyment tiers", () => {
   it("sums per-item enjoyment rates", () => {
     const baseState = createInitialState();
-    const starterModelId = getModelIdForTier("starter");
-    const classicModelId = getModelIdForTier("classic");
-    const chronographModelId = getModelIdForTier("chronograph");
-    const tourbillonModelId = getModelIdForTier("tourbillon");
+    const starterModelId = getModelId(MODEL_IDS.starter);
+    const classicModelId = getModelId(MODEL_IDS.classic);
+    const chronographModelId = getModelId(MODEL_IDS.chronograph);
+    const tourbillonModelId = getModelId(MODEL_IDS.tourbillon);
     const seededState = {
       ...baseState,
       watchModels: {
@@ -74,7 +82,7 @@ describe("enjoyment tiers", () => {
 
   it("scales enjoyment/sec by the prestige legacy multiplier", () => {
     const baseState = createInitialState();
-    const classicModelId = getModelIdForTier("classic");
+    const classicModelId = getModelId(MODEL_IDS.classic);
     const seededState = {
       ...baseState,
       watchModels: {
@@ -93,7 +101,7 @@ describe("enjoyment tiers", () => {
 
   it("gives smaller enjoyment gains for duplicate copies", () => {
     const baseState = createInitialState();
-    const classicModelId = getModelIdForTier("classic");
+    const classicModelId = getModelId(MODEL_IDS.classic);
     const firstState = {
       ...baseState,
       watchModels: {

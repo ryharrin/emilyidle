@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { createInitialState, getWatchModelPurchaseGate, getWatchModels } from "../src/game/state";
 
+const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+
 function getClassicModelId(): string {
-  const model = getWatchModels().find((entry) => entry.tierId === "classic");
+  const model = getWatchModels().find((entry) => entry.id === CLASSIC_MODEL_ID);
   if (!model) {
-    throw new Error("Missing classic watch model");
+    throw new Error(`Missing classic watch model: ${CLASSIC_MODEL_ID}`);
   }
   return model.id;
 }
