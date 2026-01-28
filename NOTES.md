@@ -93,3 +93,13 @@ Planned Features:
 - Display how much money is needed for the next blueprint in the atelier view. (Planned fix: add a display element showing the cost of the next blueprint.)
 - Atelier bonuses should be more powerful to make them feel more impactful. The second vault run should be significantly faster than the first. (Planned fix: adjust the bonus scaling for atelier upgrades.)
   Upcoming Major Changes to Game Design:
+
+
+Features to plan:
+- Add more watch brands and models to the catalog to increase variety and appeal to different tastes.
+- Introduce a storyline or lore that unfolds as players collect more watches, adding depth to the game.
+- Add achievements or badges for collecting certain sets of watches or reaching specific milestones in the game.
+
+
+Bug Fixes to do:
+- Fix missing images for certain watch models in the catalog.
