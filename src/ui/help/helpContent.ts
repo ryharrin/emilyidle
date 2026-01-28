@@ -8,6 +8,7 @@ export const HELP_SECTION_IDS = {
   currencies: "currencies",
   gates: "gates",
   rates: "rates",
+  catalogShop: "catalog-shop",
   nostalgiaUnlocks: "nostalgia-unlocks",
 } as const;
 
@@ -37,6 +38,15 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Some watches require a minimum enjoyment level to purchase.",
       "Cash is always spent; enjoyment is a requirement you must meet.",
       "If you're blocked, check whether the gate is enjoyment or dollars.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.catalogShop,
+    title: "Catalog shopping",
+    body: [
+      "Buying duplicates yields diminishing returns; the next purchase shows the next multiplier.",
+      "If a card says Need $X more, you're short on cash for that purchase.",
+      "If a card mentions enjoyment, you need more enjoyment before it unlocks.",
     ],
   },
   {
