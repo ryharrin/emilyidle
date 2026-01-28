@@ -292,10 +292,14 @@ Harden global CSS primitives (focus-visible rings, reduced-motion handling, pres
 **Goal:** Watches are specific models and duplicates have diminishing returns.
 **Depends on:** Phase 24
 **Requirements:** WATCH-01, WATCH-02
-**Plans:** 0 plans
+**Plans:** 0/5 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 25 to break down)
+- [ ] 25-01-PLAN.md — Add watch model roster + state + duplicate curve helpers
+- [ ] 25-02-PLAN.md — Implement model buy/dismantle + apply diminishing returns to enjoyment/memories
+- [ ] 25-03-PLAN.md — Update Vault UI to buy models grouped by brand + show duplicate multiplier
+- [ ] 25-04-PLAN.md — Update unit + e2e coverage for model purchasing and duplicates
+- [ ] 25-05-PLAN.md — Human verify Vault model purchase UX + duplicate messaging
 
 **Success criteria:**
 1. User sees specific watch models (brand/model) as the purchasable items (not generic tiers).
@@ -310,10 +314,14 @@ Introduce a model-level purchasable watch system (IDs stable, mapped to catalog 
 **Goal:** Catalog is the default landing and primary purchase surface with in-context help.
 **Depends on:** Phase 25
 **Requirements:** CATALOG-01, CATALOG-02, CATALOG-03, CATALOG-04
-**Plans:** 0 plans
+**Plans:** 0/5 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 26 to break down)
+- [ ] 26-01-PLAN.md — Make Catalog the default landing tab (+ deep link override)
+- [ ] 26-02-PLAN.md — Add catalog shopping help section (duplicates + lock reasons)
+- [ ] 26-03-PLAN.md — Add catalog card buy action bar + wire purchases + owned/unowned by ownership
+- [ ] 26-04-PLAN.md — Add single Catalog help button + expandable card details + micro-feedback + unit coverage
+- [ ] 26-05-PLAN.md — Human verify catalog-first shop UX (desktop + mobile)
 
 **Success criteria:**
 1. Fresh save lands on the Catalog; existing saves open predictably.
@@ -329,10 +337,15 @@ Move the watch purchase UX into the Catalog tab and make the Catalog the primary
 **Goal:** Cash economy is career-driven; upgrades are separated and transparent.
 **Depends on:** Phase 26
 **Requirements:** ECON-01, ECON-02, CAREER-01, CAREER-02, NAV-01, CLAR-05
-**Plans:** 0 plans
+**Plans:** 0/6 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 27 to break down)
+- [ ] 27-01-PLAN.md — Add career tracks + progression tree state + save persistence
+- [ ] 27-02-PLAN.md — Make cash career-only and implement track-aware session rules (free-first)
+- [ ] 27-03-PLAN.md — Make Career visible from start and add progression tree UI + messaging
+- [ ] 27-04-PLAN.md — Add dedicated Upgrades tab with before/after previews; remove Vault duplication
+- [ ] 27-05-PLAN.md — Add unit + e2e coverage for career-first economy and upgrades surface
+- [ ] 27-06-PLAN.md — Human verify career-first economy + upgrades preview UX
 
 **Success criteria:**
 1. Career progression is usable from the beginning and offers specialization/path depth the user can choose.
@@ -349,10 +362,16 @@ Rework cash generation to align with a career-first economy and split upgrade br
 **Goal:** User can wear exactly one watch and see its unique bonus.
 **Depends on:** Phase 27
 **Requirements:** WATCH-03
-**Plans:** 0 plans
+**Plans:** 0/7 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 28 to break down)
+- [ ] 28-01-PLAN.md — Add worn watch state + persistence sanitization
+- [ ] 28-02-PLAN.md — Implement worn-watch enjoyment bonus + breakdown line
+- [ ] 28-03-PLAN.md — Add Vault equip UX + worn summary + picker modal
+- [ ] 28-04-PLAN.md — Add unit tests for worn watch persistence + breakdown
+- [ ] 28-05-PLAN.md — Add Help content + ExplainButton for worn-watch bonus
+- [ ] 28-06-PLAN.md — Add Playwright coverage for wear-one flow + stats bonus
+- [ ] 28-07-PLAN.md — Human verify wear-one UX on desktop + mobile
 
 **Success criteria:**
 1. User can select exactly one owned watch to wear; UI indicates which is worn.
@@ -367,10 +386,15 @@ Add a single equip slot and a clear, player-visible bonus per worn watch that in
 **Goal:** Watch-type interactions work (winding + automatics) with clear feedback.
 **Depends on:** Phase 28
 **Requirements:** ACT-01, ACT-02, ACT-03, ACT-04, ACT-05
-**Plans:** 0 plans
+**Plans:** 0/6 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 29 to break down)
+- [ ] 29-01-PLAN.md — Add movement typing + per-item cooldown/power reserve state + reward actions
+- [ ] 29-02-PLAN.md — Replace wind session with timing-bar winding mini-game (animation + tiers)
+- [ ] 29-03-PLAN.md — Add automatic mini-game + power reserve reward (decay + enjoyment effect)
+- [ ] 29-04-PLAN.md — Add quartz time-setting mini-game + complete interaction gating
+- [ ] 29-05-PLAN.md — Update unit + e2e coverage for interactions (stable selectors)
+- [ ] 29-06-PLAN.md — Human verify interaction feel + clarity (desktop + mobile)
 
 **Success criteria:**
 1. Winding is available only for non-automatic watches; automatic watches do not show winding.
@@ -387,10 +411,13 @@ Generalize interactions into watch-type gated mini-games; improve winding UX and
 **Goal:** Workshop/Atelier UX is clearer, balance improves, and help matches v3.0.
 **Depends on:** Phase 29
 **Requirements:** WORK-01, WORK-02, BAL-01, HELP-01, HELP-02
-**Plans:** 0 plans
+**Plans:** 0/4 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 30 to break down)
+- [ ] 30-01-PLAN.md — Gate dismantle behind Atelier unlock + add next-Blueprint progress + tune legacy pace
+- [ ] 30-02-PLAN.md — Expand Help content + add stable section IDs for v3.0 systems
+- [ ] 30-03-PLAN.md — Wire ExplainButtons in Atelier/Career/Upgrades/Interactions + add micro-copy
+- [ ] 30-04-PLAN.md — Human verify Workshop/Atelier clarity + Help deep-links
 
 **Success criteria:**
 1. Workshop dismantle UI is hidden until the workshop system is unlocked.

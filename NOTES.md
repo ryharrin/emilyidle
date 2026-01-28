@@ -1,6 +1,8 @@
-Legend: 
-x  = Feature implemented
+Legend:
+x = Feature implemented
+
 - = Feature planned
+
 * = Do not plan to implement
 
 Completed Features:
@@ -45,29 +47,30 @@ x Refactory prestige mechanics to fit new dual-currency model. Prestige resets e
 x Watches are unlocked permanently via nostalgia points, rather than being re-bought each run.
 x Refactor game files for clarity and maintainability. There should be clear separation between core game logic, UI components, and data/models. Files should be organized into appropriate directories and be relatively small and focused.
 
-
 Completed Bug Fixes:
 x Replace the catalog filter <search> wrapper with a standard form element to avoid invalid tag warnings.
 x Skip the requestAnimationFrame simulation loop during Vitest runs to eliminate act() warnings.
 
 Will not implement Features:
-* Introduce a crafting system where players can combine certain watches or parts to create new, unique
+
+- Introduce a crafting system where players can combine certain watches or parts to create new, unique
   watches with special attributes.
-* Add a feature where players can customize the appearance of their watches with different straps, dials, or engravings.
-* Implement a social sharing feature that allows players to showcase their watch collections on social media platforms.
-* Add a feature where players can set up virtual watch exhibitions or galleries to display their collections to other players.
-* Introduce a mentorship system where experienced players can guide newcomers, offering tips and sharing strategies for collecting watches and progressing in the game.
-* Implement a feature where players can create and join watch clubs or communities within the game to discuss their collections, share tips, and participate in group challenges.
-* Any multiplayer features.
-* Implement augmented reality (AR) features that allow players to view and interact with their watch collections in a real-world environment using their device's camera.
-* Add a feature where players can create and share custom watch designs with the community, allowing others to view, rate, and potentially add them to their collections.
-* Add a feature where players can trade watches with each other to foster community interaction.
-* Implement seasonal events or limited-time challenges that offer exclusive watches or rewards.
-* Add a feature where players can set up virtual watch exhibitions or galleries to display their collections to other players.
-* Introduce a mentorship system where experienced players can guide newcomers, offering tips and sharing strategies for collecting watches and progressing in the game.
-* Implement a feature where players can create and join watch clubs or communities within the game to discuss
+- Add a feature where players can customize the appearance of their watches with different straps, dials, or engravings.
+- Implement a social sharing feature that allows players to showcase their watch collections on social media platforms.
+- Add a feature where players can set up virtual watch exhibitions or galleries to display their collections to other players.
+- Introduce a mentorship system where experienced players can guide newcomers, offering tips and sharing strategies for collecting watches and progressing in the game.
+- Implement a feature where players can create and join watch clubs or communities within the game to discuss their collections, share tips, and participate in group challenges.
+- Any multiplayer features.
+- Implement augmented reality (AR) features that allow players to view and interact with their watch collections in a real-world environment using their device's camera.
+- Add a feature where players can create and share custom watch designs with the community, allowing others to view, rate, and potentially add them to their collections.
+- Add a feature where players can trade watches with each other to foster community interaction.
+- Implement seasonal events or limited-time challenges that offer exclusive watches or rewards.
+- Add a feature where players can set up virtual watch exhibitions or galleries to display their collections to other players.
+- Introduce a mentorship system where experienced players can guide newcomers, offering tips and sharing strategies for collecting watches and progressing in the game.
+- Implement a feature where players can create and join watch clubs or communities within the game to discuss
 
 Planned Features:
+
 - The winding mini-game should be more interactive, allowing players to control the winding process rather than it being automatic. (Planned feature: add a mini-game where players must time their actions to successfully wind the watch.)
 - Add more feedback and interactivity when using the winding mini-game to make it more engaging.
 - Add a visual watch winding animation for the winding mini-game. (Planned feature: create an animation that shows the watch being wound up as the player interacts with the mini-game.)
@@ -81,8 +84,7 @@ Planned Features:
 - Upgrades should display the effect that buying them will have on currency rates. (Planned feature: add detailed descriptions to upgrade options, showing their impact on gameplay metrics.)
 - Add more detailed help documentation to explain the dual-currency system and career progression mechanics. (Planned feature: create comprehensive help sections that clarify how enjoyment, money, and nostalgia points work together.)
 - All help sections should be updated to reflect the new dual-currency system and career progression mechanics. (Planned feature: revise help documentation to accurately describe the updated game mechanics.)
-
-Bug fixes:
+  Bug fixes:
 - The 'interact' button should create a modal popup instead of starting a 'winding session' in the background. (Planned fix: change the button action to open a modal with interaction options.)
 - The winding mini-game should provide clearer feedback on success/failure and rewards. (Planned fix: add visual and audio cues for winding outcomes.)
 - The winding mini-game should only be available for non-automatic watches. (Planned fix: implement a check to disable the mini-game for automatic watch models.)
@@ -90,5 +92,4 @@ Bug fixes:
 - On the 'vault' screen, the place to buy watches should be more prominent and easier to find. (Planned fix: redesign the vault UI to highlight the watch purchasing area.)
 - Display how much money is needed for the next blueprint in the atelier view. (Planned fix: add a display element showing the cost of the next blueprint.)
 - Atelier bonuses should be more powerful to make them feel more impactful. The second vault run should be significantly faster than the first. (Planned fix: adjust the bonus scaling for atelier upgrades.)
-
-Upcoming Major Changes to Game Design:
+  Upcoming Major Changes to Game Design:

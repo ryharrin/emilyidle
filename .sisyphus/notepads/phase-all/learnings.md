@@ -1,0 +1,10 @@
+- 2026-01-27 [TOOL]: Confirmed /Users/rharrington/.config/opencode/get-shit-done/workflows/execute-phase.md defines the wave-based execute-phase flow (validate phase dir, plan discovery, per-wave parallel agents, gap-only filtering, checkpoints, verification, roadmap updates) and every plan references a specific phase directory—there is no phase: all handling in .planning docs (phase:
+all search only hits third-party React DOM comments).
+
+2026-01-27
+
+- execute-phase takes a single phase argument ("<phase-number>") plus optional "--gaps-only"; no documented "all" mode in the command definition: https://github.com/glittercowboy/get-shit-done/blob/339e9112990e024fea746d244765ada8a044a848/commands/gsd/execute-phase.md#L1-L38
+- phase directory selection matches either zero-padded (e.g. 05-*) or unpadded (5-*) folders under .planning/phases/; it errors if no matching phase dir or if the phase dir contains 0 *-PLAN.md files: https://github.com/glittercowboy/get-shit-done/blob/339e9112990e024fea746d244765ada8a044a848/get-shit-done/workflows/execute-phase.md#L70-L90
+- wave handling is frontmatter-driven: execute-phase reads each plan"s "wave:" and groups plans by wave, running waves sequentially; no runtime dependency analysis needed because wave numbers are pre-computed during plan-phase: https://github.com/glittercowboy/get-shit-done/blob/339e9112990e024fea746d244765ada8a044a848/get-shit-done/workflows/execute-phase.md#L123-L166
+- gaps-only semantics: when "--gaps-only" is used, execute-phase skips non-gap-closure plans and exits if filtering removes everything ("No matching incomplete plans"): https://github.com/glittercowboy/get-shit-done/blob/339e9112990e024fea746d244765ada8a044a848/get-shit-done/workflows/execute-phase.md#L92-L121
+- (note) corrected quoting: execute-phase reads each plan's "wave:" from frontmatter and groups plans by wave: https://github.com/glittercowboy/get-shit-done/blob/339e9112990e024fea746d244765ada8a044a848/get-shit-done/workflows/execute-phase.md#L123-L166
