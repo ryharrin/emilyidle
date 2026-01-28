@@ -5,6 +5,8 @@ type SeededSave = {
   lastSimulatedAtMs: number;
 };
 
+const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+
 async function seedSave(page: Page, seeded: SeededSave) {
   await page.addInitScript(({ state, lastSimulatedAtMs }: SeededSave) => {
     const payload = {
@@ -31,7 +33,7 @@ test("purchase gate explain trigger opens gates help", async ({ page }) => {
     enjoymentCents: 0,
     items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-    unlockedMilestones: [],
+    unlockedMilestones: ["collector-shelf"],
     workshopBlueprints: 0,
     workshopPrestigeCount: 0,
     workshopUpgrades: {
@@ -65,7 +67,7 @@ test("purchase gate explain trigger opens gates help", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: "Vault" }).click();
 
-  const gateBadge = page.getByTestId("purchase-gate-classic");
+  const gateBadge = page.getByTestId(`purchase-gate-${CLASSIC_MODEL_ID}`);
   await expect(gateBadge).toBeVisible();
 
   await gateBadge.getByTestId("explain-gates").click();

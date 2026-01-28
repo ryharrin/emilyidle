@@ -25,6 +25,12 @@ const selectors = {
   saveStatus: "#save-status",
 };
 
+const STARTER_MODEL_ID = "rolex-calibrorolex";
+const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+const TOURBILLON_MODEL_ID =
+  "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
+const WATCH_MODEL_COUNT = 59;
+
 test.describe("collection loop", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -59,22 +65,37 @@ test.describe("collection loop", () => {
     expect(parsed.version).toBe(2);
     expect(typeof parsed.state.currencyCents).toBe("number");
 
+    await page.evaluate(() => {
+      const saved = window.localStorage.getItem("emily-idle:save");
+      if (!saved) {
+        return;
+      }
+      const nextPayload = JSON.parse(saved);
+      nextPayload.state.currencyCents = 500;
+      nextPayload.state.enjoymentCents = 0;
+      window.localStorage.setItem("emily-idle:save", JSON.stringify(nextPayload));
+    });
+
+    await page.reload();
+
     await page.getByRole("tab", { name: "Vault" }).click();
-    const firstCard = page.locator(selectors.collectionCards).first();
-    const buyButton = firstCard.getByRole("button", { name: /Buy \(/ });
+    const buyButton = page.getByTestId(`vault-buy-${STARTER_MODEL_ID}`);
+    await buyButton.scrollIntoViewIfNeeded();
     await expect(buyButton).toBeEnabled({ timeout: 15000 });
     await buyButton.click();
 
     await page.waitForFunction(
-      () => {
+      (modelId) => {
         const saved = window.localStorage.getItem("emily-idle:save");
         if (!saved) {
           return false;
         }
         const nextPayload = JSON.parse(saved);
-        return (nextPayload.state?.items?.starter ?? 0) >= 1;
+        const ownedModel = nextPayload.state?.watchModels?.[modelId] ?? 0;
+        const ownedStarter = nextPayload.state?.items?.starter ?? 0;
+        return ownedModel >= 1 && ownedStarter >= 1;
       },
-      null,
+      STARTER_MODEL_ID,
       { timeout: 3000 },
     );
 
@@ -92,7 +113,7 @@ test.describe("collection loop", () => {
     await expect(page.locator("#enjoyment")).toHaveText(/\$/);
     await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
 
-    await expect(page.locator(selectors.collectionCards)).toHaveCount(4);
+    await expect(page.locator(selectors.collectionCards)).toHaveCount(WATCH_MODEL_COUNT);
     await expect(page.locator(selectors.upgradeCards)).toHaveCount(4);
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
@@ -111,7 +132,7 @@ test.describe("collection loop", () => {
       enjoymentCents: 0,
       items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-      unlockedMilestones: [],
+      unlockedMilestones: ["collector-shelf"],
       workshopBlueprints: 0,
       workshopPrestigeCount: 0,
       workshopUpgrades: {
@@ -156,11 +177,11 @@ test.describe("collection loop", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Vault" }).click();
 
-    const classicCard = page.locator(selectors.collectionCards).nth(1);
-    const buyButton = classicCard.getByRole("button", { name: /Buy \(/ });
+    const buyButton = page.getByTestId(`vault-buy-${CLASSIC_MODEL_ID}`);
+    await buyButton.scrollIntoViewIfNeeded();
 
     await expect(buyButton).toBeDisabled();
-    await expect(page.getByTestId("purchase-gate-classic")).toBeVisible();
+    await expect(page.getByTestId(`purchase-gate-${CLASSIC_MODEL_ID}`)).toBeVisible();
   });
 
   test("export and import save round trip", async ({ page }) => {
@@ -199,6 +220,7 @@ test.describe("collection loop", () => {
       currencyCents: 0,
       enjoymentCents: 0,
       items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+      watchModels: { [TOURBILLON_MODEL_ID]: 1 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: ["showcase"],
       workshopBlueprints: 0,
@@ -263,6 +285,7 @@ test.describe("collection loop", () => {
       currencyCents: 0,
       enjoymentCents: 0,
       items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+      watchModels: { [TOURBILLON_MODEL_ID]: 1 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: ["showcase"],
       workshopBlueprints: 0,
@@ -331,7 +354,7 @@ test.describe("collection loop", () => {
     await expect(resultsCount).toContainText(`${filteredCount} results`);
 
     const sourcesList = page.getByTestId("sources-list");
-    await expect(sourcesList.getByTestId("source-item")).toHaveCount(59);
+    await expect(sourcesList.getByTestId("source-item")).toHaveCount(WATCH_MODEL_COUNT);
     await expect(
       sourcesList.getByTestId("source-links").first().getByRole("link", { name: "Source" }),
     ).toBeVisible();
@@ -342,6 +365,7 @@ test.describe("collection loop", () => {
       currencyCents: 0,
       enjoymentCents: 0,
       items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+      watchModels: { [TOURBILLON_MODEL_ID]: 1 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: ["showcase"],
       workshopBlueprints: 0,
@@ -678,8 +702,9 @@ test.describe("collection loop", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Vault" }).click();
 
-    const interactButtons = page.getByRole("button", { name: "Interact" });
-    const interactButton = interactButtons.first();
+    const starterActions = page.getByTestId(`vault-buy-${STARTER_MODEL_ID}`).locator("..");
+    const interactButton = starterActions.getByRole("button", { name: "Interact" });
+    await interactButton.scrollIntoViewIfNeeded();
     await expect(interactButton).toBeEnabled();
     await interactButton.click();
 

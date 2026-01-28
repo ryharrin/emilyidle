@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+const TOURBILLON_MODEL_ID =
+  "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
+
 test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
@@ -54,7 +58,7 @@ test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
   await expect(page.getByTestId("next-unlock-career")).toBeVisible();
   await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();
 
-  await expect(page.getByTestId("locked-item-hint-classic")).toBeVisible();
+  await expect(page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`)).toBeVisible();
   await expect(page.getByTestId("locked-upgrade-hint-assembly-jigs")).toBeVisible();
 });
 
@@ -63,6 +67,7 @@ test("catalog empty state CTA returns to vault", async ({ page }) => {
     currencyCents: 0,
     enjoymentCents: 0,
     items: { starter: 150, classic: 0, chronograph: 0, tourbillon: 0 },
+    watchModels: { [TOURBILLON_MODEL_ID]: 1 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
     workshopBlueprints: 0,

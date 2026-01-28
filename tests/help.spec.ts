@@ -22,6 +22,8 @@ const seedSave = async (page: Page, state: Record<string, unknown>) => {
   );
 };
 
+const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+
 test.describe("help entry point", () => {
   test("opens help, switches section, and remembers last view", async ({ page }) => {
     await page.goto("/");
@@ -91,7 +93,7 @@ test.describe("icon cues", () => {
       enjoymentCents: 0,
       items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-      unlockedMilestones: [],
+      unlockedMilestones: ["collector-shelf"],
       workshopBlueprints: 0,
       workshopPrestigeCount: 0,
       workshopUpgrades: {
@@ -124,7 +126,7 @@ test.describe("icon cues", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Vault" }).click();
 
-    const gate = page.getByTestId("purchase-gate-classic");
+    const gate = page.getByTestId(`purchase-gate-${CLASSIC_MODEL_ID}`);
     await expect(gate).toBeVisible();
     await expect(gate.locator("svg.lucide-lock")).toHaveCount(1);
   });
