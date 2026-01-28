@@ -82,6 +82,110 @@ export function CatalogTab({
   hasOwnedCatalogTiers,
   onPurchase,
 }: CatalogTabProps) {
+  const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
+  const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
+  const purchaseHighlightTimeouts = React.useRef<Map<string, number>>(new Map());
+
+  const handleDetailsToggle = React.useCallback((entryId: string, isOpen: boolean) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [entryId]: isOpen,
+    }));
+  }, []);
+
+  const triggerPurchaseHighlight = React.useCallback((entryId: string) => {
+    setPurchaseHighlights((prev) => ({
+      ...prev,
+      [entryId]: true,
+    }));
+
+    const existingTimeout = purchaseHighlightTimeouts.current.get(entryId);
+    if (existingTimeout) {
+      window.clearTimeout(existingTimeout);
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPurchaseHighlights((prev) => {
+        if (!prev[entryId]) {
+          return prev;
+        }
+        const next = { ...prev };
+        delete next[entryId];
+        return next;
+      });
+      purchaseHighlightTimeouts.current.delete(entryId);
+    }, 750);
+
+    purchaseHighlightTimeouts.current.set(entryId, timeoutId);
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      purchaseHighlightTimeouts.current.forEach((timeoutId) => {
+        window.clearTimeout(timeoutId);
+      });
+      purchaseHighlightTimeouts.current.clear();
+    };
+  }, []);
+
+  const handlePurchase = React.useCallback(
+    (entryId: string) => {
+      onPurchase(buyWatchModel(state, entryId));
+      triggerPurchaseHighlight(entryId);
+    },
+    [onPurchase, state, triggerPurchaseHighlight],
+  );
+
+  const renderCatalogDetails = (entry: CatalogEntry, tags: string[], showFacts: boolean) => {
+    const sourceLabel = entry.image.sourceUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const specs = [
+      { label: "Year", value: entry.year },
+      { label: "Tags", value: tags.join(" · ") },
+      { label: "License", value: entry.image.licenseName },
+      { label: "Author", value: entry.image.author },
+      {
+        label: "Source",
+        value: (
+          <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
+            {sourceLabel}
+          </a>
+        ),
+      },
+    ];
+
+    return (
+      <details
+        className="catalog-details"
+        open={expandedCards[entry.id] ?? false}
+        onToggle={(event) => handleDetailsToggle(entry.id, event.currentTarget.open)}
+        data-testid="catalog-details"
+      >
+        <summary>Details</summary>
+        <div className="catalog-details-body">
+          <p className="catalog-description">{entry.description}</p>
+          <ul className="catalog-specs">
+            {specs.map((spec) => (
+              <li key={`${entry.id}-${spec.label}`}>
+                <span className="catalog-spec-label">{spec.label}</span>
+                <span className="catalog-spec-value">{spec.value}</span>
+              </li>
+            ))}
+          </ul>
+          {showFacts && entry.facts && entry.facts.length > 0 && (
+            <div className="catalog-facts">
+              <p className="catalog-facts-title">Collector notes</p>
+              <ul data-testid="catalog-facts">
+                {entry.facts.map((fact) => (
+                  <li key={fact}>{fact}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </details>
+    );
+  };
+
   return (
     <section
       className="panel catalog-panel"
@@ -326,12 +430,13 @@ export function CatalogTab({
                   const gate = getWatchModelPurchaseGate(state, entry.id);
                   const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
                   const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
+                  const isHighlighted = purchaseHighlights[entry.id];
                   return (
                     <article
                       key={entry.id}
                       className={`catalog-card ${
                         discovered ? "catalog-discovered" : "catalog-locked"
-                      }`}
+                      } ${isHighlighted ? "purchase-flash" : ""}`}
                       data-testid="catalog-card"
                     >
                       <div className="catalog-media">
@@ -368,9 +473,7 @@ export function CatalogTab({
                           </div>
                           <p className="catalog-year">{entry.year}</p>
                         </div>
-                        <p>{entry.description}</p>
-                        <p className="catalog-tags">{tags.join(" · ")}</p>
-                        <p className="catalog-attribution">{entry.image.attribution}</p>
+                        {renderCatalogDetails(entry, tags, false)}
                         <div className="catalog-action-bar">
                           <div className="catalog-action-meta">
                             <span className="catalog-owned">{ownedCount} owned</span>
@@ -385,7 +488,7 @@ export function CatalogTab({
                             <button
                               type="button"
                               data-testid={`catalog-buy-${entry.id}`}
-                              onClick={() => onPurchase(buyWatchModel(state, entry.id))}
+                              onClick={() => handlePurchase(entry.id)}
                             >
                               {buyLabel}
                             </button>
@@ -438,12 +541,13 @@ export function CatalogTab({
                       const gate = getWatchModelPurchaseGate(state, entry.id);
                       const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
                       const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
+                      const isHighlighted = purchaseHighlights[entry.id];
                       return (
                         <article
                           key={entry.id}
                           className={`catalog-card ${
                             discovered ? "catalog-discovered" : "catalog-locked"
-                          }`}
+                          } ${isHighlighted ? "purchase-flash" : ""}`}
                           data-testid="catalog-card"
                         >
                           <div className="catalog-media">
@@ -480,19 +584,7 @@ export function CatalogTab({
                               </div>
                               <p className="catalog-year">{entry.year}</p>
                             </div>
-                            <p>{entry.description}</p>
-                            {entry.facts && entry.facts.length > 0 && (
-                              <details className="catalog-facts" data-testid="catalog-facts">
-                                <summary>Collector notes</summary>
-                                <ul>
-                                  {entry.facts.map((fact) => (
-                                    <li key={fact}>{fact}</li>
-                                  ))}
-                                </ul>
-                              </details>
-                            )}
-                            <p className="catalog-tags">{tags.join(" · ")}</p>
-                            <p className="catalog-attribution">{entry.image.attribution}</p>
+                            {renderCatalogDetails(entry, tags, true)}
                             <div className="catalog-action-bar">
                               <div className="catalog-action-meta">
                                 <span className="catalog-owned">{ownedCount} owned</span>
@@ -507,7 +599,7 @@ export function CatalogTab({
                                 <button
                                   type="button"
                                   data-testid={`catalog-buy-${entry.id}`}
-                                  onClick={() => onPurchase(buyWatchModel(state, entry.id))}
+                                  onClick={() => handlePurchase(entry.id)}
                                 >
                                   {buyLabel}
                                 </button>

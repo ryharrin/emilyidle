@@ -1162,25 +1162,91 @@ textarea:focus-visible {
     0 8px 18px rgba(90, 76, 61, 0.2);
 }
 
-.catalog-facts {
+.catalog-details {
   border-radius: 12px;
   border: 1px solid rgba(232, 198, 147, 0.2);
   padding: 8px 12px;
   background: rgba(15, 17, 21, 0.8);
 }
 
-.catalog-facts summary {
+.catalog-details summary {
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
+  color: #e1c99a;
+}
+
+.catalog-details-body {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.catalog-description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #d3d8e2;
+}
+
+.catalog-specs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.catalog-specs li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b6bcc7;
+}
+
+.catalog-spec-label {
+  color: #e2c6a8;
+}
+
+.catalog-spec-value {
+  text-align: right;
+  color: #c7cdd6;
+}
+
+.catalog-spec-value a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.catalog-spec-value a:hover {
+  border-color: currentColor;
+}
+
+.catalog-facts {
+  border-top: 1px solid rgba(232, 198, 147, 0.18);
+  padding-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.catalog-facts-title {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
   color: #e1c99a;
 }
 
 .catalog-facts ul {
-  margin: 8px 0 0;
+  margin: 0;
   padding-left: 18px;
   color: #c7cdd6;
+  display: grid;
+  gap: 6px;
 }
 
 .catalog-owned-details {
@@ -1209,6 +1275,43 @@ textarea:focus-visible {
 
 [data-theme="light"] .catalog-owned-specs {
   color: #6a5946;
+}
+
+[data-theme="light"] .catalog-details {
+  border-color: rgba(170, 130, 86, 0.4);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .catalog-details summary {
+  color: #8b5e2b;
+}
+
+[data-theme="light"] .catalog-description {
+  color: #3a2a18;
+}
+
+[data-theme="light"] .catalog-specs li {
+  color: #6f6559;
+}
+
+[data-theme="light"] .catalog-spec-label {
+  color: #9a6a2f;
+}
+
+[data-theme="light"] .catalog-spec-value {
+  color: #5b5348;
+}
+
+[data-theme="light"] .catalog-facts {
+  border-color: rgba(170, 130, 86, 0.25);
+}
+
+[data-theme="light"] .catalog-facts-title {
+  color: #8b5e2b;
+}
+
+[data-theme="light"] .catalog-facts ul {
+  color: #5b5348;
 }
 
 .catalog-media {
