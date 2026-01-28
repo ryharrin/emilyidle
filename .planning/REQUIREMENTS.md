@@ -27,8 +27,8 @@ Requirements for this milestone (v3.0 Catalog-First Economy & Interactions).
 
 ### Watch Models & Inventory
 
-- [ ] **WATCH-01**: Purchasable watches are specific models (real brands/models), not generic tiers.
-- [ ] **WATCH-02**: Buying duplicates of the same model applies diminishing returns to enjoyment/memories gains after the first.
+- [x] **WATCH-01**: Purchasable watches are specific models (real brands/models), not generic tiers.
+- [x] **WATCH-02**: Buying duplicates of the same model applies diminishing returns to enjoyment/memories gains after the first.
 - [ ] **WATCH-03**: User can wear exactly one watch at a time; each watch provides a distinct, visible bonus when worn.
 
 ### Interactions & Mini-Games
@@ -124,8 +124,8 @@ Deferred to a future milestone.
 | ECON-02 | Phase 27 | Pending |
 | CAREER-01 | Phase 27 | Pending |
 | CAREER-02 | Phase 27 | Pending |
-| WATCH-01 | Phase 25 | Pending |
-| WATCH-02 | Phase 25 | Pending |
+| WATCH-01 | Phase 25 | Complete |
+| WATCH-02 | Phase 25 | Complete |
 | WATCH-03 | Phase 28 | Pending |
 | ACT-01 | Phase 29 | Pending |
 | ACT-02 | Phase 29 | Pending |

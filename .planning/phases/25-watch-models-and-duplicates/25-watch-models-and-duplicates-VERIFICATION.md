@@ -1,39 +1,24 @@
 ---
 phase: 25-watch-models-and-duplicates
-verified: 2026-01-28T16:15:03Z
-status: gaps_found
-score: 4/6 must-haves verified
-gaps:
-  - truth: "All watch purchasing paths buy specific models (no tier-only purchases)"
-    status: failed
-    reason: "Auto-buy still purchases tier items via buyItem(), bypassing per-model ownership + duplicate scaling"
-    artifacts:
-      - path: "src/App.tsx"
-        issue: "Auto-buy loop calls buyItem(nextState, item.id, purchaseQty) instead of a model-level purchase"
-    missing:
-      - "Update auto-buy to purchase watch models (e.g., pick a model id per tier/brand) and call buyWatchModel()"
-      - "Or disable auto-buy purchasing until model ownership is seeded/migrated"
-      - "Ensure auto-buy updates watchModels so enjoyment/memories and duplicate math reflect purchases"
-  - truth: "Legacy saves with tier-only ownership preserve enjoyment/memories behavior (or are migrated to model ownership)"
-    status: failed
-    reason: "Enjoyment rate and collection value are derived solely from state.watchModels; old saves without watchModels will see 0 contributions from existing tier-owned watches"
-    artifacts:
-      - path: "src/game/model/state.ts"
-        issue: "createStateFromSave() leaves watchModels as {} when missing; no migration from saved.items"
-      - path: "src/game/selectors/enjoyment.ts"
-        issue: "getEnjoymentRateCentsPerSec() iterates state.watchModels only (no fallback)"
-    missing:
-      - "Migration strategy in createStateFromSave(): map existing tier counts into model ids (at least a deterministic default per tier)"
-      - "Or selector-level fallback so tier-owned watches contribute until the player rebuy/migrates"
-      - "A unit test that proves legacy tier-only saves still have non-zero enjoyment/memories rates"
+verified: 2026-01-28T17:31:07Z
+status: passed
+score: 6/6 must-haves verified
+re_verification:
+  previous_status: gaps_found
+  previous_score: 4/6
+  gaps_closed:
+    - "All watch purchasing paths buy specific models (no tier-only purchases)"
+    - "Legacy saves with tier-only ownership preserve enjoyment/memories behavior (or are migrated to model ownership)"
+  gaps_remaining: []
+  regressions: []
 ---
 
 # Phase 25: Watch Models & Duplicates Verification Report
 
 **Phase Goal:** Watches are specific models and duplicates have diminishing returns.
-**Verified:** 2026-01-28T16:15:03Z
-**Status:** gaps_found
-**Re-verification:** No - initial verification
+**Verified:** 2026-01-28T17:31:07Z
+**Status:** passed
+**Re-verification:** Yes - after gap closure
 
 ## Goal Achievement
 
@@ -41,64 +26,66 @@ gaps:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | User sees specific watch models (brand/model) as purchasable items (not generic tiers) | VERIFIED | `src/ui/tabs/CollectionTab.tsx` renders brand sections from `getWatchModels()` and per-model cards |
-| 2 | Buying a watch increments owned count for that specific model | VERIFIED | `src/game/actions/index.ts` `buyWatchModel()` increments `state.watchModels[modelId]`; `src/ui/tabs/CollectionTab.tsx` buy button calls `buyWatchModel(state, model.id)` |
-| 3 | Duplicate reward multiplier is visible to the player and never drops below 0.10x | VERIFIED | `src/game/selectors/duplicates.ts` clamps to `DUPLICATE_REWARD_FLOOR = 0.1`; `src/ui/tabs/CollectionTab.tsx` displays `Duplicate: {duplicateMultiplier.toFixed(2)}x rewards` |
-| 4 | Buying duplicate copies yields reduced enjoyment + memories contributions vs the first copy | VERIFIED | `src/game/selectors/enjoyment.ts` and `src/game/model/state.ts` apply `getDuplicateRewardSum(owned)`; `tests/enjoyment.unit.test.tsx` asserts second purchase delta is smaller |
-| 5 | All watch purchasing paths buy specific models (no tier-only purchases) | FAILED | `src/App.tsx` auto-buy loop purchases tier items via `buyItem(...)` (model ownership not updated) |
-| 6 | Legacy saves with tier-only ownership preserve enjoyment/memories behavior (or are migrated) | FAILED | `createStateFromSave()` does not migrate `items` to `watchModels`; enjoyment/memories iterate `state.watchModels` only |
+| 1 | User sees specific watch models (brand/model) as purchasable items (not generic tiers) | VERIFIED | `src/ui/tabs/CollectionTab.tsx:152` uses `getWatchModels()` and renders brand-grouped model cards |
+| 2 | Buying a watch increments owned count for that specific model | VERIFIED | `src/game/actions/index.ts:480` `buyWatchModel()` increments `watchModels[modelId]`; `src/ui/tabs/CollectionTab.tsx:561` buy button calls `buyWatchModel(state, model.id)` |
+| 3 | Duplicate reward multiplier is visible to the player and never drops below 0.10x | VERIFIED | `src/game/selectors/duplicates.ts:1` sets `DUPLICATE_REWARD_FLOOR = 0.1`; `src/ui/tabs/CollectionTab.tsx:528` displays `Duplicate: {multiplier}x rewards` |
+| 4 | Buying duplicate copies yields reduced enjoyment + memories contributions vs the first copy | VERIFIED | `src/game/selectors/enjoyment.ts:32` and `src/game/model/state.ts:319` apply `getDuplicateRewardSum(owned)`; `tests/enjoyment.unit.test.tsx:121` asserts second-copy delta is smaller |
+| 5 | All watch purchasing paths buy specific models (no tier-only purchases) | VERIFIED | Auto-buy purchases models via `buyWatchModel(...)` in `src/App.tsx:925`; no UI call sites reference tier `buyItem(...)` (only the function definition remains in `src/game/actions/index.ts:457`) |
+| 6 | Legacy saves with tier-only ownership preserve enjoyment/memories behavior (or are migrated to model ownership) | VERIFIED | `src/game/model/state.ts:410` migrates tier counts into `watchModels` when missing/empty; `tests/enjoyment.unit.test.tsx:71` asserts non-zero enjoyment + memories after load |
 
-**Score:** 4/6 truths verified
+**Score:** 6/6 truths verified
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `src/game/data/watchModels.ts` | Deterministic roster derived from catalog entries | VERIFIED | Builds `WATCH_MODELS` from `CATALOG_ENTRIES` with `id: entry.id` and per-brand reference numbers |
-| `src/game/model/types.ts` | State schema includes model ownership | VERIFIED | `GameState.watchModels: Record<string, number>` and `PersistedGameState.watchModels?` |
-| `src/game/selectors/duplicates.ts` | Duplicate curve helpers with 0.10 floor | VERIFIED | Exponential decay with clamp to floor; copyIndex 0 is 1.0 |
-| `src/game/selectors/enjoyment.ts` | Enjoyment rate derives from model ownership + duplicates | VERIFIED | Sums tier enjoyment by model ownership using `getDuplicateRewardSum()` |
-| `src/game/model/state.ts` | Collection value (Memories) derives from model ownership + duplicates | VERIFIED | `getCollectionValueCents()` uses model tier value * `getDuplicateRewardSum()` |
-| `src/ui/tabs/CollectionTab.tsx` | Vault purchase UI is model-based and shows duplicate multiplier | VERIFIED | Brand-grouped model list; per-model buy CTA; duplicate multiplier label |
-| `tests/duplicate-rewards.unit.test.ts` | Duplicate curve unit coverage | VERIFIED | Tests 1.0 first copy, ~0.7 second, monotonic + floor |
-| `src/App.tsx` | Auto-buy purchase path aligns with model purchasing | FAILED | Auto-buy uses tier-level `buyItem()` |
+| `src/game/data/watchModels.ts` | Deterministic roster derived from catalog entries | VERIFIED | `WATCH_MODELS` is built from `CATALOG_ENTRIES` with stable ids and per-brand reference numbers |
+| `src/game/model/types.ts` | State schema includes model ownership | VERIFIED | `GameState.watchModels` and `PersistedGameState.watchModels?` present (`src/game/model/types.ts:184`, `src/game/model/types.ts:213`) |
+| `src/game/selectors/duplicates.ts` | Duplicate curve helpers with 0.10 floor | VERIFIED | Floor constant + decay curve + sum helper (`src/game/selectors/duplicates.ts`) |
+| `src/game/selectors/watchModels.ts` | Model purchase gating and next-multiplier selector | VERIFIED | `getWatchModelPurchaseGate()` and `getNextDuplicateRewardMultiplier()` present (`src/game/selectors/watchModels.ts`) |
+| `src/game/selectors/enjoyment.ts` | Enjoyment rate derives from model ownership + duplicates | VERIFIED | Sums per-model contributions from `state.watchModels` (`src/game/selectors/enjoyment.ts:32`) |
+| `src/game/model/state.ts` | Memories/collection value derives from model ownership + duplicates + legacy migration | VERIFIED | `getCollectionValueCents()` uses `watchModels`; `createStateFromSave()` migrates tier-only saves (`src/game/model/state.ts`) |
+| `src/ui/tabs/CollectionTab.tsx` | Vault purchase UI is model-based and shows duplicate multiplier | VERIFIED | Brand-grouped list; per-model buy CTA; duplicate multiplier shown (`src/ui/tabs/CollectionTab.tsx`) |
+| `src/App.tsx` | Auto-buy purchase path aligns with model purchasing | VERIFIED | Auto-buy loop selects a default model per tier and calls `buyWatchModel` (`src/App.tsx:925`) |
+| `tests/duplicate-rewards.unit.test.ts` | Duplicate curve unit coverage | VERIFIED | Asserts monotonic + floor and expected second-copy (~0.70x) |
+| `tests/enjoyment.unit.test.tsx` | Duplicate diminishing returns + legacy-save migration coverage | VERIFIED | Includes migration test and duplicate delta test |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 | --- | --- | --- | --- | --- |
-| `src/game/data/watchModels.ts` | `src/game/catalog.ts` | `CATALOG_ENTRIES` | WIRED | `WATCH_MODELS` maps from `CATALOG_ENTRIES` and uses `getCatalogEntryTags()` for tier |
-| `src/game/actions/index.ts` | `src/game/model/types.ts` | `watchModels` ownership | WIRED | `buyWatchModel()` mutates `state.watchModels` and keeps `state.items[tierId]` in sync |
-| `src/game/selectors/enjoyment.ts` | `src/game/selectors/duplicates.ts` | `getDuplicateRewardSum()` | WIRED | Diminishing returns applied per model owned |
-| `src/game/model/state.ts` | `src/game/selectors/duplicates.ts` | `getDuplicateRewardSum()` | WIRED | Memories/collection value uses same diminishing returns |
-| `src/App.tsx` | `src/game/actions/index.ts` | auto-buy purchasing | NOT_WIRED | Auto-buy calls `buyItem()` (tier purchase), not `buyWatchModel()` |
+| `src/game/data/watchModels.ts` | `src/game/catalog.ts` | `CATALOG_ENTRIES` mapping | WIRED | Model ids come from catalog entry ids (`src/game/data/watchModels.ts:38`) |
+| `src/ui/tabs/CollectionTab.tsx` | `src/game/actions/index.ts` | `buyWatchModel()` | WIRED | UI buy button calls `buyWatchModel` (`src/ui/tabs/CollectionTab.tsx:561`) |
+| `src/game/actions/index.ts` | `src/game/model/types.ts` | `watchModels` ownership | WIRED | `buyWatchModel` mutates `watchModels` and keeps tier totals in `items` in sync (`src/game/actions/index.ts:491`) |
+| `src/game/selectors/enjoyment.ts` | `src/game/selectors/duplicates.ts` | `getDuplicateRewardSum()` | WIRED | Duplicate scaling applied per owned count (`src/game/selectors/enjoyment.ts:53`) |
+| `src/game/model/state.ts` | `src/game/selectors/duplicates.ts` | `getDuplicateRewardSum()` | WIRED | Same duplicate curve applied to Memories (`src/game/model/state.ts:340`) |
+| `src/App.tsx` | `src/game/actions/index.ts` | auto-buy purchasing | WIRED | Auto-buy calls `buyWatchModel` and stops when gates fail (`src/App.tsx:924`) |
+| `src/game/model/state.ts` | `src/game/data/watchModels.ts` | legacy migration | WIRED | Migration chooses deterministic default models per tier from `WATCH_MODELS` (`src/game/model/state.ts:458`) |
 
 ### Requirements Coverage
 
 | Requirement | Status | Blocking Issue |
 | --- | --- | --- |
-| WATCH-01 | BLOCKED | Tier-only purchasing still exists via auto-buy (`src/App.tsx`) |
-| WATCH-02 | BLOCKED | Tier-only purchases bypass model ownership, so duplicate diminishing returns cannot apply consistently |
+| WATCH-01 | SATISFIED | - |
+| WATCH-02 | SATISFIED | - |
 
 ### Anti-Patterns Found
 
-No blocker stub patterns found in core phase artifacts. (Catalog search input `placeholder=...` matches a UI placeholder string, not a stub.)
+No blocker stub patterns found in core Phase 25 artifacts.
 
-### Human Verification Required
+### Human Verification Recommended
 
-1. Vault model list UX
+1. Vault duplicate messaging clarity
 
-**Test:** In Vault, scroll brands; buy a model; confirm owned increments and row flashes.
-**Expected:** Owned count updates for that model; duplicate multiplier label updates downward on second purchase; row highlight clears.
-**Why human:** Layout/scrolling/polish and perceived clarity aren't verifiable from static code.
+**Test:** In Vault, buy the same model twice; watch the "Owned" count, "Duplicate: X.XXx" label, and top-line "Enjoyment / sec" and "Memories".
+**Expected:** Second purchase increases enjoyment/memories less than the first; duplicate label decreases; purchase highlight triggers and clears.
 
-### Gaps Summary
+2. Legacy save migration feel
 
-Phase 25 successfully introduces a catalog-derived watch model roster, model-level ownership, and duplicate diminishing returns applied to enjoyment and Memories, with the Vault UI buying models.
-
-However, at least one in-app purchase path (auto-buy) still buys tier items instead of models, and there is no migration/fallback to preserve enjoyment/memories behavior for legacy saves that only have tier counts.
+**Test:** Import an old save that predates `watchModels` (tier-only `items` counts) and confirm vault enjoyment/memories are non-zero immediately.
+**Expected:** Enjoyment/sec and Memories remain consistent (no sudden drop to zero) and Vault shows ownership reflected on at least one model per owned tier.
 
 ---
 
-_Verified: 2026-01-28T16:15:03Z_
+_Verified: 2026-01-28T17:31:07Z_
 _Verifier: Claude (gsd-verifier)_
