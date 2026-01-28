@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 
-const CATALOG_FILE = path.resolve(process.cwd(), "src/game/catalog.ts");
+const CATALOG_FILE_URL = new URL("../src/game/catalog.ts", import.meta.url);
 const WIKIMEDIA_PREFIX = "https://upload.wikimedia.org/wikipedia/commons/";
 const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
   "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo%2C_met%C3%A0_anni_Novanta.jpg":
@@ -12,12 +11,12 @@ const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
 };
 
 const getCatalogImageRelatives = async () => {
-  const text = await readFile(CATALOG_FILE, "utf8");
-  const matches = Array.from(
-    text.matchAll(new RegExp(`${WIKIMEDIA_PREFIX}([^"']+)`, "g")),
-    (match) => match[1],
-  );
-  return Array.from(new Set(matches)).sort();
+  const text = await readFile(CATALOG_FILE_URL, "utf8");
+  const matches: string[] = [];
+  for (const match of text.matchAll(new RegExp(`${WIKIMEDIA_PREFIX}([^"']+)`, "g"))) {
+    matches.push(match[1] ?? "");
+  }
+  return Array.from(new Set(matches.filter(Boolean))).sort();
 };
 
 const formatMissing = (missing: string[]) => {
