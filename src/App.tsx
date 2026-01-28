@@ -32,7 +32,7 @@ import { isTestEnvironment } from "./game/runtime/isTestEnvironment";
 import { useGameRuntime } from "./game/runtime/useGameRuntime";
 import {
   applyWindSessionRewards,
-  buyItem,
+  buyWatchModel,
   canMaisonPrestige,
   canWorkshopPrestige,
   canNostalgiaPrestige,
@@ -61,6 +61,7 @@ import {
   getCraftedBoostCollectionMultiplier,
   getCraftedBoostPrestigeMultiplier,
   getWatchItems,
+  getWatchModels,
   getUpgrades,
   getSetBonuses,
   getEvents,
@@ -72,7 +73,6 @@ import {
   getItemCount,
   getAutoBuyEnabled,
   getMaisonReputationGain,
-  getMaxAffordableItemCount,
   getNostalgiaUnlockCost,
   getNostalgiaUnlockIds,
   getNostalgiaPrestigeGain,
@@ -546,6 +546,15 @@ export default function App() {
   }, [state]);
 
   const watchItems = useMemo(() => getWatchItems(), []);
+  const watchModelDefaults = useMemo(() => {
+    const defaults = new Map<WatchItemId, string>();
+    for (const model of getWatchModels()) {
+      if (!defaults.has(model.tierId)) {
+        defaults.set(model.tierId, model.id);
+      }
+    }
+    return defaults;
+  }, []);
   const watchItemsById = useMemo(
     () => new Map(watchItems.map((item) => [item.id, item])),
     [watchItems],
@@ -905,18 +914,18 @@ export default function App() {
           continue;
         }
 
-        const maxAffordable = getMaxAffordableItemCount(nextState, item.id);
-        if (maxAffordable <= 0) {
+        const modelId = watchModelDefaults.get(item.id);
+        if (!modelId) {
           continue;
         }
 
-        const purchaseQty = Math.min(10, maxAffordable);
-        const candidateState = buyItem(nextState, item.id, purchaseQty);
-        if (candidateState === nextState) {
-          continue;
+        for (let i = 0; i < 10; i += 1) {
+          const candidateState = buyWatchModel(nextState, modelId);
+          if (candidateState === nextState) {
+            break;
+          }
+          nextState = candidateState;
         }
-
-        nextState = candidateState;
       }
 
       if (nextState !== current) {
@@ -931,6 +940,7 @@ export default function App() {
     state.currencyCents,
     state.unlockedMilestones,
     watchItems,
+    watchModelDefaults,
   ]);
 
   useEffect(() => {
