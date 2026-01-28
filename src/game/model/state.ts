@@ -444,11 +444,29 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
 
   const watchModelsRaw =
     saved.watchModels && typeof saved.watchModels === "object" ? saved.watchModels : undefined;
+  const validModelIds = new Set(WATCH_MODELS.map((model) => model.id));
   if (watchModelsRaw) {
-    const validModelIds = new Set(WATCH_MODELS.map((model) => model.id));
     for (const [key, value] of Object.entries(watchModelsRaw)) {
       if (validModelIds.has(key) && Number.isFinite(value)) {
         watchModels[key] = Math.max(0, Math.floor(value));
+      }
+    }
+  }
+
+  const hasWatchModels = Object.values(watchModels).some((value) => value > 0);
+  if (!hasWatchModels) {
+    const defaultModelIdsByTier = new Map<WatchItemId, string>();
+    for (const model of WATCH_MODELS) {
+      if (!defaultModelIdsByTier.has(model.tierId)) {
+        defaultModelIdsByTier.set(model.tierId, model.id);
+      }
+    }
+
+    for (const item of WATCH_ITEMS) {
+      const owned = items[item.id];
+      const defaultModelId = defaultModelIdsByTier.get(item.id);
+      if (defaultModelId && owned > 0) {
+        watchModels[defaultModelId] = owned;
       }
     }
   }
