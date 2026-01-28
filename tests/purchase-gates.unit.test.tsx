@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { createInitialState, getWatchPurchaseGate } from "../src/game/state";
+import { createInitialState, getWatchModelPurchaseGate, getWatchModels } from "../src/game/state";
+
+function getClassicModelId(): string {
+  const model = getWatchModels().find((entry) => entry.tierId === "classic");
+  if (!model) {
+    throw new Error("Missing classic watch model");
+  }
+  return model.id;
+}
 
 describe("purchase gates", () => {
   it("blocks by enjoyment when enjoyment is below the requirement", () => {
@@ -11,7 +19,7 @@ describe("purchase gates", () => {
       enjoymentCents: 0,
     };
 
-    const gate = getWatchPurchaseGate(seededState, "classic", 1);
+    const gate = getWatchModelPurchaseGate(seededState, getClassicModelId());
     expect(gate.ok).toBe(false);
     if (gate.ok) {
       throw new Error("Expected purchase gate to be blocked by enjoyment");
@@ -30,7 +38,7 @@ describe("purchase gates", () => {
       enjoymentCents: 1_000_000_000,
     };
 
-    const gate = getWatchPurchaseGate(seededState, "classic", 1);
+    const gate = getWatchModelPurchaseGate(seededState, getClassicModelId());
     expect(gate.ok).toBe(false);
     if (gate.ok) {
       throw new Error("Expected purchase gate to be blocked by cash");

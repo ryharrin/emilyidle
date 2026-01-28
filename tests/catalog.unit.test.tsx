@@ -4,7 +4,15 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
 import App from "../src/App";
-import { createInitialState, getSetBonuses } from "../src/game/state";
+import { createInitialState, getSetBonuses, getWatchModels } from "../src/game/state";
+
+function getModelIdForTier(tierId: string): string {
+  const model = getWatchModels().find((entry) => entry.tierId === tierId);
+  if (!model) {
+    throw new Error(`Missing model for tier: ${tierId}`);
+  }
+  return model.id;
+}
 
 describe("primary navigation tabs", () => {
   beforeEach(() => {
@@ -143,11 +151,16 @@ describe("catalog tier bonuses", () => {
   beforeEach(() => {
     localStorage.clear();
     const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
         chronograph: 2,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 2,
       },
     };
 
@@ -229,11 +242,19 @@ describe("catalog filters", () => {
   beforeEach(async () => {
     localStorage.clear();
     const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
+    const tourbillonModelId = getModelIdForTier("tourbillon");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
         chronograph: 2,
+        tourbillon: 1,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 2,
+        [tourbillonModelId]: 1,
       },
     };
 
@@ -384,12 +405,17 @@ describe("catalog filters", () => {
 
   it("renders catalog facts as details when present", async () => {
     const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
         starter: 90,
         chronograph: 2,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 2,
       },
       discoveredCatalogEntries: ["cartier-cartier-tank-must-2021"],
     };
@@ -428,11 +454,16 @@ describe("catalog filters", () => {
 
   it("does not render collector notes for unowned entries", async () => {
     const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
         chronograph: 2,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 2,
       },
       unlockedMilestones: ["showcase"],
     };
@@ -556,11 +587,16 @@ describe("catalog ownership tabs", () => {
   beforeEach(() => {
     localStorage.clear();
     const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
         chronograph: 2,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 2,
       },
       achievementUnlocks: ["first-drawer"],
       unlockedMilestones: ["collector-shelf", "showcase"],
@@ -702,6 +738,8 @@ describe("catalog ownership tabs", () => {
 
   it("shows owned tier entries when items are owned", async () => {
     const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
+    const tourbillonModelId = getModelIdForTier("tourbillon");
     const ownedPayload = {
       version: 2,
       savedAt: new Date(0).toISOString(),
@@ -709,6 +747,11 @@ describe("catalog ownership tabs", () => {
       state: {
         ...baseState,
         items: { starter: 1, classic: 0, chronograph: 2, tourbillon: 0 },
+        watchModels: {
+          ...baseState.watchModels,
+          [chronographModelId]: 2,
+          [tourbillonModelId]: 1,
+        },
         upgrades: {
           ...baseState.upgrades,
           "archive-guides": 0,
@@ -911,12 +954,17 @@ describe("settings preferences", () => {
 
   const renderWithCatalogUnlocked = () => {
     const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
         starter: 15,
-        chronograph: 1,
+        chronograph: 2,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 2,
       },
       unlockedMilestones: ["showcase"],
     };

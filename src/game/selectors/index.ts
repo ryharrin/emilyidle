@@ -6,6 +6,7 @@ import {
   WATCH_ENJOYMENT_REQUIREMENTS_CENTS,
   WATCH_ITEMS,
 } from "../data/items";
+import { WATCH_MODELS } from "../data/watchModels";
 import { SET_BONUSES } from "../data/setBonuses";
 import { UPGRADES } from "../data/upgrades";
 import { formatMoneyFromCents } from "../format";
@@ -53,6 +54,7 @@ import {
   getPrestigeLegacyMultiplier,
   getWatchItemEnjoymentRateCentsPerSec,
 } from "./enjoyment";
+import { getDuplicateRewardSum } from "./duplicates";
 
 export * from "./enjoyment";
 export * from "./watchModels";
@@ -120,6 +122,7 @@ const CRAFTED_BOOST_MULTIPLIERS: Record<CraftedBoostId, number> = {
 };
 
 const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
+const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]));
 const UPGRADE_LOOKUP = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const MILESTONE_LOOKUP = new Map(MILESTONES.map((milestone) => [milestone.id, milestone]));
 const WORKSHOP_UPGRADE_LOOKUP = new Map(WORKSHOP_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
@@ -730,11 +733,28 @@ export function getEnjoymentRateBreakdown(
   state: GameState,
   eventMultiplier = 1,
 ): EnjoymentRateBreakdown {
-  const baseCentsPerSec = WATCH_ITEMS.reduce(
-    (total, item) =>
-      total + getItemCount(state, item.id) * getWatchItemEnjoymentRateCentsPerSec(item),
-    0,
-  );
+  const baseCentsPerSec = Object.entries(state.watchModels).reduce((total, [modelId, rawOwned]) => {
+    if (!Number.isFinite(rawOwned)) {
+      return total;
+    }
+
+    const model = WATCH_MODEL_LOOKUP.get(modelId);
+    if (!model) {
+      return total;
+    }
+
+    const item = WATCH_ITEM_LOOKUP.get(model.tierId);
+    if (!item) {
+      return total;
+    }
+
+    const owned = Math.max(0, Math.floor(rawOwned));
+    if (owned === 0) {
+      return total;
+    }
+
+    return total + getDuplicateRewardSum(owned) * getWatchItemEnjoymentRateCentsPerSec(item);
+  }, 0);
 
   const multiplierTerms: RateBreakdownMultiplierTerm[] = [
     {

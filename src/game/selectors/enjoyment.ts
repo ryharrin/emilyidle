@@ -1,6 +1,11 @@
 import { WATCH_ITEMS } from "../data/items";
+import { WATCH_MODELS } from "../data/watchModels";
 import { formatMoneyFromCents } from "../format";
 import type { GameState, WatchItemDefinition } from "../model/types";
+import { getDuplicateRewardSum } from "./duplicates";
+
+const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]));
+const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
 
 export function getWatchItemEnjoymentRateCentsPerSec(item: WatchItemDefinition): number {
   return item.enjoymentCentsPerSec;
@@ -25,11 +30,28 @@ export function getPrestigeLegacyMultiplier(state: GameState): number {
 }
 
 export function getEnjoymentRateCentsPerSec(state: GameState): number {
-  const baseRate = WATCH_ITEMS.reduce(
-    (total, item) =>
-      total + (state.items[item.id] ?? 0) * getWatchItemEnjoymentRateCentsPerSec(item),
-    0,
-  );
+  const baseRate = Object.entries(state.watchModels).reduce((total, [modelId, rawOwned]) => {
+    if (!Number.isFinite(rawOwned)) {
+      return total;
+    }
+
+    const model = WATCH_MODEL_LOOKUP.get(modelId);
+    if (!model) {
+      return total;
+    }
+
+    const tier = WATCH_ITEM_LOOKUP.get(model.tierId);
+    if (!tier) {
+      return total;
+    }
+
+    const owned = Math.max(0, Math.floor(rawOwned));
+    if (owned === 0) {
+      return total;
+    }
+
+    return total + getDuplicateRewardSum(owned) * getWatchItemEnjoymentRateCentsPerSec(tier);
+  }, 0);
   return baseRate * getPrestigeLegacyMultiplier(state);
 }
 

@@ -8,6 +8,7 @@ import {
   buyMaisonLine,
   buyMaisonUpgrade,
   createInitialState,
+  getDuplicateRewardSum,
   getCollectionBonusMultiplier,
   getCollectionValueCents,
   getCraftedBoostIncomeMultiplier,
@@ -31,6 +32,7 @@ import {
   getUpgrades,
   getWatchItemEnjoymentRateCentsPerSec,
   getWatchItems,
+  getWatchModels,
   getWorkshopIncomeMultiplier,
   getWorkshopPrestigeGain,
   getWorkshopPrestigeThresholdCents,
@@ -42,6 +44,14 @@ import {
   prestigeMaison,
   shouldShowUnlockTag,
 } from "../src/game/state";
+
+function getModelIdForTier(tierId: string): string {
+  const model = getWatchModels().find((entry) => entry.tierId === tierId);
+  if (!model) {
+    throw new Error(`Missing model for tier: ${tierId}`);
+  }
+  return model.id;
+}
 
 describe("maison prestige", () => {
   it("calculates prestige gain from enjoyment and blueprints", () => {
@@ -155,12 +165,17 @@ describe("maison prestige", () => {
 
   it("unlocks achievements for Memories and prestige", () => {
     const baseState = createInitialState();
+    const tourbillonModelId = getModelIdForTier("tourbillon");
     const upgradedState = applyAchievementUnlocks({
       ...baseState,
       workshopPrestigeCount: 1,
       items: {
         ...baseState.items,
         tourbillon: 8,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [tourbillonModelId]: 8,
       },
     });
 
@@ -181,7 +196,11 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        tourbillon: 500,
+        tourbillon: 5_000,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [tourbillonModelId]: 5_000,
       },
     });
     expect(millionState.achievementUnlocks).toContain("million-memories");
@@ -195,11 +214,16 @@ describe("maison prestige", () => {
 
   it("activates, cools down, and respects calendar-date events", () => {
     const baseState = createInitialState();
+    const tourbillonModelId = getModelIdForTier("tourbillon");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
         tourbillon: 5,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [tourbillonModelId]: 5,
       },
       discoveredCatalogEntries: [],
       catalogTierUnlocks: [],
@@ -362,6 +386,8 @@ describe("maison prestige", () => {
 
   it("applies watch ability multipliers to cash only", () => {
     const baseState = createInitialState();
+    const starterModelId = getModelIdForTier("starter");
+    const chronographModelId = getModelIdForTier("chronograph");
     expect(getCollectionBonusMultiplier(baseState)).toBe(1);
 
     const baseRate = getEffectiveIncomeRateCentsPerSec(baseState, 1);
@@ -376,6 +402,10 @@ describe("maison prestige", () => {
       items: {
         ...baseState.items,
         starter: 10,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [starterModelId]: 10,
       },
     };
 
@@ -393,6 +423,10 @@ describe("maison prestige", () => {
         ...baseState.items,
         chronograph: 5,
       },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 5,
+      },
     };
 
     const chrono5Expected =
@@ -408,6 +442,11 @@ describe("maison prestige", () => {
         starter: 10,
         chronograph: 5,
       },
+      watchModels: {
+        ...baseState.watchModels,
+        [starterModelId]: 10,
+        [chronographModelId]: 5,
+      },
     };
 
     const stackedExpected =
@@ -420,7 +459,8 @@ describe("maison prestige", () => {
       getWatchItems().map((item) => [item.id, getWatchItemEnjoymentRateCentsPerSec(item)]),
     );
     const expectedEnjoyment =
-      (enjoymentRates.get("starter") ?? 0) * 10 + (enjoymentRates.get("chronograph") ?? 0) * 5;
+      (enjoymentRates.get("starter") ?? 0) * getDuplicateRewardSum(10) +
+      (enjoymentRates.get("chronograph") ?? 0) * getDuplicateRewardSum(5);
     expect(getEnjoymentRateCentsPerSec(stackedHigh)).toBe(expectedEnjoyment);
   });
 
@@ -486,20 +526,29 @@ describe("maison prestige", () => {
       throw new Error("Expected showcase milestone with collection value requirement");
     }
 
+    const chronographModelId = getModelIdForTier("chronograph");
+
     const belowMilestone = {
       ...baseState,
       items: {
         ...baseState.items,
         chronograph: 1,
       },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 1,
+      },
     };
 
-    const threshold = showcaseMilestone.requirement.thresholdCents;
     const atMilestone = {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: Math.ceil((threshold * 0.8) / 18_000),
+        chronograph: 2,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 2,
       },
     };
 

@@ -45,6 +45,10 @@ function sanitizeState(value: unknown): GameState | null {
       typeof record.items === "object" && record.items !== null
         ? (record.items as Record<string, number>)
         : {},
+    watchModels:
+      typeof record.watchModels === "object" && record.watchModels !== null
+        ? (record.watchModels as Record<string, number>)
+        : {},
     upgrades:
       typeof record.upgrades === "object" && record.upgrades !== null
         ? (record.upgrades as Record<string, number>)

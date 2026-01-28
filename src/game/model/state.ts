@@ -3,6 +3,7 @@ import { WATCH_MODELS } from "../data/watchModels";
 import { MILESTONES } from "../data/milestones";
 import { NOSTALGIA_UNLOCK_ORDER, WATCH_ITEMS } from "../data/items";
 import { UPGRADES } from "../data/upgrades";
+import { getDuplicateRewardSum } from "../selectors/duplicates";
 import type {
   AchievementDefinition,
   AchievementId,
@@ -30,6 +31,9 @@ import type {
 export { MILESTONES } from "../data/milestones";
 export { NOSTALGIA_UNLOCK_ORDER, WATCH_ITEMS } from "../data/items";
 export { UPGRADES } from "../data/upgrades";
+
+const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
+const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]));
 
 export const ALL_MILESTONE_IDS: MilestoneId[] = [
   "collector-shelf",
@@ -313,10 +317,28 @@ export function getTotalItemCount(state: GameState): number {
 }
 
 export function getCollectionValueCents(state: GameState): number {
-  return WATCH_ITEMS.reduce(
-    (total, item) => total + (state.items[item.id] ?? 0) * item.collectionValueCents,
-    0,
-  );
+  return Object.entries(state.watchModels).reduce((total, [modelId, rawOwned]) => {
+    if (!Number.isFinite(rawOwned)) {
+      return total;
+    }
+
+    const model = WATCH_MODEL_LOOKUP.get(modelId);
+    if (!model) {
+      return total;
+    }
+
+    const item = WATCH_ITEM_LOOKUP.get(model.tierId);
+    if (!item) {
+      return total;
+    }
+
+    const owned = Math.max(0, Math.floor(rawOwned));
+    if (owned === 0) {
+      return total;
+    }
+
+    return total + item.collectionValueCents * getDuplicateRewardSum(owned);
+  }, 0);
 }
 
 export function applyMilestoneUnlocks(state: GameState): GameState {
