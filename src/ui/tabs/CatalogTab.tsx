@@ -276,7 +276,7 @@ export function CatalogTab({
               <div className="catalog-empty" data-testid="catalog-discovered-empty">
                 <EmptyStateCTA
                   title="No references discovered yet"
-                  body="Buy and interact with watches in the Vault to discover catalog references and unlock tier bonuses."
+                  body="Buy and interact with watch models in the Vault to discover catalog references and unlock tier bonuses."
                   ctaLabel="Go to Vault"
                   onCta={() => onNavigate("collection", "collection-list")}
                 />
