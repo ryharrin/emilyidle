@@ -69,7 +69,6 @@ import {
   getMaisonPrestigeGain,
   getMaisonPrestigeThresholdCents,
   getEventIncomeMultiplier,
-  getItemCount,
   getAutoBuyEnabled,
   getMaisonReputationGain,
   getNostalgiaUnlockCost,
@@ -78,6 +77,7 @@ import {
   getNostalgiaPrestigeThresholdCents,
   getCollectionValueCents,
   getMaxAffordableItemCount,
+  getWatchModelOwnedCount,
   getWorkshopPrestigeGain,
   getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
@@ -796,10 +796,10 @@ export default function App() {
     [],
   );
   const activeCoachmarks = coachmarks.filter((mark) => !coachmarksDismissed[mark.id]);
-  const ownedCatalogTiers = useMemo(() => {
-    return watchItems.filter((item) => getItemCount(state, item.id) > 0).map((item) => item.id);
-  }, [state, watchItems]);
-  const hasOwnedCatalogTiers = ownedCatalogTiers.length > 0;
+  const hasOwnedCatalogTiers = useMemo(
+    () => Object.values(state.watchModels).some((count) => count > 0),
+    [state.watchModels],
+  );
   const archiveCuratorMilestone = milestones.find(
     (milestone) => milestone.id === "archive-curator",
   );
@@ -812,14 +812,9 @@ export default function App() {
 
   const filteredCatalogEntries = useMemo(() => {
     const query = catalogSearch.trim().toLowerCase();
-    const ownedTierSet = new Set(ownedCatalogTiers);
-
     const filteredByOwnership = catalogEntries.filter((entry) => {
-      const tags = getCatalogEntryTags(entry);
-      const tierTag = tags.find((tag) =>
-        ownedTierSet.has(tag as (typeof ownedCatalogTiers)[number]),
-      );
-      const isOwned = Boolean(tierTag);
+      const ownedCount = getWatchModelOwnedCount(state, entry.id);
+      const isOwned = ownedCount > 0;
       return catalogTab === "owned" ? isOwned : !isOwned;
     });
 
@@ -921,7 +916,7 @@ export default function App() {
     catalogStyle,
     catalogTab,
     catalogType,
-    ownedCatalogTiers,
+    state.watchModels,
   ]);
 
   const discoveredCatalogEntries = useMemo(() => {
