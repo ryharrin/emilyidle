@@ -15,6 +15,7 @@ import {
   canBuyUpgrade,
   dismantleWatchModel,
   getAchievementUnlockProgressDetail,
+  getDuplicateRewardMultiplierForNextPurchase,
   getEventStatusLabel,
   getMilestoneUnlockProgressDetail,
   getMilestoneRequirementLabel,
@@ -147,18 +148,40 @@ export function CollectionTab({
   onInteract,
 }: CollectionTabProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
+  const [lastPurchasedModelId, setLastPurchasedModelId] = React.useState<string | null>(null);
   const watchModels = getWatchModels();
   const watchItemById = new Map(watchItems.map((item) => [item.id, item]));
   const watchModelsByBrand = new Map<string, typeof watchModels>();
+  const modelOwnedByTier = new Map<WatchItemId, number>();
+  const firstModelByTier = new Map<WatchItemId, string>();
 
   for (const model of watchModels) {
     const nextGroup = watchModelsByBrand.get(model.brand) ?? [];
     watchModelsByBrand.set(model.brand, [...nextGroup, model]);
+    modelOwnedByTier.set(
+      model.tierId,
+      (modelOwnedByTier.get(model.tierId) ?? 0) + getWatchModelOwnedCount(state, model.id),
+    );
+    if (!firstModelByTier.has(model.tierId)) {
+      firstModelByTier.set(model.tierId, model.id);
+    }
   }
 
   const brandSections = Array.from(watchModelsByBrand.entries()).sort((a, b) =>
     a[0].localeCompare(b[0]),
   );
+
+  React.useEffect(() => {
+    if (!lastPurchasedModelId) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLastPurchasedModelId(null);
+    }, 700);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [lastPurchasedModelId]);
 
   const nextUnlockItems: NextUnlockItem[] = [];
   const collectionListCta = {
@@ -444,7 +467,14 @@ export function CollectionTab({
                   <div className="card-stack">
                     {models.map((model) => {
                       const tierItem = watchItemById.get(model.tierId);
-                      const owned = getWatchModelOwnedCount(state, model.id);
+                      const modelOwned = getWatchModelOwnedCount(state, model.id);
+                      const tierOwned = state.items[model.tierId] ?? 0;
+                      const totalModelOwned = modelOwnedByTier.get(model.tierId) ?? 0;
+                      const isFallbackOwner =
+                        totalModelOwned === 0 &&
+                        tierOwned > 0 &&
+                        firstModelByTier.get(model.tierId) === model.id;
+                      const owned = isFallbackOwner ? tierOwned : modelOwned;
                       const gate = getWatchModelPurchaseGate(state, model.id);
                       const unlocked = tierItem ? isItemUnlocked(state, tierItem.id) : true;
                       const unlockMilestoneId = tierItem?.unlockMilestoneId;
@@ -465,11 +495,19 @@ export function CollectionTab({
                       const partsPerWatch = tierItem
                         ? (craftingPartsPerWatch[tierItem.id] ?? 0)
                         : 0;
-                      const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, model.id);
+                      const duplicateMultiplier = isFallbackOwner
+                        ? getDuplicateRewardMultiplierForNextPurchase(owned)
+                        : getNextDuplicateRewardMultiplier(state, model.id);
                       const buyLabel = owned > 0 ? "Buy another" : "Buy";
+                      const isHighlighted = lastPurchasedModelId === model.id;
+                      const canInteract = owned > 0;
+                      const canDismantle = modelOwned > 0 && partsPerWatch > 0;
 
                       return (
-                        <div className="card" key={model.id}>
+                        <div
+                          className={`card ${isHighlighted ? "purchase-flash" : ""}`}
+                          key={model.id}
+                        >
                           <div className="card-header">
                             <div>
                               <h3>{model.displayName}</h3>
@@ -507,7 +545,7 @@ export function CollectionTab({
                             <button
                               type="button"
                               className="secondary"
-                              disabled={owned <= 0}
+                              disabled={!canInteract}
                               onClick={() => onInteract(model.tierId)}
                             >
                               Interact
@@ -515,7 +553,7 @@ export function CollectionTab({
                             <button
                               type="button"
                               className="secondary"
-                              disabled={owned <= 0 || partsPerWatch <= 0}
+                              disabled={!canDismantle}
                               onClick={() => onPurchase(dismantleWatchModel(state, model.id, 1))}
                             >
                               Dismantle
@@ -524,7 +562,10 @@ export function CollectionTab({
                               type="button"
                               data-testid={`vault-buy-${model.id}`}
                               disabled={!unlocked || !gate.ok}
-                              onClick={() => onPurchase(buyWatchModel(state, model.id))}
+                              onClick={() => {
+                                setLastPurchasedModelId(model.id);
+                                onPurchase(buyWatchModel(state, model.id));
+                              }}
                             >
                               {buyLabel} ({formatMoneyFromCents(gate.cashPriceCents)})
                             </button>
