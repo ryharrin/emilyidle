@@ -4,6 +4,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { CatalogTab } from "../src/ui/tabs/CatalogTab";
+import { HelpProvider } from "../src/ui/help/helpContext";
 import { createInitialState } from "../src/game/state";
 
 type UnlockHintCta = {
@@ -134,35 +135,38 @@ describe("unlock UI components", () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     const onPurchase = vi.fn();
+    const openHelpTo = vi.fn();
     const state = createInitialState();
 
     render(
-      <CatalogTab
-        isActive={true}
-        state={state}
-        onNavigate={onNavigate}
-        catalogSearch=""
-        onCatalogSearchChange={() => undefined}
-        catalogBrand="all"
-        onCatalogBrandChange={() => undefined}
-        catalogStyle="all"
-        onCatalogStyleChange={() => undefined}
-        catalogSort="default"
-        onCatalogSortChange={() => undefined}
-        catalogEra="all"
-        onCatalogEraChange={() => undefined}
-        catalogType="all"
-        onCatalogTypeChange={() => undefined}
-        catalogTab="unowned"
-        onCatalogTabChange={() => undefined}
-        catalogBrands={[]}
-        filteredCatalogEntries={[]}
-        discoveredCatalogEntries={[]}
-        discoveredCatalogIds={[]}
-        catalogEntries={[]}
-        hasOwnedCatalogTiers={false}
-        onPurchase={onPurchase}
-      />,
+      <HelpProvider value={{ openHelpTo }}>
+        <CatalogTab
+          isActive={true}
+          state={state}
+          onNavigate={onNavigate}
+          catalogSearch=""
+          onCatalogSearchChange={() => undefined}
+          catalogBrand="all"
+          onCatalogBrandChange={() => undefined}
+          catalogStyle="all"
+          onCatalogStyleChange={() => undefined}
+          catalogSort="default"
+          onCatalogSortChange={() => undefined}
+          catalogEra="all"
+          onCatalogEraChange={() => undefined}
+          catalogType="all"
+          onCatalogTypeChange={() => undefined}
+          catalogTab="unowned"
+          onCatalogTabChange={() => undefined}
+          catalogBrands={[]}
+          filteredCatalogEntries={[]}
+          discoveredCatalogEntries={[]}
+          discoveredCatalogIds={[]}
+          catalogEntries={[]}
+          hasOwnedCatalogTiers={false}
+          onPurchase={onPurchase}
+        />
+      </HelpProvider>,
     );
 
     expect(screen.queryByTestId("catalog-discovered-empty")).not.toBeNull();
@@ -174,35 +178,38 @@ describe("unlock UI components", () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     const onPurchase = vi.fn();
+    const openHelpTo = vi.fn();
     const state = createInitialState();
 
     render(
-      <CatalogTab
-        isActive={true}
-        state={state}
-        onNavigate={onNavigate}
-        catalogSearch=""
-        onCatalogSearchChange={() => undefined}
-        catalogBrand="all"
-        onCatalogBrandChange={() => undefined}
-        catalogStyle="all"
-        onCatalogStyleChange={() => undefined}
-        catalogSort="default"
-        onCatalogSortChange={() => undefined}
-        catalogEra="all"
-        onCatalogEraChange={() => undefined}
-        catalogType="all"
-        onCatalogTypeChange={() => undefined}
-        catalogTab="owned"
-        onCatalogTabChange={() => undefined}
-        catalogBrands={[]}
-        filteredCatalogEntries={[]}
-        discoveredCatalogEntries={[]}
-        discoveredCatalogIds={[]}
-        catalogEntries={[]}
-        hasOwnedCatalogTiers={false}
-        onPurchase={onPurchase}
-      />,
+      <HelpProvider value={{ openHelpTo }}>
+        <CatalogTab
+          isActive={true}
+          state={state}
+          onNavigate={onNavigate}
+          catalogSearch=""
+          onCatalogSearchChange={() => undefined}
+          catalogBrand="all"
+          onCatalogBrandChange={() => undefined}
+          catalogStyle="all"
+          onCatalogStyleChange={() => undefined}
+          catalogSort="default"
+          onCatalogSortChange={() => undefined}
+          catalogEra="all"
+          onCatalogEraChange={() => undefined}
+          catalogType="all"
+          onCatalogTypeChange={() => undefined}
+          catalogTab="owned"
+          onCatalogTabChange={() => undefined}
+          catalogBrands={[]}
+          filteredCatalogEntries={[]}
+          discoveredCatalogEntries={[]}
+          discoveredCatalogIds={[]}
+          catalogEntries={[]}
+          hasOwnedCatalogTiers={false}
+          onPurchase={onPurchase}
+        />
+      </HelpProvider>,
     );
 
     expect(screen.queryByTestId("catalog-owned-empty")).not.toBeNull();

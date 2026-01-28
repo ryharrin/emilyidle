@@ -529,10 +529,12 @@ describe("catalog filters", () => {
     await user.type(searchInput, "GMT-Master");
 
     const catalogGrid = screen.getByTestId("catalog-grid");
-    const details = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-facts"));
+    const details = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-details"));
+    const facts = within(catalogGrid).getAllByTestId("catalog-facts");
 
     expect(details.length).toBeGreaterThan(0);
     expect(details[0]?.tagName).toBe("DETAILS");
+    expect(facts.length).toBeGreaterThan(0);
   });
 
   it("does not render collector notes for unowned entries", async () => {
@@ -617,8 +619,10 @@ describe("catalog filters", () => {
     expect(cards.length).toBeGreaterThan(0);
 
     cards.forEach((card) => {
-      expect(card.textContent).not.toContain("Unknown");
-      const maybeYear = card.textContent?.match(/\b(19|20)\d{2}\b/)?.[0];
+      const yearLabel = card.querySelector(".catalog-year");
+      const yearText = yearLabel?.textContent ?? "";
+      expect(yearText).not.toContain("Unknown");
+      const maybeYear = yearText.match(/\b(19|20)\d{2}\b/)?.[0];
       expect(maybeYear).toBeTruthy();
       const year = maybeYear ? Number(maybeYear) : 0;
       expect(year).toBeGreaterThanOrEqual(1970);
@@ -663,6 +667,111 @@ describe("catalog filters", () => {
     await userEvent.click(catalogTab);
 
     expect(screen.getByTestId("catalog-filters")).toBeTruthy();
+  });
+});
+
+describe("catalog purchase CTA", () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    const baseState = createInitialState();
+    const chronographModelId = getModelIdForTier("chronograph");
+    const seededState = {
+      ...baseState,
+      currencyCents: 2_000_000_00,
+      enjoymentCents: 2_000_000_00,
+      items: {
+        ...baseState.items,
+        chronograph: 1,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [chronographModelId]: 1,
+      },
+      unlockedMilestones: ["showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("increments owned count after a catalog purchase", async () => {
+    const user = userEvent.setup();
+    const catalogGrid = screen.getByTestId("catalog-grid");
+    const buyButtons = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-buy-/));
+
+    expect(buyButtons.length).toBeGreaterThan(0);
+
+    const button = buyButtons[0];
+    const card = button.closest('[data-testid="catalog-card"]');
+    const buyTestId = button.getAttribute("data-testid");
+    if (!(card instanceof HTMLElement) || !buyTestId) {
+      throw new Error("Expected a catalog card for the buy button");
+    }
+
+    const ownedLabel = within(card).getByText(/owned/i);
+    const ownedCount = Number(ownedLabel.textContent?.match(/\d+/)?.[0] ?? 0);
+
+    await user.click(button);
+
+    const ownedTab = screen.getByRole("tab", { name: /^Owned$/ });
+    await user.click(ownedTab);
+
+    await waitFor(() => {
+      const ownedGrid = screen.getByTestId("catalog-grid");
+      const updatedButton = within(ownedGrid).getByTestId(buyTestId);
+      const updatedCard = updatedButton.closest('[data-testid="catalog-card"]');
+      if (!(updatedCard instanceof HTMLElement)) {
+        throw new Error("Expected updated catalog card after purchase");
+      }
+      const nextOwnedLabel = within(updatedCard).getByText(/owned/i);
+      const nextOwnedCount = Number(nextOwnedLabel.textContent?.match(/\d+/)?.[0] ?? 0);
+      expect(nextOwnedCount).toBeGreaterThan(ownedCount);
+    });
+  });
+});
+
+describe("catalog help entry", () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    render(<App />);
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("opens help focused on catalog shopping", async () => {
+    const user = userEvent.setup();
+    const helpTarget = screen.getByTestId("catalog-help");
+    const helpButton = within(helpTarget).getByRole("button");
+
+    await user.click(helpButton);
+
+    expect(screen.getByTestId("help-modal")).toBeTruthy();
+    expect(screen.getByTestId("help-active-section").textContent).toBe("Catalog shopping");
   });
 });
 
