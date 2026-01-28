@@ -8,22 +8,24 @@ import { LockIcon } from "../icons/coreIcons";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
-  buyItem,
   buyMaisonLine,
   buyUpgrade,
+  buyWatchModel,
   canBuyMaisonLine,
   canBuyUpgrade,
+  dismantleWatchModel,
   getAchievementUnlockProgressDetail,
-  dismantleItem,
   getEventStatusLabel,
-  getMaxAffordableItemCount,
   getMilestoneUnlockProgressDetail,
   getMilestoneRequirementLabel,
+  getNextDuplicateRewardMultiplier,
   getPrestigeUnlockProgressDetail,
   getUpgradePriceCents,
   getUnlockRevealProgressRatio,
   getWatchItemEnjoymentRateCentsPerSec,
-  getWatchPurchaseGate,
+  getWatchModelOwnedCount,
+  getWatchModelPurchaseGate,
+  getWatchModels,
   isEventActive,
   isItemUnlocked,
   isUpgradeUnlocked,
@@ -145,6 +147,18 @@ export function CollectionTab({
   onInteract,
 }: CollectionTabProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
+  const watchModels = getWatchModels();
+  const watchItemById = new Map(watchItems.map((item) => [item.id, item]));
+  const watchModelsByBrand = new Map<string, typeof watchModels>();
+
+  for (const model of watchModels) {
+    const nextGroup = watchModelsByBrand.get(model.brand) ?? [];
+    watchModelsByBrand.set(model.brand, [...nextGroup, model]);
+  }
+
+  const brandSections = Array.from(watchModelsByBrand.entries()).sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  );
 
   const nextUnlockItems: NextUnlockItem[] = [];
   const collectionListCta = {
@@ -418,129 +432,149 @@ export function CollectionTab({
               </div>
             )}
             <div id="collection-list" className="card-stack">
-              {watchItems.map((item) => {
-                const owned = state.items[item.id] ?? 0;
-                const maxAffordable = getMaxAffordableItemCount(state, item.id);
-                const bulkQty = Math.min(10, Math.max(1, maxAffordable));
-                const unlocked = isItemUnlocked(state, item.id);
-                const unlockMilestoneId = item.unlockMilestoneId;
-                const unlockDetail = unlockMilestoneId
-                  ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
-                  : null;
-                const unlockUsesCents = unlockMilestoneId === "showcase";
-                const unlockCurrentLabel = unlockDetail
-                  ? unlockUsesCents
-                    ? formatMoneyFromCents(unlockDetail.current)
-                    : formatCount(unlockDetail.current)
-                  : "0";
-                const unlockThresholdLabel = unlockDetail
-                  ? unlockUsesCents
-                    ? formatMoneyFromCents(unlockDetail.threshold)
-                    : formatCount(unlockDetail.threshold)
-                  : "0";
-                const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
-                const singleGate = getWatchPurchaseGate(state, item.id, 1);
-                const bulkGate = getWatchPurchaseGate(state, item.id, bulkQty);
+              {brandSections.map(([brand, models]) => (
+                <section className="panel collection-brand" key={brand}>
+                  <header className="panel-header collection-brand-header">
+                    <div>
+                      <p className="eyebrow">Brand</p>
+                      <h3>{brand}</h3>
+                    </div>
+                    <div className="results-count">{models.length} models</div>
+                  </header>
+                  <div className="card-stack">
+                    {models.map((model) => {
+                      const tierItem = watchItemById.get(model.tierId);
+                      const owned = getWatchModelOwnedCount(state, model.id);
+                      const gate = getWatchModelPurchaseGate(state, model.id);
+                      const unlocked = tierItem ? isItemUnlocked(state, tierItem.id) : true;
+                      const unlockMilestoneId = tierItem?.unlockMilestoneId;
+                      const unlockDetail = unlockMilestoneId
+                        ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+                        : null;
+                      const unlockUsesCents = unlockMilestoneId === "showcase";
+                      const unlockCurrentLabel = unlockDetail
+                        ? unlockUsesCents
+                          ? formatMoneyFromCents(unlockDetail.current)
+                          : formatCount(unlockDetail.current)
+                        : "0";
+                      const unlockThresholdLabel = unlockDetail
+                        ? unlockUsesCents
+                          ? formatMoneyFromCents(unlockDetail.threshold)
+                          : formatCount(unlockDetail.threshold)
+                        : "0";
+                      const partsPerWatch = tierItem
+                        ? (craftingPartsPerWatch[tierItem.id] ?? 0)
+                        : 0;
+                      const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, model.id);
+                      const buyLabel = owned > 0 ? "Buy another" : "Buy";
 
-                return (
-                  <div className="card" key={item.id}>
-                    <div className="card-header">
-                      <div>
-                        <h3>{item.name}</h3>
-                        <p>{item.description}</p>
-                      </div>
-                      <div className="muted">{owned} owned</div>
-                    </div>
-                    <p>
-                      {formatRateFromCentsPerSec(getWatchItemEnjoymentRateCentsPerSec(item))}{" "}
-                      enjoyment each · {formatRateFromCentsPerSec(item.incomeCentsPerSec)} dollars
-                      each · Memories {formatMoneyFromCents(item.collectionValueCents)}
-                    </p>
-                    <p className="muted">Dismantle value: {partsPerWatch} parts</p>
-                    {!unlocked && unlockDetail && (
-                      <div data-testid={`locked-item-hint-${item.id}`}>
-                        <UnlockHint
-                          eyebrow="Locked"
-                          title="Unlock requirement"
-                          detail={unlockDetail.label}
-                          currentLabel={unlockCurrentLabel}
-                          thresholdLabel={unlockThresholdLabel}
-                          ratio={unlockDetail.ratio}
-                        />
-                      </div>
-                    )}
-                    <div className="card-actions">
-                      <button
-                        type="button"
-                        className="secondary"
-                        disabled={owned <= 0}
-                        onClick={() => onInteract(item.id)}
-                      >
-                        Interact
-                      </button>
-                      <button
-                        type="button"
-                        className="secondary"
-                        disabled={owned <= 0 || partsPerWatch <= 0}
-                        onClick={() => onPurchase(dismantleItem(state, item.id, 1))}
-                      >
-                        Dismantle
-                      </button>
-                      <button
-                        type="button"
-                        data-testid={`vault-buy-${item.id}`}
-                        disabled={!unlocked || !singleGate.ok}
-                        onClick={() => onPurchase(buyItem(state, item.id, 1))}
-                      >
-                        Buy ({formatMoneyFromCents(singleGate.cashPriceCents)})
-                      </button>
-                      <button
-                        type="button"
-                        className="secondary"
-                        data-testid={`vault-buy-bulk-${item.id}`}
-                        disabled={!unlocked || bulkQty <= 1 || !bulkGate.ok}
-                        onClick={() => onPurchase(buyItem(state, item.id, bulkQty))}
-                      >
-                        Buy {bulkQty} ({formatMoneyFromCents(bulkGate.cashPriceCents)})
-                      </button>
-                      {unlocked && !singleGate.ok && (
-                        <div className="purchase-locked" data-testid={`purchase-gate-${item.id}`}>
-                          <LockIcon className="inline-icon" />
-                          {singleGate.blocksBy === "enjoyment" && (
-                            <>
-                              Requires {formatMoneyFromCents(singleGate.enjoymentRequiredCents)}{" "}
-                              enjoyment
-                              {singleGate.enjoymentDeficitCents !== undefined && (
-                                <>
-                                  {" "}
-                                  (need {formatMoneyFromCents(
-                                    singleGate.enjoymentDeficitCents,
-                                  )}{" "}
-                                  more)
-                                </>
-                              )}
-                            </>
-                          )}
-                          {singleGate.blocksBy === "cash" && (
-                            <>
-                              Need {formatMoneyFromCents(singleGate.cashDeficitCents ?? 0)} more
-                              dollars
-                            </>
-                          )}
-                          <ExplainButton sectionId={HELP_SECTION_IDS.gates} label="Explain gates" />
-                        </div>
-                      )}
-                      {!unlocked &&
-                        item.unlockMilestoneId &&
-                        shouldShowUnlockTag(state, item.unlockMilestoneId) && (
-                          <div className="unlock-tag">
-                            Unlocking soon · {getMilestoneRequirementLabel(item.unlockMilestoneId)}
+                      return (
+                        <div className="card" key={model.id}>
+                          <div className="card-header">
+                            <div>
+                              <h3>{model.displayName}</h3>
+                              {tierItem && <p>{tierItem.description}</p>}
+                            </div>
+                            <div className="muted">Owned {owned}</div>
                           </div>
-                        )}
-                    </div>
+                          {tierItem && (
+                            <p>
+                              {formatRateFromCentsPerSec(
+                                getWatchItemEnjoymentRateCentsPerSec(tierItem),
+                              )}{" "}
+                              enjoyment each ·{" "}
+                              {formatRateFromCentsPerSec(tierItem.incomeCentsPerSec)} dollars each ·
+                              Memories {formatMoneyFromCents(tierItem.collectionValueCents)}
+                            </p>
+                          )}
+                          <p className="muted">
+                            Owned {owned} | Duplicate: {duplicateMultiplier.toFixed(2)}x rewards
+                          </p>
+                          <p className="muted">Dismantle value: {partsPerWatch} parts</p>
+                          {!unlocked && unlockDetail && (
+                            <div data-testid={`locked-item-hint-${model.id}`}>
+                              <UnlockHint
+                                eyebrow="Locked"
+                                title="Unlock requirement"
+                                detail={unlockDetail.label}
+                                currentLabel={unlockCurrentLabel}
+                                thresholdLabel={unlockThresholdLabel}
+                                ratio={unlockDetail.ratio}
+                              />
+                            </div>
+                          )}
+                          <div className="card-actions">
+                            <button
+                              type="button"
+                              className="secondary"
+                              disabled={owned <= 0}
+                              onClick={() => onInteract(model.tierId)}
+                            >
+                              Interact
+                            </button>
+                            <button
+                              type="button"
+                              className="secondary"
+                              disabled={owned <= 0 || partsPerWatch <= 0}
+                              onClick={() => onPurchase(dismantleWatchModel(state, model.id, 1))}
+                            >
+                              Dismantle
+                            </button>
+                            <button
+                              type="button"
+                              data-testid={`vault-buy-${model.id}`}
+                              disabled={!unlocked || !gate.ok}
+                              onClick={() => onPurchase(buyWatchModel(state, model.id))}
+                            >
+                              {buyLabel} ({formatMoneyFromCents(gate.cashPriceCents)})
+                            </button>
+                            {unlocked && !gate.ok && (
+                              <div
+                                className="purchase-locked"
+                                data-testid={`purchase-gate-${model.id}`}
+                              >
+                                <LockIcon className="inline-icon" />
+                                {gate.blocksBy === "enjoyment" && (
+                                  <>
+                                    Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}{" "}
+                                    enjoyment
+                                    {gate.enjoymentDeficitCents !== undefined && (
+                                      <>
+                                        {" "}
+                                        (need {formatMoneyFromCents(
+                                          gate.enjoymentDeficitCents,
+                                        )}{" "}
+                                        more)
+                                      </>
+                                    )}
+                                  </>
+                                )}
+                                {gate.blocksBy === "cash" && (
+                                  <>
+                                    Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more
+                                    dollars
+                                  </>
+                                )}
+                                <ExplainButton
+                                  sectionId={HELP_SECTION_IDS.gates}
+                                  label="Explain gates"
+                                />
+                              </div>
+                            )}
+                            {!unlocked &&
+                              unlockMilestoneId &&
+                              shouldShowUnlockTag(state, unlockMilestoneId) && (
+                                <div className="unlock-tag">
+                                  Unlocking soon · {getMilestoneRequirementLabel(unlockMilestoneId)}
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </section>
+              ))}
             </div>
           </div>
 
