@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import {
   createInitialState,
+  createStateFromSave,
   getDuplicateRewardSum,
+  getCollectionValueCents,
   getEnjoymentRateCentsPerSec,
   getPrestigeLegacyMultiplier,
   getWatchItemEnjoymentRateCentsPerSec,
   getWatchModels,
   getWatchItems,
+  type PersistedGameState,
 } from "../src/game/state";
 
 const MODEL_IDS = {
@@ -63,6 +66,22 @@ describe("enjoyment tiers", () => {
       (enjoymentRates.get("tourbillon") ?? 0) * getDuplicateRewardSum(1);
 
     expect(getEnjoymentRateCentsPerSec(seededState)).toBe(expected);
+  });
+
+  it("migrates tier-only saves to preserve enjoyment and memories", () => {
+    const persisted: PersistedGameState = {
+      currencyCents: 0,
+      items: {
+        starter: 2,
+        classic: 1,
+      },
+    };
+
+    const state = createStateFromSave(persisted);
+
+    expect(Object.keys(state.watchModels).length).toBeGreaterThan(0);
+    expect(getEnjoymentRateCentsPerSec(state)).toBeGreaterThan(0);
+    expect(getCollectionValueCents(state)).toBeGreaterThan(0);
   });
 
   it("scales enjoyment by watch tier", () => {
