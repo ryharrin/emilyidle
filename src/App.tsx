@@ -1286,6 +1286,7 @@ export default function App() {
 
         <CatalogTab
           isActive={activeTab === "catalog"}
+          state={state}
           onNavigate={navigateTo}
           catalogSearch={catalogSearch}
           onCatalogSearchChange={setCatalogSearch}
@@ -1307,6 +1308,7 @@ export default function App() {
           discoveredCatalogIds={discoveredCatalogIds}
           catalogEntries={catalogEntries}
           hasOwnedCatalogTiers={hasOwnedCatalogTiers}
+          onPurchase={handlePurchase}
         />
 
         <StatsTab

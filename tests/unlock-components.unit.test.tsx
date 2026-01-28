@@ -4,6 +4,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { CatalogTab } from "../src/ui/tabs/CatalogTab";
+import { createInitialState } from "../src/game/state";
 
 type UnlockHintCta = {
   label: string;
@@ -132,10 +133,13 @@ describe("unlock UI components", () => {
   it("wires Catalog discovered empty state CTA to Vault navigation", async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
+    const onPurchase = vi.fn();
+    const state = createInitialState();
 
     render(
       <CatalogTab
         isActive={true}
+        state={state}
         onNavigate={onNavigate}
         catalogSearch=""
         onCatalogSearchChange={() => undefined}
@@ -157,6 +161,7 @@ describe("unlock UI components", () => {
         discoveredCatalogIds={[]}
         catalogEntries={[]}
         hasOwnedCatalogTiers={false}
+        onPurchase={onPurchase}
       />,
     );
 
@@ -168,10 +173,13 @@ describe("unlock UI components", () => {
   it("wires Catalog owned empty state CTA to Vault navigation", async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
+    const onPurchase = vi.fn();
+    const state = createInitialState();
 
     render(
       <CatalogTab
         isActive={true}
+        state={state}
         onNavigate={onNavigate}
         catalogSearch=""
         onCatalogSearchChange={() => undefined}
@@ -193,6 +201,7 @@ describe("unlock UI components", () => {
         discoveredCatalogIds={[]}
         catalogEntries={[]}
         hasOwnedCatalogTiers={false}
+        onPurchase={onPurchase}
       />,
     );
 

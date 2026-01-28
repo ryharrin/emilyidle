@@ -4,6 +4,7 @@ import { EmptyStateCTA } from "../components/EmptyStateCTA";
 
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
 import type { CatalogEntry } from "../../game/catalog";
+import type { GameState } from "../../game/state";
 
 type TabId =
   | "collection"
@@ -17,6 +18,7 @@ type TabId =
 
 type CatalogTabProps = {
   isActive: boolean;
+  state: GameState;
   onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
   catalogSearch: string;
   onCatalogSearchChange: (next: string) => void;
@@ -38,10 +40,16 @@ type CatalogTabProps = {
   discoveredCatalogIds: ReadonlyArray<string>;
   catalogEntries: ReadonlyArray<CatalogEntry>;
   hasOwnedCatalogTiers: boolean;
+  onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
+};
+
+type PurchaseMeta = {
+  prestigeTier?: "workshop" | "maison" | "nostalgia";
 };
 
 export function CatalogTab({
   isActive,
+  state,
   onNavigate,
   catalogSearch,
   onCatalogSearchChange,
@@ -63,6 +71,7 @@ export function CatalogTab({
   discoveredCatalogIds,
   catalogEntries,
   hasOwnedCatalogTiers,
+  onPurchase,
 }: CatalogTabProps) {
   return (
     <section
