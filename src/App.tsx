@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { CatalogTab } from "./ui/tabs/CatalogTab";
 import { CareerTab } from "./ui/tabs/CareerTab";
@@ -54,7 +54,6 @@ import {
   getCraftingParts,
   getCraftingPartsPerWatch,
   getCraftingRecipes,
-  getUnlockVisibilityRatio,
   craftBoost,
   canCraftBoost,
   getCraftedBoostIncomeMultiplier,
@@ -94,6 +93,7 @@ import { step } from "./game/sim";
 
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
 const SETTINGS_KEY = "emily-idle:settings";
+const NAVIGATION_KEY = "emily-idle:navigation";
 const TAB_DEFINITIONS = [
   { id: "collection", label: "Vault" },
   { id: "career", label: "Career" },
@@ -106,6 +106,12 @@ const TAB_DEFINITIONS = [
 ] as const;
 
 type TabId = (typeof TAB_DEFINITIONS)[number]["id"];
+
+type TabActivationSource = "user" | "deep-link" | "system";
+
+type NavigationState = {
+  lastTabId: TabId;
+};
 
 type PurchaseMeta = {
   prestigeTier?: PrestigeEvent["tier"];
@@ -138,6 +144,35 @@ const DEFAULT_SETTINGS: Settings = {
   hiddenTabs: [],
   coachmarksDismissed: {},
   confirmNostalgiaUnlocks: true,
+};
+
+const isTabId = (value: string): value is TabId => TAB_DEFINITIONS.some((tab) => tab.id === value);
+
+const loadNavigationState = (): NavigationState | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(NAVIGATION_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    const lastTabId = (parsed as NavigationState).lastTabId;
+    if (typeof lastTabId !== "string" || !isTabId(lastTabId)) {
+      return null;
+    }
+
+    return { lastTabId };
+  } catch {
+    return null;
+  }
 };
 
 const loadAudioSettings = (): AudioSettings => {
@@ -296,6 +331,7 @@ export default function App() {
   const tabs = useMemo(() => TAB_DEFINITIONS, []);
   const [activeTab, setActiveTab] = useState<TabId>("collection");
   const [focusedTab, setFocusedTab] = useState<TabId>("collection");
+  const [hasResolvedInitialTab, setHasResolvedInitialTab] = useState(false);
   const tabRefs = useRef(new Map<TabId, HTMLButtonElement>());
 
   useEffect(() => {
@@ -332,13 +368,19 @@ export default function App() {
     focusTabById(nextId);
   };
 
-  const activateTab = (tabId: TabId) => {
+  const activateTab = useCallback((tabId: TabId, source: TabActivationSource = "system") => {
     setActiveTab(tabId);
     setFocusedTab(tabId);
-  };
+
+    if (source !== "user" || typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(NAVIGATION_KEY, JSON.stringify({ lastTabId: tabId }));
+  }, []);
 
   const navigateTo = (tabId: TabId, scrollTargetId?: string) => {
-    activateTab(tabId);
+    activateTab(tabId, "system");
 
     if (!scrollTargetId || typeof document === "undefined") {
       return;
@@ -384,7 +426,7 @@ export default function App() {
       case "Enter":
       case " ": {
         event.preventDefault();
-        activateTab(focusedTab);
+        activateTab(focusedTab, "user");
         return;
       }
       default:
@@ -615,10 +657,6 @@ export default function App() {
   const catalogBrands = useMemo(() => {
     return ["All", ...new Set(catalogEntries.map((entry) => entry.brand))];
   }, [catalogEntries]);
-  const showcaseVisibilityRatio = useMemo(
-    () => getUnlockVisibilityRatio(state, "showcase"),
-    [state],
-  );
   const statsVisibilityRatio = useMemo(
     () => getAchievementProgressRatio(state, "first-drawer"),
     [state],
@@ -629,13 +667,12 @@ export default function App() {
       career: state.unlockedMilestones.includes("collector-shelf"),
       save: true,
       nostalgia: showNostalgiaSection,
-      catalog: showcaseVisibilityRatio >= 0.8,
+      catalog: true,
       stats: statsVisibilityRatio >= 0.8,
       workshop: showWorkshopSection,
       maison: showMaisonSection,
     }),
     [
-      showcaseVisibilityRatio,
       statsVisibilityRatio,
       showWorkshopSection,
       showMaisonSection,
@@ -662,17 +699,62 @@ export default function App() {
     [tabs, combinedTabVisibility],
   );
 
+  const resolveInitialTabSelection = useCallback((): {
+    tabId: TabId;
+    source: TabActivationSource;
+  } => {
+    const isVisible = (tabId: TabId) => combinedTabVisibility[tabId];
+
+    if (typeof window === "undefined") {
+      return { tabId: "collection", source: "system" };
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const requestedTab = params.get("tab");
+    if (requestedTab && isTabId(requestedTab) && isVisible(requestedTab)) {
+      return { tabId: requestedTab as TabId, source: "deep-link" };
+    }
+
+    const navigationState = loadNavigationState();
+    const hasSave = window.localStorage.getItem("emily-idle:save") !== null;
+
+    if (!hasSave && !navigationState) {
+      return {
+        tabId: isVisible("catalog") ? "catalog" : "collection",
+        source: "system" as TabActivationSource,
+      };
+    }
+
+    if (navigationState && isVisible(navigationState.lastTabId)) {
+      return { tabId: navigationState.lastTabId, source: "system" as TabActivationSource };
+    }
+
+    return {
+      tabId: isVisible("catalog") ? "catalog" : "collection",
+      source: "system",
+    };
+  }, [combinedTabVisibility]);
+
+  useLayoutEffect(() => {
+    if (hasResolvedInitialTab) {
+      return;
+    }
+
+    const { tabId, source } = resolveInitialTabSelection();
+    activateTab(tabId, source);
+    setHasResolvedInitialTab(true);
+  }, [activateTab, hasResolvedInitialTab, resolveInitialTabSelection]);
+
   useEffect(() => {
     if (combinedTabVisibility[activeTab]) {
       return;
     }
 
-    const nextTab = "collection";
+    const nextTab = combinedTabVisibility.catalog ? "catalog" : "collection";
     if (activeTab !== nextTab) {
-      setActiveTab(nextTab);
-      setFocusedTab(nextTab);
+      activateTab(nextTab, "system");
     }
-  }, [activeTab, combinedTabVisibility]);
+  }, [activeTab, activateTab, combinedTabVisibility]);
 
   const visibleTabOptions = useMemo(
     () => tabs.filter((tab) => HIDEABLE_TAB_IDS.includes(tab.id) && tabVisibility[tab.id]),
@@ -1023,7 +1105,7 @@ export default function App() {
                       aria-controls={tab.id}
                       tabIndex={focusable ? 0 : -1}
                       data-testid={tab.id === "nostalgia" ? "nostalgia-tab" : undefined}
-                      onClick={() => activateTab(tab.id)}
+                      onClick={() => activateTab(tab.id, "user")}
                       onFocus={() => {
                         if (isTestEnvironment()) {
                           return;
@@ -1303,7 +1385,7 @@ export default function App() {
             event={prestigeOnboarding}
             onClose={() => setPrestigeOnboarding(null)}
             onRecommendedAction={(tabId) => {
-              activateTab(tabId);
+              activateTab(tabId, "system");
               setPrestigeOnboarding(null);
             }}
           />
