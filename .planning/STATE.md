@@ -53,6 +53,8 @@ Next Phase: Phase 26 (Plan 01)
 | 25-02 | None - followed plan as specified | No deviations |
 | 25-03 | None - followed plan as specified | No deviations |
 | 25-04 | None - followed plan as specified | No deviations |
+| quick-001 | Add local overrides for accented catalog filenames | Keep dev server image URLs resolving |
+| quick-001 | Selected download option; audit found no missing assets | Confirmed catalog assets already present |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -61,6 +63,12 @@ Next Phase: Phase 26 (Plan 01)
 
 ### Blockers/Concerns Carried Forward
 - None
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
 Last session: 2026-01-28T16:07:24Z
