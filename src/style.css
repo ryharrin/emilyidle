@@ -897,6 +897,18 @@ textarea:focus-visible {
   align-items: flex-end;
 }
 
+.catalog-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.catalog-help {
+  display: inline-flex;
+}
+
 .catalog-header h2 {
   letter-spacing: 0.08em;
   text-transform: uppercase;

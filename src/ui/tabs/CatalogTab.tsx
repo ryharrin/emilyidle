@@ -1,6 +1,8 @@
 import React from "react";
 
 import { EmptyStateCTA } from "../components/EmptyStateCTA";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
 
 import { formatMoneyFromCents } from "../../game/format";
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
@@ -96,8 +98,18 @@ export function CatalogTab({
               <h2>Catalog</h2>
               <p className="muted">Explore reference pieces and track licensing sources.</p>
             </div>
-            <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-              {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
+            <div className="catalog-header-actions">
+              <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
+                {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length}{" "}
+                discovered
+              </div>
+              <div className="catalog-help" data-testid="catalog-help">
+                <ExplainButton
+                  sectionId={HELP_SECTION_IDS.catalogShop}
+                  label="Catalog help"
+                  className="help-open-button"
+                />
+              </div>
             </div>
           </header>
           <form
