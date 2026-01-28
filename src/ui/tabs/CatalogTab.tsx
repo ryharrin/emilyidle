@@ -2,9 +2,16 @@ import React from "react";
 
 import { EmptyStateCTA } from "../components/EmptyStateCTA";
 
+import { formatMoneyFromCents } from "../../game/format";
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
 import type { CatalogEntry } from "../../game/catalog";
-import type { GameState } from "../../game/state";
+import {
+  buyWatchModel,
+  getNextDuplicateRewardMultiplier,
+  getWatchModelOwnedCount,
+  getWatchModelPurchaseGate,
+  type GameState,
+} from "../../game/state";
 
 type TabId =
   | "collection"
@@ -303,6 +310,10 @@ export function CatalogTab({
                 {filteredCatalogEntries.map((entry) => {
                   const discovered = discoveredCatalogIds.includes(entry.id);
                   const tags = getCatalogEntryTags(entry);
+                  const ownedCount = getWatchModelOwnedCount(state, entry.id);
+                  const gate = getWatchModelPurchaseGate(state, entry.id);
+                  const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
+                  const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
                   return (
                     <article
                       key={entry.id}
@@ -348,6 +359,40 @@ export function CatalogTab({
                         <p>{entry.description}</p>
                         <p className="catalog-tags">{tags.join(" · ")}</p>
                         <p className="catalog-attribution">{entry.image.attribution}</p>
+                        <div className="catalog-action-bar">
+                          <div className="catalog-action-meta">
+                            <span className="catalog-owned">{ownedCount} owned</span>
+                            <span className="catalog-price">
+                              {formatMoneyFromCents(gate.cashPriceCents)}
+                            </span>
+                            <span className="catalog-duplicate">
+                              Next x{duplicateMultiplier.toFixed(2)}
+                            </span>
+                          </div>
+                          {gate.ok ? (
+                            <button
+                              type="button"
+                              data-testid={`catalog-buy-${entry.id}`}
+                              onClick={() => onPurchase(buyWatchModel(state, entry.id))}
+                            >
+                              {buyLabel}
+                            </button>
+                          ) : (
+                            <div className="catalog-gate" data-testid={`catalog-gate-${entry.id}`}>
+                              {gate.blocksBy === "enjoyment" && (
+                                <>
+                                  Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
+                                  {gate.enjoymentDeficitCents !== undefined && (
+                                    <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
+                                  )}
+                                </>
+                              )}
+                              {gate.blocksBy === "cash" && (
+                                <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </article>
                   );
@@ -377,6 +422,10 @@ export function CatalogTab({
                     {filteredCatalogEntries.map((entry) => {
                       const discovered = discoveredCatalogIds.includes(entry.id);
                       const tags = getCatalogEntryTags(entry);
+                      const ownedCount = getWatchModelOwnedCount(state, entry.id);
+                      const gate = getWatchModelPurchaseGate(state, entry.id);
+                      const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
+                      const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
                       return (
                         <article
                           key={entry.id}
@@ -432,6 +481,48 @@ export function CatalogTab({
                             )}
                             <p className="catalog-tags">{tags.join(" · ")}</p>
                             <p className="catalog-attribution">{entry.image.attribution}</p>
+                            <div className="catalog-action-bar">
+                              <div className="catalog-action-meta">
+                                <span className="catalog-owned">{ownedCount} owned</span>
+                                <span className="catalog-price">
+                                  {formatMoneyFromCents(gate.cashPriceCents)}
+                                </span>
+                                <span className="catalog-duplicate">
+                                  Next x{duplicateMultiplier.toFixed(2)}
+                                </span>
+                              </div>
+                              {gate.ok ? (
+                                <button
+                                  type="button"
+                                  data-testid={`catalog-buy-${entry.id}`}
+                                  onClick={() => onPurchase(buyWatchModel(state, entry.id))}
+                                >
+                                  {buyLabel}
+                                </button>
+                              ) : (
+                                <div
+                                  className="catalog-gate"
+                                  data-testid={`catalog-gate-${entry.id}`}
+                                >
+                                  {gate.blocksBy === "enjoyment" && (
+                                    <>
+                                      Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
+                                      {gate.enjoymentDeficitCents !== undefined && (
+                                        <>
+                                          {" "}
+                                          ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                  {gate.blocksBy === "cash" && (
+                                    <>
+                                      Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </article>
                       );
