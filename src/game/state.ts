@@ -49,5 +49,7 @@ export { NOSTALGIA_UNLOCK_ORDER } from "./data/items";
 export type { WatchModelDefinition } from "./data/watchModels";
 export { WATCH_MODELS, getWatchModels } from "./data/watchModels";
 
+export * from "./selectors/duplicates";
+
 export * from "./selectors";
 export * from "./actions";
