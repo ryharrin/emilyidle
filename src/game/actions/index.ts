@@ -51,6 +51,8 @@ import {
   getTherapistXpRequiredForNextLevel,
   getUpgradeLevel,
   getUpgradePriceCents,
+  getWatchModelPurchaseGate,
+  getWatchModelTierId,
   getWatchPurchaseGate,
   getWindSessionCashPayoutCents,
   getWindUpIncomeMultiplierForTension,
@@ -216,6 +218,7 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
     currencyCents: 0,
     enjoymentCents: 0,
     items: createItemCounts(),
+    watchModels: {},
     upgrades: createUpgradeLevels(),
     workshopBlueprints: state.workshopBlueprints + Math.max(0, Math.floor(earnedPrestigeCurrency)),
     workshopPrestigeCount: state.workshopPrestigeCount + 1,
@@ -235,6 +238,7 @@ export function prestigeMaison(state: GameState): GameState {
     currencyCents: 0,
     enjoymentCents: 0,
     items: createItemCounts(),
+    watchModels: {},
     upgrades: createUpgradeLevels(),
     workshopBlueprints: 0,
     workshopPrestigeCount: 0,
@@ -471,6 +475,73 @@ export function buyItem(state: GameState, id: WatchItemId, quantity = 1): GameSt
 
   const withDiscovery = discoverCatalogEntries(nextState, getCatalogEntryIdsForItems(nextState));
   return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
+}
+
+export function buyWatchModel(state: GameState, modelId: string): GameState {
+  const tierId = getWatchModelTierId(modelId);
+  if (!isItemUnlocked(state, tierId)) {
+    return state;
+  }
+
+  const gate = getWatchModelPurchaseGate(state, modelId);
+  if (!gate.ok) {
+    return state;
+  }
+
+  const owned = state.watchModels[modelId] ?? 0;
+  const nextState: GameState = {
+    ...state,
+    currencyCents: state.currencyCents - gate.cashPriceCents,
+    items: {
+      ...state.items,
+      [tierId]: getItemCount(state, tierId) + 1,
+    },
+    watchModels: {
+      ...state.watchModels,
+      [modelId]: owned + 1,
+    },
+  };
+
+  const withDiscovery = discoverCatalogEntries(nextState, [modelId]);
+  return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
+}
+
+export function dismantleWatchModel(state: GameState, modelId: string, quantity = 1): GameState {
+  if (quantity <= 0) {
+    return state;
+  }
+
+  const tierId = getWatchModelTierId(modelId);
+  const owned = state.watchModels[modelId] ?? 0;
+  if (owned < quantity) {
+    return state;
+  }
+
+  const tierOwned = getItemCount(state, tierId);
+  if (tierOwned < quantity) {
+    return state;
+  }
+
+  const partsPerWatch = getCraftingPartsPerWatch();
+  const partsGain = (partsPerWatch[tierId] ?? 0) * quantity;
+  if (partsGain <= 0) {
+    return state;
+  }
+
+  const nextState: GameState = {
+    ...state,
+    items: {
+      ...state.items,
+      [tierId]: tierOwned - quantity,
+    },
+    watchModels: {
+      ...state.watchModels,
+      [modelId]: owned - quantity,
+    },
+    craftingParts: state.craftingParts + partsGain,
+  };
+
+  return applyAchievementUnlocks(applyMilestoneUnlocks(nextState));
 }
 
 export function buyUpgrade(state: GameState, id: UpgradeId): GameState {
