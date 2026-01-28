@@ -300,8 +300,8 @@ Plans:
 - [x] 25-03-PLAN.md — Update Vault UI to buy models grouped by brand + show duplicate multiplier
 - [x] 25-04-PLAN.md — Update unit + e2e coverage for model purchasing and duplicates
 - [x] 25-05-PLAN.md — Human verify Vault model purchase UX + duplicate messaging
-- [ ] 25-06-PLAN.md — Migrate legacy watch ownership to model ownership
-- [x] 25-07-PLAN.md — Auto-buy purchases watch models instead of tiers
+- [x] 25-06-PLAN.md — Migrate legacy watch ownership to model ownership
+- [ ] 25-07-PLAN.md — Auto-buy purchases watch models instead of tiers
 
 **Success criteria:**
 1. User sees specific watch models (brand/model) as the purchasable items (not generic tiers).
