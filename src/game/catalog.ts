@@ -1101,6 +1101,12 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
 
 const WIKIMEDIA_BASE_URL = "https://upload.wikimedia.org/wikipedia/commons/";
 const LOCAL_CATALOG_ROOT = `${import.meta.env.BASE_URL}catalog/`;
+const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
+  "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo%2C_met%C3%A0_anni_Novanta.jpg":
+    "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo,_meta_anni_Novanta.jpg",
+  "b/b1/Rolex_Datejust_ref._16013%2C_seconda_met%C3%A0_anni_%2770-primi_%2780.jpg":
+    "b/b1/Rolex_Datejust_ref._16013,_seconda_meta_anni_'70-primi_'80.jpg",
+};
 const TIER_TAGS = new Set(["starter", "classic", "chronograph", "tourbillon"]);
 
 function inferCatalogTier(entry: CatalogEntry, tags: string[]): string {
@@ -1135,7 +1141,8 @@ export function getCatalogEntryTags(entry: CatalogEntry): string[] {
 export function getCatalogImageUrl(entry: CatalogEntry): string {
   if (entry.image.url.startsWith(WIKIMEDIA_BASE_URL)) {
     const relativePath = entry.image.url.slice(WIKIMEDIA_BASE_URL.length);
-    return `${LOCAL_CATALOG_ROOT}${relativePath}`;
+    const localPath = LOCAL_CATALOG_OVERRIDES[relativePath] ?? relativePath;
+    return `${LOCAL_CATALOG_ROOT}${localPath}`;
   }
   return entry.image.url;
 }
