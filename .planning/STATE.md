@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 ## Current Position
 
 Phase: 26 of 30 (Catalog-First Shop)
-Plan: 4 of 5
-Status: In progress
-Last activity: 2026-01-28 — Completed 26-04-PLAN.md
-Progress: ████████░░ 75%
-Next Phase: Phase 26 (Plan 05)
+Plan: 5 of 5
+Status: Phase complete
+Last activity: 2026-01-28 — Completed 26-05-PLAN.md
+Progress: ████████░░ 76%
+Next Phase: Phase 27 (Plan 01)
 
 ## Accumulated Context
 
@@ -62,7 +62,9 @@ Next Phase: Phase 26 (Plan 05)
 - Test gap: no dedicated Playwright E2E for therapist session deltas/cooldown
 
 ### Blockers/Concerns Carried Forward
-- None
+- Catalog and Vault are still separate tabs; consolidate into a single purchase surface.
+- Catalog cards should be the sole purchase flow for watches.
+- Vault information needs to be merged into the Catalog surface.
 
 ### Quick Tasks Completed
 
@@ -71,7 +73,7 @@ Next Phase: Phase 26 (Plan 05)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-28T20:35:32Z
-Stopped at: Completed 26-04-PLAN.md
+Last session: 2026-01-28T23:08:22Z
+Stopped at: Completed 26-05-PLAN.md
 
 Resume file: None
