@@ -13,7 +13,7 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 Phase: 25 of 30 (Watch Models & Duplicates)
 Plan: —
 Status: Roadmap ready
-Last activity: 2026-01-27 — v3.0 roadmap created
+Last activity: 2026-01-28 — Completed quick-001-there-are-missing-images-in-the-catalog 001
 Progress: ░░░░░░░░░░ 0%
 Next Phase: Phase 25
 
@@ -50,6 +50,8 @@ Next Phase: Phase 25
 | 15-03 | None - followed plan as specified | No deviations |
 | 16-01 | Set nostalgia prestige threshold to 12,000,000 enjoyment cents with sqrt gain | Diminishing returns keeps rewards monotonic |
 | 18-01 | None - followed plan as specified | No deviations |
+| quick-001 | Add local overrides for accented catalog filenames | Keep dev server image URLs resolving |
+| quick-001 | Selected download option; audit found no missing assets | Confirmed catalog assets already present |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -60,7 +62,7 @@ Next Phase: Phase 25
 - None
 
 ### Session Continuity
-Last session: 2026-01-26T21:05:27Z
-Stopped at: Completed 20-04-PLAN.md
+Last session: 2026-01-28T15:35:12Z
+Stopped at: Completed quick-001-there-are-missing-images-in-the-catalog 001-PLAN.md
 
 Resume file: None
