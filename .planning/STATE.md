@@ -13,7 +13,7 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 Phase: 25 of 30 (Watch Models & Duplicates)
 Plan: —
 Status: Roadmap ready
-Last activity: 2026-01-28 — Completed quick-001-there-are-missing-images-in-the-catalog 001
+Last activity: 2026-01-28 — Completed quick task 001: There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo.
 Progress: ░░░░░░░░░░ 0%
 Next Phase: Phase 25
 
@@ -60,6 +60,12 @@ Next Phase: Phase 25
 
 ### Blockers/Concerns Carried Forward
 - None
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
 Last session: 2026-01-28T15:35:12Z
