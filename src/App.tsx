@@ -121,7 +121,7 @@ type AudioSettings = {
 };
 
 type ThemeMode = "system" | "light" | "dark";
-const HIDEABLE_TAB_IDS: TabId[] = ["workshop", "maison", "stats"];
+const HIDEABLE_TAB_IDS: TabId[] = ["career", "workshop", "maison", "stats"];
 
 type Settings = {
   themeMode: ThemeMode;
@@ -685,7 +685,7 @@ export default function App() {
   const tabVisibility = useMemo(
     () => ({
       collection: true,
-      career: state.unlockedMilestones.includes("collector-shelf"),
+      career: true,
       save: true,
       nostalgia: showNostalgiaSection,
       catalog: false,
@@ -693,13 +693,7 @@ export default function App() {
       workshop: showWorkshopSection,
       maison: showMaisonSection,
     }),
-    [
-      statsVisibilityRatio,
-      showWorkshopSection,
-      showMaisonSection,
-      showNostalgiaSection,
-      state.unlockedMilestones,
-    ],
+    [statsVisibilityRatio, showWorkshopSection, showMaisonSection, showNostalgiaSection],
   );
   const hiddenTabsSet = useMemo(() => new Set(settings.hiddenTabs), [settings.hiddenTabs]);
   const combinedTabVisibility = useMemo(
@@ -786,7 +780,7 @@ export default function App() {
       {
         id: "vault-basics",
         title: "Vault basics",
-        text: "Buy watches to earn enjoyment and cash. Interact to trigger special moments.",
+        text: "Buy watches for enjoyment and memories. Career earns cash. Interact to trigger special moments.",
       },
       {
         id: "catalog-archive",
