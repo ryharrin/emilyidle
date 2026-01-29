@@ -22,8 +22,6 @@ const seedSave = async (page: Page, state: Record<string, unknown>) => {
   );
 };
 
-const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
-
 test.describe("help entry point", () => {
   test("opens help, switches section, and remembers last view", async ({ page }) => {
     await page.goto("/");

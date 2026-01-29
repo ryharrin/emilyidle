@@ -5,8 +5,6 @@ type SeededSave = {
   lastSimulatedAtMs: number;
 };
 
-const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
-
 async function seedSave(page: Page, seeded: SeededSave) {
   await page.addInitScript(({ state, lastSimulatedAtMs }: SeededSave) => {
     const payload = {
