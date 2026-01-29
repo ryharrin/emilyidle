@@ -342,12 +342,12 @@ Move the watch purchase UX into the Catalog tab and make the Catalog the primary
 **Goal:** Cash economy is career-driven; upgrades are separated and transparent.
 **Depends on:** Phase 26
 **Requirements:** ECON-01, ECON-02, CAREER-01, CAREER-02, NAV-01, CLAR-05
-**Plans:** 2/6 plans complete
+**Plans:** 3/6 plans complete
 
 Plans:
 - [x] 27-01-PLAN.md — Add career tracks + progression tree state + save persistence
 - [x] 27-02-PLAN.md — Make cash career-only and implement track-aware session rules (free-first)
-- [ ] 27-03-PLAN.md — Make Career visible from start and add progression tree UI + messaging
+- [x] 27-03-PLAN.md — Make Career visible from start and add progression tree UI + messaging
 - [ ] 27-04-PLAN.md — Add dedicated Upgrades tab with before/after previews; remove Vault duplication
 - [ ] 27-05-PLAN.md — Add unit + e2e coverage for career-first economy and upgrades surface
 - [ ] 27-06-PLAN.md — Human verify career-first economy + upgrades preview UX
