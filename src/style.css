@@ -1980,6 +1980,59 @@ textarea:focus-visible {
   color: #9da3ad;
 }
 
+.upgrades-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.upgrades-header {
+  padding: 20px;
+}
+
+.upgrades-group {
+  display: grid;
+  gap: 12px;
+}
+
+.upgrade-card {
+  display: grid;
+  gap: 10px;
+}
+
+.upgrade-deltas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c7cdd6;
+}
+
+.upgrade-delta {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #2a2f3b;
+  background: rgba(15, 17, 21, 0.7);
+}
+
+.upgrade-preview-details summary {
+  cursor: pointer;
+}
+
+.upgrade-preview-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  margin-top: 10px;
+}
+
+[data-theme="light"] .upgrade-delta {
+  border-color: #d7cfc5;
+  background: rgba(255, 255, 255, 0.9);
+  color: #4b4033;
+}
+
 #import-save-text {
   width: 100%;
   max-width: 32rem;

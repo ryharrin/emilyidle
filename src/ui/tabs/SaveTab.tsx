@@ -13,6 +13,7 @@ type AudioSettings = {
 type TabId =
   | "collection"
   | "career"
+  | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"

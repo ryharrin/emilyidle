@@ -18,6 +18,7 @@ import {
 type TabId =
   | "collection"
   | "career"
+  | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"

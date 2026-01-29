@@ -17,6 +17,7 @@ import { CareerTree, type CareerTreeSection } from "../components/CareerTree";
 type TabId =
   | "collection"
   | "career"
+  | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"

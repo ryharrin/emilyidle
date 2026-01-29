@@ -10,6 +10,7 @@ import { HELP_SECTION_IDS } from "../help/helpContent";
 type TabId =
   | "collection"
   | "career"
+  | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"

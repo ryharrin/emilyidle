@@ -23,6 +23,7 @@ type ThemeMode = "system" | "light" | "dark";
 type TabId =
   | "collection"
   | "career"
+  | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"

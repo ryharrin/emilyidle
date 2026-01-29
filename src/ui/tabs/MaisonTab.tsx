@@ -16,6 +16,7 @@ import type { GameState, MaisonUpgradeDefinition } from "../../game/state";
 type TabId =
   | "collection"
   | "career"
+  | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"

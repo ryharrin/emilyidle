@@ -6,6 +6,7 @@ import { MaisonTab } from "./ui/tabs/MaisonTab";
 import { NostalgiaTab } from "./ui/tabs/NostalgiaTab";
 import { SaveTab } from "./ui/tabs/SaveTab";
 import { StatsTab } from "./ui/tabs/StatsTab";
+import { UpgradesTab } from "./ui/tabs/UpgradesTab";
 import { WorkshopTab } from "./ui/tabs/WorkshopTab";
 import { HelpModal, loadHelpState, persistHelpState } from "./ui/help/HelpModal";
 import { ExplainButton } from "./ui/help/ExplainButton";
@@ -96,6 +97,7 @@ const NAVIGATION_KEY = "emily-idle:navigation";
 const TAB_DEFINITIONS = [
   { id: "collection", label: "Vault" },
   { id: "career", label: "Career" },
+  { id: "upgrades", label: "Upgrades" },
   { id: "workshop", label: "Atelier" },
   { id: "maison", label: "Maison" },
   { id: "nostalgia", label: "Nostalgia" },
@@ -686,6 +688,7 @@ export default function App() {
     () => ({
       collection: true,
       career: true,
+      upgrades: true,
       save: true,
       nostalgia: showNostalgiaSection,
       catalog: false,
@@ -702,6 +705,7 @@ export default function App() {
       save: true,
       nostalgia: tabVisibility.nostalgia,
       career: tabVisibility.career && !hiddenTabsSet.has("career"),
+      upgrades: tabVisibility.upgrades,
       catalog: false,
       stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
       workshop: tabVisibility.workshop && !hiddenTabsSet.has("workshop"),
@@ -1246,6 +1250,15 @@ export default function App() {
           state={state}
           nowMs={nowMs}
           onNavigate={navigateTo}
+          onPurchase={handlePurchase}
+        />
+
+        <UpgradesTab
+          isActive={activeTab === "upgrades"}
+          state={state}
+          upgrades={upgrades}
+          workshopUpgrades={workshopUpgrades}
+          maisonUpgrades={maisonUpgrades}
           onPurchase={handlePurchase}
         />
 
