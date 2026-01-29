@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { CatalogTab } from "./ui/tabs/CatalogTab";
 import { CareerTab } from "./ui/tabs/CareerTab";
 import { CollectionTab } from "./ui/tabs/CollectionTab";
 import { MaisonTab } from "./ui/tabs/MaisonTab";
@@ -100,12 +99,11 @@ const TAB_DEFINITIONS = [
   { id: "workshop", label: "Atelier" },
   { id: "maison", label: "Maison" },
   { id: "nostalgia", label: "Nostalgia" },
-  { id: "catalog", label: "Catalog" },
   { id: "stats", label: "Stats" },
   { id: "save", label: "Save" },
 ] as const;
 
-type TabId = (typeof TAB_DEFINITIONS)[number]["id"];
+type TabId = (typeof TAB_DEFINITIONS)[number]["id"] | "catalog";
 
 type TabActivationSource = "user" | "deep-link" | "system";
 
@@ -123,7 +121,7 @@ type AudioSettings = {
 };
 
 type ThemeMode = "system" | "light" | "dark";
-const HIDEABLE_TAB_IDS: TabId[] = ["workshop", "maison", "catalog", "stats"];
+const HIDEABLE_TAB_IDS: TabId[] = ["workshop", "maison", "stats"];
 
 type Settings = {
   themeMode: ThemeMode;
@@ -148,6 +146,13 @@ const DEFAULT_SETTINGS: Settings = {
 
 const isTabId = (value: string): value is TabId => TAB_DEFINITIONS.some((tab) => tab.id === value);
 
+const resolveTabAlias = (value: string): TabId | null => {
+  if (value === "catalog") {
+    return "collection";
+  }
+  return isTabId(value) ? value : null;
+};
+
 const loadNavigationState = (): NavigationState | null => {
   if (typeof window === "undefined") {
     return null;
@@ -165,11 +170,16 @@ const loadNavigationState = (): NavigationState | null => {
     }
 
     const lastTabId = (parsed as NavigationState).lastTabId;
-    if (typeof lastTabId !== "string" || !isTabId(lastTabId)) {
+    if (typeof lastTabId !== "string") {
       return null;
     }
 
-    return { lastTabId };
+    const resolvedTabId = resolveTabAlias(lastTabId);
+    if (!resolvedTabId) {
+      return null;
+    }
+
+    return { lastTabId: resolvedTabId };
   } catch {
     return null;
   }
@@ -667,7 +677,7 @@ export default function App() {
       career: state.unlockedMilestones.includes("collector-shelf"),
       save: true,
       nostalgia: showNostalgiaSection,
-      catalog: true,
+      catalog: false,
       stats: statsVisibilityRatio >= 0.8,
       workshop: showWorkshopSection,
       maison: showMaisonSection,
@@ -687,7 +697,7 @@ export default function App() {
       save: true,
       nostalgia: tabVisibility.nostalgia,
       career: tabVisibility.career && !hiddenTabsSet.has("career"),
-      catalog: tabVisibility.catalog && !hiddenTabsSet.has("catalog"),
+      catalog: false,
       stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
       workshop: tabVisibility.workshop && !hiddenTabsSet.has("workshop"),
       maison: tabVisibility.maison && !hiddenTabsSet.has("maison"),
@@ -711,8 +721,9 @@ export default function App() {
 
     const params = new URLSearchParams(window.location.search);
     const requestedTab = params.get("tab");
-    if (requestedTab && isTabId(requestedTab) && isVisible(requestedTab)) {
-      return { tabId: requestedTab as TabId, source: "deep-link" };
+    const requestedAlias = requestedTab ? resolveTabAlias(requestedTab) : null;
+    if (requestedAlias && isVisible(requestedAlias)) {
+      return { tabId: requestedAlias, source: "deep-link" };
     }
 
     const navigationState = loadNavigationState();
@@ -720,7 +731,7 @@ export default function App() {
 
     if (!hasSave && !navigationState) {
       return {
-        tabId: isVisible("catalog") ? "catalog" : "collection",
+        tabId: "collection",
         source: "system" as TabActivationSource,
       };
     }
@@ -730,7 +741,7 @@ export default function App() {
     }
 
     return {
-      tabId: isVisible("catalog") ? "catalog" : "collection",
+      tabId: "collection",
       source: "system",
     };
   }, [combinedTabVisibility]);
@@ -750,9 +761,8 @@ export default function App() {
       return;
     }
 
-    const nextTab = combinedTabVisibility.catalog ? "catalog" : "collection";
-    if (activeTab !== nextTab) {
-      activateTab(nextTab, "system");
+    if (activeTab !== "collection") {
+      activateTab("collection", "system");
     }
   }, [activeTab, activateTab, combinedTabVisibility]);
 
@@ -1175,6 +1185,26 @@ export default function App() {
           isActive={activeTab === "collection"}
           state={state}
           onNavigate={navigateTo}
+          catalogSearch={catalogSearch}
+          onCatalogSearchChange={setCatalogSearch}
+          catalogBrand={catalogBrand}
+          onCatalogBrandChange={setCatalogBrand}
+          catalogStyle={catalogStyle}
+          onCatalogStyleChange={setCatalogStyle}
+          catalogSort={catalogSort}
+          onCatalogSortChange={setCatalogSort}
+          catalogEra={catalogEra}
+          onCatalogEraChange={setCatalogEra}
+          catalogType={catalogType}
+          onCatalogTypeChange={setCatalogType}
+          catalogTab={catalogTab}
+          onCatalogTabChange={setCatalogTab}
+          catalogBrands={catalogBrands}
+          filteredCatalogEntries={filteredCatalogEntries}
+          discoveredCatalogEntries={discoveredCatalogEntries}
+          discoveredCatalogIds={discoveredCatalogIds}
+          catalogEntries={catalogEntries}
+          hasOwnedCatalogTiers={hasOwnedCatalogTiers}
           watchItems={watchItems}
           watchItemLabels={watchItemLabels}
           autoBuyUnlocked={autoBuyUnlocked}
@@ -1276,33 +1306,6 @@ export default function App() {
           onSetNostalgiaUnlockPending={(next) => setNostalgiaUnlockPending(next)}
           settings={settings}
           persistSettings={persistSettings}
-          onPurchase={handlePurchase}
-        />
-
-        <CatalogTab
-          isActive={activeTab === "catalog"}
-          state={state}
-          onNavigate={navigateTo}
-          catalogSearch={catalogSearch}
-          onCatalogSearchChange={setCatalogSearch}
-          catalogBrand={catalogBrand}
-          onCatalogBrandChange={setCatalogBrand}
-          catalogStyle={catalogStyle}
-          onCatalogStyleChange={setCatalogStyle}
-          catalogSort={catalogSort}
-          onCatalogSortChange={setCatalogSort}
-          catalogEra={catalogEra}
-          onCatalogEraChange={setCatalogEra}
-          catalogType={catalogType}
-          onCatalogTypeChange={setCatalogType}
-          catalogTab={catalogTab}
-          onCatalogTabChange={setCatalogTab}
-          catalogBrands={catalogBrands}
-          filteredCatalogEntries={filteredCatalogEntries}
-          discoveredCatalogEntries={discoveredCatalogEntries}
-          discoveredCatalogIds={discoveredCatalogIds}
-          catalogEntries={catalogEntries}
-          hasOwnedCatalogTiers={hasOwnedCatalogTiers}
           onPurchase={handlePurchase}
         />
 
