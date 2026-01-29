@@ -398,9 +398,20 @@ export default function App() {
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        document
-          .getElementById(scrollTargetId)
-          ?.scrollIntoView({ block: "start", behavior: "smooth" });
+        const target = document.getElementById(scrollTargetId);
+        if (!target) {
+          return;
+        }
+
+        if (scrollTargetId === "catalog-shop") {
+          const buyButton = target.querySelector('[data-testid^="catalog-buy-"]');
+          if (buyButton instanceof HTMLElement) {
+            buyButton.scrollIntoView({ block: "start", behavior: "auto" });
+            return;
+          }
+        }
+
+        target.scrollIntoView({ block: "start", behavior: "auto" });
       });
     });
   };
@@ -806,10 +817,7 @@ export default function App() {
     [],
   );
   const activeCoachmarks = coachmarks.filter((mark) => !coachmarksDismissed[mark.id]);
-  const hasOwnedCatalogTiers = useMemo(
-    () => Object.values(state.watchModels).some((count) => count > 0),
-    [state.watchModels],
-  );
+  const hasOwnedCatalogTiers = Object.values(state.watchModels).some((count) => count > 0);
   const archiveCuratorMilestone = milestones.find(
     (milestone) => milestone.id === "archive-curator",
   );
@@ -926,7 +934,7 @@ export default function App() {
     catalogStyle,
     catalogTab,
     catalogType,
-    state.watchModels,
+    state,
   ]);
 
   const discoveredCatalogEntries = useMemo(() => {
