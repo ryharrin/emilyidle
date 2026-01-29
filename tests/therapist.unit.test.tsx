@@ -27,11 +27,22 @@ describe("therapist career", () => {
     const seededState = {
       ...baseState,
       enjoymentCents: 10_000,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        activeTrackId: "private-practice" as const,
+        freeSessionAvailable: false,
+      },
     };
 
     const nowMs = 1_000;
-    const payout = getTherapistSessionCashPayoutCents(seededState.therapistCareer.level);
-    const cost = getTherapistSessionEnjoymentCostCents(seededState.therapistCareer.level);
+    const payout = getTherapistSessionCashPayoutCents(
+      seededState.therapistCareer.level,
+      seededState.therapistCareer.activeTrackId,
+    );
+    const cost = getTherapistSessionEnjoymentCostCents(
+      seededState.therapistCareer.level,
+      seededState.therapistCareer.activeTrackId,
+    );
 
     const nextState = performTherapistSession(seededState, nowMs);
 
@@ -49,6 +60,8 @@ describe("therapist career", () => {
       enjoymentCents: 10_000,
       therapistCareer: {
         ...baseState.therapistCareer,
+        activeTrackId: "private-practice" as const,
+        freeSessionAvailable: false,
         level: 1,
         xp: required,
         nextAvailableAtMs: 0,
@@ -57,6 +70,24 @@ describe("therapist career", () => {
 
     const nextState = performTherapistSession(seededState, 1_000);
     expect(nextState.therapistCareer.level).toBeGreaterThanOrEqual(2);
+  });
+
+  it("runs a free first session after reset", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      enjoymentCents: 2_000,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        activeTrackId: "private-practice" as const,
+        freeSessionAvailable: true,
+      },
+    };
+
+    const nextState = performTherapistSession(seededState, 1_000);
+
+    expect(nextState.enjoymentCents).toBe(seededState.enjoymentCents);
+    expect(nextState.therapistCareer.freeSessionAvailable).toBe(false);
   });
 
   it("adds passive salary to cash rate and sim ticks", () => {

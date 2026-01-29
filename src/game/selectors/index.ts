@@ -1,4 +1,5 @@
 import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "../catalog";
+import { CAREER_TRACKS } from "../data/career";
 import { MILESTONES } from "../data/milestones";
 import {
   NOSTALGIA_UNLOCK_COSTS,
@@ -29,6 +30,7 @@ import type {
   CatalogTierBonusDefinition,
   CatalogTierId,
   CraftedBoostId,
+  CareerTrackId,
   EventDefinition,
   EventId,
   GameState,
@@ -69,6 +71,27 @@ const THERAPIST_SALARY_CENTS_PER_SEC_PER_LEVEL = 2;
 const THERAPIST_BASE_SESSION_COOLDOWN_MS = 30_000;
 const THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS = 150;
 const THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS = 500;
+
+const THERAPIST_SESSION_TRACK_CONFIG: Record<
+  CareerTrackId,
+  { enjoymentCostMultiplier: number; cashPayoutMultiplier: number; cooldownMs: number }
+> = {
+  "private-practice": {
+    enjoymentCostMultiplier: 1,
+    cashPayoutMultiplier: 1,
+    cooldownMs: 30_000,
+  },
+  "va-hospital": {
+    enjoymentCostMultiplier: 0.9,
+    cashPayoutMultiplier: 0.8,
+    cooldownMs: 45_000,
+  },
+  "research-teaching": {
+    enjoymentCostMultiplier: 0.85,
+    cashPayoutMultiplier: 0.75,
+    cooldownMs: 60_000,
+  },
+};
 
 const COLLECTION_BONUS_STEPS: Array<{ thresholdCents: number; multiplier: number }> = [
   { thresholdCents: 7_500, multiplier: 1.02 },
@@ -129,6 +152,7 @@ const WORKSHOP_UPGRADE_LOOKUP = new Map(WORKSHOP_UPGRADES.map((upgrade) => [upgr
 const MAISON_UPGRADE_LOOKUP = new Map(MAISON_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const MAISON_LINE_LOOKUP = new Map(MAISON_LINES.map((line) => [line.id, line]));
 const CRAFTING_RECIPE_LOOKUP = new Map(CRAFTING_RECIPES.map((recipe) => [recipe.id, recipe]));
+const CAREER_TRACK_LOOKUP = new Map(CAREER_TRACKS.map((track) => [track.id, track]));
 
 export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
   return WATCH_ITEMS;
@@ -826,25 +850,102 @@ export function getTherapistCareer(state: GameState): TherapistCareerState {
   return state.therapistCareer;
 }
 
-export function getTherapistSessionCooldownMs(level: number): number {
+export function getActiveCareerTrackId(state: GameState): CareerTrackId | null {
+  return state.therapistCareer.activeTrackId;
+}
+
+export function doesActiveCareerTrackSupportSessions(state: GameState): boolean {
+  const trackId = getActiveCareerTrackId(state);
+  if (!trackId) {
+    return false;
+  }
+  return CAREER_TRACK_LOOKUP.get(trackId)?.hasSessions ?? false;
+}
+
+export type TherapistSessionPolicy = {
+  supportsSessions: boolean;
+  enjoymentCostCents: number;
+  cashPayoutCents: number;
+  cooldownMs: number;
+};
+
+export function getTherapistSessionCooldownMs(
+  level: number,
+  trackId: CareerTrackId | null,
+): number {
   void level;
-  return THERAPIST_BASE_SESSION_COOLDOWN_MS;
+  if (!trackId) {
+    return 0;
+  }
+  return THERAPIST_SESSION_TRACK_CONFIG[trackId]?.cooldownMs ?? THERAPIST_BASE_SESSION_COOLDOWN_MS;
 }
 
-export function getTherapistSessionEnjoymentCostCents(level: number): number {
+export function getTherapistSessionEnjoymentCostCents(
+  level: number,
+  trackId: CareerTrackId | null,
+): number {
+  if (!trackId) {
+    return 0;
+  }
   const clampedLevel = Math.max(1, Math.floor(level));
+  const multiplier = THERAPIST_SESSION_TRACK_CONFIG[trackId]?.enjoymentCostMultiplier ?? 1;
   return Math.max(
     0,
-    Math.floor(THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS * (1 + 0.12 * (clampedLevel - 1))),
+    Math.floor(
+      THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS * (1 + 0.12 * (clampedLevel - 1)) * multiplier,
+    ),
   );
 }
 
-export function getTherapistSessionCashPayoutCents(level: number): number {
+export function getTherapistSessionCashPayoutCents(
+  level: number,
+  trackId: CareerTrackId | null,
+): number {
+  if (!trackId) {
+    return 0;
+  }
   const clampedLevel = Math.max(1, Math.floor(level));
+  const multiplier = THERAPIST_SESSION_TRACK_CONFIG[trackId]?.cashPayoutMultiplier ?? 1;
   return Math.max(
     0,
-    Math.floor(THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS * (1 + 0.18 * (clampedLevel - 1))),
+    Math.floor(
+      THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS * (1 + 0.18 * (clampedLevel - 1)) * multiplier,
+    ),
   );
+}
+
+export function getTherapistSessionPolicy(state: GameState): TherapistSessionPolicy {
+  const career = state.therapistCareer;
+  const trackId = getActiveCareerTrackId(state);
+  const supportsSessions = doesActiveCareerTrackSupportSessions(state);
+
+  if (!supportsSessions) {
+    return {
+      supportsSessions: false,
+      enjoymentCostCents: 0,
+      cashPayoutCents: 0,
+      cooldownMs: 0,
+    };
+  }
+
+  return {
+    supportsSessions,
+    enjoymentCostCents: getTherapistSessionEnjoymentCostCents(career.level, trackId),
+    cashPayoutCents: getTherapistSessionCashPayoutCents(career.level, trackId),
+    cooldownMs: getTherapistSessionCooldownMs(career.level, trackId),
+  };
+}
+
+export function getTherapistSessionCostLabel(state: GameState): string {
+  const career = state.therapistCareer;
+  const policy = getTherapistSessionPolicy(state);
+  if (!policy.supportsSessions) {
+    return "Sessions unavailable";
+  }
+  if (career.freeSessionAvailable) {
+    return "Free first session";
+  }
+  return `${formatMoneyFromCents(policy.enjoymentCostCents)} enjoyment`;
 }
 
 export function getTherapistXpRequiredForNextLevel(level: number): number {
@@ -854,12 +955,19 @@ export function getTherapistXpRequiredForNextLevel(level: number): number {
 
 export function canPerformTherapistSession(state: GameState, nowMs: number): boolean {
   const career = state.therapistCareer;
+  const policy = getTherapistSessionPolicy(state);
+  if (!policy.supportsSessions) {
+    return false;
+  }
   if (nowMs < career.nextAvailableAtMs) {
     return false;
   }
 
-  const cost = getTherapistSessionEnjoymentCostCents(career.level);
-  return state.enjoymentCents >= cost;
+  if (career.freeSessionAvailable) {
+    return true;
+  }
+
+  return state.enjoymentCents >= policy.enjoymentCostCents;
 }
 
 export function getEventStatusLabel(state: GameState, eventId: EventId, nowMs: number): string {

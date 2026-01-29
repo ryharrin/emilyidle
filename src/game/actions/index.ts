@@ -45,9 +45,7 @@ import {
   getMaisonUpgrades,
   getNostalgiaPrestigeGain,
   getNostalgiaUnlockCost,
-  getTherapistSessionCashPayoutCents,
-  getTherapistSessionCooldownMs,
-  getTherapistSessionEnjoymentCostCents,
+  getTherapistSessionPolicy,
   getTherapistXpRequiredForNextLevel,
   getUpgradeLevel,
   getUpgradePriceCents,
@@ -435,8 +433,13 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
   }
 
   const career = state.therapistCareer;
-  const cost = getTherapistSessionEnjoymentCostCents(career.level);
-  const payout = getTherapistSessionCashPayoutCents(career.level);
+  const policy = getTherapistSessionPolicy(state);
+  if (!policy.supportsSessions) {
+    return state;
+  }
+  const isFreeSession = career.freeSessionAvailable;
+  const cost = isFreeSession ? 0 : policy.enjoymentCostCents;
+  const payout = policy.cashPayoutCents;
 
   let nextLevel = career.level;
   let nextXp = career.xp + THERAPIST_SESSION_XP_GAIN;
@@ -454,7 +457,8 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
       ...career,
       level: nextLevel,
       xp: nextXp,
-      nextAvailableAtMs: nowMs + getTherapistSessionCooldownMs(nextLevel),
+      nextAvailableAtMs: nowMs + policy.cooldownMs,
+      freeSessionAvailable: isFreeSession ? false : career.freeSessionAvailable,
     },
   };
 }
