@@ -1234,7 +1234,6 @@ export default function App() {
           activeCoachmarks={activeCoachmarks}
           settings={settings}
           persistSettings={persistSettings}
-          upgrades={upgrades}
           milestones={milestones}
           achievements={achievements}
           events={events}

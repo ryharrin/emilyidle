@@ -56,6 +56,7 @@ describe("primary navigation tabs", () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
     const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
+    const upgradesTab = within(tabList).getByRole("tab", { name: /Upgrades/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
     vaultTab.focus();
@@ -72,17 +73,32 @@ describe("primary navigation tabs", () => {
 
     await user.keyboard("{ArrowRight}");
 
+    expect(document.activeElement).toBe(upgradesTab);
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+    expect(upgradesTab.getAttribute("aria-selected")).toBe("false");
+    expect(careerTab.getAttribute("tabindex")).toBe("-1");
+    expect(upgradesTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{ArrowRight}");
+
     expect(document.activeElement).toBe(saveTab);
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     expect(saveTab.getAttribute("aria-selected")).toBe("false");
-    expect(careerTab.getAttribute("tabindex")).toBe("-1");
+    expect(upgradesTab.getAttribute("tabindex")).toBe("-1");
     expect(saveTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{ArrowLeft}");
+
+    expect(document.activeElement).toBe(upgradesTab);
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+    expect(saveTab.getAttribute("aria-selected")).toBe("false");
+    expect(upgradesTab.getAttribute("tabindex")).toBe("0");
 
     await user.keyboard("{ArrowLeft}");
 
     expect(document.activeElement).toBe(careerTab);
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
-    expect(saveTab.getAttribute("aria-selected")).toBe("false");
+    expect(upgradesTab.getAttribute("aria-selected")).toBe("false");
     expect(careerTab.getAttribute("tabindex")).toBe("0");
   });
 

@@ -8,9 +8,7 @@ import type { CatalogEntry } from "../../game/catalog";
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
   buyMaisonLine,
-  buyUpgrade,
   canBuyMaisonLine,
-  canBuyUpgrade,
   dismantleWatchModel,
   getAchievementUnlockProgressDetail,
   getDuplicateRewardMultiplierForNextPurchase,
@@ -19,14 +17,12 @@ import {
   getMilestoneRequirementLabel,
   getNextDuplicateRewardMultiplier,
   getPrestigeUnlockProgressDetail,
-  getUpgradePriceCents,
   getUnlockRevealProgressRatio,
   getWatchItemEnjoymentRateCentsPerSec,
   getWatchModelOwnedCount,
   getWatchModels,
   isEventActive,
   isItemUnlocked,
-  isUpgradeUnlocked,
   shouldShowUnlockTag,
 } from "../../game/state";
 import type {
@@ -38,7 +34,6 @@ import type {
   MaisonLineDefinition,
   MilestoneDefinition,
   SetBonusDefinition,
-  UpgradeDefinition,
   WatchItemDefinition,
   WatchItemId,
 } from "../../game/state";
@@ -48,6 +43,7 @@ type ThemeMode = "system" | "light" | "dark";
 type TabId =
   | "collection"
   | "career"
+  | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"
@@ -116,7 +112,6 @@ type CollectionTabProps = {
   activeCoachmarks: Coachmark[];
   settings: Settings;
   persistSettings: (nextSettings: Settings) => void;
-  upgrades: ReadonlyArray<UpgradeDefinition>;
   milestones: ReadonlyArray<MilestoneDefinition>;
   achievements: ReadonlyArray<AchievementDefinition>;
   events: ReadonlyArray<EventDefinition>;
@@ -174,7 +169,6 @@ export function CollectionTab({
   activeCoachmarks,
   settings,
   persistSettings,
-  upgrades,
   milestones,
   achievements,
   events,
@@ -655,71 +649,16 @@ export function CollectionTab({
                 </div>
               </div>
             )}
-            <div className="panel">
-              <h3>Upgrades</h3>
-              <div id="upgrade-list" className="card-stack">
-                {upgrades.map((upgrade) => {
-                  const level = state.upgrades[upgrade.id] ?? 0;
-                  const price = getUpgradePriceCents(state, upgrade.id, 1);
-                  const unlocked = isUpgradeUnlocked(state, upgrade.id);
-                  const unlockMilestoneId = upgrade.unlockMilestoneId;
-                  const unlockDetail = unlockMilestoneId
-                    ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
-                    : null;
-                  const unlockUsesCents = unlockMilestoneId === "showcase";
-                  const unlockCurrentLabel = unlockDetail
-                    ? unlockUsesCents
-                      ? formatMoneyFromCents(unlockDetail.current)
-                      : formatCount(unlockDetail.current)
-                    : "0";
-                  const unlockThresholdLabel = unlockDetail
-                    ? unlockUsesCents
-                      ? formatMoneyFromCents(unlockDetail.threshold)
-                      : formatCount(unlockDetail.threshold)
-                    : "0";
-
-                  return (
-                    <div className="card" key={upgrade.id}>
-                      <div className="card-header">
-                        <div>
-                          <h3>{upgrade.name}</h3>
-                          <p>{upgrade.description}</p>
-                        </div>
-                        <div className="muted">Level {level}</div>
-                      </div>
-                      <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% cash per level</p>
-                      {!unlocked && unlockDetail && (
-                        <div data-testid={`locked-upgrade-hint-${upgrade.id}`}>
-                          <UnlockHint
-                            eyebrow="Locked"
-                            title="Unlock requirement"
-                            detail={unlockDetail.label}
-                            currentLabel={unlockCurrentLabel}
-                            thresholdLabel={unlockThresholdLabel}
-                            ratio={unlockDetail.ratio}
-                          />
-                        </div>
-                      )}
-                      <div className="card-actions">
-                        <button
-                          type="button"
-                          disabled={!canBuyUpgrade(state, upgrade.id, 1) || !unlocked}
-                          onClick={() => onPurchase(buyUpgrade(state, upgrade.id))}
-                        >
-                          Upgrade ({formatMoneyFromCents(price)})
-                        </button>
-                        {!unlocked &&
-                          upgrade.unlockMilestoneId &&
-                          shouldShowUnlockTag(state, upgrade.unlockMilestoneId) && (
-                            <div className="unlock-tag">
-                              Unlocking soon ·{" "}
-                              {getMilestoneRequirementLabel(upgrade.unlockMilestoneId)}
-                            </div>
-                          )}
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="panel upgrades-callout" data-testid="upgrades-callout">
+              <h3>Upgrades live in their own tab</h3>
+              <p className="muted">
+                Compare before/after rate changes and buy upgrades from the dedicated Upgrades
+                surface.
+              </p>
+              <div className="card-actions">
+                <button type="button" onClick={() => onNavigate("upgrades")}>
+                  Open Upgrades
+                </button>
               </div>
             </div>
             <div className="panel">
