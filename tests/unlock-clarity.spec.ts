@@ -58,7 +58,11 @@ test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
   await expect(page.getByTestId("next-unlock-career")).toBeVisible();
   await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();
 
-  await expect(page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`)).toBeVisible();
+  const lockedItemHint = page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`);
+  await lockedItemHint.scrollIntoViewIfNeeded();
+  await expect(lockedItemHint).toBeVisible();
+
+  await page.getByRole("tab", { name: "Upgrades" }).click();
   await expect(page.getByTestId("locked-upgrade-hint-assembly-jigs")).toBeVisible();
 });
 
@@ -118,10 +122,11 @@ test("catalog empty state CTA returns to vault", async ({ page }) => {
   );
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
 
   await expect(page.getByTestId("catalog-discovered-empty")).toBeVisible();
   await page.getByRole("button", { name: "Go to Vault" }).click();
 
   await expect(page.getByRole("tab", { name: "Vault" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByTestId("catalog-shop")).toBeVisible();
 });

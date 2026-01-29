@@ -27,7 +27,7 @@ test("currency explain trigger opens currencies help", async ({ page }) => {
   await expect(page.getByTestId("help-active-section")).toHaveText(/Currencies/);
 });
 
-test("purchase gate explain trigger opens gates help", async ({ page }) => {
+test("catalog help opens shopping guidance", async ({ page }) => {
   const seededState = {
     currencyCents: 1_000_000,
     enjoymentCents: 0,
@@ -66,13 +66,11 @@ test("purchase gate explain trigger opens gates help", async ({ page }) => {
 
   await page.goto("/");
   await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
 
-  const gateBadge = page.getByTestId(`purchase-gate-${CLASSIC_MODEL_ID}`);
-  await expect(gateBadge).toBeVisible();
-
-  await gateBadge.getByTestId("explain-gates").click();
+  await page.getByTestId("explain-catalog-shop").click();
   await expect(page.getByTestId("help-modal")).toBeVisible();
-  await expect(page.getByTestId("help-active-section")).toHaveText(/Gates/);
+  await expect(page.getByTestId("help-active-section")).toHaveText(/Catalog shopping/);
 });
 
 test("stats rate breakdown disclosures render line items", async ({ page }) => {
@@ -122,7 +120,7 @@ test("stats rate breakdown disclosures render line items", async ({ page }) => {
   await cashBreakdown.locator("summary").click();
 
   await expect(enjoymentBreakdown).toContainText(/Event/);
-  await expect(cashBreakdown).toContainText(/Event|Softcap|Therapist/);
+  await expect(cashBreakdown).toContainText(/Career salary/);
 });
 
 test("nostalgia unlock order explain trigger opens nostalgia help", async ({ page }) => {

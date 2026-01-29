@@ -6,7 +6,7 @@ const selectors = {
   collectionValue: "#collection-value",
   softcap: "#softcap",
   collectionCards: "#collection-list .card",
-  upgradeCards: "#upgrade-list .card",
+  upgradesCallout: '[data-testid="upgrades-callout"]',
   milestoneCards: "#milestone-list .card",
   setBonusCards: "#set-bonus-list .card",
   workshopPanel: '[data-testid="workshop-panel"]',
@@ -79,7 +79,8 @@ test.describe("collection loop", () => {
     await page.reload();
 
     await page.getByRole("tab", { name: "Vault" }).click();
-    const buyButton = page.getByTestId(`vault-buy-${STARTER_MODEL_ID}`);
+    await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    const buyButton = page.getByTestId(`catalog-buy-${STARTER_MODEL_ID}`);
     await buyButton.scrollIntoViewIfNeeded();
     await expect(buyButton).toBeEnabled({ timeout: 15000 });
     await buyButton.click();
@@ -114,16 +115,20 @@ test.describe("collection loop", () => {
     await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
 
     await expect(page.locator(selectors.collectionCards)).toHaveCount(WATCH_MODEL_COUNT);
-    await expect(page.locator(selectors.upgradeCards)).toHaveCount(4);
+    await expect(page.locator(selectors.upgradesCallout)).toBeVisible();
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
     await page.getByRole("tab", { name: "Vault" }).click();
-    const firstCard = page.locator(selectors.collectionCards).first();
-    const buyButton = firstCard.getByRole("button", { name: /Buy \(/ });
-    await expect(buyButton).toBeDisabled();
+    await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    const catalogFilters = page.getByTestId("catalog-filters");
+    await catalogFilters.getByTestId("catalog-search").fill("126713GRNR");
+    const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);
+    await gate.scrollIntoViewIfNeeded();
+    await expect(gate).toBeVisible();
+    await expect(page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`)).toHaveCount(0);
   });
 
   test("enjoyment gate locks classic purchase", async ({ page }) => {
@@ -176,12 +181,13 @@ test.describe("collection loop", () => {
 
     await page.goto("/");
     await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
 
-    const buyButton = page.getByTestId(`vault-buy-${CLASSIC_MODEL_ID}`);
-    await buyButton.scrollIntoViewIfNeeded();
-
-    await expect(buyButton).toBeDisabled();
-    await expect(page.getByTestId(`purchase-gate-${CLASSIC_MODEL_ID}`)).toBeVisible();
+    const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);
+    await gate.scrollIntoViewIfNeeded();
+    await expect(gate).toBeVisible();
+    await expect(gate).toContainText("Requires");
   });
 
   test("export and import save round trip", async ({ page }) => {
@@ -330,10 +336,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-
-    const catalogTab = page.getByRole("tab", { name: "Catalog" });
-    await catalogTab.click();
-
+    await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     const catalogFilters = page.getByTestId("catalog-filters");
     const catalogCards = page.getByTestId("catalog-grid").getByTestId("catalog-card");
     const resultsCount = page.getByTestId("catalog-results-count");
@@ -418,7 +421,7 @@ test.describe("collection loop", () => {
     });
 
     await page.goto("/emilyidle/");
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
 
     await page.getByTestId("catalog-search").fill("126713GRNR");
 
@@ -702,8 +705,8 @@ test.describe("collection loop", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Vault" }).click();
 
-    const starterActions = page.getByTestId(`vault-buy-${STARTER_MODEL_ID}`).locator("..");
-    const interactButton = starterActions.getByRole("button", { name: "Interact" });
+    const ownedCard = page.locator("#collection-list .card", { hasText: "Owned 1" }).first();
+    const interactButton = ownedCard.getByRole("button", { name: "Interact" });
     await interactButton.scrollIntoViewIfNeeded();
     await expect(interactButton).toBeEnabled();
     await interactButton.click();

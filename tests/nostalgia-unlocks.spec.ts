@@ -4,8 +4,8 @@ const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
 test("nostalgia unlocks flow", async ({ page }) => {
   const seededState = {
-    currencyCents: 5_000,
-    enjoymentCents: 5_000,
+    currencyCents: 1_000_000,
+    enjoymentCents: 1_000_000,
     nostalgiaPoints: 1,
     nostalgiaResets: 1,
     nostalgiaUnlockedItems: [],
@@ -99,7 +99,9 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await expect(page.getByTestId("nostalgia-balance")).toHaveText(/0 Nostalgia/);
 
   await page.getByRole("tab", { name: "Vault" }).click();
-  const classicBuyButton = page.getByTestId(`vault-buy-${CLASSIC_MODEL_ID}`);
+  await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+  await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
+  const classicBuyButton = page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`);
   await classicBuyButton.scrollIntoViewIfNeeded();
   await expect(classicBuyButton).toBeEnabled();
 
@@ -114,7 +116,9 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await expect(page.getByTestId("nostalgia-unlock-refund-classic")).toBeEnabled();
 
   await page.getByRole("tab", { name: "Vault" }).click();
-  const classicBuyAfterReload = page.getByTestId(`vault-buy-${CLASSIC_MODEL_ID}`);
+  await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+  await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
+  const classicBuyAfterReload = page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`);
   await classicBuyAfterReload.scrollIntoViewIfNeeded();
   await expect(classicBuyAfterReload).toBeEnabled();
 });

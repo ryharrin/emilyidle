@@ -87,10 +87,16 @@ test.describe("help entry point", () => {
 });
 
 test.describe("icon cues", () => {
-  test("lock icon renders in enjoyment gate", async ({ page }) => {
+  test("lock icon renders on nostalgia unlocks", async ({ page }) => {
     const seededState = {
       currencyCents: 1_000_000,
       enjoymentCents: 0,
+      nostalgiaPoints: 1,
+      nostalgiaResets: 1,
+      nostalgiaUnlockedItems: [],
+      nostalgiaEnjoymentEarnedCents: 0,
+      nostalgiaLastGain: 0,
+      nostalgiaLastPrestigedAtMs: 0,
       items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: ["collector-shelf"],
@@ -124,11 +130,11 @@ test.describe("icon cues", () => {
 
     await seedSave(page, seededState);
     await page.goto("/");
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByTestId("nostalgia-tab").click();
 
-    const gate = page.getByTestId(`purchase-gate-${CLASSIC_MODEL_ID}`);
-    await expect(gate).toBeVisible();
-    await expect(gate.locator("svg.lucide-lock")).toHaveCount(1);
+    const unlockCard = page.getByTestId("nostalgia-unlock-card-classic");
+    await expect(unlockCard).toBeVisible();
+    await expect(unlockCard.locator("svg.lucide-lock")).toHaveCount(1);
   });
 
   test("prestige icon renders on atelier reset button", async ({ page }) => {
