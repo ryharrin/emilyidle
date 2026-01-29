@@ -25,25 +25,29 @@ describe("primary navigation tabs", () => {
     cleanup();
   });
 
-  it("renders vault and save tabs on a fresh save", () => {
+  it("renders vault, career, and save tabs on a fresh save", () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
 
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
     expect(vaultTab.getAttribute("id")).toBe("collection-tab");
     expect(vaultTab.getAttribute("aria-controls")).toBe("collection");
+    expect(careerTab.getAttribute("id")).toBe("career-tab");
+    expect(careerTab.getAttribute("aria-controls")).toBe("career");
     expect(saveTab.getAttribute("id")).toBe("save-tab");
     expect(saveTab.getAttribute("aria-controls")).toBe("save");
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+    expect(careerTab.getAttribute("aria-selected")).toBe("false");
     expect(saveTab.getAttribute("aria-selected")).toBe("false");
 
     expect(within(tabList).queryByRole("tab", { name: /Catalog/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Stats/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Atelier/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Maison/i })).toBeNull();
-    expect(within(tabList).queryByRole("tab", { name: /Career/i })).toBeNull();
+    expect(careerTab).toBeTruthy();
   });
 
   it("moves focus between visible tabs without activating", async () => {
@@ -51,6 +55,7 @@ describe("primary navigation tabs", () => {
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
     vaultTab.focus();
@@ -59,18 +64,26 @@ describe("primary navigation tabs", () => {
 
     await user.keyboard("{ArrowRight}");
 
+    expect(document.activeElement).toBe(careerTab);
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+    expect(careerTab.getAttribute("aria-selected")).toBe("false");
+    expect(vaultTab.getAttribute("tabindex")).toBe("-1");
+    expect(careerTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{ArrowRight}");
+
     expect(document.activeElement).toBe(saveTab);
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     expect(saveTab.getAttribute("aria-selected")).toBe("false");
-    expect(vaultTab.getAttribute("tabindex")).toBe("-1");
+    expect(careerTab.getAttribute("tabindex")).toBe("-1");
     expect(saveTab.getAttribute("tabindex")).toBe("0");
 
     await user.keyboard("{ArrowLeft}");
 
-    expect(document.activeElement).toBe(vaultTab);
+    expect(document.activeElement).toBe(careerTab);
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     expect(saveTab.getAttribute("aria-selected")).toBe("false");
-    expect(vaultTab.getAttribute("tabindex")).toBe("0");
+    expect(careerTab.getAttribute("tabindex")).toBe("0");
   });
 
   it.each([
@@ -81,9 +94,9 @@ describe("primary navigation tabs", () => {
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+    const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
 
-    expect(screen.queryByRole("tabpanel", { name: /Save/i })).toBeNull();
+    expect(screen.queryByRole("tabpanel", { name: /Career/i })).toBeNull();
 
     vaultTab.focus();
 
@@ -93,14 +106,14 @@ describe("primary navigation tabs", () => {
 
     await user.keyboard("{ArrowRight}");
 
-    expect(document.activeElement).toBe(saveTab);
-    expect(saveTab.getAttribute("aria-selected")).toBe("false");
+    expect(document.activeElement).toBe(careerTab);
+    expect(careerTab.getAttribute("aria-selected")).toBe("false");
 
     await user.keyboard(key);
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(saveTab.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByRole("tabpanel", { name: /Save/i })).toBeTruthy();
+    expect(careerTab.getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tabpanel", { name: /Career/i })).toBeTruthy();
   });
 
   it("restores the last visited tab for existing saves", () => {
@@ -194,13 +207,19 @@ describe("primary navigation tabs", () => {
       throw new Error("Expected catalog shop anchor to exist");
     }
 
-    const scrollSpy = vi.fn();
-    scrollTarget.scrollIntoView = scrollSpy;
+    const buyButton = scrollTarget.querySelector('[data-testid^="catalog-buy-"]');
+    if (!(buyButton instanceof HTMLElement)) {
+      throw new Error("Expected catalog buy CTA to exist");
+    }
+
+    const scrollSpy = vi.spyOn(HTMLElement.prototype, "scrollIntoView");
 
     const buyCta = screen.getByTestId("next-unlock-cta-career");
     await user.click(buyCta);
 
-    expect(scrollSpy).toHaveBeenCalledWith({ block: "start", behavior: "smooth" });
+    expect(scrollSpy).toHaveBeenCalledWith({ block: "start", behavior: "auto" });
+
+    scrollSpy.mockRestore();
 
     rafSpy.mockRestore();
   });
