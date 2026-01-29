@@ -369,8 +369,10 @@ export function getNostalgiaUnlockIds(): WatchItemId[] {
 }
 
 export function createInitialState(): GameState {
+  const starterPriceCents = WATCH_ITEM_LOOKUP.get("starter")?.basePriceCents ?? 0;
+
   return {
-    currencyCents: 0,
+    currencyCents: starterPriceCents,
     enjoymentCents: 0,
     nostalgiaPoints: 0,
     nostalgiaResets: 0,

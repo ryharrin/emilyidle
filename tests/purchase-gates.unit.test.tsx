@@ -13,6 +13,15 @@ function getClassicModelId(): string {
 }
 
 describe("purchase gates", () => {
+  it("allows a starter purchase on a fresh save", () => {
+    const baseState = createInitialState();
+    const canBuyAny = getWatchModels().some(
+      (model) => getWatchModelPurchaseGate(baseState, model.id).ok,
+    );
+
+    expect(canBuyAny).toBe(true);
+  });
+
   it("blocks by enjoyment when enjoyment is below the requirement", () => {
     const baseState = createInitialState();
     const seededState = {
