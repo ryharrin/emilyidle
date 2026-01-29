@@ -1,16 +1,14 @@
 import React from "react";
 
+import { CatalogPurchasePanel, type PurchaseMeta } from "./CatalogTab";
 import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
 import { UnlockHint } from "../components/UnlockHint";
-import { ExplainButton } from "../help/ExplainButton";
-import { HELP_SECTION_IDS } from "../help/helpContent";
-import { LockIcon } from "../icons/coreIcons";
 
+import type { CatalogEntry } from "../../game/catalog";
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
   buyMaisonLine,
   buyUpgrade,
-  buyWatchModel,
   canBuyMaisonLine,
   canBuyUpgrade,
   dismantleWatchModel,
@@ -25,7 +23,6 @@ import {
   getUnlockRevealProgressRatio,
   getWatchItemEnjoymentRateCentsPerSec,
   getWatchModelOwnedCount,
-  getWatchModelPurchaseGate,
   getWatchModels,
   isEventActive,
   isItemUnlocked,
@@ -76,6 +73,26 @@ type CollectionTabProps = {
   isActive: boolean;
   state: GameState;
   onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
+  catalogSearch: string;
+  onCatalogSearchChange: (next: string) => void;
+  catalogBrand: string;
+  onCatalogBrandChange: (next: string) => void;
+  catalogStyle: "all" | "womens";
+  onCatalogStyleChange: (next: "all" | "womens") => void;
+  catalogSort: "default" | "brand" | "year" | "tier";
+  onCatalogSortChange: (next: "default" | "brand" | "year" | "tier") => void;
+  catalogEra: "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown";
+  onCatalogEraChange: (next: "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown") => void;
+  catalogType: "all" | "gmt" | "chronograph" | "dress" | "diver";
+  onCatalogTypeChange: (next: "all" | "gmt" | "chronograph" | "dress" | "diver") => void;
+  catalogTab: "unowned" | "owned";
+  onCatalogTabChange: (next: "unowned" | "owned") => void;
+  catalogBrands: ReadonlyArray<string>;
+  filteredCatalogEntries: ReadonlyArray<CatalogEntry>;
+  discoveredCatalogEntries: ReadonlyArray<CatalogEntry>;
+  discoveredCatalogIds: ReadonlyArray<string>;
+  catalogEntries: ReadonlyArray<CatalogEntry>;
+  hasOwnedCatalogTiers: boolean;
   watchItems: ReadonlyArray<WatchItemDefinition>;
   watchItemLabels: Map<WatchItemId, string>;
   autoBuyUnlocked: boolean;
@@ -106,7 +123,7 @@ type CollectionTabProps = {
   setBonuses: ReadonlyArray<SetBonusDefinition>;
   currentEventMultiplier: number;
   nowMs: number;
-  onPurchase: (nextState: GameState) => void;
+  onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
   onInteract: (itemId: WatchItemId) => void;
 };
 
@@ -114,6 +131,26 @@ export function CollectionTab({
   isActive,
   state,
   onNavigate,
+  catalogSearch,
+  onCatalogSearchChange,
+  catalogBrand,
+  onCatalogBrandChange,
+  catalogStyle,
+  onCatalogStyleChange,
+  catalogSort,
+  onCatalogSortChange,
+  catalogEra,
+  onCatalogEraChange,
+  catalogType,
+  onCatalogTypeChange,
+  catalogTab,
+  onCatalogTabChange,
+  catalogBrands,
+  filteredCatalogEntries,
+  discoveredCatalogEntries,
+  discoveredCatalogIds,
+  catalogEntries,
+  hasOwnedCatalogTiers,
   watchItems,
   watchItemLabels,
   autoBuyUnlocked,
@@ -148,7 +185,6 @@ export function CollectionTab({
   onInteract,
 }: CollectionTabProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
-  const [lastPurchasedModelId, setLastPurchasedModelId] = React.useState<string | null>(null);
   const watchModels = getWatchModels();
   const watchItemById = new Map(watchItems.map((item) => [item.id, item]));
   const watchModelsByBrand = new Map<string, typeof watchModels>();
@@ -171,22 +207,10 @@ export function CollectionTab({
     a[0].localeCompare(b[0]),
   );
 
-  React.useEffect(() => {
-    if (!lastPurchasedModelId) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setLastPurchasedModelId(null);
-    }, 700);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [lastPurchasedModelId]);
-
   const nextUnlockItems: NextUnlockItem[] = [];
   const collectionListCta = {
     tabId: "collection" as const,
-    scrollTargetId: "collection-list",
+    scrollTargetId: "catalog-shop",
   };
 
   if (!state.unlockedMilestones.includes("collector-shelf")) {
@@ -394,6 +418,34 @@ export function CollectionTab({
                 </p>
               </div>
             </div>
+            <section className="panel catalog-panel" id="catalog-shop" data-testid="catalog-shop">
+              <CatalogPurchasePanel
+                state={state}
+                onNavigate={onNavigate}
+                catalogSearch={catalogSearch}
+                onCatalogSearchChange={onCatalogSearchChange}
+                catalogBrand={catalogBrand}
+                onCatalogBrandChange={onCatalogBrandChange}
+                catalogStyle={catalogStyle}
+                onCatalogStyleChange={onCatalogStyleChange}
+                catalogSort={catalogSort}
+                onCatalogSortChange={onCatalogSortChange}
+                catalogEra={catalogEra}
+                onCatalogEraChange={onCatalogEraChange}
+                catalogType={catalogType}
+                onCatalogTypeChange={onCatalogTypeChange}
+                catalogTab={catalogTab}
+                onCatalogTabChange={onCatalogTabChange}
+                catalogBrands={catalogBrands}
+                filteredCatalogEntries={filteredCatalogEntries}
+                discoveredCatalogEntries={discoveredCatalogEntries}
+                discoveredCatalogIds={discoveredCatalogIds}
+                catalogEntries={catalogEntries}
+                hasOwnedCatalogTiers={hasOwnedCatalogTiers}
+                onPurchase={onPurchase}
+                showBalance
+              />
+            </section>
             {showMaisonLines && (
               <div className="panel maison-lines" data-testid="maison-lines">
                 <header className="panel-header">
@@ -475,7 +527,6 @@ export function CollectionTab({
                         tierOwned > 0 &&
                         firstModelByTier.get(model.tierId) === model.id;
                       const owned = isFallbackOwner ? tierOwned : modelOwned;
-                      const gate = getWatchModelPurchaseGate(state, model.id);
                       const unlocked = tierItem ? isItemUnlocked(state, tierItem.id) : true;
                       const unlockMilestoneId = tierItem?.unlockMilestoneId;
                       const unlockDetail = unlockMilestoneId
@@ -498,16 +549,11 @@ export function CollectionTab({
                       const duplicateMultiplier = isFallbackOwner
                         ? getDuplicateRewardMultiplierForNextPurchase(owned)
                         : getNextDuplicateRewardMultiplier(state, model.id);
-                      const buyLabel = owned > 0 ? "Buy another" : "Buy";
-                      const isHighlighted = lastPurchasedModelId === model.id;
                       const canInteract = owned > 0;
                       const canDismantle = modelOwned > 0 && partsPerWatch > 0;
 
                       return (
-                        <div
-                          className={`card ${isHighlighted ? "purchase-flash" : ""}`}
-                          key={model.id}
-                        >
+                        <div className="card" key={model.id}>
                           <div className="card-header">
                             <div>
                               <h3>{model.displayName}</h3>
@@ -558,50 +604,6 @@ export function CollectionTab({
                             >
                               Dismantle
                             </button>
-                            <button
-                              type="button"
-                              data-testid={`vault-buy-${model.id}`}
-                              disabled={!unlocked || !gate.ok}
-                              onClick={() => {
-                                setLastPurchasedModelId(model.id);
-                                onPurchase(buyWatchModel(state, model.id));
-                              }}
-                            >
-                              {buyLabel} ({formatMoneyFromCents(gate.cashPriceCents)})
-                            </button>
-                            {unlocked && !gate.ok && (
-                              <div
-                                className="purchase-locked"
-                                data-testid={`purchase-gate-${model.id}`}
-                              >
-                                <LockIcon className="inline-icon" />
-                                {gate.blocksBy === "enjoyment" && (
-                                  <>
-                                    Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}{" "}
-                                    enjoyment
-                                    {gate.enjoymentDeficitCents !== undefined && (
-                                      <>
-                                        {" "}
-                                        (need {formatMoneyFromCents(
-                                          gate.enjoymentDeficitCents,
-                                        )}{" "}
-                                        more)
-                                      </>
-                                    )}
-                                  </>
-                                )}
-                                {gate.blocksBy === "cash" && (
-                                  <>
-                                    Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more
-                                    dollars
-                                  </>
-                                )}
-                                <ExplainButton
-                                  sectionId={HELP_SECTION_IDS.gates}
-                                  label="Explain gates"
-                                />
-                              </div>
-                            )}
                             {!unlocked &&
                               unlockMilestoneId &&
                               shouldShowUnlockTag(state, unlockMilestoneId) && (

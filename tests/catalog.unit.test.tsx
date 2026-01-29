@@ -181,6 +181,29 @@ describe("primary navigation tabs", () => {
     const saveTab = within(refreshedList).getByRole("tab", { name: /Save/i });
     expect(saveTab.getAttribute("aria-selected")).toBe("true");
   });
+
+  it("scrolls buy watch CTAs to the catalog shop", async () => {
+    const user = userEvent.setup();
+    const rafSpy = vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 0;
+    });
+
+    const scrollTarget = document.getElementById("catalog-shop");
+    if (!scrollTarget) {
+      throw new Error("Expected catalog shop anchor to exist");
+    }
+
+    const scrollSpy = vi.fn();
+    scrollTarget.scrollIntoView = scrollSpy;
+
+    const buyCta = screen.getByTestId("next-unlock-cta-career");
+    await user.click(buyCta);
+
+    expect(scrollSpy).toHaveBeenCalledWith({ block: "start", behavior: "smooth" });
+
+    rafSpy.mockRestore();
+  });
 });
 
 describe("career tab unlock", () => {

@@ -171,7 +171,7 @@ describe("unlock UI components", () => {
 
     expect(screen.queryByTestId("catalog-discovered-empty")).not.toBeNull();
     await user.click(screen.getByRole("button", { name: "Go to Vault" }));
-    expect(onNavigate).toHaveBeenCalledWith("collection", "collection-list");
+    expect(onNavigate).toHaveBeenCalledWith("collection", "catalog-shop");
   });
 
   it("wires Catalog owned empty state CTA to Vault navigation", async () => {
@@ -214,6 +214,6 @@ describe("unlock UI components", () => {
 
     expect(screen.queryByTestId("catalog-owned-empty")).not.toBeNull();
     await user.click(screen.getByRole("button", { name: "Build collection" }));
-    expect(onNavigate).toHaveBeenCalledWith("collection", "collection-list");
+    expect(onNavigate).toHaveBeenCalledWith("collection", "catalog-shop");
   });
 });

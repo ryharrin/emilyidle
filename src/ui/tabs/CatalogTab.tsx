@@ -403,7 +403,7 @@ export function CatalogPurchasePanel({
               title="No references discovered yet"
               body="Buy and interact with watch models in the Vault to discover catalog references and unlock tier bonuses."
               ctaLabel="Go to Vault"
-              onCta={() => onNavigate("collection", "collection-list")}
+              onCta={() => onNavigate("collection", "catalog-shop")}
             />
           </div>
         )}
@@ -532,7 +532,7 @@ export function CatalogPurchasePanel({
                   title="No owned references yet"
                   body="Build your vault collection to start filling your archive shelf with owned references."
                   ctaLabel="Build collection"
-                  onCta={() => onNavigate("collection", "collection-list")}
+                  onCta={() => onNavigate("collection", "catalog-shop")}
                 />
               </div>
             ) : (
@@ -1032,7 +1032,7 @@ export function CatalogTabLegacy({
                   title="No references discovered yet"
                   body="Buy and interact with watch models in the Vault to discover catalog references and unlock tier bonuses."
                   ctaLabel="Go to Vault"
-                  onCta={() => onNavigate("collection", "collection-list")}
+                  onCta={() => onNavigate("collection", "catalog-shop")}
                 />
               </div>
             )}
@@ -1151,7 +1151,7 @@ export function CatalogTabLegacy({
                       title="No owned references yet"
                       body="Build your vault collection to start filling your archive shelf with owned references."
                       ctaLabel="Build collection"
-                      onCta={() => onNavigate("collection", "collection-list")}
+                      onCta={() => onNavigate("collection", "catalog-shop")}
                     />
                   </div>
                 ) : (
