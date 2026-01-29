@@ -316,7 +316,7 @@ Introduce a model-level purchasable watch system (IDs stable, mapped to catalog 
 **Goal:** Catalog is the default landing and primary purchase surface with in-context help.
 **Depends on:** Phase 25
 **Requirements:** CATALOG-01, CATALOG-02, CATALOG-03, CATALOG-04
-**Plans:** 6/8 plans complete
+**Plans:** 7/8 plans complete
 
 Plans:
 - [x] 26-01-PLAN.md — Make Catalog the default landing tab (+ deep link override)
@@ -326,7 +326,7 @@ Plans:
 - [x] 26-05-PLAN.md — Human verify catalog-first shop UX (desktop + mobile)
 - [x] 26-06-PLAN.md — Gap closure: remove separate Catalog tab + preserve deep links/last-tab
 - [ ] 26-07-PLAN.md — Gap closure: embed catalog cards into Vault + remove split watch-buy UI
-- [ ] 26-08-PLAN.md — Gap closure: human verify consolidated purchase surface
+- [x] 26-08-PLAN.md — Gap closure: human verify consolidated purchase surface
 
 **Success criteria:**
 1. Fresh save lands on the Catalog; existing saves open predictably.
