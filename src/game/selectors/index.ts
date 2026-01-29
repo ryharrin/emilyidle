@@ -703,11 +703,8 @@ export function getTherapistCashRateCentsPerSec(state: GameState): number {
   return Math.max(0, Math.floor(baseSalary)) * getPrestigeLegacyMultiplier(state);
 }
 
-export function getTotalCashRateCentsPerSec(state: GameState, eventMultiplier = 1): number {
-  return (
-    getEffectiveIncomeRateCentsPerSec(state, eventMultiplier) +
-    getTherapistCashRateCentsPerSec(state) * eventMultiplier
-  );
+export function getTotalCashRateCentsPerSec(state: GameState): number {
+  return getTherapistCashRateCentsPerSec(state);
 }
 
 export type RateBreakdownMultiplierTerm = {
@@ -774,89 +771,19 @@ export function getEnjoymentRateBreakdown(
 }
 
 export type CashRateBreakdown = {
-  eventMultiplier: number;
-  vaultAddends: RateBreakdownAddendTerm[];
-  vaultMultiplierTerms: RateBreakdownMultiplierTerm[];
-  vaultPreSoftcapCentsPerSec: number;
-  vaultEffectiveCentsPerSec: number;
-  therapistAddends: RateBreakdownAddendTerm[];
-  softcapCentsPerSec: number;
-  softcapExponent: number;
-  softcapEfficiency: number;
+  careerAddends: RateBreakdownAddendTerm[];
   totalCentsPerSec: number;
 };
 
-export function getCashRateBreakdown(state: GameState, eventMultiplier = 1): CashRateBreakdown {
-  const itemIncome = WATCH_ITEMS.reduce(
-    (total, item) => total + getItemCount(state, item.id) * item.incomeCentsPerSec,
-    0,
-  );
-
-  const vaultBaseCentsPerSec = BASE_INCOME_CENTS_PER_SEC + itemIncome;
-
-  const upgradeMultiplier = UPGRADES.reduce(
-    (multiplier, upgrade) =>
-      multiplier + getUpgradeLevel(state, upgrade.id) * upgrade.incomeMultiplierPerLevel,
-    1,
-  );
-
-  const setBonusMultiplier = getActiveSetBonuses(state).reduce(
-    (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
-    1,
-  );
-
-  const vaultMultiplierTerms: RateBreakdownMultiplierTerm[] = [
-    { id: "upgrades", label: "Upgrades", multiplier: upgradeMultiplier },
-    { id: "sets", label: "Sets", multiplier: setBonusMultiplier },
-    { id: "collection", label: "Collection", multiplier: getCollectionBonusMultiplier(state) },
-    { id: "workshop", label: "Workshop", multiplier: getWorkshopIncomeMultiplier(state) },
-    { id: "maison", label: "Maison", multiplier: getMaisonIncomeMultiplier(state) },
-    { id: "catalog", label: "Catalog tiers", multiplier: getCatalogTierIncomeMultiplier(state) },
-    { id: "abilities", label: "Abilities", multiplier: getWatchAbilityIncomeMultiplier(state) },
-    { id: "crafted", label: "Crafted boosts", multiplier: getCraftedBoostIncomeMultiplier(state) },
-    {
-      id: "prestige-legacy",
-      label: "Prestige legacy",
-      multiplier: getPrestigeLegacyMultiplier(state),
-    },
-    { id: "event", label: "Event", multiplier: eventMultiplier },
-  ];
-
-  const vaultPreSoftcapCentsPerSec =
-    vaultBaseCentsPerSec *
-    vaultMultiplierTerms.reduce((multiplier, term) => multiplier * term.multiplier, 1);
-
-  const softcapCentsPerSec = getWorkshopSoftcapValue(state);
-  const softcapExponent = getWorkshopSoftcapExponent(state);
-  const vaultEffectiveCentsPerSec = applySoftcap(
-    vaultPreSoftcapCentsPerSec,
-    softcapCentsPerSec,
-    softcapExponent,
-  );
-
-  const softcapEfficiency =
-    vaultPreSoftcapCentsPerSec > 0
-      ? Math.min(1, Math.max(0, vaultEffectiveCentsPerSec / vaultPreSoftcapCentsPerSec))
-      : 1;
-
+export function getCashRateBreakdown(state: GameState): CashRateBreakdown {
   const therapistSalaryCentsPerSec = getTherapistCashRateCentsPerSec(state);
-  const therapistAddends: RateBreakdownAddendTerm[] = [
-    { id: "therapist-salary", label: "Therapist salary", centsPerSec: therapistSalaryCentsPerSec },
+  const careerAddends: RateBreakdownAddendTerm[] = [
+    { id: "career-salary", label: "Career salary", centsPerSec: therapistSalaryCentsPerSec },
   ];
-
-  const therapistEffectiveCentsPerSec = therapistSalaryCentsPerSec * eventMultiplier;
 
   return {
-    eventMultiplier,
-    vaultAddends: [{ id: "vault-base", label: "Vault base", centsPerSec: vaultBaseCentsPerSec }],
-    vaultMultiplierTerms,
-    vaultPreSoftcapCentsPerSec,
-    vaultEffectiveCentsPerSec,
-    therapistAddends,
-    softcapCentsPerSec,
-    softcapExponent,
-    softcapEfficiency,
-    totalCentsPerSec: vaultEffectiveCentsPerSec + therapistEffectiveCentsPerSec,
+    careerAddends,
+    totalCentsPerSec: getTotalCashRateCentsPerSec(state),
   };
 }
 

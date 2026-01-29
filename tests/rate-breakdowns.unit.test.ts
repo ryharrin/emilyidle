@@ -31,7 +31,7 @@ describe("rate breakdown selectors", () => {
     );
   });
 
-  it("matches cash rate totals and includes softcap efficiency + therapist addend", () => {
+  it("matches cash rate totals and includes career salary addend", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -52,17 +52,9 @@ describe("rate breakdown selectors", () => {
       },
     };
 
-    const eventMultiplier = 1.2;
-    const breakdown = getCashRateBreakdown(seededState, eventMultiplier);
+    const breakdown = getCashRateBreakdown(seededState);
 
-    expect(breakdown.totalCentsPerSec).toBeCloseTo(
-      getTotalCashRateCentsPerSec(seededState, eventMultiplier),
-      6,
-    );
-
-    expect(breakdown.softcapEfficiency).toBeGreaterThanOrEqual(0);
-    expect(breakdown.softcapEfficiency).toBeLessThanOrEqual(1);
-
-    expect(breakdown.therapistAddends.some((term) => term.id === "therapist-salary")).toBe(true);
+    expect(breakdown.totalCentsPerSec).toBeCloseTo(getTotalCashRateCentsPerSec(seededState), 6);
+    expect(breakdown.careerAddends.some((term) => term.id === "career-salary")).toBe(true);
   });
 });

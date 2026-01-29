@@ -597,7 +597,7 @@ export default function App() {
   const stats = useMemo(() => {
     const nowMs = Date.now();
     const eventMultiplier = getEventIncomeMultiplier(state, nowMs);
-    const cashRate = getTotalCashRateCentsPerSec(state, eventMultiplier);
+    const cashRate = getTotalCashRateCentsPerSec(state);
     const enjoymentRate = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
 
     return {

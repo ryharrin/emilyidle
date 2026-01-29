@@ -1,6 +1,6 @@
 import React from "react";
 
-import { formatRateFromCentsPerSec, formatSoftcapEfficiency } from "../../game/format";
+import { formatRateFromCentsPerSec } from "../../game/format";
 import { getCashRateBreakdown, getEnjoymentRateBreakdown } from "../../game/state";
 import type { GameState } from "../../game/state";
 
@@ -36,7 +36,7 @@ type StatsTabProps = {
 
 export function StatsTab({ isActive, state, stats, currentEventMultiplier }: StatsTabProps) {
   const enjoymentRateBreakdown = getEnjoymentRateBreakdown(state, currentEventMultiplier);
-  const cashRateBreakdown = getCashRateBreakdown(state, currentEventMultiplier);
+  const cashRateBreakdown = getCashRateBreakdown(state);
 
   return (
     <section id="stats" role="tabpanel" aria-labelledby="stats-tab" hidden={!isActive}>
@@ -118,23 +118,12 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
             <div className="card-actions">
               <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
             </div>
-            <p className="muted">
-              {cashRateBreakdown.vaultAddends[0]?.label ?? "Vault base"}:{" "}
-              {formatRateFromCentsPerSec(cashRateBreakdown.vaultAddends[0]?.centsPerSec ?? 0)}
-            </p>
             <ul>
-              {cashRateBreakdown.vaultMultiplierTerms.map((term) => (
+              {cashRateBreakdown.careerAddends.map((term) => (
                 <li key={term.id}>
-                  {term.label} x{term.multiplier.toFixed(2)}
+                  {term.label}: {formatRateFromCentsPerSec(term.centsPerSec)}
                 </li>
               ))}
-              <li>
-                Softcap efficiency {formatSoftcapEfficiency(cashRateBreakdown.softcapEfficiency)}
-              </li>
-              <li>
-                {cashRateBreakdown.therapistAddends[0]?.label ?? "Therapist salary"}:{" "}
-                {formatRateFromCentsPerSec(cashRateBreakdown.therapistAddends[0]?.centsPerSec ?? 0)}
-              </li>
             </ul>
           </details>
 

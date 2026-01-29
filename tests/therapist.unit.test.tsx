@@ -72,7 +72,7 @@ describe("therapist career", () => {
     const therapistRate = getTherapistCashRateCentsPerSec(seededState);
     expect(therapistRate).toBeGreaterThan(0);
 
-    const totalRate = getTotalCashRateCentsPerSec(seededState, 1);
+    const totalRate = getTotalCashRateCentsPerSec(seededState);
     const nextState = step(seededState, 1_000, 0);
     expect(nextState.currencyCents).toBe(seededState.currencyCents + totalRate);
   });
