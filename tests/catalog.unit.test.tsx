@@ -25,24 +25,21 @@ describe("primary navigation tabs", () => {
     cleanup();
   });
 
-  it("renders catalog, vault, and save tabs on a fresh save", () => {
+  it("renders vault and save tabs on a fresh save", () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
 
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
     expect(vaultTab.getAttribute("id")).toBe("collection-tab");
     expect(vaultTab.getAttribute("aria-controls")).toBe("collection");
-    expect(catalogTab.getAttribute("id")).toBe("catalog-tab");
-    expect(catalogTab.getAttribute("aria-controls")).toBe("catalog");
     expect(saveTab.getAttribute("id")).toBe("save-tab");
     expect(saveTab.getAttribute("aria-controls")).toBe("save");
 
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     expect(saveTab.getAttribute("aria-selected")).toBe("false");
 
+    expect(within(tabList).queryByRole("tab", { name: /Catalog/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Stats/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Atelier/i })).toBeNull();
     expect(within(tabList).queryByRole("tab", { name: /Maison/i })).toBeNull();
@@ -54,30 +51,26 @@ describe("primary navigation tabs", () => {
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
-    catalogTab.focus();
-    expect(document.activeElement).toBe(catalogTab);
-    expect(catalogTab.getAttribute("tabindex")).toBe("0");
+    vaultTab.focus();
+    expect(document.activeElement).toBe(vaultTab);
+    expect(vaultTab.getAttribute("tabindex")).toBe("0");
 
     await user.keyboard("{ArrowRight}");
 
     expect(document.activeElement).toBe(saveTab);
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     expect(saveTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("tabindex")).toBe("-1");
+    expect(vaultTab.getAttribute("tabindex")).toBe("-1");
     expect(saveTab.getAttribute("tabindex")).toBe("0");
 
     await user.keyboard("{ArrowLeft}");
 
-    expect(document.activeElement).toBe(catalogTab);
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(vaultTab);
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     expect(saveTab.getAttribute("aria-selected")).toBe("false");
-    expect(vaultTab.getAttribute("tabindex")).toBe("-1");
-    expect(catalogTab.getAttribute("tabindex")).toBe("0");
+    expect(vaultTab.getAttribute("tabindex")).toBe("0");
   });
 
   it.each([
@@ -88,17 +81,15 @@ describe("primary navigation tabs", () => {
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
 
     expect(screen.queryByRole("tabpanel", { name: /Save/i })).toBeNull();
 
-    catalogTab.focus();
+    vaultTab.focus();
 
-    expect(document.activeElement).toBe(catalogTab);
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByRole("tabpanel", { name: /Catalog/i })).toBeTruthy();
+    expect(document.activeElement).toBe(vaultTab);
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tabpanel", { name: /Vault/i })).toBeTruthy();
 
     await user.keyboard("{ArrowRight}");
 
@@ -108,7 +99,6 @@ describe("primary navigation tabs", () => {
     await user.keyboard(key);
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("false");
     expect(saveTab.getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("tabpanel", { name: /Save/i })).toBeTruthy();
   });
@@ -135,7 +125,7 @@ describe("primary navigation tabs", () => {
     expect(saveTab.getAttribute("aria-selected")).toBe("true");
   });
 
-  it("honors deep links without persisting last-tab", () => {
+  it("treats legacy catalog last-tab as vault", () => {
     cleanup();
     const baseState = createInitialState();
     localStorage.setItem(
@@ -148,17 +138,39 @@ describe("primary navigation tabs", () => {
       }),
     );
     localStorage.setItem("emily-idle:navigation", JSON.stringify({ lastTabId: "catalog" }));
-    window.history.replaceState({}, "", "/?tab=save");
+
+    render(<App />);
+
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("honors catalog deep links without persisting last-tab", () => {
+    cleanup();
+    const baseState = createInitialState();
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: baseState,
+      }),
+    );
+    localStorage.setItem("emily-idle:navigation", JSON.stringify({ lastTabId: "save" }));
+    window.history.replaceState({}, "", "/?tab=catalog");
 
     const { unmount } = render(<App />);
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
 
-    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
 
     const stored = localStorage.getItem("emily-idle:navigation");
-    expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "catalog" });
+    expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });
 
     unmount();
     window.history.replaceState({}, "", "/");
@@ -166,8 +178,8 @@ describe("primary navigation tabs", () => {
     render(<App />);
 
     const refreshedList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(refreshedList).getByRole("tab", { name: /Catalog/i });
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    const saveTab = within(refreshedList).getByRole("tab", { name: /Save/i });
+    expect(saveTab.getAttribute("aria-selected")).toBe("true");
   });
 });
 
@@ -355,12 +367,10 @@ describe("catalog filters", () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
 
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
 
-    await user.click(catalogTab);
+    await user.click(vaultTab);
 
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
   });
 
   const getCatalogCardBrands = async () => {
@@ -518,8 +528,8 @@ describe("catalog filters", () => {
 
     const user = userEvent.setup();
     const primaryTabs = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(primaryTabs).getByRole("tab", { name: /Catalog/i });
-    await user.click(catalogTab);
+    const vaultTab = within(primaryTabs).getByRole("tab", { name: /Vault/i });
+    await user.click(vaultTab);
 
     const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
     const ownedTab = within(tabList).getByRole("tab", { name: /^Owned$/ });
@@ -568,8 +578,8 @@ describe("catalog filters", () => {
 
     const user = userEvent.setup();
     const primaryTabs = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(primaryTabs).getByRole("tab", { name: /Catalog/i });
-    await user.click(catalogTab);
+    const vaultTab = within(primaryTabs).getByRole("tab", { name: /Vault/i });
+    await user.click(vaultTab);
 
     const searchInput = screen.getByTestId("catalog-search");
     await user.type(searchInput, "Tank Must");
@@ -662,9 +672,9 @@ describe("catalog filters", () => {
 
   it("shows catalog filters when catalog is unlocked", async () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
 
-    await userEvent.click(catalogTab);
+    await userEvent.click(vaultTab);
 
     expect(screen.getByTestId("catalog-filters")).toBeTruthy();
   });
@@ -704,8 +714,8 @@ describe("catalog purchase CTA", () => {
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
-    await user.click(catalogTab);
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    await user.click(vaultTab);
   });
 
   afterEach(() => {
@@ -755,8 +765,8 @@ describe("catalog help entry", () => {
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
-    await user.click(catalogTab);
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    await user.click(vaultTab);
   });
 
   afterEach(() => {
@@ -903,18 +913,21 @@ describe("catalog ownership tabs", () => {
   it("renders trusted dealers panel under the catalog", async () => {
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
 
-    await user.click(catalogTab);
+    await user.click(vaultTab);
 
-    expect(screen.getByText(/Trusted dealers \(external\)/i)).toBeTruthy();
+    const dealersPanel = screen.getByTestId("catalog-dealers");
     expect(
-      screen.getByText(
+      within(dealersPanel).getByRole("heading", { name: /Trusted dealers \(external\)/i }),
+    ).toBeTruthy();
+    expect(
+      within(dealersPanel).getByText(
         /Dealer names are provided for reference only; no affiliation or endorsement is implied\./i,
       ),
     ).toBeTruthy();
 
-    const dealerList = screen.getByTestId("dealer-list");
+    const dealerList = within(dealersPanel).getByTestId("dealer-list");
     const dealers = within(dealerList)
       .getAllByRole("listitem")
       .map((item) => item.textContent);
@@ -957,9 +970,9 @@ describe("catalog ownership tabs", () => {
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
 
-    await user.click(catalogTab);
+    await user.click(vaultTab);
 
     const unownedGrid = screen.getByTestId("catalog-grid");
     await waitFor(() => within(unownedGrid).getAllByTestId(/catalog-card/));
@@ -1149,21 +1162,11 @@ describe("settings preferences", () => {
     expect(saveTab.getAttribute("aria-selected")).toBe("true");
   };
 
-  const renderWithCatalogUnlocked = () => {
+  const renderWithWorkshopVisible = () => {
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
     const seededState = {
       ...baseState,
-      items: {
-        ...baseState.items,
-        starter: 15,
-        chronograph: 2,
-      },
-      watchModels: {
-        ...baseState.watchModels,
-        [chronographModelId]: 2,
-      },
-      unlockedMilestones: ["showcase"],
+      workshopPrestigeCount: 1,
     };
 
     localStorage.setItem(
@@ -1254,12 +1257,12 @@ describe("settings preferences", () => {
 
   it("defaults unlocked tab toggles to visible", async () => {
     cleanup();
-    renderWithCatalogUnlocked();
+    renderWithWorkshopVisible();
 
     await openSaveTab();
 
-    const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
-    expect(catalogToggle.checked).toBe(true);
+    const workshopToggle = screen.getByTestId("tab-visibility-workshop") as HTMLInputElement;
+    expect(workshopToggle.checked).toBe(true);
   });
 
   it("persists theme selection", async () => {
@@ -1308,32 +1311,35 @@ describe("settings preferences", () => {
 
   it("persists hidden tab selections", async () => {
     cleanup();
-    renderWithCatalogUnlocked();
+    renderWithWorkshopVisible();
     await openSaveTab();
 
     const user = userEvent.setup();
-    const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
-    await user.click(catalogToggle);
+    const workshopToggle = screen.getByTestId("tab-visibility-workshop") as HTMLInputElement;
+    await user.click(workshopToggle);
 
     const raw = localStorage.getItem("emily-idle:settings");
     const parsed = raw ? JSON.parse(raw) : null;
-    expect(parsed.hiddenTabs).toEqual(["catalog"]);
+    expect(parsed.hiddenTabs).toEqual(["workshop"]);
   });
 
   it("hides tabs when preference disabled", async () => {
     cleanup();
-    renderWithCatalogUnlocked();
+    renderWithWorkshopVisible();
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const workshopTab = within(tabList).getByRole("tab", { name: /Atelier/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Save/i });
+
+    expect(workshopTab.getAttribute("aria-selected")).toBe("false");
 
     await user.click(saveTab);
 
-    const catalogToggle = screen.getByTestId("tab-visibility-catalog") as HTMLInputElement;
-    await user.click(catalogToggle);
+    const workshopToggle = screen.getByTestId("tab-visibility-workshop") as HTMLInputElement;
+    await user.click(workshopToggle);
 
-    expect(within(tabList).queryByRole("tab", { name: /Catalog/i })).toBeNull();
+    expect(within(tabList).queryByRole("tab", { name: /Atelier/i })).toBeNull();
   });
 });
 
