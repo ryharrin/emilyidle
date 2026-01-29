@@ -84,9 +84,17 @@ describe("therapist persistence", () => {
     const seededState = {
       ...baseState,
       therapistCareer: {
+        ...baseState.therapistCareer,
         level: 3,
         xp: 12,
         nextAvailableAtMs: 99_000,
+        activeTrackId: "private-practice" as const,
+        pointsAvailable: 2,
+        spentNodes: {
+          "core-foundation": true,
+          "private-intake": true,
+        },
+        freeSessionAvailable: false,
       },
     };
 
@@ -100,6 +108,13 @@ describe("therapist persistence", () => {
     expect(decoded.save.state.therapistCareer.level).toBe(3);
     expect(decoded.save.state.therapistCareer.xp).toBe(12);
     expect(decoded.save.state.therapistCareer.nextAvailableAtMs).toBe(99_000);
+    expect(decoded.save.state.therapistCareer.activeTrackId).toBe("private-practice");
+    expect(decoded.save.state.therapistCareer.pointsAvailable).toBe(2);
+    expect(decoded.save.state.therapistCareer.spentNodes).toEqual({
+      "core-foundation": true,
+      "private-intake": true,
+    });
+    expect(decoded.save.state.therapistCareer.freeSessionAvailable).toBe(false);
   });
 
   it("defaults therapist fields when missing from payload", () => {
@@ -124,5 +139,9 @@ describe("therapist persistence", () => {
     expect(decoded.save.state.therapistCareer.level).toBe(1);
     expect(decoded.save.state.therapistCareer.xp).toBe(0);
     expect(decoded.save.state.therapistCareer.nextAvailableAtMs).toBe(0);
+    expect(decoded.save.state.therapistCareer.activeTrackId).toBeNull();
+    expect(decoded.save.state.therapistCareer.pointsAvailable).toBe(0);
+    expect(decoded.save.state.therapistCareer.spentNodes).toEqual({});
+    expect(decoded.save.state.therapistCareer.freeSessionAvailable).toBe(true);
   });
 });

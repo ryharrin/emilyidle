@@ -33,6 +33,10 @@ function sanitizeState(value: unknown): GameState | null {
   }
 
   const record = value as Record<string, unknown>;
+  const therapistRecord =
+    typeof record.therapistCareer === "object" && record.therapistCareer !== null
+      ? (record.therapistCareer as Record<string, unknown>)
+      : null;
 
   const currencyCents = record.currencyCents;
   if (!isFiniteNumber(currencyCents)) {
@@ -111,33 +115,36 @@ function sanitizeState(value: unknown): GameState | null {
     nostalgiaLastPrestigedAtMs: isFiniteNumber(record.nostalgiaLastPrestigedAtMs)
       ? Math.max(0, Math.floor(record.nostalgiaLastPrestigedAtMs))
       : 0,
-    therapistCareer:
-      typeof record.therapistCareer === "object" && record.therapistCareer !== null
-        ? {
-            level: isFiniteNumber((record.therapistCareer as Record<string, unknown>).level)
-              ? Math.max(
-                  1,
-                  Math.floor((record.therapistCareer as Record<string, unknown>).level as number),
-                )
+    therapistCareer: therapistRecord
+      ? {
+          level: isFiniteNumber(therapistRecord.level)
+            ? Math.max(1, Math.floor(therapistRecord.level))
+            : undefined,
+          xp: isFiniteNumber(therapistRecord.xp)
+            ? Math.max(0, Math.floor(therapistRecord.xp))
+            : undefined,
+          nextAvailableAtMs: isFiniteNumber(therapistRecord.nextAvailableAtMs)
+            ? Math.max(0, Math.floor(therapistRecord.nextAvailableAtMs))
+            : undefined,
+          activeTrackId:
+            therapistRecord.activeTrackId === null
+              ? null
+              : typeof therapistRecord.activeTrackId === "string"
+                ? therapistRecord.activeTrackId
+                : undefined,
+          pointsAvailable: isFiniteNumber(therapistRecord.pointsAvailable)
+            ? Math.max(0, Math.floor(therapistRecord.pointsAvailable))
+            : undefined,
+          spentNodes:
+            typeof therapistRecord.spentNodes === "object" && therapistRecord.spentNodes !== null
+              ? (therapistRecord.spentNodes as Record<string, boolean>)
               : undefined,
-            xp: isFiniteNumber((record.therapistCareer as Record<string, unknown>).xp)
-              ? Math.max(
-                  0,
-                  Math.floor((record.therapistCareer as Record<string, unknown>).xp as number),
-                )
+          freeSessionAvailable:
+            typeof therapistRecord.freeSessionAvailable === "boolean"
+              ? therapistRecord.freeSessionAvailable
               : undefined,
-            nextAvailableAtMs: isFiniteNumber(
-              (record.therapistCareer as Record<string, unknown>).nextAvailableAtMs,
-            )
-              ? Math.max(
-                  0,
-                  Math.floor(
-                    (record.therapistCareer as Record<string, unknown>).nextAvailableAtMs as number,
-                  ),
-                )
-              : undefined,
-          }
-        : undefined,
+        }
+      : undefined,
     craftingParts: isFiniteNumber(record.craftingParts) ? record.craftingParts : 0,
     craftedBoosts:
       typeof record.craftedBoosts === "object" && record.craftedBoosts !== null

@@ -6,5 +6,6 @@ export default defineConfig({
     include: ["tests/**/*.unit.test.{ts,tsx}"],
     exclude: ["tests/**/*.spec.{ts,tsx}"],
     globals: true,
+    setupFiles: ["./tests/vitest.setup.ts"],
   },
 });

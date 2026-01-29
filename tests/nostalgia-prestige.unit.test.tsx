@@ -87,6 +87,7 @@ describe("nostalgia prestige", () => {
         "atelier-line": true,
       },
       therapistCareer: {
+        ...baseState.therapistCareer,
         level: 4,
         xp: 120,
         nextAvailableAtMs: 12_000,

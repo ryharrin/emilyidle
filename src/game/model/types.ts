@@ -1,6 +1,8 @@
 export type WatchItemId = "starter" | "classic" | "chronograph" | "tourbillon";
 export type UpgradeId = "polishing-tools" | "assembly-jigs" | "guild-contracts" | "archive-guides";
 export type MilestoneId = "collector-shelf" | "showcase" | "atelier" | "archive-curator";
+export type CareerTrackId = "private-practice" | "va-hospital" | "research-teaching";
+export type CareerNodeId = string;
 
 export type SetBonusId =
   | "starter-set"
@@ -150,6 +152,10 @@ export type TherapistCareerState = {
   level: number;
   xp: number;
   nextAvailableAtMs: number;
+  activeTrackId: CareerTrackId | null;
+  pointsAvailable: number;
+  spentNodes: Record<CareerNodeId, boolean>;
+  freeSessionAvailable: boolean;
 };
 
 export type CatalogTierBonusDefinition = {
@@ -208,7 +214,15 @@ export type PersistedGameState = {
   nostalgiaEnjoymentEarnedCents?: number;
   nostalgiaLastGain?: number;
   nostalgiaLastPrestigedAtMs?: number;
-  therapistCareer?: { level?: number; xp?: number; nextAvailableAtMs?: number };
+  therapistCareer?: {
+    level?: number;
+    xp?: number;
+    nextAvailableAtMs?: number;
+    activeTrackId?: string | null;
+    pointsAvailable?: number;
+    spentNodes?: Record<string, boolean>;
+    freeSessionAvailable?: boolean;
+  };
   items?: Record<string, number>;
   watchModels?: Record<string, number>;
   upgrades?: Record<string, number>;

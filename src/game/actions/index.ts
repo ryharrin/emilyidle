@@ -193,6 +193,10 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
       level: 1,
       xp: 0,
       nextAvailableAtMs: 0,
+      activeTrackId: null,
+      pointsAvailable: 0,
+      spentNodes: {},
+      freeSessionAvailable: true,
     },
     upgrades: createUpgradeLevels(),
     workshopBlueprints: 0,
@@ -447,6 +451,7 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
     currencyCents: state.currencyCents + payout,
     enjoymentCents: state.enjoymentCents - cost,
     therapistCareer: {
+      ...career,
       level: nextLevel,
       xp: nextXp,
       nextAvailableAtMs: nowMs + getTherapistSessionCooldownMs(nextLevel),

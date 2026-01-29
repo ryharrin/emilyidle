@@ -1,4 +1,5 @@
 import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "../catalog";
+import { CAREER_NODES, CAREER_TRACKS } from "../data/career";
 import { WATCH_MODELS } from "../data/watchModels";
 import { MILESTONES } from "../data/milestones";
 import { NOSTALGIA_UNLOCK_ORDER, WATCH_ITEMS } from "../data/items";
@@ -7,6 +8,8 @@ import { getDuplicateRewardSum } from "../selectors/duplicates";
 import type {
   AchievementDefinition,
   AchievementId,
+  CareerNodeId,
+  CareerTrackId,
   CatalogEntryId,
   CatalogTierBonusDefinition,
   CatalogTierId,
@@ -34,6 +37,8 @@ export { UPGRADES } from "../data/upgrades";
 
 const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
 const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]));
+const CAREER_TRACK_IDS = new Set(CAREER_TRACKS.map((track) => track.id));
+const CAREER_NODE_IDS = new Set(CAREER_NODES.map((node) => node.id));
 
 export const ALL_MILESTONE_IDS: MilestoneId[] = [
   "collector-shelf",
@@ -384,6 +389,10 @@ export function createInitialState(): GameState {
       level: 1,
       xp: 0,
       nextAvailableAtMs: 0,
+      activeTrackId: null,
+      pointsAvailable: 0,
+      spentNodes: {},
+      freeSessionAvailable: true,
     },
     items: createItemCounts(),
     watchModels: {},
@@ -419,21 +428,54 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const eventStates = createEventStates();
 
   const therapistRaw = saved.therapistCareer;
+  const therapistRecord =
+    therapistRaw && typeof therapistRaw === "object"
+      ? (therapistRaw as Record<string, unknown>)
+      : null;
+  const levelRaw = therapistRecord?.level;
+  const xpRaw = therapistRecord?.xp;
+  const nextAvailableAtMsRaw = therapistRecord?.nextAvailableAtMs;
+  const pointsAvailableRaw = therapistRecord?.pointsAvailable;
+  const activeTrackIdRaw = therapistRecord?.activeTrackId;
+  const activeTrackId =
+    activeTrackIdRaw === null
+      ? null
+      : typeof activeTrackIdRaw === "string" &&
+          CAREER_TRACK_IDS.has(activeTrackIdRaw as CareerTrackId)
+        ? (activeTrackIdRaw as CareerTrackId)
+        : null;
+  const spentNodes: Record<CareerNodeId, boolean> = {};
+  const spentNodesRaw =
+    therapistRecord?.spentNodes && typeof therapistRecord.spentNodes === "object"
+      ? (therapistRecord.spentNodes as Record<string, unknown>)
+      : null;
+  if (spentNodesRaw) {
+    for (const [key, value] of Object.entries(spentNodesRaw)) {
+      if (CAREER_NODE_IDS.has(key) && Boolean(value)) {
+        spentNodes[key as CareerNodeId] = true;
+      }
+    }
+  }
   const therapistCareer = {
     level:
-      therapistRaw && typeof therapistRaw === "object" && Number.isFinite(therapistRaw.level)
-        ? Math.max(1, Math.floor(therapistRaw.level ?? 1))
+      typeof levelRaw === "number" && Number.isFinite(levelRaw)
+        ? Math.max(1, Math.floor(levelRaw))
         : 1,
-    xp:
-      therapistRaw && typeof therapistRaw === "object" && Number.isFinite(therapistRaw.xp)
-        ? Math.max(0, Math.floor(therapistRaw.xp ?? 0))
-        : 0,
+    xp: typeof xpRaw === "number" && Number.isFinite(xpRaw) ? Math.max(0, Math.floor(xpRaw)) : 0,
     nextAvailableAtMs:
-      therapistRaw &&
-      typeof therapistRaw === "object" &&
-      Number.isFinite(therapistRaw.nextAvailableAtMs)
-        ? Math.max(0, Math.floor(therapistRaw.nextAvailableAtMs ?? 0))
+      typeof nextAvailableAtMsRaw === "number" && Number.isFinite(nextAvailableAtMsRaw)
+        ? Math.max(0, Math.floor(nextAvailableAtMsRaw))
         : 0,
+    activeTrackId,
+    pointsAvailable:
+      typeof pointsAvailableRaw === "number" && Number.isFinite(pointsAvailableRaw)
+        ? Math.max(0, Math.floor(pointsAvailableRaw))
+        : 0,
+    spentNodes,
+    freeSessionAvailable:
+      therapistRecord && typeof therapistRecord.freeSessionAvailable === "boolean"
+        ? therapistRecord.freeSessionAvailable
+        : true,
   };
 
   if (saved.items) {
