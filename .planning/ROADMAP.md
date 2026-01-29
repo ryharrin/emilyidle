@@ -178,7 +178,7 @@ Plans:
 **Goal:** Users can access game help from anywhere and recognize core UI cues (help/lock/prestige) consistently.
 **Depends on:** Phase 19
 **Requirements:** GUIDE-01, POLISH-05
-**Plans:** 5/5 plans complete
+**Plans:** 5/8 plans complete
 
 Plans:
 - [x] 20-01-PLAN.md — Add shared lucide-react icon wrappers
@@ -223,7 +223,7 @@ Surface existing rules at point-of-use: contextual explanations for currencies/g
 **Goal:** Users always see what is locked, why it is locked, and what to do next to progress.
 **Depends on:** Phase 21
 **Requirements:** CLAR-01, CLAR-02, CLAR-04
-**Plans:** 5/5 plans complete
+**Plans:** 5/8 plans complete
 
 Plans:
 - [x] 22-01-PLAN.md — Add selector helpers for unlock progress detail
@@ -316,7 +316,7 @@ Introduce a model-level purchasable watch system (IDs stable, mapped to catalog 
 **Goal:** Catalog is the default landing and primary purchase surface with in-context help.
 **Depends on:** Phase 25
 **Requirements:** CATALOG-01, CATALOG-02, CATALOG-03, CATALOG-04
-**Plans:** 5/5 plans complete
+**Plans:** 6/8 plans complete
 
 Plans:
 - [x] 26-01-PLAN.md — Make Catalog the default landing tab (+ deep link override)
@@ -324,6 +324,9 @@ Plans:
 - [x] 26-03-PLAN.md — Add catalog card buy action bar + wire purchases + owned/unowned by ownership
 - [x] 26-04-PLAN.md — Add single Catalog help button + expandable card details + micro-feedback + unit coverage
 - [x] 26-05-PLAN.md — Human verify catalog-first shop UX (desktop + mobile)
+- [x] 26-06-PLAN.md — Gap closure: remove separate Catalog tab + preserve deep links/last-tab
+- [ ] 26-07-PLAN.md — Gap closure: embed catalog cards into Vault + remove split watch-buy UI
+- [ ] 26-08-PLAN.md — Gap closure: human verify consolidated purchase surface
 
 **Success criteria:**
 1. Fresh save lands on the Catalog; existing saves open predictably.

@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 ## Current Position
 
 Phase: 26 of 30 (Catalog-First Shop)
-Plan: 5 of 5
-Status: Phase complete
-Last activity: 2026-01-28 — Completed 26-05-PLAN.md
+Plan: 6 of 8
+Status: In progress
+Last activity: 2026-01-29 — Completed 26-06-PLAN.md
 Progress: ████████░░ 76%
-Next Phase: Phase 27 (Plan 01)
+Next Phase: Phase 26 (Plan 07)
 
 ## Accumulated Context
 
@@ -55,6 +55,7 @@ Next Phase: Phase 27 (Plan 01)
 | 25-04 | None - followed plan as specified | No deviations |
 | quick-001 | Add local overrides for accented catalog filenames | Keep dev server image URLs resolving |
 | quick-001 | Selected download option; audit found no missing assets | Confirmed catalog assets already present |
+| 26-06 | Keep catalog sources/dealers in shared panel | Preserve access after tab consolidation |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -62,7 +63,6 @@ Next Phase: Phase 27 (Plan 01)
 - Test gap: no dedicated Playwright E2E for therapist session deltas/cooldown
 
 ### Blockers/Concerns Carried Forward
-- Catalog and Vault are still separate tabs; consolidate into a single purchase surface.
 - Catalog cards should be the sole purchase flow for watches.
 - Vault information needs to be merged into the Catalog surface.
 
@@ -73,7 +73,7 @@ Next Phase: Phase 27 (Plan 01)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-28T23:08:22Z
-Stopped at: Completed 26-05-PLAN.md
+Last session: 2026-01-29T02:21:37Z
+Stopped at: Completed 26-06-PLAN.md
 
 Resume file: None
