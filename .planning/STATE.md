@@ -60,7 +60,7 @@ Next Phase: None (Phase complete)
 | 29-06 | None - followed plan as specified | No deviations |
 | 30-01 | Set first workshop prestige legacy jump to 2.25x | Target ~3x faster second run while keeping cap |
 | 30-04 | None - followed plan as specified (checkpoint approved via UAT evidence) | Verified via 30-UAT.md artifacts |
-| 31-01 | None - followed plan as specified | No deviations |
+| 31-01 | Reframe upgrades to affect enjoyment (not dollars) and apply events to both enjoyment + cash | Close v3.0 audit gaps while keeping career-first cash economy |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -79,7 +79,7 @@ Next Phase: None (Phase complete)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-30T16:03:05Z
-Stopped at: Completed 31-03-PLAN.md
+Last session: 2026-01-30T16:12:21Z
+Stopped at: Phase 31 complete (rate clarity gap closure)
 
 Resume file: None

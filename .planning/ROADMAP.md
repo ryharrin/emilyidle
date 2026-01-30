@@ -439,10 +439,12 @@ Tighten Workshop/Atelier presentation and tune bonuses for better pacing; refres
 **Goal:** Rates and rate previews match actual accrual; upgrades no longer claim cash multipliers and instead affect non-cash progression.
 **Depends on:** Phase 30
 **Gap Closure:** v3.0 milestone audit gaps (upgrade previews, event multiplier wiring).
-**Plans:** 0 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 31 to break down)
+- [x] 31-01-PLAN.md — Apply event multiplier to cash accrual and cash rate breakdown
+- [x] 31-02-PLAN.md — Reframe upgrades to affect enjoyment (not dollars) + make previews event-truthful
+- [x] 31-03-PLAN.md — Add unit coverage for event cash accrual + upgrade enjoyment deltas; fix planning traceability
 
 **Success criteria:**
 1. Buying an upgrade produces a visible, measurable change (e.g. Enjoyment/sec) and the preview matches reality.
