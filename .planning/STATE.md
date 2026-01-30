@@ -13,9 +13,9 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 Phase: 30 of 30 (Workshop/Atelier + Docs)
 Plan: 1 of 4
 Status: In progress
-Last activity: 2026-01-30 — Completed 30-02-PLAN.md
-Progress: ███████████ 97%
-Next Phase: Phase 30 (Plan 01)
+Last activity: 2026-01-30 — Completed 30-01-PLAN.md
+Progress: ███████████ 98%
+Next Phase: Phase 30 (Plan 02)
 
 ## Accumulated Context
 
@@ -58,6 +58,7 @@ Next Phase: Phase 30 (Plan 01)
 | 26-06 | Keep catalog sources/dealers in shared panel | Preserve access after tab consolidation |
 | 27-06 | Start fresh saves with 1 career point and passive career XP | Avoid progression deadlock before track unlock |
 | 29-06 | None - followed plan as specified | No deviations |
+| 30-01 | Set first workshop prestige legacy jump to 2.25x | Target ~3x faster second run while keeping cap |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -75,7 +76,7 @@ Next Phase: Phase 30 (Plan 01)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-30T03:30:20Z
-Stopped at: Completed 30-02-PLAN.md
+Last session: 2026-01-30T03:42:46Z
+Stopped at: Completed 30-01-PLAN.md
 
 Resume file: None
