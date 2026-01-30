@@ -2,6 +2,8 @@ import React from "react";
 
 import { PrestigeIcon } from "../icons/coreIcons";
 import { PrestigeSummary } from "../components/PrestigeSummary";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
 import { WorkshopCraftingSection } from "./WorkshopCraftingSection";
 import { buildWorkshopPrestigeSummary } from "../prestigeSummary";
 
@@ -125,6 +127,13 @@ export function WorkshopTab({
                         {formatMoneyFromCents(nextBlueprintProgress.cashEarnedDuringEtaCents)}
                       </p>
                     </div>
+                  </div>
+                  <div className="inline-icon-button">
+                    <ExplainButton
+                      sectionId={HELP_SECTION_IDS.atelierReset}
+                      label="Explain Atelier reset"
+                    />
+                    <span className="muted">Faster run: Atelier upgrades + Prestige legacy.</span>
                   </div>
                   <fieldset className="workshop-cta">
                     <legend className="visually-hidden">Reset atelier</legend>
