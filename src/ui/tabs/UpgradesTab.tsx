@@ -8,10 +8,10 @@ import {
   canBuyMaisonUpgrade,
   canBuyUpgrade,
   canBuyWorkshopUpgrade,
+  getEffectiveCashRateCentsPerSec,
   getEnjoymentRateCentsPerSec,
   getMilestoneRequirementLabel,
   getMilestoneUnlockProgressDetail,
-  getTotalCashRateCentsPerSec,
   getUpgradePriceCents,
   isUpgradeUnlocked,
   shouldShowUnlockTag,
@@ -34,6 +34,7 @@ type PurchaseMeta = {
 type UpgradesTabProps = {
   isActive: boolean;
   state: GameState;
+  currentEventMultiplier: number;
   upgrades: ReadonlyArray<UpgradeDefinition>;
   workshopUpgrades: ReadonlyArray<WorkshopUpgradeDefinition>;
   maisonUpgrades: ReadonlyArray<MaisonUpgradeDefinition>;
@@ -47,11 +48,15 @@ type RatePreview = {
   afterEnjoyment: number;
 };
 
-const buildRatePreview = (state: GameState, nextState: GameState): RatePreview => {
-  const beforeCash = getTotalCashRateCentsPerSec(state);
-  const afterCash = getTotalCashRateCentsPerSec(nextState);
-  const beforeEnjoyment = getEnjoymentRateCentsPerSec(state);
-  const afterEnjoyment = getEnjoymentRateCentsPerSec(nextState);
+const buildRatePreview = (
+  state: GameState,
+  nextState: GameState,
+  eventMultiplier: number,
+): RatePreview => {
+  const beforeCash = getEffectiveCashRateCentsPerSec(state, eventMultiplier);
+  const afterCash = getEffectiveCashRateCentsPerSec(nextState, eventMultiplier);
+  const beforeEnjoyment = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
+  const afterEnjoyment = getEnjoymentRateCentsPerSec(nextState) * eventMultiplier;
 
   return { beforeCash, afterCash, beforeEnjoyment, afterEnjoyment };
 };
@@ -108,6 +113,7 @@ const renderPreviewDetails = (preview: RatePreview) => (
 export function UpgradesTab({
   isActive,
   state,
+  currentEventMultiplier,
   upgrades,
   workshopUpgrades,
   maisonUpgrades,
@@ -168,7 +174,7 @@ export function UpgradesTab({
                     : formatCount(unlockDetail.threshold)
                   : "0";
                 const nextState = buyUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState);
+                const preview = buildRatePreview(state, nextState, currentEventMultiplier);
 
                 return (
                   <div className="card upgrade-card" key={upgrade.id} data-testid="upgrade-card">
@@ -247,7 +253,7 @@ export function UpgradesTab({
                   return "Permanent upgrade";
                 })();
                 const nextState = buyWorkshopUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState);
+                const preview = buildRatePreview(state, nextState, currentEventMultiplier);
 
                 return (
                   <div
@@ -312,7 +318,7 @@ export function UpgradesTab({
                   return "Permanent upgrade";
                 })();
                 const nextState = buyMaisonUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState);
+                const preview = buildRatePreview(state, nextState, currentEventMultiplier);
 
                 return (
                   <div

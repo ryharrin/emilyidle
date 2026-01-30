@@ -1240,6 +1240,7 @@ export default function App() {
         <UpgradesTab
           isActive={activeTab === "upgrades"}
           state={state}
+          currentEventMultiplier={currentEventMultiplier}
           upgrades={upgrades}
           workshopUpgrades={workshopUpgrades}
           maisonUpgrades={maisonUpgrades}
