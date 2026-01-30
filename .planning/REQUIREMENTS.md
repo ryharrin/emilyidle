@@ -9,50 +9,50 @@ Requirements for this milestone (v3.0 Catalog-First Economy & Interactions).
 
 ### Catalog-First Shop
 
-- [ ] **CATALOG-01**: User lands on the catalog purchase surface by default (fresh save; existing saves behave predictably).
-- [ ] **CATALOG-02**: User can buy watches directly from catalog entries (price, owned count, and lock reasons visible).
-- [ ] **CATALOG-03**: Catalog is the primary place to buy watches; purchase CTAs are easy to find and clearly prioritized.
-- [ ] **CATALOG-04**: Help tips relevant to buying and progression are accessible within the catalog experience.
+- [x] **CATALOG-01**: User lands on the catalog purchase surface by default (fresh save; existing saves behave predictably).
+- [x] **CATALOG-02**: User can buy watches directly from catalog entries (price, owned count, and lock reasons visible).
+- [x] **CATALOG-03**: Catalog is the primary place to buy watches; purchase CTAs are easy to find and clearly prioritized.
+- [x] **CATALOG-04**: Help tips relevant to buying and progression are accessible within the catalog experience.
 
 ### Navigation & Surfaces
 
-- [ ] **NAV-01**: Upgrades are accessible from a dedicated tab/surface separate from the catalog purchase flow.
+- [x] **NAV-01**: Upgrades are accessible from a dedicated tab/surface separate from the catalog purchase flow.
 
 ### Economy & Career
 
-- [ ] **ECON-01**: Cash is earned through the career progression system (vault/watch ownership does not generate cash).
-- [ ] **ECON-02**: Owned watches primarily provide enjoyment/memories value (not a parallel cash faucet).
-- [ ] **CAREER-01**: Career progression has additional depth (paths/specializations) and remains usable from the beginning.
-- [ ] **CAREER-02**: Therapist session rules are revised: the first session is free (no enjoyment cost), subsequent sessions spend enjoyment.
+- [x] **ECON-01**: Cash is earned through the career progression system (vault/watch ownership does not generate cash).
+- [x] **ECON-02**: Owned watches primarily provide enjoyment/memories value (not a parallel cash faucet).
+- [x] **CAREER-01**: Career progression has additional depth (paths/specializations) and remains usable from the beginning.
+- [x] **CAREER-02**: Therapist session rules are revised: the first session is free (no enjoyment cost), subsequent sessions spend enjoyment.
 
 ### Watch Models & Inventory
 
 - [x] **WATCH-01**: Purchasable watches are specific models (real brands/models), not generic tiers.
 - [x] **WATCH-02**: Buying duplicates of the same model applies diminishing returns to enjoyment/memories gains after the first.
-- [ ] **WATCH-03**: User can wear exactly one watch at a time; each watch provides a distinct, visible bonus when worn.
+- [x] **WATCH-03**: User can wear exactly one watch at a time; each watch provides a distinct, visible bonus when worn.
 
 ### Interactions & Mini-Games
 
-- [ ] **ACT-01**: Winding interaction has richer feedback (success/failure cues) and clearly communicates rewards.
-- [ ] **ACT-02**: Winding interaction includes a visible winding animation.
-- [ ] **ACT-03**: Winding interaction is more interactive (player timing/skill matters beyond button choice).
-- [ ] **ACT-04**: Winding interaction is only available for non-automatic watches.
-- [ ] **ACT-05**: Automatic watches have at least one distinct interaction mini-game (e.g., setting time/date or changing strap).
+- [x] **ACT-01**: Winding interaction has richer feedback (success/failure cues) and clearly communicates rewards.
+- [x] **ACT-02**: Winding interaction includes a visible winding animation.
+- [x] **ACT-03**: Winding interaction is more interactive (player timing/skill matters beyond button choice).
+- [x] **ACT-04**: Winding interaction is only available for non-automatic watches.
+- [x] **ACT-05**: Automatic watches have at least one distinct interaction mini-game (e.g., setting time/date or changing strap).
 
 ### Workshop / Atelier UX & Balance
 
-- [ ] **WORK-01**: Workshop dismantle UI is hidden until the workshop system is unlocked.
-- [ ] **WORK-02**: Atelier view shows how much money is needed for the next blueprint.
-- [ ] **BAL-01**: Atelier bonuses are tuned so the second vault run is meaningfully faster than the first (material progression pacing improvement).
+- [x] **WORK-01**: Workshop dismantle UI is hidden until the workshop system is unlocked.
+- [x] **WORK-02**: Atelier view shows how much money is needed for the next blueprint.
+- [x] **BAL-01**: Atelier bonuses are tuned so the second vault run is meaningfully faster than the first (material progression pacing improvement).
 
 ### Upgrades & Clarity
 
-- [ ] **CLAR-05**: Upgrades clearly show the effect they will have on currency rates (cash/enjoyment) before buying.
+- [x] **CLAR-05**: Upgrades clearly show the effect they will have on currency rates (cash/enjoyment) before buying.
 
 ### Help & Documentation
 
-- [ ] **HELP-01**: Help documentation explains the dual-currency system and career progression mechanics in detail.
-- [ ] **HELP-02**: Help sections are updated to reflect the v3.0 catalog-first economy and interaction mechanics.
+- [x] **HELP-01**: Help documentation explains the dual-currency system and career progression mechanics in detail.
+- [x] **HELP-02**: Help sections are updated to reflect the v3.0 catalog-first economy and interaction mechanics.
 
 ## v2.1 Requirements
 
@@ -115,29 +115,30 @@ Deferred to a future milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CATALOG-01 | Phase 26 | Pending |
-| CATALOG-02 | Phase 26 | Pending |
-| CATALOG-03 | Phase 26 | Pending |
-| CATALOG-04 | Phase 26 | Pending |
-| NAV-01 | Phase 27 | Pending |
-| ECON-01 | Phase 27 | Pending |
-| ECON-02 | Phase 27 | Pending |
-| CAREER-01 | Phase 27 | Pending |
-| CAREER-02 | Phase 27 | Pending |
+| CATALOG-01 | Phase 26 | Complete |
+| CATALOG-02 | Phase 26 | Complete |
+| CATALOG-03 | Phase 26 | Complete |
+| CATALOG-04 | Phase 26 | Complete |
+| NAV-01 | Phase 27 | Complete |
+| ECON-01 | Phase 27 | Complete |
+| ECON-02 | Phase 27 | Complete |
+| CAREER-01 | Phase 27 | Complete |
+| CAREER-02 | Phase 27 | Complete |
 | WATCH-01 | Phase 25 | Complete |
 | WATCH-02 | Phase 25 | Complete |
 | WATCH-03 | Phase 28 | Pending |
-| ACT-01 | Phase 29 | Pending |
-| ACT-02 | Phase 29 | Pending |
-| ACT-03 | Phase 29 | Pending |
-| ACT-04 | Phase 29 | Pending |
-| ACT-05 | Phase 29 | Pending |
-| WORK-01 | Phase 30 | Pending |
-| WORK-02 | Phase 30 | Pending |
-| BAL-01 | Phase 30 | Pending |
-| CLAR-05 | Phase 27 | Pending |
-| HELP-01 | Phase 30 | Pending |
-| HELP-02 | Phase 30 | Pending |
+| WATCH-03 | Phase 28 | Complete |
+| ACT-01 | Phase 29 | Complete |
+| ACT-02 | Phase 29 | Complete |
+| ACT-03 | Phase 29 | Complete |
+| ACT-04 | Phase 29 | Complete |
+| ACT-05 | Phase 29 | Complete |
+| WORK-01 | Phase 30 | Complete |
+| WORK-02 | Phase 30 | Complete |
+| BAL-01 | Phase 30 | Complete |
+| CLAR-05 | Phase 27 | Complete |
+| HELP-01 | Phase 30 | Complete |
+| HELP-02 | Phase 30 | Complete |
 | GUIDE-01 | Phase 20 | Pending |
 | GUIDE-02 | Phase 21 | Pending |
 | GUIDE-03 | Phase 21 | Pending |
@@ -161,4 +162,4 @@ Deferred to a future milestone.
 
 ---
 *Requirements defined: 2026-01-25*
-*Last updated: 2026-01-27 after v3.0 requirement definition*
+*Last updated: 2026-01-30 after v3.0 completion (Phase 30)*
