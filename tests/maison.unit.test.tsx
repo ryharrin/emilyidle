@@ -145,9 +145,9 @@ describe("maison prestige", () => {
       ...seededState,
       workshopPrestigeCount: 1,
     };
-    expect(getPrestigeLegacyMultiplier(withWorkshopPrestige)).toBeCloseTo(1.05, 8);
-    expect(getRawIncomeRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseIncome * 1.05, 6);
-    expect(getEnjoymentRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseEnjoyment * 1.05, 6);
+    expect(getPrestigeLegacyMultiplier(withWorkshopPrestige)).toBeCloseTo(2.25, 8);
+    expect(getRawIncomeRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseIncome * 2.25, 6);
+    expect(getEnjoymentRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseEnjoyment * 2.25, 6);
 
     const withHeritage = {
       ...seededState,

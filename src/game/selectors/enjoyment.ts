@@ -53,7 +53,9 @@ export function getPrestigeLegacyMultiplier(state: GameState): number {
     ? Math.max(0, Math.floor(state.maisonHeritage))
     : 0;
 
-  const atelierLegacy = Math.pow(1.05, workshopPrestigeCount);
+  const workshopJump = workshopPrestigeCount >= 1 ? 2.25 : 1;
+  const workshopCompounding = Math.pow(1.05, Math.max(0, workshopPrestigeCount - 1));
+  const atelierLegacy = workshopJump * workshopCompounding;
   const maisonLegacy = Math.pow(1.03, maisonHeritage);
 
   return Math.min(10, atelierLegacy * maisonLegacy);

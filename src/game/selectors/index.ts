@@ -360,6 +360,50 @@ export function getWorkshopPrestigeGain(state: GameState): number {
   );
 }
 
+export type WorkshopNextBlueprintProgress = {
+  currentBlueprintGain: number;
+  nextBlueprintGain: number;
+  nextEnjoymentThresholdCents: number;
+  enjoymentRemainingCents: number;
+  etaSeconds: number | null;
+  cashEarnedDuringEtaCents: number;
+};
+
+export function getWorkshopNextBlueprintProgress(state: GameState): WorkshopNextBlueprintProgress {
+  const enjoyment = getEnjoymentCents(state);
+  const currentBlueprintGain = getWorkshopPrestigeGain(state);
+  const nextBlueprintGain = currentBlueprintGain + 1;
+  const maisonBonus = getMaisonLineBlueprintBonus(state);
+  const craftedMultiplier = getCraftedBoostPrestigeMultiplier(state);
+  const currentBaseGain = Math.max(
+    0,
+    Math.floor((enjoyment / WORKSHOP_PRESTIGE_THRESHOLD_CENTS) ** 0.5),
+  );
+
+  let nextBaseGain = currentBaseGain;
+  while (Math.floor((nextBaseGain + maisonBonus) * craftedMultiplier) < nextBlueprintGain) {
+    nextBaseGain += 1;
+  }
+
+  const nextEnjoymentThresholdCents = WORKSHOP_PRESTIGE_THRESHOLD_CENTS * nextBaseGain ** 2;
+  const enjoymentRemainingCents = Math.max(0, Math.ceil(nextEnjoymentThresholdCents - enjoyment));
+  const enjoymentRate = getEnjoymentRateCentsPerSec(state);
+  const etaSeconds = enjoymentRate > 0 ? Math.ceil(enjoymentRemainingCents / enjoymentRate) : null;
+  const cashEarnedDuringEtaCents =
+    etaSeconds === null
+      ? 0
+      : Math.max(0, Math.floor(getTotalCashRateCentsPerSec(state) * etaSeconds));
+
+  return {
+    currentBlueprintGain,
+    nextBlueprintGain,
+    nextEnjoymentThresholdCents,
+    enjoymentRemainingCents,
+    etaSeconds,
+    cashEarnedDuringEtaCents,
+  };
+}
+
 export function canWorkshopPrestige(state: GameState): boolean {
   return getWorkshopPrestigeGain(state) > 0;
 }
