@@ -136,7 +136,7 @@ export const CATALOG_TIER_BONUSES: CatalogTierBonusDefinition[] = [
   {
     id: "starter",
     name: "Starter archive",
-    description: "Archive 3 starter references to boost cash flow.",
+    description: "Archive 3 starter references to boost enjoyment output.",
     requiredCount: 3,
     incomeMultiplier: 1.03,
   },
@@ -150,7 +150,7 @@ export const CATALOG_TIER_BONUSES: CatalogTierBonusDefinition[] = [
   {
     id: "chronograph",
     name: "Chronograph dossier",
-    description: "Collect 3 chronograph references for a lasting cash lift.",
+    description: "Collect 3 chronograph references for a lasting enjoyment lift.",
     requiredCount: 3,
     incomeMultiplier: 1.07,
   },
