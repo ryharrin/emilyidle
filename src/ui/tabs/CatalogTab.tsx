@@ -73,6 +73,7 @@ type CatalogPurchasePanelProps = Omit<CatalogTabProps, "isActive"> & {
   showBalance?: boolean;
   nowMs?: number;
   onInteract?: (itemId: WatchItemId) => void;
+  atelierUnlocked?: boolean;
 };
 
 export function CatalogPurchasePanel({
@@ -102,6 +103,7 @@ export function CatalogPurchasePanel({
   showBalance = false,
   nowMs,
   onInteract,
+  atelierUnlocked = true,
 }: CatalogPurchasePanelProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
   const craftingPartsPerWatch = getCraftingPartsPerWatch();
@@ -518,7 +520,9 @@ export function CatalogPurchasePanel({
 
               const isWorn = state.wornWatchId === entry.id;
               const canWear = modelOwned > 0 && !isWorn;
-              const canDismantle = modelOwned > 0 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
+              const canDismantle =
+                atelierUnlocked && modelOwned > 1 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
+              const showDismantle = (craftingPartsPerWatch[tierId] ?? 0) > 0;
               const powerReservePercent = Math.round(getPowerReserveForItem(state, tierId) * 100);
               return (
                 <article
@@ -662,14 +666,24 @@ export function CatalogPurchasePanel({
                             {interactionLabel}
                           </button>
                         )}
-                        <button
-                          type="button"
-                          className="secondary"
-                          disabled={!canDismantle}
-                          onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
-                        >
-                          Dismantle
-                        </button>
+                        {showDismantle &&
+                          (atelierUnlocked ? (
+                            <button
+                              type="button"
+                              className="secondary"
+                              disabled={!canDismantle}
+                              onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
+                            >
+                              Dismantle
+                            </button>
+                          ) : (
+                            <div className="dismantle-locked">
+                              <button type="button" className="secondary" disabled>
+                                Dismantle
+                              </button>
+                              <span className="muted">Unlocks with Atelier reset.</span>
+                            </div>
+                          ))}
                       </div>
                     )}
                     {canShowInteract && interactionHint && (
@@ -760,7 +774,9 @@ export function CatalogPurchasePanel({
 
                   const isWorn = state.wornWatchId === entry.id;
                   const canWear = modelOwned > 0 && !isWorn;
-                  const canDismantle = modelOwned > 0 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
+                  const canDismantle =
+                    atelierUnlocked && modelOwned > 1 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
+                  const showDismantle = (craftingPartsPerWatch[tierId] ?? 0) > 0;
                   const powerReservePercent = Math.round(
                     getPowerReserveForItem(state, tierId) * 100,
                   );
@@ -914,14 +930,26 @@ export function CatalogPurchasePanel({
                                 {interactionLabel}
                               </button>
                             )}
-                            <button
-                              type="button"
-                              className="secondary"
-                              disabled={!canDismantle}
-                              onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
-                            >
-                              Dismantle
-                            </button>
+                            {showDismantle &&
+                              (atelierUnlocked ? (
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  disabled={!canDismantle}
+                                  onClick={() =>
+                                    onPurchase(dismantleWatchModel(state, entry.id, 1))
+                                  }
+                                >
+                                  Dismantle
+                                </button>
+                              ) : (
+                                <div className="dismantle-locked">
+                                  <button type="button" className="secondary" disabled>
+                                    Dismantle
+                                  </button>
+                                  <span className="muted">Unlocks with Atelier reset.</span>
+                                </div>
+                              ))}
                           </div>
                         )}
                         {canShowInteract && interactionHint && (

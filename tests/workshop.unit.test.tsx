@@ -89,9 +89,9 @@ describe("workshop prestige", () => {
       },
     };
 
-    const nextState = dismantleItem(seededState, "classic", 2);
-    expect(nextState.items.classic).toBe(0);
-    expect(getCraftingParts(nextState)).toBe(4);
+    const nextState = dismantleItem(seededState, "classic", 1);
+    expect(nextState.items.classic).toBe(1);
+    expect(getCraftingParts(nextState)).toBe(2);
   });
 
   it("spends parts when crafting boosts", () => {

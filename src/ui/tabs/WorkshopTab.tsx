@@ -2,17 +2,18 @@ import React from "react";
 
 import { PrestigeIcon } from "../icons/coreIcons";
 import { PrestigeSummary } from "../components/PrestigeSummary";
+import { WorkshopCraftingSection } from "./WorkshopCraftingSection";
 import { buildWorkshopPrestigeSummary } from "../prestigeSummary";
 
 import {
   buyWorkshopUpgrade,
   canBuyWorkshopUpgrade,
-  dismantleItem,
   getEnjoymentThresholdLabel,
-  getItemCount,
+  getWorkshopNextBlueprintProgress,
   getWorkshopPrestigeThresholdCents,
   prestigeWorkshop,
 } from "../../game/state";
+import { formatMoneyFromCents } from "../../game/format";
 import type {
   GameState,
   WatchItemDefinition,
@@ -73,6 +74,13 @@ export function WorkshopTab({
   renderCraftingRecipes,
   renderCraftingBoosts,
 }: WorkshopTabProps) {
+  const nextBlueprintProgress = getWorkshopNextBlueprintProgress(state);
+  const etaLabel =
+    nextBlueprintProgress.etaSeconds === null
+      ? "ETA unavailable"
+      : nextBlueprintProgress.etaSeconds < 60
+        ? `${nextBlueprintProgress.etaSeconds}s`
+        : `${Math.ceil(nextBlueprintProgress.etaSeconds / 60)}m`;
   return (
     <section id="workshop" role="tabpanel" aria-labelledby="workshop-tab" hidden={!isActive}>
       {isActive && (
@@ -105,6 +113,17 @@ export function WorkshopTab({
                     <div>
                       <p className="workshop-label">Current gain</p>
                       <p className="workshop-value">+{workshopPrestigeGain} Blueprints</p>
+                    </div>
+                    <div>
+                      <p className="workshop-label">Next blueprint</p>
+                      <p className="workshop-value">
+                        {formatMoneyFromCents(nextBlueprintProgress.enjoymentRemainingCents)}{" "}
+                        enjoyment remaining
+                      </p>
+                      <p className="muted">
+                        {etaLabel} · Cash during ETA{" "}
+                        {formatMoneyFromCents(nextBlueprintProgress.cashEarnedDuringEtaCents)}
+                      </p>
                     </div>
                   </div>
                   <fieldset className="workshop-cta">
@@ -231,60 +250,16 @@ export function WorkshopTab({
               )}
             </section>
           )}
-          <section className="panel workshop-crafting" data-testid="workshop-crafting">
-            <h3>Crafting workshop</h3>
-            <p className="muted">
-              Break down watches into parts, then craft permanent vault boosts.
-            </p>
-            <div className="results-count" data-testid="workshop-crafting-parts">
-              {craftingParts} parts
-            </div>
-            <div className="workshop-crafting-section" data-testid="workshop-dismantle">
-              <p className="workshop-label">Dismantle watches</p>
-              <p className="muted">Convert owned watches into parts for recipes.</p>
-              <div className="card-stack" data-testid="workshop-dismantle-list">
-                {watchItems.map((item) => {
-                  const owned = getItemCount(state, item.id);
-                  const partsPerWatch = craftingPartsPerWatch[item.id] ?? 0;
-                  const canDismantle = owned > 0 && partsPerWatch > 0;
-                  return (
-                    <div
-                      className="card"
-                      key={item.id}
-                      data-testid="workshop-dismantle-card"
-                      data-item-id={item.id}
-                    >
-                      <div className="card-header">
-                        <div>
-                          <h4>{item.name}</h4>
-                          <p>{partsPerWatch} parts per watch</p>
-                        </div>
-                        <div>{owned} owned</div>
-                      </div>
-                      <div className="card-actions">
-                        <button
-                          type="button"
-                          className="secondary"
-                          disabled={!canDismantle}
-                          onClick={() => onPurchase(dismantleItem(state, item.id, 1))}
-                        >
-                          Dismantle
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="workshop-crafting-section">
-              <p className="workshop-label">Recipes</p>
-              {renderCraftingRecipes("workshop-crafting-recipes")}
-            </div>
-            <div className="workshop-crafting-section">
-              <p className="workshop-label">Active boosts</p>
-              {renderCraftingBoosts("workshop-crafting-boosts")}
-            </div>
-          </section>
+          <WorkshopCraftingSection
+            state={state}
+            showWorkshopPanel={showWorkshopPanel}
+            craftingParts={craftingParts}
+            watchItems={watchItems}
+            craftingPartsPerWatch={craftingPartsPerWatch}
+            onPurchase={onPurchase}
+            renderCraftingRecipes={renderCraftingRecipes}
+            renderCraftingBoosts={renderCraftingBoosts}
+          />
         </div>
       )}
     </section>

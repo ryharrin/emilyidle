@@ -153,7 +153,7 @@ export function dismantleItem(state: GameState, id: WatchItemId, quantity = 1): 
   }
 
   const owned = getItemCount(state, id);
-  if (owned < quantity) {
+  if (owned < quantity || owned - quantity < 1) {
     return state;
   }
 
@@ -580,12 +580,12 @@ export function dismantleWatchModel(state: GameState, modelId: string, quantity 
 
   const tierId = getWatchModelTierId(modelId);
   const owned = state.watchModels[modelId] ?? 0;
-  if (owned < quantity) {
+  if (owned < quantity || owned - quantity < 1) {
     return state;
   }
 
   const tierOwned = getItemCount(state, tierId);
-  if (tierOwned < quantity) {
+  if (tierOwned < quantity || tierOwned - quantity < 1) {
     return state;
   }
 

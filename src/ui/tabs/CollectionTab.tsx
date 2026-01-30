@@ -8,6 +8,7 @@ import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/form
 import {
   buyMaisonLine,
   canBuyMaisonLine,
+  canWorkshopPrestige,
   getAchievementUnlockProgressDetail,
   getEventStatusLabel,
   getMilestoneUnlockProgressDetail,
@@ -178,6 +179,8 @@ export function CollectionTab({
   const watchModelById = new Map(watchModels.map((model) => [model.id, model]));
   const wornModel = state.wornWatchId ? (watchModelById.get(state.wornWatchId) ?? null) : null;
   const [wornPickerOpen, setWornPickerOpen] = React.useState(false);
+  const atelierUnlocked =
+    canWorkshopPrestige(state) || state.workshopPrestigeCount > 0 || state.workshopBlueprints > 0;
   const ownedWearableModels = watchModels
     .filter((model) => getWatchModelOwnedCount(state, model.id) > 0)
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
@@ -421,6 +424,7 @@ export function CollectionTab({
                 nowMs={nowMs}
                 onInteract={onInteract}
                 showBalance
+                atelierUnlocked={atelierUnlocked}
               />
             </section>
             {showMaisonLines && (

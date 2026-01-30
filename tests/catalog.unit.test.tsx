@@ -1573,9 +1573,10 @@ describe("atelier crafting UI", () => {
     const seededState = {
       ...baseState,
       enjoymentCents: 640_000,
+      workshopBlueprints: 1,
       items: {
         ...baseState.items,
-        tourbillon: 2,
+        tourbillon: 3,
       },
     };
 
@@ -1619,11 +1620,12 @@ describe("atelier crafting UI", () => {
 
     await user.click(dismantleButton);
     expect(screen.getByTestId("workshop-crafting-parts").textContent).toContain("8 parts");
-    expect(tourbillonCard.textContent).toContain("1 owned");
+    expect(tourbillonCard.textContent).toContain("2 owned");
 
     await user.click(dismantleButton);
     expect(screen.getByTestId("workshop-crafting-parts").textContent).toContain("16 parts");
-    expect(tourbillonCard.textContent).toContain("0 owned");
+    expect(tourbillonCard.textContent).toContain("1 owned");
+    expect(dismantleButton).toBeDisabled();
 
     const recipes = screen.getByTestId("workshop-crafting-recipes");
     const polishedToolsHeading = within(recipes).getByRole("heading", {
