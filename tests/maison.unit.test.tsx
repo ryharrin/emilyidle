@@ -384,7 +384,7 @@ describe("maison prestige", () => {
     expect(getWorkshopPrestigeGain(lineState)).toBe(2);
   });
 
-  it("applies watch ability multipliers to cash only", () => {
+  it("applies watch ability multipliers to cash and enjoyment", () => {
     const baseState = createInitialState();
     const starterModelId = getModelIdForTier("starter");
     const chronographModelId = getModelIdForTier("chronograph");
@@ -459,8 +459,9 @@ describe("maison prestige", () => {
       getWatchItems().map((item) => [item.id, getWatchItemEnjoymentRateCentsPerSec(item)]),
     );
     const expectedEnjoyment =
-      (enjoymentRates.get("starter") ?? 0) * getDuplicateRewardSum(10) +
-      (enjoymentRates.get("chronograph") ?? 0) * getDuplicateRewardSum(5);
+      ((enjoymentRates.get("starter") ?? 0) * getDuplicateRewardSum(10) +
+        (enjoymentRates.get("chronograph") ?? 0) * getDuplicateRewardSum(5)) *
+      getWatchAbilityIncomeMultiplier(stackedHigh);
     expect(getEnjoymentRateCentsPerSec(stackedHigh)).toBe(expectedEnjoyment);
   });
 
