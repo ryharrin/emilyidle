@@ -134,13 +134,16 @@ describe("rate breakdown selectors", () => {
       },
     };
 
-    const breakdown = getCashRateBreakdown(seededState);
+    const eventMultiplier = 1.25;
+    const breakdown = getCashRateBreakdown(seededState, eventMultiplier);
 
     expect(breakdown.totalCentsPerSec).toBeCloseTo(
-      getEffectiveCashRateCentsPerSec(seededState, 1),
+      getEffectiveCashRateCentsPerSec(seededState, eventMultiplier),
       6,
     );
     expect(breakdown.careerAddends.some((term) => term.id === "career-salary")).toBe(true);
     expect(breakdown.multiplierTerms.some((term) => term.id === "event")).toBe(true);
+    const eventTerm = breakdown.multiplierTerms.find((term) => term.id === "event");
+    expect(eventTerm?.multiplier).toBe(eventMultiplier);
   });
 });
