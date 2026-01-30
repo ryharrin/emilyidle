@@ -51,21 +51,21 @@ export const WORKSHOP_UPGRADES: ReadonlyArray<WorkshopUpgradeDefinition> = [
   {
     id: "etched-ledgers",
     name: "Etched ledgers",
-    description: "Blueprinted accounting boosts every sale.",
+    description: "Blueprinted accounting boosts vault enjoyment.",
     blueprintCost: 2,
     incomeMultiplier: 1.08,
   },
   {
     id: "vault-calibration",
     name: "Vault calibration",
-    description: "Better vault tuning lifts the income softcap.",
+    description: "Better vault tuning lifts the vault softcap.",
     blueprintCost: 4,
     softcapMultiplier: 1.25,
   },
   {
     id: "heritage-templates",
     name: "Heritage templates",
-    description: "Prestige patterns keep income stronger under the softcap.",
+    description: "Prestige patterns keep enjoyment stronger under the softcap.",
     blueprintCost: 6,
     softcapExponentBonus: 0.07,
   },
@@ -98,7 +98,7 @@ export const MAISON_UPGRADES: ReadonlyArray<MaisonUpgradeDefinition> = [
   {
     id: "global-vitrine",
     name: "Global vitrine",
-    description: "International vitrines loosen the income softcap.",
+    description: "International vitrines loosen the vault softcap.",
     currency: "reputation",
     cost: 4,
     softcapMultiplier: 1.2,
@@ -109,7 +109,7 @@ export const MAISON_LINES: ReadonlyArray<MaisonLineDefinition> = [
   {
     id: "atelier-line",
     name: "Atelier line",
-    description: "Unify the atelier workflow for steady cash gains.",
+    description: "Unify the atelier workflow for steady enjoyment gains.",
     currency: "heritage",
     cost: 5,
     incomeMultiplier: 1.1,

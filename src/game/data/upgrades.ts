@@ -4,7 +4,7 @@ export const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
   {
     id: "polishing-tools",
     name: "Polishing tools",
-    description: "Refined finishing yields more revenue per piece.",
+    description: "Refined finishing yields more enjoyment per piece.",
     basePriceCents: 500,
     priceGrowth: 1.6,
     incomeMultiplierPerLevel: 0.05,
@@ -12,7 +12,7 @@ export const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
   {
     id: "assembly-jigs",
     name: "Assembly jigs",
-    description: "Speed up production with repeatable fixtures.",
+    description: "Repeatable fixtures keep vault progress moving faster.",
     basePriceCents: 5_000,
     priceGrowth: 1.7,
     incomeMultiplierPerLevel: 0.08,
@@ -21,7 +21,7 @@ export const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
   {
     id: "guild-contracts",
     name: "Guild contracts",
-    description: "Exclusive partnerships compound prestige earnings.",
+    description: "Exclusive partnerships compound prestige-driven enjoyment.",
     basePriceCents: 50_000,
     priceGrowth: 1.8,
     incomeMultiplierPerLevel: 0.12,
@@ -30,7 +30,7 @@ export const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
   {
     id: "archive-guides",
     name: "Archive guides",
-    description: "Cataloged references deepen vault earnings.",
+    description: "Cataloged references deepen vault enjoyment.",
     basePriceCents: 85_000,
     priceGrowth: 1.85,
     incomeMultiplierPerLevel: 0.1,

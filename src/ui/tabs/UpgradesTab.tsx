@@ -130,7 +130,7 @@ export function UpgradesTab({
               <p className="eyebrow">Upgrades</p>
               <h2>Vault improvements</h2>
               <p className="muted">
-                Compare rate changes before committing to cash, Atelier, or Maison upgrades.
+                Compare rate changes before committing to vault, Atelier, or Maison upgrades.
               </p>
               <div className="inline-icon-button">
                 <ExplainButton sectionId={HELP_SECTION_IDS.upgrades} label="Explain upgrades" />
@@ -142,9 +142,9 @@ export function UpgradesTab({
           <section className="panel upgrades-group" aria-labelledby="upgrades-cash-title">
             <header className="panel-header">
               <div>
-                <p className="eyebrow">Career + cash</p>
+                <p className="eyebrow">Vault enjoyment</p>
                 <h3 id="upgrades-cash-title">Vault upgrades</h3>
-                <p className="muted">Stack steady cash gains with transparent rate previews.</p>
+                <p className="muted">Spend cash to lift enjoyment growth with clear previews.</p>
               </div>
             </header>
             <div className="card-stack" data-testid="upgrades-cash-list">
@@ -179,7 +179,9 @@ export function UpgradesTab({
                       </div>
                       <div className="muted">Level {level}</div>
                     </div>
-                    <p>+{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% cash per level</p>
+                    <p>
+                      +{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% enjoyment per level
+                    </p>
                     {renderDeltaChips(preview)}
                     {renderPreviewDetails(preview)}
                     {!unlocked && unlockDetail && (
@@ -231,7 +233,7 @@ export function UpgradesTab({
                 const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
                 const effectLabel = (() => {
                   if (upgrade.incomeMultiplier) {
-                    return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                    return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
                   }
                   if (upgrade.softcapMultiplier) {
                     return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
@@ -299,7 +301,7 @@ export function UpgradesTab({
                     : `${upgrade.cost} Reputation`;
                 const effectLabel = (() => {
                   if (upgrade.incomeMultiplier) {
-                    return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                    return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
                   }
                   if (upgrade.collectionBonusMultiplier) {
                     return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
