@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-01-30 — v3.0 milestone complete; ready to start v3.1
-Progress: ████████████ 100%
-Next Phase: New milestone
+Phase: 33-career-stages-and-permanent-choices
+Plan: 33-02
+Status: 33-02 complete; ready to execute 33-03
+Last activity: 2026-01-30 — completed 33-02 (career stages + permanent choice effects)
+Progress: ███████████░ 99%
+Next Phase: Execute Phase 33 (33-03)
 
 ## Accumulated Context
 
@@ -80,7 +80,7 @@ Next Phase: New milestone
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-30T16:16:42Z
-Stopped at: v3.0 milestone complete; ready to start v3.1
+Last session: 2026-01-30T19:09:52Z
+Stopped at: Completed 33-02-PLAN.md
 
 Resume file: None
