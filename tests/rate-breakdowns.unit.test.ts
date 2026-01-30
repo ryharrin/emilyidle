@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest";
 import {
   createInitialState,
   getCashRateBreakdown,
+  getEffectiveCashRateCentsPerSec,
   getEnjoymentRateBreakdown,
   getEnjoymentRateCentsPerSec,
   getWornWatchEnjoymentMultiplier,
   getWatchModels,
-  getTotalCashRateCentsPerSec,
 } from "../src/game/state";
 
 describe("rate breakdown selectors", () => {
@@ -136,7 +136,11 @@ describe("rate breakdown selectors", () => {
 
     const breakdown = getCashRateBreakdown(seededState);
 
-    expect(breakdown.totalCentsPerSec).toBeCloseTo(getTotalCashRateCentsPerSec(seededState), 6);
+    expect(breakdown.totalCentsPerSec).toBeCloseTo(
+      getEffectiveCashRateCentsPerSec(seededState, 1),
+      6,
+    );
     expect(breakdown.careerAddends.some((term) => term.id === "career-salary")).toBe(true);
+    expect(breakdown.multiplierTerms.some((term) => term.id === "event")).toBe(true);
   });
 });

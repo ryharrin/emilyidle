@@ -852,18 +852,25 @@ export function getEnjoymentRateBreakdown(
 
 export type CashRateBreakdown = {
   careerAddends: RateBreakdownAddendTerm[];
+  multiplierTerms: RateBreakdownMultiplierTerm[];
+  eventMultiplier: number;
   totalCentsPerSec: number;
 };
 
-export function getCashRateBreakdown(state: GameState): CashRateBreakdown {
+export function getCashRateBreakdown(state: GameState, eventMultiplier = 1): CashRateBreakdown {
   const therapistSalaryCentsPerSec = getTherapistCashRateCentsPerSec(state);
   const careerAddends: RateBreakdownAddendTerm[] = [
     { id: "career-salary", label: "Career salary", centsPerSec: therapistSalaryCentsPerSec },
   ];
+  const multiplierTerms: RateBreakdownMultiplierTerm[] = [
+    { id: "event", label: "Event", multiplier: eventMultiplier },
+  ];
 
   return {
     careerAddends,
-    totalCentsPerSec: getTotalCashRateCentsPerSec(state),
+    multiplierTerms,
+    eventMultiplier,
+    totalCentsPerSec: getEffectiveCashRateCentsPerSec(state, eventMultiplier),
   };
 }
 

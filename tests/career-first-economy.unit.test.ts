@@ -4,6 +4,7 @@ import {
   canPerformTherapistSession,
   createInitialState,
   getCashRateBreakdown,
+  getEffectiveCashRateCentsPerSec,
   getEventIncomeMultiplier,
   getTherapistSessionPolicy,
   getTotalCashRateCentsPerSec,
@@ -45,8 +46,13 @@ describe("career-first economy", () => {
     expect(getEventIncomeMultiplier(stateWithWatches, nowMs)).toBeGreaterThan(1);
     expect(watchRate).toBeCloseTo(baseRate, 6);
 
-    const breakdown = getCashRateBreakdown(stateWithWatches);
-    expect(breakdown.totalCentsPerSec).toBeCloseTo(watchRate, 6);
+    const eventMultiplier = getEventIncomeMultiplier(stateWithWatches, nowMs);
+    const effectiveRate = getEffectiveCashRateCentsPerSec(stateWithWatches, eventMultiplier);
+
+    expect(effectiveRate).toBeCloseTo(baseRate * eventMultiplier, 6);
+
+    const breakdown = getCashRateBreakdown(stateWithWatches, eventMultiplier);
+    expect(breakdown.totalCentsPerSec).toBeCloseTo(effectiveRate, 6);
   });
 
   it("honors free-first sessions and cooldown timing", () => {

@@ -37,7 +37,7 @@ type StatsTabProps = {
 
 export function StatsTab({ isActive, state, stats, currentEventMultiplier }: StatsTabProps) {
   const enjoymentRateBreakdown = getEnjoymentRateBreakdown(state, currentEventMultiplier);
-  const cashRateBreakdown = getCashRateBreakdown(state);
+  const cashRateBreakdown = getCashRateBreakdown(state, currentEventMultiplier);
 
   return (
     <section id="stats" role="tabpanel" aria-labelledby="stats-tab" hidden={!isActive}>
@@ -131,6 +131,14 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
                   {term.label}: {formatRateFromCentsPerSec(term.centsPerSec)}
                 </li>
               ))}
+              {currentEventMultiplier !== 1 &&
+                cashRateBreakdown.multiplierTerms
+                  .filter((term) => term.id === "event")
+                  .map((term) => (
+                    <li key={term.id}>
+                      {term.label} x{term.multiplier.toFixed(2)}
+                    </li>
+                  ))}
             </ul>
           </details>
 

@@ -45,7 +45,7 @@ import {
   createInitialState,
   getAchievementProgressRatio,
   getAchievements,
-  getTotalCashRateCentsPerSec,
+  getEffectiveCashRateCentsPerSec,
   getEnjoymentCents,
   getEnjoymentRateCentsPerSec,
   getSoftcapEfficiency,
@@ -584,7 +584,7 @@ export default function App() {
   const stats = useMemo(() => {
     const nowMs = Date.now();
     const eventMultiplier = getEventIncomeMultiplier(state, nowMs);
-    const cashRate = getTotalCashRateCentsPerSec(state);
+    const cashRate = getEffectiveCashRateCentsPerSec(state, eventMultiplier);
     const enjoymentRate = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
 
     return {
