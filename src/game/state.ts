@@ -27,6 +27,7 @@ export type {
   UpgradeId,
   WatchItemDefinition,
   WatchItemId,
+  WatchMovement,
   WorkshopUpgradeDefinition,
   WorkshopUpgradeId,
 } from "./model/types";

@@ -1,11 +1,41 @@
-import { WATCH_ITEMS } from "../data/items";
+import { WATCH_ITEMS, getWatchBucket } from "../data/items";
 import { WATCH_MODELS } from "../data/watchModels";
 import { formatMoneyFromCents } from "../format";
-import type { GameState, WatchItemDefinition } from "../model/types";
+import type { GameState, WatchItemDefinition, WatchItemId } from "../model/types";
 import { getDuplicateRewardSum } from "./duplicates";
 
 const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]));
 const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
+
+const WORN_WATCH_ENJOYMENT_MULTIPLIERS: Record<WatchItemId, number> = {
+  starter: 1.02,
+  classic: 1.05,
+  chronograph: 1.08,
+  tourbillon: 1.12,
+};
+
+function getWornWatchBucketId(state: GameState): WatchItemId | null {
+  const wornId = state.wornWatchId;
+  if (wornId === null) {
+    return null;
+  }
+
+  const model = WATCH_MODEL_LOOKUP.get(wornId);
+  if (model) {
+    return model.tierId;
+  }
+
+  return getWatchBucket(wornId);
+}
+
+export function getWornWatchEnjoymentMultiplier(state: GameState): number {
+  const bucketId = getWornWatchBucketId(state);
+  if (!bucketId) {
+    return 1;
+  }
+
+  return WORN_WATCH_ENJOYMENT_MULTIPLIERS[bucketId];
+}
 
 export function getWatchItemEnjoymentRateCentsPerSec(item: WatchItemDefinition): number {
   return item.enjoymentCentsPerSec;
@@ -50,9 +80,16 @@ export function getEnjoymentRateCentsPerSec(state: GameState): number {
       return total;
     }
 
-    return total + getDuplicateRewardSum(owned) * getWatchItemEnjoymentRateCentsPerSec(tier);
+    const reserveMultiplier =
+      tier.movement === "automatic" ? 1 + 0.5 * (state.powerReserveByItem[tier.id] ?? 0) : 1;
+
+    return (
+      total +
+      getDuplicateRewardSum(owned) * getWatchItemEnjoymentRateCentsPerSec(tier) * reserveMultiplier
+    );
   }, 0);
-  return baseRate * getPrestigeLegacyMultiplier(state);
+
+  return baseRate * getPrestigeLegacyMultiplier(state) * getWornWatchEnjoymentMultiplier(state);
 }
 
 export function getEnjoymentThresholdLabel(cents: number): string {

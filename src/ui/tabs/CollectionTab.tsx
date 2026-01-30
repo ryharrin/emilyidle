@@ -2,28 +2,23 @@ import React from "react";
 
 import { CatalogPurchasePanel, type PurchaseMeta } from "./CatalogTab";
 import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
-import { UnlockHint } from "../components/UnlockHint";
 
 import type { CatalogEntry } from "../../game/catalog";
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
   buyMaisonLine,
   canBuyMaisonLine,
-  dismantleWatchModel,
   getAchievementUnlockProgressDetail,
-  getDuplicateRewardMultiplierForNextPurchase,
   getEventStatusLabel,
   getMilestoneUnlockProgressDetail,
   getMilestoneRequirementLabel,
   getNextDuplicateRewardMultiplier,
   getPrestigeUnlockProgressDetail,
   getUnlockRevealProgressRatio,
-  getWatchItemEnjoymentRateCentsPerSec,
   getWatchModelOwnedCount,
   getWatchModels,
+  setWornWatchId,
   isEventActive,
-  isItemUnlocked,
-  shouldShowUnlockTag,
 } from "../../game/state";
 import type {
   AchievementDefinition,
@@ -146,7 +141,7 @@ export function CollectionTab({
   discoveredCatalogIds,
   catalogEntries,
   hasOwnedCatalogTiers,
-  watchItems,
+  watchItems: _watchItems,
   watchItemLabels,
   autoBuyUnlocked,
   autoBuyEnabled,
@@ -165,7 +160,7 @@ export function CollectionTab({
   craftingParts,
   renderCraftingRecipes,
   renderCraftingBoosts,
-  craftingPartsPerWatch,
+  craftingPartsPerWatch: _craftingPartsPerWatch,
   activeCoachmarks,
   settings,
   persistSettings,
@@ -180,26 +175,12 @@ export function CollectionTab({
 }: CollectionTabProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
   const watchModels = getWatchModels();
-  const watchItemById = new Map(watchItems.map((item) => [item.id, item]));
-  const watchModelsByBrand = new Map<string, typeof watchModels>();
-  const modelOwnedByTier = new Map<WatchItemId, number>();
-  const firstModelByTier = new Map<WatchItemId, string>();
-
-  for (const model of watchModels) {
-    const nextGroup = watchModelsByBrand.get(model.brand) ?? [];
-    watchModelsByBrand.set(model.brand, [...nextGroup, model]);
-    modelOwnedByTier.set(
-      model.tierId,
-      (modelOwnedByTier.get(model.tierId) ?? 0) + getWatchModelOwnedCount(state, model.id),
-    );
-    if (!firstModelByTier.has(model.tierId)) {
-      firstModelByTier.set(model.tierId, model.id);
-    }
-  }
-
-  const brandSections = Array.from(watchModelsByBrand.entries()).sort((a, b) =>
-    a[0].localeCompare(b[0]),
-  );
+  const watchModelById = new Map(watchModels.map((model) => [model.id, model]));
+  const wornModel = state.wornWatchId ? (watchModelById.get(state.wornWatchId) ?? null) : null;
+  const [wornPickerOpen, setWornPickerOpen] = React.useState(false);
+  const ownedWearableModels = watchModels
+    .filter((model) => getWatchModelOwnedCount(state, model.id) > 0)
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   const nextUnlockItems: NextUnlockItem[] = [];
   const collectionListCta = {
@@ -337,8 +318,8 @@ export function CollectionTab({
       {isActive && (
         <>
           <div>
-            <h2>Collection</h2>
-            <p className="muted">Acquire pieces to grow enjoyment and cash.</p>
+            <h2>Vault</h2>
+            <p className="muted">Build your vault: buy, wear, and interact with watches.</p>
             <NextUnlockPanel items={nextUnlockItems} />
             <div className="collection-setup" data-testid="collection-setup">
               <fieldset className="automation-toggle" data-testid="automation-controls">
@@ -437,6 +418,8 @@ export function CollectionTab({
                 catalogEntries={catalogEntries}
                 hasOwnedCatalogTiers={hasOwnedCatalogTiers}
                 onPurchase={onPurchase}
+                nowMs={nowMs}
+                onInteract={onInteract}
                 showBalance
               />
             </section>
@@ -500,118 +483,31 @@ export function CollectionTab({
                 </div>
               </div>
             )}
-            <div id="collection-list" className="card-stack">
-              {brandSections.map(([brand, models]) => (
-                <section className="panel collection-brand" key={brand}>
-                  <header className="panel-header collection-brand-header">
-                    <div>
-                      <p className="eyebrow">Brand</p>
-                      <h3>{brand}</h3>
-                    </div>
-                    <div className="results-count">{models.length} models</div>
-                  </header>
-                  <div className="card-stack">
-                    {models.map((model) => {
-                      const tierItem = watchItemById.get(model.tierId);
-                      const modelOwned = getWatchModelOwnedCount(state, model.id);
-                      const tierOwned = state.items[model.tierId] ?? 0;
-                      const totalModelOwned = modelOwnedByTier.get(model.tierId) ?? 0;
-                      const isFallbackOwner =
-                        totalModelOwned === 0 &&
-                        tierOwned > 0 &&
-                        firstModelByTier.get(model.tierId) === model.id;
-                      const owned = isFallbackOwner ? tierOwned : modelOwned;
-                      const unlocked = tierItem ? isItemUnlocked(state, tierItem.id) : true;
-                      const unlockMilestoneId = tierItem?.unlockMilestoneId;
-                      const unlockDetail = unlockMilestoneId
-                        ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
-                        : null;
-                      const unlockUsesCents = unlockMilestoneId === "showcase";
-                      const unlockCurrentLabel = unlockDetail
-                        ? unlockUsesCents
-                          ? formatMoneyFromCents(unlockDetail.current)
-                          : formatCount(unlockDetail.current)
-                        : "0";
-                      const unlockThresholdLabel = unlockDetail
-                        ? unlockUsesCents
-                          ? formatMoneyFromCents(unlockDetail.threshold)
-                          : formatCount(unlockDetail.threshold)
-                        : "0";
-                      const partsPerWatch = tierItem
-                        ? (craftingPartsPerWatch[tierItem.id] ?? 0)
-                        : 0;
-                      const duplicateMultiplier = isFallbackOwner
-                        ? getDuplicateRewardMultiplierForNextPurchase(owned)
-                        : getNextDuplicateRewardMultiplier(state, model.id);
-                      const canInteract = owned > 0;
-                      const canDismantle = modelOwned > 0 && partsPerWatch > 0;
-
-                      return (
-                        <div className="card" key={model.id}>
-                          <div className="card-header">
-                            <div>
-                              <h3>{model.displayName}</h3>
-                              {tierItem && <p>{tierItem.description}</p>}
-                            </div>
-                            <div className="muted">Owned {owned}</div>
-                          </div>
-                          {tierItem && (
-                            <p>
-                              {formatRateFromCentsPerSec(
-                                getWatchItemEnjoymentRateCentsPerSec(tierItem),
-                              )}{" "}
-                              enjoyment each ·{" "}
-                              {formatRateFromCentsPerSec(tierItem.incomeCentsPerSec)} dollars each ·
-                              Memories {formatMoneyFromCents(tierItem.collectionValueCents)}
-                            </p>
-                          )}
-                          <p className="muted">
-                            Owned {owned} | Duplicate: {duplicateMultiplier.toFixed(2)}x rewards
-                          </p>
-                          <p className="muted">Dismantle value: {partsPerWatch} parts</p>
-                          {!unlocked && unlockDetail && (
-                            <div data-testid={`locked-item-hint-${model.id}`}>
-                              <UnlockHint
-                                eyebrow="Locked"
-                                title="Unlock requirement"
-                                detail={unlockDetail.label}
-                                currentLabel={unlockCurrentLabel}
-                                thresholdLabel={unlockThresholdLabel}
-                                ratio={unlockDetail.ratio}
-                              />
-                            </div>
-                          )}
-                          <div className="card-actions">
-                            <button
-                              type="button"
-                              className="secondary"
-                              disabled={!canInteract}
-                              onClick={() => onInteract(model.tierId)}
-                            >
-                              Interact
-                            </button>
-                            <button
-                              type="button"
-                              className="secondary"
-                              disabled={!canDismantle}
-                              onClick={() => onPurchase(dismantleWatchModel(state, model.id, 1))}
-                            >
-                              Dismantle
-                            </button>
-                            {!unlocked &&
-                              unlockMilestoneId &&
-                              shouldShowUnlockTag(state, unlockMilestoneId) && (
-                                <div className="unlock-tag">
-                                  Unlocking soon · {getMilestoneRequirementLabel(unlockMilestoneId)}
-                                </div>
-                              )}
-                          </div>
-                        </div>
-                      );
-                    })}
+            <div className="card-stack">
+              <section className="panel" data-testid="worn-watch-summary">
+                <header className="panel-header">
+                  <div>
+                    <p className="eyebrow">Equipment</p>
+                    <h3>Worn watch</h3>
+                    <p className="muted">{wornModel ? wornModel.displayName : "None"}</p>
                   </div>
-                </section>
-              ))}
+                  <div className="card-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="worn-watch-change"
+                      onClick={() => setWornPickerOpen(true)}
+                    >
+                      Change
+                    </button>
+                  </div>
+                </header>
+                <p className="muted">
+                  {wornModel
+                    ? "Equipped. Switching replaces the previous worn watch."
+                    : "Wear one owned watch to gain an enjoyment bonus."}
+                </p>
+              </section>
             </div>
           </div>
 
@@ -791,6 +687,60 @@ export function CollectionTab({
               {renderCraftingRecipes("crafting-recipes")}
               {renderCraftingBoosts("crafting-boosts")}
             </div>
+
+            {wornPickerOpen && (
+              <div
+                className="nostalgia-modal"
+                data-testid="worn-watch-picker-modal"
+                role="dialog"
+                aria-modal="true"
+              >
+                <div className="nostalgia-modal-card">
+                  <h3>Choose a watch to wear</h3>
+                  <p className="muted">
+                    Wearing a watch applies an enjoyment bonus. Choosing a different watch replaces
+                    the previous worn watch.
+                  </p>
+                  <div className="card-stack">
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="worn-watch-option-none"
+                      onClick={() => {
+                        onPurchase(setWornWatchId(state, null));
+                        setWornPickerOpen(false);
+                      }}
+                    >
+                      Wear none
+                    </button>
+                    {ownedWearableModels.map((model) => (
+                      <button
+                        key={model.id}
+                        type="button"
+                        className={state.wornWatchId === model.id ? "" : "secondary"}
+                        data-testid={`worn-watch-option-${model.id}`}
+                        onClick={() => {
+                          onPurchase(setWornWatchId(state, model.id));
+                          setWornPickerOpen(false);
+                        }}
+                      >
+                        {model.displayName}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="card-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="worn-watch-picker-close"
+                      onClick={() => setWornPickerOpen(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </aside>
         </>
       )}

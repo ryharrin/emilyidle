@@ -342,7 +342,7 @@ Move the watch purchase UX into the Catalog tab and make the Catalog the primary
 **Goal:** Cash economy is career-driven; upgrades are separated and transparent.
 **Depends on:** Phase 26
 **Requirements:** ECON-01, ECON-02, CAREER-01, CAREER-02, NAV-01, CLAR-05
-**Plans:** 5/6 plans complete
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 27-01-PLAN.md — Add career tracks + progression tree state + save persistence
@@ -350,7 +350,7 @@ Plans:
 - [x] 27-03-PLAN.md — Make Career visible from start and add progression tree UI + messaging
 - [x] 27-04-PLAN.md — Add dedicated Upgrades tab with before/after previews; remove Vault duplication
 - [x] 27-05-PLAN.md — Add unit + e2e coverage for career-first economy and upgrades surface
-- [ ] 27-06-PLAN.md — Human verify career-first economy + upgrades preview UX
+- [x] 27-06-PLAN.md — Human verify career-first economy + upgrades preview UX
 
 **Success criteria:**
 1. Career progression is usable from the beginning and offers specialization/path depth the user can choose.
@@ -367,16 +367,16 @@ Rework cash generation to align with a career-first economy and split upgrade br
 **Goal:** User can wear exactly one watch and see its unique bonus.
 **Depends on:** Phase 27
 **Requirements:** WATCH-03
-**Plans:** 0/7 plans complete
+**Plans:** 7/7 plans complete
 
 Plans:
-- [ ] 28-01-PLAN.md — Add worn watch state + persistence sanitization
-- [ ] 28-02-PLAN.md — Implement worn-watch enjoyment bonus + breakdown line
-- [ ] 28-03-PLAN.md — Add Vault equip UX + worn summary + picker modal
-- [ ] 28-04-PLAN.md — Add unit tests for worn watch persistence + breakdown
-- [ ] 28-05-PLAN.md — Add Help content + ExplainButton for worn-watch bonus
-- [ ] 28-06-PLAN.md — Add Playwright coverage for wear-one flow + stats bonus
-- [ ] 28-07-PLAN.md — Human verify wear-one UX on desktop + mobile
+- [x] 28-01-PLAN.md — Add worn watch state + persistence sanitization
+- [x] 28-02-PLAN.md — Implement worn-watch enjoyment bonus + breakdown line
+- [x] 28-03-PLAN.md — Add Vault equip UX + worn summary + picker modal
+- [x] 28-04-PLAN.md — Add unit tests for worn watch persistence + breakdown
+- [x] 28-05-PLAN.md — Add Help content + ExplainButton for worn-watch bonus
+- [x] 28-06-PLAN.md — Add Playwright coverage for wear-one flow + stats bonus
+- [x] 28-07-PLAN.md — Human verify wear-one UX on desktop + mobile
 
 **Success criteria:**
 1. User can select exactly one owned watch to wear; UI indicates which is worn.
@@ -391,15 +391,15 @@ Add a single equip slot and a clear, player-visible bonus per worn watch that in
 **Goal:** Watch-type interactions work (winding + automatics) with clear feedback.
 **Depends on:** Phase 28
 **Requirements:** ACT-01, ACT-02, ACT-03, ACT-04, ACT-05
-**Plans:** 0/6 plans complete
+**Plans:** 6/6 plans complete
 
 Plans:
-- [ ] 29-01-PLAN.md — Add movement typing + per-item cooldown/power reserve state + reward actions
-- [ ] 29-02-PLAN.md — Replace wind session with timing-bar winding mini-game (animation + tiers)
-- [ ] 29-03-PLAN.md — Add automatic mini-game + power reserve reward (decay + enjoyment effect)
-- [ ] 29-04-PLAN.md — Add quartz time-setting mini-game + complete interaction gating
-- [ ] 29-05-PLAN.md — Update unit + e2e coverage for interactions (stable selectors)
-- [ ] 29-06-PLAN.md — Human verify interaction feel + clarity (desktop + mobile)
+- [x] 29-01-PLAN.md — Add movement typing + per-item cooldown/power reserve state + reward actions
+- [x] 29-02-PLAN.md — Replace wind session with timing-bar winding mini-game (animation + tiers)
+- [x] 29-03-PLAN.md — Add automatic mini-game + power reserve reward (decay + enjoyment effect)
+- [x] 29-04-PLAN.md — Add quartz time-setting mini-game + complete interaction gating
+- [x] 29-05-PLAN.md — Update unit + e2e coverage for interactions (stable selectors)
+- [x] 29-06-PLAN.md — Human verify interaction feel + clarity (desktop + mobile)
 
 **Success criteria:**
 1. Winding is available only for non-automatic watches; automatic watches do not show winding.

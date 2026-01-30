@@ -10,6 +10,7 @@ export const HELP_SECTION_IDS = {
   rates: "rates",
   catalogShop: "catalog-shop",
   nostalgiaUnlocks: "nostalgia-unlocks",
+  wornWatchBonus: "worn-watch-bonus",
 } as const;
 
 export const HELP_SECTIONS: HelpSection[] = [
@@ -56,6 +57,19 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Rates are shown as base + modifiers.",
       "Events can multiply both dollars/sec and enjoyment/sec.",
       "Softcap reduces vault dollars/sec above a threshold; therapist salary is separate.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.wornWatchBonus,
+    title: "Worn watch bonus",
+    body: [
+      "You can wear one owned watch at a time. Wearing a watch increases your enjoyment/sec.",
+      "The bonus depends on the worn watch bucket:",
+      "Starter: x1.02 enjoyment",
+      "Classic: x1.05 enjoyment",
+      "Chronograph: x1.08 enjoyment",
+      "Tourbillon: x1.12 enjoyment",
+      "There is no scaling: switching watches updates immediately, and wearing none removes the bonus.",
     ],
   },
   {

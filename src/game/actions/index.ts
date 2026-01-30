@@ -60,6 +60,64 @@ import {
 } from "../selectors";
 
 const THERAPIST_SESSION_XP_GAIN = 10;
+const THERAPIST_PASSIVE_XP_PER_SEC = 10;
+
+export function applyTherapistPassiveProgress(state: GameState, dtMs: number): GameState {
+  const clampedDtMs = Math.max(0, Math.floor(dtMs));
+  if (clampedDtMs <= 0) {
+    return state;
+  }
+
+  const xpGain = Math.floor((THERAPIST_PASSIVE_XP_PER_SEC * clampedDtMs) / 1_000);
+  if (xpGain <= 0) {
+    return state;
+  }
+
+  const career = state.therapistCareer;
+  let nextLevel = career.level;
+  let nextXp = career.xp + xpGain;
+  let levelsGained = 0;
+
+  while (nextXp >= getTherapistXpRequiredForNextLevel(nextLevel)) {
+    nextXp -= getTherapistXpRequiredForNextLevel(nextLevel);
+    nextLevel += 1;
+    levelsGained += 1;
+  }
+
+  if (levelsGained <= 0) {
+    return {
+      ...state,
+      therapistCareer: {
+        ...career,
+        xp: nextXp,
+      },
+    };
+  }
+
+  return {
+    ...state,
+    therapistCareer: {
+      ...career,
+      level: nextLevel,
+      xp: nextXp,
+      pointsAvailable: career.pointsAvailable + levelsGained,
+    },
+  };
+}
+
+export function setWornWatchId(state: GameState, modelId: string | null): GameState {
+  const wornWatchId =
+    typeof modelId === "string" && (state.watchModels[modelId] ?? 0) > 0 ? modelId : null;
+
+  if (state.wornWatchId === wornWatchId) {
+    return state;
+  }
+
+  return {
+    ...state,
+    wornWatchId,
+  };
+}
 
 export function discoverCatalogEntries(state: GameState, ids: CatalogEntryId[]): GameState {
   if (ids.length === 0) {
@@ -192,7 +250,7 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
       xp: 0,
       nextAvailableAtMs: 0,
       activeTrackId: null,
-      pointsAvailable: 0,
+      pointsAvailable: 1,
       spentNodes: {},
       freeSessionAvailable: true,
     },
@@ -652,3 +710,5 @@ function isAchievementMet(state: GameState, achievement: AchievementDefinition):
 
   return state.workshopPrestigeCount >= requirement.threshold;
 }
+
+export * from "./interactions";

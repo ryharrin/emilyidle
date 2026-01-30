@@ -968,35 +968,14 @@ describe("catalog ownership tabs", () => {
     expect(titles.some((text) => text?.includes("Atelier nights"))).toBe(false);
   });
 
-  it("renders trusted dealers panel under the catalog", async () => {
+  it("does not render trusted dealers panel under the catalog", async () => {
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
 
     await user.click(vaultTab);
 
-    const dealersPanel = screen.getByTestId("catalog-dealers");
-    expect(
-      within(dealersPanel).getByRole("heading", { name: /Trusted dealers \(external\)/i }),
-    ).toBeTruthy();
-    expect(
-      within(dealersPanel).getByText(
-        /Dealer names are provided for reference only; no affiliation or endorsement is implied\./i,
-      ),
-    ).toBeTruthy();
-
-    const dealerList = within(dealersPanel).getByTestId("dealer-list");
-    const dealers = within(dealerList)
-      .getAllByRole("listitem")
-      .map((item) => item.textContent);
-
-    expect(dealers).toEqual([
-      "Hodinkee",
-      "Crown & Caliber",
-      "WatchBox",
-      "Bob's Watches",
-      "Tourneau",
-    ]);
+    expect(screen.queryByTestId("catalog-dealers")).toBeNull();
   });
 
   it("shows owned tier entries when items are owned", async () => {
@@ -1054,7 +1033,8 @@ describe("wind minigame", () => {
           ...baseState,
           items: {
             ...baseState.items,
-            starter: 1,
+            chronograph: 1,
+            tourbillon: 1,
           },
           upgrades: {
             ...baseState.upgrades,
@@ -1079,76 +1059,111 @@ describe("wind minigame", () => {
   it("opens and closes the wind session modal and resets progress", async () => {
     const user = userEvent.setup();
 
-    const interactButtons = screen.getAllByRole("button", { name: /^Interact$/ });
-    const enabledInteract = interactButtons.find(
+    const chronographButtons = screen.getAllByTestId("vault-interact-chronograph");
+    const chronographInteract = chronographButtons.find(
       (button) => !(button as HTMLButtonElement).disabled,
     );
-    expect(enabledInteract).toBeTruthy();
+    expect(chronographInteract).toBeTruthy();
 
-    await user.click(enabledInteract as HTMLElement);
+    await user.click(chronographInteract as HTMLElement);
 
-    expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByTestId("wind-progress").textContent).toContain("Round 0 / 5");
-    expect(screen.getByTestId("wind-progress").textContent).toContain("Tension 0 / 10");
+    expect(screen.getByTestId("winding-modal")).toBeTruthy();
+    expect(screen.queryByTestId("winding-outcome")).toBeNull();
 
-    const steadyButton = screen.getByTestId("wind-steady");
-    await user.click(steadyButton);
-    await user.click(steadyButton);
+    await user.click(screen.getByTestId("winding-stop"));
+    expect(screen.getByTestId("winding-outcome").textContent).toMatch(/enjoyment/i);
 
-    expect(screen.getByTestId("wind-progress").textContent).toContain("Round 2 / 5");
-    expect(screen.getByTestId("wind-progress").textContent).toContain("Tension 2 / 10");
+    await user.click(screen.getByTestId("winding-done"));
+    expect(screen.queryByTestId("winding-modal")).toBeNull();
 
-    await user.click(screen.getByTestId("wind-close"));
-    expect(screen.queryByRole("dialog")).toBeNull();
+    const ownershipTabs = screen.getByRole("tablist", { name: /Catalog ownership/i });
+    await user.click(within(ownershipTabs).getByRole("tab", { name: /^Owned$/i }));
 
-    await user.click(enabledInteract as HTMLElement);
-    expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(screen.getByTestId("wind-progress").textContent).toContain("Round 0 / 5");
-    expect(screen.getByTestId("wind-progress").textContent).toContain("Tension 0 / 10");
+    const tourbillonButtons = screen.getAllByTestId("vault-interact-tourbillon");
+    const tourbillonInteract = tourbillonButtons.find(
+      (button) => !(button as HTMLButtonElement).disabled,
+    );
+    expect(tourbillonInteract).toBeTruthy();
+
+    await user.click(tourbillonInteract as HTMLElement);
+    expect(screen.getByTestId("winding-modal")).toBeTruthy();
+    expect(screen.queryByTestId("winding-outcome")).toBeNull();
+
+    await user.click(screen.getByTestId("winding-close"));
+    expect(screen.queryByTestId("winding-modal")).toBeNull();
+  });
+});
+
+describe("quartz minigame", () => {
+  beforeEach(async () => {
+    localStorage.clear();
+
+    const baseState = createInitialState();
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: {
+          ...baseState,
+          items: {
+            ...baseState.items,
+            starter: 1,
+          },
+          upgrades: {
+            ...baseState.upgrades,
+            "archive-guides": 0,
+          },
+        },
+      }),
+    );
+
+    render(<App />);
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    await user.click(vaultTab);
   });
 
-  it("activates the wind-up event after completing 5 rounds", async () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("opens the quartz modal and applies a cash reward", async () => {
     const user = userEvent.setup();
 
-    const interactButtons = screen.getAllByRole("button", { name: /^Interact$/ });
-    const enabledInteract = interactButtons.find(
-      (button) => !(button as HTMLButtonElement).disabled,
-    );
-    expect(enabledInteract).toBeTruthy();
-
-    await user.click(enabledInteract as HTMLElement);
-
-    const steadyButton = screen.getByTestId("wind-steady");
-    for (let i = 0; i < 5; i += 1) {
-      await user.click(steadyButton);
+    const beforeRaw = localStorage.getItem("emily-idle:save");
+    expect(beforeRaw).toBeTruthy();
+    const before = beforeRaw
+      ? (JSON.parse(beforeRaw) as { state: { currencyCents: number } })
+      : null;
+    if (!before) {
+      return;
     }
 
-    expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByText(/Current multiplier x1\.15\./i)).toBeTruthy();
-  });
+    const quartzButtons = screen.getAllByTestId("vault-interact-starter");
+    const quartzInteract = quartzButtons.find((button) => !(button as HTMLButtonElement).disabled);
+    expect(quartzInteract).toBeTruthy();
 
-  it("ends early on slip and applies the base wind-up reward", async () => {
-    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.99);
+    await user.click(quartzInteract as HTMLElement);
+    expect(screen.getByTestId("quartz-modal")).toBeTruthy();
 
-    try {
-      const user = userEvent.setup();
+    await user.click(screen.getByTestId("quartz-action"));
+    expect(screen.getByTestId("quartz-outcome").textContent).toMatch(/Cash/i);
 
-      const interactButtons = screen.getAllByRole("button", { name: /^Interact$/ });
-      const enabledInteract = interactButtons.find(
-        (button) => !(button as HTMLButtonElement).disabled,
-      );
-      expect(enabledInteract).toBeTruthy();
+    await user.click(screen.getByTestId("quartz-done"));
+    expect(screen.queryByTestId("quartz-modal")).toBeNull();
 
-      await user.click(enabledInteract as HTMLElement);
-
-      const pushButton = screen.getByTestId("wind-push");
-      await user.click(pushButton);
-
-      expect(screen.queryByRole("dialog")).toBeNull();
-      expect(screen.getByText(/Current multiplier x1\.05\./i)).toBeTruthy();
-    } finally {
-      randomSpy.mockRestore();
+    const afterRaw = localStorage.getItem("emily-idle:save");
+    expect(afterRaw).toBeTruthy();
+    const after = afterRaw ? (JSON.parse(afterRaw) as { state: { currencyCents: number } }) : null;
+    if (!after) {
+      return;
     }
+
+    expect(after.state.currencyCents).toBeGreaterThan(before.state.currencyCents);
   });
 });
 

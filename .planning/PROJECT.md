@@ -64,4 +64,4 @@ Shipped v2.0 on 2026-01-25:
 
 ---
 
-*Last updated: 2026-01-27 after v3.0 milestone kickoff*
+*Last updated: 2026-01-30 after Phase 29 (Interactions & Mini-Games)*

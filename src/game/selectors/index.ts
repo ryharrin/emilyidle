@@ -54,11 +54,13 @@ import {
   getEnjoymentCents,
   getEnjoymentRateCentsPerSec,
   getPrestigeLegacyMultiplier,
+  getWornWatchEnjoymentMultiplier,
   getWatchItemEnjoymentRateCentsPerSec,
 } from "./enjoyment";
 import { getDuplicateRewardSum } from "./duplicates";
 
 export * from "./enjoyment";
+export * from "./interactions";
 export * from "./watchModels";
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
@@ -783,8 +785,14 @@ export function getEnjoymentRateBreakdown(
       label: "Prestige legacy",
       multiplier: getPrestigeLegacyMultiplier(state),
     },
-    { id: "event", label: "Event", multiplier: eventMultiplier },
   ];
+
+  const wornMultiplier = getWornWatchEnjoymentMultiplier(state);
+  if (state.wornWatchId !== null && wornMultiplier !== 1) {
+    multiplierTerms.push({ id: "worn-watch", label: "Worn watch", multiplier: wornMultiplier });
+  }
+
+  multiplierTerms.push({ id: "event", label: "Event", multiplier: eventMultiplier });
 
   return {
     baseCentsPerSec,

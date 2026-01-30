@@ -106,7 +106,13 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
             <ul>
               {enjoymentRateBreakdown.multiplierTerms.map((term) => (
                 <li key={term.id}>
-                  {term.label} x{term.multiplier.toFixed(2)}
+                  {term.label} x{term.multiplier.toFixed(2)}{" "}
+                  {term.id === "worn-watch" && (
+                    <ExplainButton
+                      sectionId={HELP_SECTION_IDS.wornWatchBonus}
+                      label="Explain worn watch bonus"
+                    />
+                  )}
                 </li>
               ))}
             </ul>

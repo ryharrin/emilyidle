@@ -61,6 +61,9 @@ export function CareerTab({ isActive, state, nowMs, onPurchase }: CareerTabProps
 
           const statusLabel = (() => {
             if (!sessionPolicy.supportsSessions) {
+              if (!activeTrack && !trackUnlocked) {
+                return `Unlock tracks at level ${TRACK_CHOICE_UNLOCK_LEVEL}`;
+              }
               return activeTrack ? "Sessions unavailable" : "Select a track";
             }
             if (canPerform) {
@@ -204,7 +207,12 @@ export function CareerTab({ isActive, state, nowMs, onPurchase }: CareerTabProps
 
           const sessionCostNote = (() => {
             if (!sessionPolicy.supportsSessions) {
-              return "This track focuses on salary only; sessions are unavailable.";
+              if (!activeTrack && !trackUnlocked) {
+                return `Tracks unlock at level ${TRACK_CHOICE_UNLOCK_LEVEL}. Spend points in Core foundations while your career level rises.`;
+              }
+              return activeTrack
+                ? "This track focuses on salary only; sessions are unavailable."
+                : "Select a sessions track to unlock sessions.";
             }
             const normalCost = formatMoneyFromCents(sessionPolicy.enjoymentCostCents);
             if (career.freeSessionAvailable) {

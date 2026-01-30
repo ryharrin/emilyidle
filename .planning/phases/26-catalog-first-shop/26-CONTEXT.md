@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Make the Catalog tab the primary landing and purchase surface: fresh saves land on Catalog, each catalog entry shows price/owned/CTA or lock reason, the user can buy directly from the entry with immediate ownership feedback, and catalog-relevant help is accessible while browsing/buying.
+Consolidate watch shopping into a single surface: there should not be separate Catalog and Vault tabs. Catalog cards are the purchase surface for watches, and Vault information relevant to buying is merged into that same experience.
 
 </domain>
 
@@ -14,10 +14,17 @@ Make the Catalog tab the primary landing and purchase surface: fresh saves land 
 ## Implementation Decisions
 
 ### Landing behavior
-- Default landing tab: always open Catalog for existing saves (Catalog is the home screen).
-- Fresh save handling: any special "fresh save" forcing is first-session-only (not a long-lived rule).
-- After first purchase: stay on Catalog; ownership updates inline.
-- Deep links: explicit deep link navigation overrides the default Catalog landing.
+- Default landing tab for existing saves: restore the last visited tab.
+- Fresh save handling: force the combined shopping surface on the very first session only.
+- After first purchase: remain on the combined shopping surface; ownership updates inline.
+- Deep links: explicit deep link navigation overrides the default initial landing tab.
+- Invalid or hidden deep links: fall back to the combined shopping surface.
+- Deep links do not update the persisted last-tab preference.
+
+### Catalog/Vault consolidation
+- Primary navigation: remove separate Catalog tab; keep a single tab/surface for watch shopping.
+- Buying watches: catalog cards are the way watches are bought.
+- Information: buying-relevant Vault information is presented alongside catalog cards (no split surface).
 
 ### Catalog entry layout
 - Overall: card grid as primary presentation.
@@ -27,15 +34,26 @@ Make the Catalog tab the primary landing and purchase surface: fresh saves land 
 
 ### Buy + lock UX
 - Confirmation: no confirm modal; single-click purchase.
-- Lock/affordability messaging: inline reason under disabled CTA.
+- Lock/affordability messaging: replace the CTA with the lock reason when gated.
 - Duplicate preview: show next multiplier only (keep rewards math elsewhere).
 - Post-buy feedback: inline updates + small micro-feedback (owned increments, highlight, brief "Purchased").
+
+### Action bar hierarchy
+- Layout: Owned + Price on the left, CTA on the right.
+- Owned label: "N owned".
+- Price label: show value only ("$X", no label).
 
 ### In-context help
 - Entry point: single Help button at top of Catalog (not per-card explain triggers).
 - Surface: open the global Help modal, focused/scrolled to the relevant section.
 - Required topics for Phase 26: duplicates + lock reasons.
 - Intrusiveness: on-demand only; no proactive tips/coachmarks.
+
+### Expandable details
+- Content: short description + compact specs list.
+- Spec count: 4-5 items.
+- Scope: descriptive only (no purchase/gate info).
+- State: remember open/closed per card during the session.
 
 ### Claude's Discretion
 - Exact card styling, spacing, and micro-interactions (as long as it remains readable on desktop + mobile).

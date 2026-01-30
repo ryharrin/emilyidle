@@ -5,6 +5,7 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "starter",
     name: "Starter Quartz",
     description: "Reliable entry pieces to seed the vault.",
+    movement: "quartz",
     basePriceCents: 125,
     priceGrowth: 1.145,
     incomeCentsPerSec: 6,
@@ -15,6 +16,7 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "classic",
     name: "Classic Automatic",
     description: "Self-winding classics with steady demand.",
+    movement: "automatic",
     basePriceCents: 1_800,
     priceGrowth: 1.17,
     incomeCentsPerSec: 36,
@@ -26,6 +28,7 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "chronograph",
     name: "Chronograph",
     description: "Complications that attract serious collectors.",
+    movement: "manual",
     basePriceCents: 12_500,
     priceGrowth: 1.18,
     incomeCentsPerSec: 185,
@@ -37,6 +40,7 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "tourbillon",
     name: "Tourbillon",
     description: "Prestige pieces for the vault centerpiece.",
+    movement: "manual",
     basePriceCents: 150_000,
     priceGrowth: 1.195,
     incomeCentsPerSec: 980,
@@ -61,3 +65,11 @@ export const WATCH_ENJOYMENT_REQUIREMENTS_CENTS: Record<WatchItemId, number> = {
   chronograph: 15_000,
   tourbillon: 60_000,
 };
+
+export function getWatchBucket(id: string): WatchItemId | null {
+  if (id === "starter" || id === "classic" || id === "chronograph" || id === "tourbillon") {
+    return id;
+  }
+
+  return null;
+}

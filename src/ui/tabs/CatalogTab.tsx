@@ -1,6 +1,7 @@
 import React from "react";
 
 import { EmptyStateCTA } from "../components/EmptyStateCTA";
+import { UnlockHint } from "../components/UnlockHint";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 
@@ -9,10 +10,21 @@ import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
 import type { CatalogEntry } from "../../game/catalog";
 import {
   buyWatchModel,
+  dismantleWatchModel,
+  getCraftingPartsPerWatch,
+  getInteractionCooldownRemainingMs,
+  getMilestoneUnlockProgressDetail,
   getNextDuplicateRewardMultiplier,
+  getPowerReserveForItem,
+  getWatchItems,
   getWatchModelOwnedCount,
   getWatchModelPurchaseGate,
+  getWatchModelTierId,
+  getWatchModels,
+  isItemUnlocked,
+  setWornWatchId,
   type GameState,
+  type WatchItemId,
 } from "../../game/state";
 
 type TabId =
@@ -59,6 +71,8 @@ export type PurchaseMeta = {
 
 type CatalogPurchasePanelProps = Omit<CatalogTabProps, "isActive"> & {
   showBalance?: boolean;
+  nowMs?: number;
+  onInteract?: (itemId: WatchItemId) => void;
 };
 
 export function CatalogPurchasePanel({
@@ -86,7 +100,27 @@ export function CatalogPurchasePanel({
   hasOwnedCatalogTiers,
   onPurchase,
   showBalance = false,
+  nowMs,
+  onInteract,
 }: CatalogPurchasePanelProps) {
+  const formatCount = (value: number) => Math.floor(value).toLocaleString();
+  const craftingPartsPerWatch = getCraftingPartsPerWatch();
+  const watchModels = getWatchModels();
+  const watchItems = getWatchItems();
+  const watchItemById = new Map(watchItems.map((item) => [item.id, item]));
+  const modelOwnedByTier = new Map<WatchItemId, number>();
+  const firstModelByTier = new Map<WatchItemId, string>();
+
+  for (const model of watchModels) {
+    modelOwnedByTier.set(
+      model.tierId,
+      (modelOwnedByTier.get(model.tierId) ?? 0) + getWatchModelOwnedCount(state, model.id),
+    );
+    if (!firstModelByTier.has(model.tierId)) {
+      firstModelByTier.set(model.tierId, model.id);
+    }
+  }
+
   const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
   const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
   const purchaseHighlightTimeouts = React.useRef<Map<string, number>>(new Map());
@@ -430,11 +464,62 @@ export function CatalogPurchasePanel({
             {filteredCatalogEntries.map((entry) => {
               const discovered = discoveredCatalogIds.includes(entry.id);
               const tags = getCatalogEntryTags(entry);
-              const ownedCount = getWatchModelOwnedCount(state, entry.id);
+              const tierId = getWatchModelTierId(entry.id);
+              const tierOwned = state.items[tierId] ?? 0;
+              const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
+              const fallbackOwner =
+                totalTierOwned === 0 && tierOwned > 0 && firstModelByTier.get(tierId) === entry.id;
+              const modelOwned = getWatchModelOwnedCount(state, entry.id);
+              const ownedCount = fallbackOwner ? tierOwned : modelOwned;
+              const tierItem = watchItemById.get(tierId);
+              if (!tierItem) {
+                throw new Error(`Missing watch tier definition for ${tierId}`);
+              }
+              const unlocked = isItemUnlocked(state, tierId);
+              const unlockMilestoneId = tierItem.unlockMilestoneId;
+              const unlockDetail = unlockMilestoneId
+                ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+                : null;
+              const unlockUsesCents = unlockMilestoneId === "showcase";
+              const unlockCurrentLabel = unlockDetail
+                ? unlockUsesCents
+                  ? formatMoneyFromCents(unlockDetail.current)
+                  : formatCount(unlockDetail.current)
+                : "0";
+              const unlockThresholdLabel = unlockDetail
+                ? unlockUsesCents
+                  ? formatMoneyFromCents(unlockDetail.threshold)
+                  : formatCount(unlockDetail.threshold)
+                : "0";
               const gate = getWatchModelPurchaseGate(state, entry.id);
               const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
               const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
               const isHighlighted = purchaseHighlights[entry.id];
+
+              const interactionLabel =
+                tierItem.movement === "manual"
+                  ? "Wind crown"
+                  : tierItem.movement === "automatic"
+                    ? "Charge rotor"
+                    : "Set time";
+              const cooldownRemainingMs =
+                typeof nowMs === "number"
+                  ? getInteractionCooldownRemainingMs(state, tierId, nowMs)
+                  : 0;
+              const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
+              const interactionHint =
+                tierOwned <= 0
+                  ? "Own one to interact"
+                  : cooldownSeconds > 0
+                    ? `Cooldown ${cooldownSeconds}s`
+                    : null;
+              const canInteract = interactionHint === null;
+              const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
+
+              const isWorn = state.wornWatchId === entry.id;
+              const canWear = modelOwned > 0 && !isWorn;
+              const canDismantle = modelOwned > 0 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
+              const powerReservePercent = Math.round(getPowerReserveForItem(state, tierId) * 100);
               return (
                 <article
                   key={entry.id}
@@ -478,8 +563,36 @@ export function CatalogPurchasePanel({
                       <p className="catalog-year">{entry.year}</p>
                     </div>
                     {renderCatalogDetails(entry, tags, false)}
+                    {!unlocked && unlockDetail && (
+                      <div data-testid={`locked-item-hint-${entry.id}`}>
+                        <UnlockHint
+                          eyebrow="Locked"
+                          title="Unlock requirement"
+                          detail={unlockDetail.label}
+                          currentLabel={unlockCurrentLabel}
+                          thresholdLabel={unlockThresholdLabel}
+                          ratio={unlockDetail.ratio}
+                        />
+                      </div>
+                    )}
+                    {tierItem.movement === "automatic" && ownedCount > 0 && (
+                      <p className="muted">Power reserve: {powerReservePercent}%</p>
+                    )}
+                    {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
+                      <p className="muted">
+                        Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts
+                      </p>
+                    )}
                     <div className="catalog-action-bar">
                       <div className="catalog-action-meta">
+                        {isWorn && (
+                          <span
+                            className="catalog-equipped"
+                            data-testid={`watch-equipped-${entry.id}`}
+                          >
+                            Equipped
+                          </span>
+                        )}
                         <span className="catalog-owned">{ownedCount} owned</span>
                         <span className="catalog-price">
                           {formatMoneyFromCents(gate.cashPriceCents)}
@@ -488,30 +601,80 @@ export function CatalogPurchasePanel({
                           Next x{duplicateMultiplier.toFixed(2)}
                         </span>
                       </div>
-                      {gate.ok ? (
+                      {(() => {
+                        if (!unlocked) {
+                          return (
+                            <div className="catalog-gate" data-testid={`catalog-gate-${entry.id}`}>
+                              Locked
+                            </div>
+                          );
+                        }
+
+                        if (gate.ok) {
+                          return (
+                            <button
+                              type="button"
+                              data-testid={`catalog-buy-${entry.id}`}
+                              onClick={() => handlePurchase(entry.id)}
+                            >
+                              {buyLabel}
+                            </button>
+                          );
+                        }
+
+                        return (
+                          <div className="catalog-gate" data-testid={`catalog-gate-${entry.id}`}>
+                            {gate.blocksBy === "enjoyment" && (
+                              <>
+                                Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
+                                {gate.enjoymentDeficitCents !== undefined && (
+                                  <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
+                                )}
+                              </>
+                            )}
+                            {gate.blocksBy === "cash" && (
+                              <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    {(canWear || canShowInteract || (craftingPartsPerWatch[tierId] ?? 0) > 0) && (
+                      <div className="card-actions">
+                        {canWear && (
+                          <button
+                            type="button"
+                            className="secondary"
+                            data-testid={`watch-wear-${entry.id}`}
+                            onClick={() => onPurchase(setWornWatchId(state, entry.id))}
+                          >
+                            Wear
+                          </button>
+                        )}
+                        {canShowInteract && (
+                          <button
+                            type="button"
+                            className="secondary"
+                            disabled={!canInteract}
+                            data-testid={`vault-interact-${tierId}`}
+                            onClick={() => onInteract?.(tierId)}
+                          >
+                            {interactionLabel}
+                          </button>
+                        )}
                         <button
                           type="button"
-                          data-testid={`catalog-buy-${entry.id}`}
-                          onClick={() => handlePurchase(entry.id)}
+                          className="secondary"
+                          disabled={!canDismantle}
+                          onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
                         >
-                          {buyLabel}
+                          Dismantle
                         </button>
-                      ) : (
-                        <div className="catalog-gate" data-testid={`catalog-gate-${entry.id}`}>
-                          {gate.blocksBy === "enjoyment" && (
-                            <>
-                              Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
-                              {gate.enjoymentDeficitCents !== undefined && (
-                                <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
-                              )}
-                            </>
-                          )}
-                          {gate.blocksBy === "cash" && (
-                            <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
+                    {canShowInteract && interactionHint && (
+                      <p className="muted interaction-hint">{interactionHint}</p>
+                    )}
                   </div>
                 </article>
               );
@@ -541,11 +704,66 @@ export function CatalogPurchasePanel({
                 {filteredCatalogEntries.map((entry) => {
                   const discovered = discoveredCatalogIds.includes(entry.id);
                   const tags = getCatalogEntryTags(entry);
-                  const ownedCount = getWatchModelOwnedCount(state, entry.id);
+                  const tierId = getWatchModelTierId(entry.id);
+                  const tierOwned = state.items[tierId] ?? 0;
+                  const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
+                  const fallbackOwner =
+                    totalTierOwned === 0 &&
+                    tierOwned > 0 &&
+                    firstModelByTier.get(tierId) === entry.id;
+                  const modelOwned = getWatchModelOwnedCount(state, entry.id);
+                  const ownedCount = fallbackOwner ? tierOwned : modelOwned;
+                  const tierItem = watchItemById.get(tierId);
+                  if (!tierItem) {
+                    throw new Error(`Missing watch tier definition for ${tierId}`);
+                  }
+                  const unlocked = isItemUnlocked(state, tierId);
+                  const unlockMilestoneId = tierItem.unlockMilestoneId;
+                  const unlockDetail = unlockMilestoneId
+                    ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+                    : null;
+                  const unlockUsesCents = unlockMilestoneId === "showcase";
+                  const unlockCurrentLabel = unlockDetail
+                    ? unlockUsesCents
+                      ? formatMoneyFromCents(unlockDetail.current)
+                      : formatCount(unlockDetail.current)
+                    : "0";
+                  const unlockThresholdLabel = unlockDetail
+                    ? unlockUsesCents
+                      ? formatMoneyFromCents(unlockDetail.threshold)
+                      : formatCount(unlockDetail.threshold)
+                    : "0";
                   const gate = getWatchModelPurchaseGate(state, entry.id);
                   const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
                   const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
                   const isHighlighted = purchaseHighlights[entry.id];
+
+                  const interactionLabel =
+                    tierItem.movement === "manual"
+                      ? "Wind crown"
+                      : tierItem.movement === "automatic"
+                        ? "Charge rotor"
+                        : "Set time";
+                  const cooldownRemainingMs =
+                    typeof nowMs === "number"
+                      ? getInteractionCooldownRemainingMs(state, tierId, nowMs)
+                      : 0;
+                  const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
+                  const interactionHint =
+                    tierOwned <= 0
+                      ? "Own one to interact"
+                      : cooldownSeconds > 0
+                        ? `Cooldown ${cooldownSeconds}s`
+                        : null;
+                  const canInteract = interactionHint === null;
+                  const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
+
+                  const isWorn = state.wornWatchId === entry.id;
+                  const canWear = modelOwned > 0 && !isWorn;
+                  const canDismantle = modelOwned > 0 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
+                  const powerReservePercent = Math.round(
+                    getPowerReserveForItem(state, tierId) * 100,
+                  );
                   return (
                     <article
                       key={entry.id}
@@ -589,8 +807,36 @@ export function CatalogPurchasePanel({
                           <p className="catalog-year">{entry.year}</p>
                         </div>
                         {renderCatalogDetails(entry, tags, true)}
+                        {!unlocked && unlockDetail && (
+                          <div data-testid={`locked-item-hint-${entry.id}`}>
+                            <UnlockHint
+                              eyebrow="Locked"
+                              title="Unlock requirement"
+                              detail={unlockDetail.label}
+                              currentLabel={unlockCurrentLabel}
+                              thresholdLabel={unlockThresholdLabel}
+                              ratio={unlockDetail.ratio}
+                            />
+                          </div>
+                        )}
+                        {tierItem.movement === "automatic" && ownedCount > 0 && (
+                          <p className="muted">Power reserve: {powerReservePercent}%</p>
+                        )}
+                        {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
+                          <p className="muted">
+                            Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts
+                          </p>
+                        )}
                         <div className="catalog-action-bar">
                           <div className="catalog-action-meta">
+                            {isWorn && (
+                              <span
+                                className="catalog-equipped"
+                                data-testid={`watch-equipped-${entry.id}`}
+                              >
+                                Equipped
+                              </span>
+                            )}
                             <span className="catalog-owned">{ownedCount} owned</span>
                             <span className="catalog-price">
                               {formatMoneyFromCents(gate.cashPriceCents)}
@@ -599,30 +845,88 @@ export function CatalogPurchasePanel({
                               Next x{duplicateMultiplier.toFixed(2)}
                             </span>
                           </div>
-                          {gate.ok ? (
+                          {(() => {
+                            if (!unlocked) {
+                              return (
+                                <div
+                                  className="catalog-gate"
+                                  data-testid={`catalog-gate-${entry.id}`}
+                                >
+                                  Locked
+                                </div>
+                              );
+                            }
+
+                            if (gate.ok) {
+                              return (
+                                <button
+                                  type="button"
+                                  data-testid={`catalog-buy-${entry.id}`}
+                                  onClick={() => handlePurchase(entry.id)}
+                                >
+                                  {buyLabel}
+                                </button>
+                              );
+                            }
+
+                            return (
+                              <div
+                                className="catalog-gate"
+                                data-testid={`catalog-gate-${entry.id}`}
+                              >
+                                {gate.blocksBy === "enjoyment" && (
+                                  <>
+                                    Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
+                                    {gate.enjoymentDeficitCents !== undefined && (
+                                      <>({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
+                                    )}
+                                  </>
+                                )}
+                                {gate.blocksBy === "cash" && (
+                                  <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                        {(canWear ||
+                          canShowInteract ||
+                          (craftingPartsPerWatch[tierId] ?? 0) > 0) && (
+                          <div className="card-actions">
+                            {canWear && (
+                              <button
+                                type="button"
+                                className="secondary"
+                                data-testid={`watch-wear-${entry.id}`}
+                                onClick={() => onPurchase(setWornWatchId(state, entry.id))}
+                              >
+                                Wear
+                              </button>
+                            )}
+                            {canShowInteract && (
+                              <button
+                                type="button"
+                                className="secondary"
+                                disabled={!canInteract}
+                                data-testid={`vault-interact-${tierId}`}
+                                onClick={() => onInteract?.(tierId)}
+                              >
+                                {interactionLabel}
+                              </button>
+                            )}
                             <button
                               type="button"
-                              data-testid={`catalog-buy-${entry.id}`}
-                              onClick={() => handlePurchase(entry.id)}
+                              className="secondary"
+                              disabled={!canDismantle}
+                              onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
                             >
-                              {buyLabel}
+                              Dismantle
                             </button>
-                          ) : (
-                            <div className="catalog-gate" data-testid={`catalog-gate-${entry.id}`}>
-                              {gate.blocksBy === "enjoyment" && (
-                                <>
-                                  Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
-                                  {gate.enjoymentDeficitCents !== undefined && (
-                                    <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
-                                  )}
-                                </>
-                              )}
-                              {gate.blocksBy === "cash" && (
-                                <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
+                        {canShowInteract && interactionHint && (
+                          <p className="muted interaction-hint">{interactionHint}</p>
+                        )}
                       </div>
                     </article>
                   );
@@ -631,49 +935,6 @@ export function CatalogPurchasePanel({
             )}
           </>
         )}
-      </section>
-      <section className="panel catalog-sources" data-testid="catalog-sources">
-        <h2>Sources &amp; Licenses</h2>
-        <p className="muted">
-          Every image in the archive lists its original source and license for compliance.
-        </p>
-
-        <ul className="sources-list" data-testid="sources-list">
-          {catalogEntries.map((entry) => (
-            <li key={entry.id} data-testid="source-item">
-              <strong className="source-title">
-                {entry.brand} {entry.model}
-              </strong>
-              <span className="muted">{entry.image.attribution}</span>
-              <div className="source-links" data-testid="source-links">
-                <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
-                  Source
-                </a>
-                {entry.image.licenseUrl ? (
-                  <a href={entry.image.licenseUrl} target="_blank" rel="noreferrer">
-                    {entry.image.licenseName}
-                  </a>
-                ) : (
-                  <span>{entry.image.licenseName}</span>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        <div className="panel catalog-dealers" data-testid="catalog-dealers">
-          <h3>Trusted dealers (external)</h3>
-          <p className="muted">
-            Dealer names are provided for reference only; no affiliation or endorsement is implied.
-          </p>
-          <ul className="card-stack" data-testid="dealer-list">
-            {["Hodinkee", "Crown & Caliber", "WatchBox", "Bob's Watches", "Tourneau"].map(
-              (dealer) => (
-                <li key={dealer}>{dealer}</li>
-              ),
-            )}
-          </ul>
-        </div>
       </section>
     </>
   );
@@ -1259,51 +1520,6 @@ export function CatalogTabLegacy({
               </>
             )}
           </section>
-
-          <section className="panel catalog-sources" data-testid="catalog-sources">
-            <h2>Sources &amp; Licenses</h2>
-            <p className="muted">
-              Every image in the archive lists its original source and license for compliance.
-            </p>
-
-            <ul className="sources-list" data-testid="sources-list">
-              {catalogEntries.map((entry) => (
-                <li key={entry.id} data-testid="source-item">
-                  <strong className="source-title">
-                    {entry.brand} {entry.model}
-                  </strong>
-                  <span className="muted">{entry.image.attribution}</span>
-                  <div className="source-links" data-testid="source-links">
-                    <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
-                      Source
-                    </a>
-                    {entry.image.licenseUrl ? (
-                      <a href={entry.image.licenseUrl} target="_blank" rel="noreferrer">
-                        {entry.image.licenseName}
-                      </a>
-                    ) : (
-                      <span>{entry.image.licenseName}</span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="panel catalog-dealers" data-testid="catalog-dealers">
-              <h3>Trusted dealers (external)</h3>
-              <p className="muted">
-                Dealer names are provided for reference only; no affiliation or endorsement is
-                implied.
-              </p>
-              <ul className="card-stack" data-testid="dealer-list">
-                {["Hodinkee", "Crown & Caliber", "WatchBox", "Bob's Watches", "Tourneau"].map(
-                  (dealer) => (
-                    <li key={dealer}>{dealer}</li>
-                  ),
-                )}
-              </ul>
-            </div>
-          </section>
         </>
       )}
     </section>
@@ -1322,50 +1538,6 @@ export function CatalogTab({ isActive, catalogEntries, ...panelProps }: CatalogT
       {isActive && (
         <>
           <CatalogPurchasePanel {...panelProps} catalogEntries={catalogEntries} />
-          <section className="panel catalog-sources" data-testid="catalog-sources">
-            <h2>Sources &amp; Licenses</h2>
-            <p className="muted">
-              Every image in the archive lists its original source and license for compliance.
-            </p>
-
-            <ul className="sources-list" data-testid="sources-list">
-              {catalogEntries.map((entry) => (
-                <li key={entry.id} data-testid="source-item">
-                  <strong className="source-title">
-                    {entry.brand} {entry.model}
-                  </strong>
-                  <span className="muted">{entry.image.attribution}</span>
-                  <div className="source-links" data-testid="source-links">
-                    <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
-                      Source
-                    </a>
-                    {entry.image.licenseUrl ? (
-                      <a href={entry.image.licenseUrl} target="_blank" rel="noreferrer">
-                        {entry.image.licenseName}
-                      </a>
-                    ) : (
-                      <span>{entry.image.licenseName}</span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="panel catalog-dealers" data-testid="catalog-dealers">
-              <h3>Trusted dealers (external)</h3>
-              <p className="muted">
-                Dealer names are provided for reference only; no affiliation or endorsement is
-                implied.
-              </p>
-              <ul className="card-stack" data-testid="dealer-list">
-                {["Hodinkee", "Crown & Caliber", "WatchBox", "Bob's Watches", "Tourneau"].map(
-                  (dealer) => (
-                    <li key={dealer}>{dealer}</li>
-                  ),
-                )}
-              </ul>
-            </div>
-          </section>
         </>
       )}
     </section>

@@ -2,7 +2,7 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-27)
+See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 29 of 30 (Interactions & Mini-Games)
-Plan: 6 of 6
-Status: Phase complete
-Last activity: 2026-01-30 — Completed 29-06-PLAN.md
+Phase: 30 of 30 (Workshop/Atelier + Docs)
+Plan: 0 of 4
+Status: Ready to execute
+Last activity: 2026-01-30 — Phase 29 complete, transitioned to Phase 30
 Progress: ███████████ 96%
 Next Phase: Phase 30 (Plan 01)
 
@@ -75,7 +75,7 @@ Next Phase: Phase 30 (Plan 01)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-30T03:15:43Z
-Stopped at: Completed 29-06-PLAN.md
+Last session: 2026-01-30T03:18:36Z
+Stopped at: Phase 29 complete, ready to execute Phase 30
 
 Resume file: None

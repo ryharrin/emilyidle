@@ -5,7 +5,7 @@ const selectors = {
   income: "#income",
   collectionValue: "#collection-value",
   softcap: "#softcap",
-  collectionCards: "#collection-list .card",
+  catalogCards: '[data-testid="catalog-grid"] [data-testid="catalog-card"]',
   upgradesCallout: '[data-testid="upgrades-callout"]',
   milestoneCards: "#milestone-list .card",
   setBonusCards: "#set-bonus-list .card",
@@ -114,7 +114,7 @@ test.describe("collection loop", () => {
     await expect(page.locator("#enjoyment")).toHaveText(/\$/);
     await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
 
-    await expect(page.locator(selectors.collectionCards)).toHaveCount(WATCH_MODEL_COUNT);
+    await expect(page.locator(selectors.catalogCards)).toHaveCount(WATCH_MODEL_COUNT);
     await expect(page.locator(selectors.upgradesCallout)).toBeVisible();
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
@@ -356,11 +356,7 @@ test.describe("collection loop", () => {
     expect(filteredCount).toBeLessThanOrEqual(rolexCount);
     await expect(resultsCount).toContainText(`${filteredCount} results`);
 
-    const sourcesList = page.getByTestId("sources-list");
-    await expect(sourcesList.getByTestId("source-item")).toHaveCount(WATCH_MODEL_COUNT);
-    await expect(
-      sourcesList.getByTestId("source-links").first().getByRole("link", { name: "Source" }),
-    ).toBeVisible();
+    await expect(page.getByTestId("catalog-help")).toBeVisible();
   });
 
   test("catalog image assets load", async ({ page }) => {
@@ -679,11 +675,11 @@ test.describe("collection loop", () => {
     await expect(page.getByText(/Income x/).first()).toBeVisible();
   });
 
-  test("wind session completes and applies rewards (wind)", async ({ page }) => {
+  test("winding interaction completes and applies rewards", async ({ page }) => {
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 0,
-      items: { starter: 1 },
+      items: { chronograph: 1 },
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
@@ -691,6 +687,9 @@ test.describe("collection loop", () => {
 
     await page.addInitScript(
       ({ state, lastSimulatedAtMs }) => {
+        (window as unknown as { __EMILY_IDLE_TEST_MODE__?: boolean }).__EMILY_IDLE_TEST_MODE__ =
+          true;
+
         const payload = {
           version: 2,
           savedAt: new Date(0).toISOString(),
@@ -705,37 +704,102 @@ test.describe("collection loop", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Vault" }).click();
 
-    const ownedCard = page.locator("#collection-list .card", { hasText: "Owned 1" }).first();
-    const interactButton = ownedCard.getByRole("button", { name: "Interact" });
+    const before = await page.evaluate(() => {
+      const saved = window.localStorage.getItem("emily-idle:save");
+      const parsed = saved ? JSON.parse(saved) : null;
+      return parsed?.state?.enjoymentCents ?? 0;
+    });
+
+    const interactButton = page
+      .locator('[data-testid="vault-interact-chronograph"]:not([disabled])')
+      .first();
     await interactButton.scrollIntoViewIfNeeded();
     await expect(interactButton).toBeEnabled();
     await interactButton.click();
 
-    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByTestId("winding-modal")).toBeVisible();
+    await page.getByTestId("winding-stop").click();
+    await expect(page.getByTestId("winding-outcome")).toBeVisible();
+    await page.getByTestId("winding-done").click();
+    await expect(page.getByTestId("winding-modal")).toHaveCount(0);
 
-    const steady = page.getByTestId("wind-steady");
-    for (let i = 0; i < 5; i += 1) {
-      await steady.click();
-    }
-
-    await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(page.getByText(/Current multiplier x1\.15\./i)).toBeVisible();
-
-    const result = await page.evaluate(() => {
+    const after = await page.evaluate(() => {
       const saved = window.localStorage.getItem("emily-idle:save");
       const parsed = saved ? JSON.parse(saved) : null;
-      const windState = parsed?.state?.eventStates?.["wind-up"];
-      return {
-        currencyCents: parsed?.state?.currencyCents,
-        windUpMultiplier: windState?.incomeMultiplier,
-        windUpActiveUntilMs: windState?.activeUntilMs,
-      };
+      return parsed?.state?.enjoymentCents ?? 0;
     });
 
-    expect(typeof result.currencyCents).toBe("number");
-    expect((result.currencyCents ?? 0) > 0).toBe(true);
-    expect(result.windUpMultiplier).toBeCloseTo(1.15, 5);
-    expect(typeof result.windUpActiveUntilMs).toBe("number");
+    expect(after).toBeGreaterThan(before);
+    await expect(
+      page.locator('[data-testid="vault-interact-chronograph"]:not([disabled])'),
+    ).toHaveCount(0);
+    await expect(page.getByText(/Cooldown \d+s/i).first()).toBeVisible();
+  });
+
+  test("automatic interaction increases power reserve and enjoyment rate", async ({ page }) => {
+    const seededState = {
+      currencyCents: 0,
+      enjoymentCents: 0,
+      items: { classic: 50 },
+      eventStates: {
+        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+      },
+    };
+
+    await page.addInitScript(
+      ({ state, lastSimulatedAtMs }) => {
+        (window as unknown as { __EMILY_IDLE_TEST_MODE__?: boolean }).__EMILY_IDLE_TEST_MODE__ =
+          true;
+
+        const payload = {
+          version: 2,
+          savedAt: new Date(0).toISOString(),
+          lastSimulatedAtMs,
+          state,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { state: seededState, lastSimulatedAtMs: Date.now() },
+    );
+
+    await page.goto("/");
+    await page.getByRole("tab", { name: "Vault" }).click();
+
+    const parseRate = (text: string): number => {
+      const match = text.replace(/,/g, "").match(/\$(\d+(?:\.\d+)?)/);
+      return match ? Number(match[1]) : 0;
+    };
+
+    const beforeRateText = await page.locator("#enjoyment-rate").innerText();
+    const beforeRate = parseRate(beforeRateText);
+
+    const interactButton = page
+      .locator('[data-testid="vault-interact-classic"]:not([disabled])')
+      .first();
+    await interactButton.scrollIntoViewIfNeeded();
+    await expect(interactButton).toBeEnabled();
+    await interactButton.click();
+
+    await expect(page.getByTestId("automatic-modal")).toBeVisible();
+    await expect(page.getByTestId("automatic-outcome")).toBeVisible({ timeout: 5000 });
+    await page.getByTestId("automatic-done").click();
+    await expect(page.getByTestId("automatic-modal")).toHaveCount(0);
+
+    const reserve = await page.evaluate(() => {
+      const saved = window.localStorage.getItem("emily-idle:save");
+      const parsed = saved ? JSON.parse(saved) : null;
+      return parsed?.state?.powerReserveByItem?.classic ?? 0;
+    });
+    expect(reserve).toBeGreaterThan(0);
+
+    const afterRateText = await page.locator("#enjoyment-rate").innerText();
+    const afterRate = parseRate(afterRateText);
+    expect(afterRate).toBeGreaterThan(beforeRate);
+
+    await expect(
+      page.locator('[data-testid="vault-interact-classic"]:not([disabled])'),
+    ).toHaveCount(0);
+    await expect(page.getByText(/Cooldown \d+s/i).first()).toBeVisible();
   });
 
   test("craft: dismantle watches and craft a boost", async ({ page }) => {

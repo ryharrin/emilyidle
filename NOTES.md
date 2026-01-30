@@ -103,3 +103,4 @@ Features to plan:
 
 Bug Fixes to do:
 - Fix missing images for certain watch models in the catalog.
+- Undiscovered watches should not appear at all until they are unlocked.

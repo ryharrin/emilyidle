@@ -14,6 +14,9 @@ import { HelpProvider } from "./ui/help/helpContext";
 import { HELP_SECTION_IDS, HELP_SECTIONS } from "./ui/help/helpContent";
 import { HelpIcon } from "./ui/icons/coreIcons";
 import { PrestigeOnboardingModal } from "./ui/components/PrestigeOnboardingModal";
+import { AutomaticMiniGameModal } from "./ui/components/AutomaticMiniGameModal";
+import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
+import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
 
 import {
@@ -31,7 +34,10 @@ import {
 import { isTestEnvironment } from "./game/runtime/isTestEnvironment";
 import { useGameRuntime } from "./game/runtime/useGameRuntime";
 import {
-  applyWindSessionRewards,
+  INTERACTION_BASE_COOLDOWN_MS,
+  applyAutomaticReward,
+  applyQuartzReward,
+  applyWindingReward,
   buyWatchModel,
   canMaisonPrestige,
   canWorkshopPrestige,
@@ -275,9 +281,10 @@ const loadSettings = (): Settings => {
 };
 
 export default function App() {
-  const [windActiveItemId, setWindActiveItemId] = useState<null | WatchItemId>(null);
-  const [windRound, setWindRound] = useState(0);
-  const [windTension, setWindTension] = useState(0);
+  const [activeInteraction, setActiveInteraction] = useState<null | {
+    kind: "winding" | "automatic" | "quartz";
+    itemId: WatchItemId;
+  }>(null);
   const [saveStatus, setSaveStatus] = useState("");
   const [importText, setImportText] = useState("");
   const [catalogSearch, setCatalogSearch] = useState("");
@@ -474,44 +481,24 @@ export default function App() {
   };
 
   const handleInteract = (itemId: WatchItemId) => {
-    setWindActiveItemId(itemId);
-    setWindRound(0);
-    setWindTension(0);
-  };
-
-  const closeWindModal = () => {
-    setWindActiveItemId(null);
-    setWindRound(0);
-    setWindTension(0);
-  };
-
-  const resolveWindRound = (nextRound: number, nextTension: number) => {
-    if (!windActiveItemId) {
+    const item = getWatchItems().find((entry) => entry.id === itemId);
+    if (!item) {
       return;
     }
 
-    if (nextRound < 5) {
-      setWindRound(nextRound);
-      setWindTension(nextTension);
+    if (item.movement === "manual") {
+      setActiveInteraction({ kind: "winding", itemId });
       return;
     }
 
-    handlePurchase(applyWindSessionRewards(state, windActiveItemId, nextTension, Date.now()));
-    closeWindModal();
-  };
-
-  const handleWindSteady = () => {
-    resolveWindRound(windRound + 1, Math.min(10, windTension + 1));
-  };
-
-  const handleWindPush = () => {
-    const succeeded = Math.random() < 0.6;
-    if (!succeeded) {
-      resolveWindRound(5, windTension);
+    if (item.movement === "automatic") {
+      setActiveInteraction({ kind: "automatic", itemId });
       return;
     }
 
-    resolveWindRound(windRound + 1, Math.min(10, windTension + 2));
+    if (item.movement === "quartz") {
+      setActiveInteraction({ kind: "quartz", itemId });
+    }
   };
 
   const handleCraftBoost = (boostId: (typeof craftedBoosts)[number]["id"]) => {
@@ -1329,40 +1316,62 @@ export default function App() {
           onNavigate={navigateTo}
         />
 
-        {windActiveItemId && (
-          <div role="dialog" aria-modal="true" className="panel">
-            <header className="panel-header">
-              <div>
-                <h2>Wind session</h2>
-                <p className="muted">Choose your pace. Finish 5 rounds to trigger a boost.</p>
-              </div>
-              <button
-                type="button"
-                className="secondary"
-                data-testid="wind-close"
-                onClick={closeWindModal}
-              >
-                Close
-              </button>
-            </header>
-            <p data-testid="wind-progress">
-              Round {windRound} / 5 · Tension {windTension} / 10
-            </p>
-            <div className="card-actions">
-              <button type="button" data-testid="wind-steady" onClick={handleWindSteady}>
-                Steady wind
-              </button>
-              <button
-                type="button"
-                className="secondary"
-                data-testid="wind-push"
-                onClick={handleWindPush}
-              >
-                Push it
-              </button>
-            </div>
-          </div>
-        )}
+        <WindingMiniGameModal
+          open={activeInteraction?.kind === "winding"}
+          itemLabel={
+            activeInteraction?.kind === "winding"
+              ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
+              : ""
+          }
+          rewardRangeLabel={`${formatMoneyFromCents(25)} - ${formatMoneyFromCents(150)} enjoyment`}
+          cooldownLabel={`Cooldown ${Math.floor(INTERACTION_BASE_COOLDOWN_MS / 1000)}s`}
+          onComplete={(outcome) => {
+            if (activeInteraction?.kind !== "winding") {
+              return;
+            }
+            handlePurchase(
+              applyWindingReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+            );
+          }}
+          onClose={() => setActiveInteraction(null)}
+        />
+
+        <AutomaticMiniGameModal
+          open={activeInteraction?.kind === "automatic"}
+          itemLabel={
+            activeInteraction?.kind === "automatic"
+              ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
+              : ""
+          }
+          onComplete={(outcome) => {
+            if (activeInteraction?.kind !== "automatic") {
+              return;
+            }
+            handlePurchase(
+              applyAutomaticReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+            );
+          }}
+          onClose={() => setActiveInteraction(null)}
+        />
+
+        <QuartzMiniGameModal
+          open={activeInteraction?.kind === "quartz"}
+          itemLabel={
+            activeInteraction?.kind === "quartz"
+              ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
+              : ""
+          }
+          rewardRangeLabel={`${formatMoneyFromCents(100)} - ${formatMoneyFromCents(500)}`}
+          onComplete={(outcome) => {
+            if (activeInteraction?.kind !== "quartz") {
+              return;
+            }
+            handlePurchase(
+              applyQuartzReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+            );
+          }}
+          onClose={() => setActiveInteraction(null)}
+        />
 
         <SaveTab
           isActive={activeTab === "save"}

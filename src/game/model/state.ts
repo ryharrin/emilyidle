@@ -390,10 +390,13 @@ export function createInitialState(): GameState {
       xp: 0,
       nextAvailableAtMs: 0,
       activeTrackId: null,
-      pointsAvailable: 0,
+      pointsAvailable: 1,
       spentNodes: {},
       freeSessionAvailable: true,
     },
+    wornWatchId: null,
+    interactionNextAvailableAtMsByItem: {},
+    powerReserveByItem: {},
     items: createItemCounts(),
     watchModels: {},
     upgrades: createUpgradeLevels(),
@@ -470,7 +473,7 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     pointsAvailable:
       typeof pointsAvailableRaw === "number" && Number.isFinite(pointsAvailableRaw)
         ? Math.max(0, Math.floor(pointsAvailableRaw))
-        : 0,
+        : 1,
     spentNodes,
     freeSessionAvailable:
       therapistRecord && typeof therapistRecord.freeSessionAvailable === "boolean"
@@ -511,6 +514,43 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       const defaultModelId = defaultModelIdsByTier.get(item.id);
       if (defaultModelId && owned > 0) {
         watchModels[defaultModelId] = owned;
+      }
+    }
+  }
+
+  const wornWatchIdRaw = saved.wornWatchId;
+  const wornWatchIdCandidate =
+    wornWatchIdRaw === null ? null : typeof wornWatchIdRaw === "string" ? wornWatchIdRaw : null;
+  const wornWatchId =
+    wornWatchIdCandidate &&
+    validModelIds.has(wornWatchIdCandidate) &&
+    (watchModels[wornWatchIdCandidate] ?? 0) > 0
+      ? wornWatchIdCandidate
+      : null;
+
+  const interactionNextAvailableAtMsByItem: Partial<Record<WatchItemId, number>> = {};
+  const cooldownsRaw =
+    saved.interactionNextAvailableAtMsByItem &&
+    typeof saved.interactionNextAvailableAtMsByItem === "object"
+      ? saved.interactionNextAvailableAtMsByItem
+      : undefined;
+  if (cooldownsRaw) {
+    for (const [key, value] of Object.entries(cooldownsRaw)) {
+      if (key in items && Number.isFinite(value)) {
+        interactionNextAvailableAtMsByItem[key as WatchItemId] = Math.max(0, Math.floor(value));
+      }
+    }
+  }
+
+  const powerReserveByItem: Partial<Record<WatchItemId, number>> = {};
+  const reservesRaw =
+    saved.powerReserveByItem && typeof saved.powerReserveByItem === "object"
+      ? saved.powerReserveByItem
+      : undefined;
+  if (reservesRaw) {
+    for (const [key, value] of Object.entries(reservesRaw)) {
+      if (key in items && typeof value === "number" && Number.isFinite(value)) {
+        powerReserveByItem[key as WatchItemId] = Math.min(1, Math.max(0, value));
       }
     }
   }
@@ -652,6 +692,9 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     nostalgiaLastGain,
     nostalgiaLastPrestigedAtMs,
     therapistCareer,
+    wornWatchId,
+    interactionNextAvailableAtMsByItem,
+    powerReserveByItem,
     items,
     watchModels,
     upgrades,

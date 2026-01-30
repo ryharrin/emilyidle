@@ -9,7 +9,7 @@ Requirements for this milestone (v3.0 Catalog-First Economy & Interactions).
 
 ### Catalog-First Shop
 
-- [ ] **CATALOG-01**: User lands on the Catalog by default (fresh save; existing saves behave predictably).
+- [ ] **CATALOG-01**: User lands on the catalog purchase surface by default (fresh save; existing saves behave predictably).
 - [ ] **CATALOG-02**: User can buy watches directly from catalog entries (price, owned count, and lock reasons visible).
 - [ ] **CATALOG-03**: Catalog is the primary place to buy watches; purchase CTAs are easy to find and clearly prioritized.
 - [ ] **CATALOG-04**: Help tips relevant to buying and progression are accessible within the catalog experience.

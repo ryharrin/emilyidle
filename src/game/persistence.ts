@@ -45,6 +45,21 @@ function sanitizeState(value: unknown): GameState | null {
 
   const persisted: PersistedGameState = {
     currencyCents: Math.max(0, currencyCents),
+    wornWatchId:
+      record.wornWatchId === null
+        ? null
+        : typeof record.wornWatchId === "string"
+          ? record.wornWatchId
+          : undefined,
+    interactionNextAvailableAtMsByItem:
+      typeof record.interactionNextAvailableAtMsByItem === "object" &&
+      record.interactionNextAvailableAtMsByItem !== null
+        ? (record.interactionNextAvailableAtMsByItem as Record<string, number>)
+        : {},
+    powerReserveByItem:
+      typeof record.powerReserveByItem === "object" && record.powerReserveByItem !== null
+        ? (record.powerReserveByItem as Record<string, number>)
+        : {},
     items:
       typeof record.items === "object" && record.items !== null
         ? (record.items as Record<string, number>)

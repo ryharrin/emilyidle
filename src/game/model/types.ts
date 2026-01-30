@@ -1,4 +1,6 @@
 export type WatchItemId = "starter" | "classic" | "chronograph" | "tourbillon";
+
+export type WatchMovement = "quartz" | "manual" | "automatic";
 export type UpgradeId = "polishing-tools" | "assembly-jigs" | "guild-contracts" | "archive-guides";
 export type MilestoneId = "collector-shelf" | "showcase" | "atelier" | "archive-curator";
 export type CareerTrackId = "private-practice" | "va-hospital" | "research-teaching";
@@ -27,6 +29,7 @@ export type WatchItemDefinition = {
   id: WatchItemId;
   name: string;
   description: string;
+  movement: WatchMovement;
   basePriceCents: number;
   priceGrowth: number;
   incomeCentsPerSec: number;
@@ -186,6 +189,9 @@ export type GameState = {
   nostalgiaLastGain: number;
   nostalgiaLastPrestigedAtMs: number;
   therapistCareer: TherapistCareerState;
+  wornWatchId: string | null;
+  interactionNextAvailableAtMsByItem: Partial<Record<WatchItemId, number>>;
+  powerReserveByItem: Partial<Record<WatchItemId, number>>;
   items: Record<WatchItemId, number>;
   watchModels: Record<string, number>;
   upgrades: Record<UpgradeId, number>;
@@ -208,6 +214,9 @@ export type GameState = {
 export type PersistedGameState = {
   currencyCents: number;
   enjoymentCents?: number;
+  wornWatchId?: string | null;
+  interactionNextAvailableAtMsByItem?: Record<string, number>;
+  powerReserveByItem?: Record<string, number>;
   nostalgiaPoints?: number;
   nostalgiaResets?: number;
   nostalgiaUnlockedItems?: string[];

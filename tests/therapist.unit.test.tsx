@@ -171,7 +171,7 @@ describe("therapist persistence", () => {
     expect(decoded.save.state.therapistCareer.xp).toBe(0);
     expect(decoded.save.state.therapistCareer.nextAvailableAtMs).toBe(0);
     expect(decoded.save.state.therapistCareer.activeTrackId).toBeNull();
-    expect(decoded.save.state.therapistCareer.pointsAvailable).toBe(0);
+    expect(decoded.save.state.therapistCareer.pointsAvailable).toBe(1);
     expect(decoded.save.state.therapistCareer.spentNodes).toEqual({});
     expect(decoded.save.state.therapistCareer.freeSessionAvailable).toBe(true);
   });
