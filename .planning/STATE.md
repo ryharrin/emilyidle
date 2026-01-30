@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 27 of 30 (Career-First Economy & Upgrades Surface)
-Plan: 5 of 6
-Status: In progress
-Last activity: 2026-01-29 — Completed 27-05-PLAN.md
-Progress: ████████░░ 82%
-Next Phase: Phase 27 (Plan 06)
+Phase: 29 of 30 (Interactions & Mini-Games)
+Plan: 6 of 6
+Status: Phase complete
+Last activity: 2026-01-30 — Completed 29-06-PLAN.md
+Progress: ███████████ 96%
+Next Phase: Phase 30 (Plan 01)
 
 ## Accumulated Context
 
@@ -56,6 +56,8 @@ Next Phase: Phase 27 (Plan 06)
 | quick-001 | Add local overrides for accented catalog filenames | Keep dev server image URLs resolving |
 | quick-001 | Selected download option; audit found no missing assets | Confirmed catalog assets already present |
 | 26-06 | Keep catalog sources/dealers in shared panel | Preserve access after tab consolidation |
+| 27-06 | Start fresh saves with 1 career point and passive career XP | Avoid progression deadlock before track unlock |
+| 29-06 | None - followed plan as specified | No deviations |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -73,7 +75,7 @@ Next Phase: Phase 27 (Plan 06)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-29T20:10:04Z
-Stopped at: Completed 27-05-PLAN.md
+Last session: 2026-01-30T03:15:43Z
+Stopped at: Completed 29-06-PLAN.md
 
 Resume file: None
