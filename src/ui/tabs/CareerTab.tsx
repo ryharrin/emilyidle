@@ -13,6 +13,8 @@ import {
 import type { GameState } from "../../game/state";
 import type { CareerNodeId, CareerTrackId } from "../../game/model/types";
 import { CareerTree, type CareerTreeSection } from "../components/CareerTree";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
 
 type TabId =
   | "collection"
@@ -329,6 +331,13 @@ export function CareerTab({ isActive, state, nowMs, onPurchase }: CareerTabProps
                           : "Unavailable"}
                       </p>
                     </div>
+                  </div>
+                  <div className="inline-icon-button">
+                    <ExplainButton
+                      sectionId={HELP_SECTION_IDS.careerProgression}
+                      label="Explain career progression"
+                    />
+                    <span className="muted">Career progression + sessions</span>
                   </div>
                   <div className="card-actions">
                     <button

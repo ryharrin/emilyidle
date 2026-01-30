@@ -666,6 +666,13 @@ export function CatalogPurchasePanel({
                             {interactionLabel}
                           </button>
                         )}
+                        {canShowInteract && (
+                          <ExplainButton
+                            sectionId={HELP_SECTION_IDS.interactions}
+                            label="Explain interactions"
+                            className="help-open-button"
+                          />
+                        )}
                         {showDismantle &&
                           (atelierUnlocked ? (
                             <button
@@ -929,6 +936,13 @@ export function CatalogPurchasePanel({
                               >
                                 {interactionLabel}
                               </button>
+                            )}
+                            {canShowInteract && (
+                              <ExplainButton
+                                sectionId={HELP_SECTION_IDS.interactions}
+                                label="Explain interactions"
+                                className="help-open-button"
+                              />
                             )}
                             {showDismantle &&
                               (atelierUnlocked ? (

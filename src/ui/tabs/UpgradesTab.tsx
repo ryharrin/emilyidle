@@ -24,6 +24,8 @@ import type {
 } from "../../game/state";
 
 import { UnlockHint } from "../components/UnlockHint";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
 
 type PurchaseMeta = {
   prestigeTier?: "workshop" | "maison" | "nostalgia";
@@ -130,6 +132,10 @@ export function UpgradesTab({
               <p className="muted">
                 Compare rate changes before committing to cash, Atelier, or Maison upgrades.
               </p>
+              <div className="inline-icon-button">
+                <ExplainButton sectionId={HELP_SECTION_IDS.upgrades} label="Explain upgrades" />
+                <span className="muted">Upgrade help</span>
+              </div>
             </div>
           </header>
 

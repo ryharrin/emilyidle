@@ -16,6 +16,7 @@ type WindingMiniGameModalProps = {
   cooldownLabel: string;
   onComplete: (outcome: WindingOutcome) => void;
   onClose: () => void;
+  helpAction?: React.ReactNode;
 };
 
 const RUN_DURATION_MS = 4_000;
@@ -65,6 +66,7 @@ export function WindingMiniGameModal({
   cooldownLabel,
   onComplete,
   onClose,
+  helpAction,
 }: WindingMiniGameModalProps): JSX.Element | null {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<null | WindingOutcome>(null);
@@ -168,9 +170,17 @@ export function WindingMiniGameModal({
             <h3>{itemLabel}</h3>
             <p className="muted winding-modal-subtitle">Reward: {rewardRangeLabel}</p>
           </div>
-          <button type="button" className="secondary" data-testid="winding-close" onClick={onClose}>
-            Close
-          </button>
+          <div className="card-actions">
+            {helpAction}
+            <button
+              type="button"
+              className="secondary"
+              data-testid="winding-close"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
         </header>
 
         <div className="winding-modal-body">

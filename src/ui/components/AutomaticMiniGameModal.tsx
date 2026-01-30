@@ -12,6 +12,7 @@ type AutomaticMiniGameModalProps = {
   itemLabel: string;
   onComplete: (outcome: AutomaticOutcome) => void;
   onClose: () => void;
+  helpAction?: React.ReactNode;
 };
 
 const DEFAULT_RUN_DURATION_MS = 10_000;
@@ -68,6 +69,7 @@ export function AutomaticMiniGameModal({
   itemLabel,
   onComplete,
   onClose,
+  helpAction,
 }: AutomaticMiniGameModalProps): JSX.Element | null {
   const [needle, setNeedle] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -206,14 +208,17 @@ export function AutomaticMiniGameModal({
             <h3>{itemLabel}</h3>
             <p className="muted winding-modal-subtitle">Hold the needle near center for 10s.</p>
           </div>
-          <button
-            type="button"
-            className="secondary"
-            data-testid="automatic-close"
-            onClick={onClose}
-          >
-            Close
-          </button>
+          <div className="card-actions">
+            {helpAction}
+            <button
+              type="button"
+              className="secondary"
+              data-testid="automatic-close"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
         </header>
 
         <div className="automatic-modal-body">

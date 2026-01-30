@@ -15,6 +15,7 @@ type QuartzMiniGameModalProps = {
   rewardRangeLabel: string;
   onComplete: (outcome: QuartzOutcome) => void;
   onClose: () => void;
+  helpAction?: React.ReactNode;
 };
 
 const RUN_DURATION_MS = 6_000;
@@ -63,6 +64,7 @@ export function QuartzMiniGameModal({
   rewardRangeLabel,
   onComplete,
   onClose,
+  helpAction,
 }: QuartzMiniGameModalProps): JSX.Element | null {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<null | QuartzOutcome>(null);
@@ -164,9 +166,17 @@ export function QuartzMiniGameModal({
             <h3>{itemLabel}</h3>
             <p className="muted winding-modal-subtitle">Reward: {rewardRangeLabel}</p>
           </div>
-          <button type="button" className="secondary" data-testid="quartz-close" onClick={onClose}>
-            Close
-          </button>
+          <div className="card-actions">
+            {helpAction}
+            <button
+              type="button"
+              className="secondary"
+              data-testid="quartz-close"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          </div>
         </header>
 
         <div className="quartz-modal-body">

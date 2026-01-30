@@ -2,6 +2,8 @@ import React from "react";
 
 import { CatalogPurchasePanel, type PurchaseMeta } from "./CatalogTab";
 import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
 
 import type { CatalogEntry } from "../../game/catalog";
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
@@ -323,6 +325,13 @@ export function CollectionTab({
           <div>
             <h2>Vault</h2>
             <p className="muted">Build your vault: buy, wear, and interact with watches.</p>
+            <div className="inline-icon-button">
+              <ExplainButton
+                sectionId={HELP_SECTION_IDS.interactions}
+                label="Explain interactions"
+              />
+              <span className="muted">Interaction help</span>
+            </div>
             <NextUnlockPanel items={nextUnlockItems} />
             <div className="collection-setup" data-testid="collection-setup">
               <fieldset className="automation-toggle" data-testid="automation-controls">

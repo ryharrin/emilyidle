@@ -1325,6 +1325,13 @@ export default function App() {
           }
           rewardRangeLabel={`${formatMoneyFromCents(25)} - ${formatMoneyFromCents(150)} enjoyment`}
           cooldownLabel={`Cooldown ${Math.floor(INTERACTION_BASE_COOLDOWN_MS / 1000)}s`}
+          helpAction={
+            <ExplainButton
+              sectionId={HELP_SECTION_IDS.interactions}
+              label="Explain interactions"
+              className="help-open-button"
+            />
+          }
           onComplete={(outcome) => {
             if (activeInteraction?.kind !== "winding") {
               return;
@@ -1342,6 +1349,13 @@ export default function App() {
             activeInteraction?.kind === "automatic"
               ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
               : ""
+          }
+          helpAction={
+            <ExplainButton
+              sectionId={HELP_SECTION_IDS.interactions}
+              label="Explain interactions"
+              className="help-open-button"
+            />
           }
           onComplete={(outcome) => {
             if (activeInteraction?.kind !== "automatic") {
@@ -1362,6 +1376,13 @@ export default function App() {
               : ""
           }
           rewardRangeLabel={`${formatMoneyFromCents(100)} - ${formatMoneyFromCents(500)}`}
+          helpAction={
+            <ExplainButton
+              sectionId={HELP_SECTION_IDS.interactions}
+              label="Explain interactions"
+              className="help-open-button"
+            />
+          }
           onComplete={(outcome) => {
             if (activeInteraction?.kind !== "quartz") {
               return;
