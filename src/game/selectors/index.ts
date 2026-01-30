@@ -57,9 +57,21 @@ import {
   getWornWatchEnjoymentMultiplier,
   getWatchItemEnjoymentRateCentsPerSec,
 } from "./enjoyment";
+import {
+  getActiveSetBonuses,
+  getCatalogTierIncomeMultiplier,
+  getCraftedBoostIncomeMultiplier,
+  getMaisonIncomeMultiplier,
+  getMaisonLineIncomeMultiplier,
+  getMaisonUpgradeIncomeMultiplier,
+  getUpgradeIncomeMultiplier,
+  getWatchAbilityIncomeMultiplier,
+  getWorkshopIncomeMultiplier,
+} from "./incomeMultipliers";
 import { getDuplicateRewardSum } from "./duplicates";
 
 export * from "./enjoyment";
+export * from "./incomeMultipliers";
 export * from "./interactions";
 export * from "./watchModels";
 
@@ -242,11 +254,6 @@ export function getCraftedBoostCounts(state: GameState): Record<CraftedBoostId, 
   return state.craftedBoosts;
 }
 
-export function getCraftedBoostIncomeMultiplier(state: GameState): number {
-  const polishedBoosts = state.craftedBoosts["polished-tools"] ?? 0;
-  return Math.pow(CRAFTED_BOOST_MULTIPLIERS["polished-tools"], polishedBoosts);
-}
-
 export function getCraftedBoostCollectionMultiplier(state: GameState): number {
   const springBoosts = state.craftedBoosts["heritage-springs"] ?? 0;
   return Math.pow(CRAFTED_BOOST_MULTIPLIERS["heritage-springs"], springBoosts);
@@ -267,13 +274,6 @@ export function canCraftBoost(state: GameState, id: CraftedBoostId): boolean {
     return false;
   }
   return state.craftingParts >= recipe.partsCost;
-}
-
-export function getCatalogTierIncomeMultiplier(state: GameState): number {
-  return getCatalogTierBonuses(state).reduce(
-    (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
-    1,
-  );
 }
 
 export function getCatalogEntryIdsForItems(state: GameState): CatalogEntryId[] {
@@ -703,37 +703,13 @@ export function getCollectionBonusMultiplier(state: GameState): number {
   );
 }
 
-export function getWatchAbilityIncomeMultiplier(state: GameState): number {
-  const starterCount = getItemCount(state, "starter");
-  const chronographCount = getItemCount(state, "chronograph");
-
-  const starterBonus = starterCount >= 10 ? 1.02 : 1;
-  const chronographBonus = chronographCount >= 5 ? 1.05 : 1;
-
-  return starterBonus * chronographBonus;
-}
-
-export function getActiveSetBonuses(state: GameState): SetBonusDefinition[] {
-  return SET_BONUSES.filter((bonus) =>
-    Object.entries(bonus.requirements).every(([itemId, required]) => {
-      const count = getItemCount(state, itemId as WatchItemId);
-      return count >= (required ?? 0);
-    }),
-  );
-}
-
 export function getRawIncomeRateCentsPerSec(state: GameState): number {
   const itemIncome = WATCH_ITEMS.reduce(
     (total, item) => total + getItemCount(state, item.id) * item.incomeCentsPerSec,
     0,
   );
 
-  const upgradeMultiplier = UPGRADES.reduce(
-    (multiplier, upgrade) =>
-      multiplier + getUpgradeLevel(state, upgrade.id) * upgrade.incomeMultiplierPerLevel,
-    1,
-  );
-
+  const upgradeMultiplier = getUpgradeIncomeMultiplier(state);
   const setBonusMultiplier = getActiveSetBonuses(state).reduce(
     (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
     1,
@@ -824,7 +800,13 @@ export function getEnjoymentRateBreakdown(
       return total;
     }
 
-    return total + getDuplicateRewardSum(owned) * getWatchItemEnjoymentRateCentsPerSec(item);
+    const reserveMultiplier =
+      item.movement === "automatic" ? 1 + 0.5 * (state.powerReserveByItem[item.id] ?? 0) : 1;
+
+    return (
+      total +
+      getDuplicateRewardSum(owned) * getWatchItemEnjoymentRateCentsPerSec(item) * reserveMultiplier
+    );
   }, 0);
 
   const multiplierTerms: RateBreakdownMultiplierTerm[] = [
@@ -834,6 +816,81 @@ export function getEnjoymentRateBreakdown(
       multiplier: getPrestigeLegacyMultiplier(state),
     },
   ];
+
+  const upgradeMultiplier = getUpgradeIncomeMultiplier(state);
+  if (upgradeMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "upgrade-levels",
+      label: "Upgrade levels",
+      multiplier: upgradeMultiplier,
+    });
+  }
+
+  const workshopMultiplier = getWorkshopIncomeMultiplier(state);
+  if (workshopMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "workshop-upgrades",
+      label: "Workshop upgrades",
+      multiplier: workshopMultiplier,
+    });
+  }
+
+  const maisonUpgradeMultiplier = getMaisonUpgradeIncomeMultiplier(state);
+  if (maisonUpgradeMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "maison-upgrades",
+      label: "Maison upgrades",
+      multiplier: maisonUpgradeMultiplier,
+    });
+  }
+
+  const maisonLineMultiplier = getMaisonLineIncomeMultiplier(state);
+  if (maisonLineMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "maison-lines",
+      label: "Maison lines",
+      multiplier: maisonLineMultiplier,
+    });
+  }
+
+  const setBonusMultiplier = getActiveSetBonuses(state).reduce(
+    (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
+    1,
+  );
+  if (setBonusMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "set-bonuses",
+      label: "Set bonuses",
+      multiplier: setBonusMultiplier,
+    });
+  }
+
+  const catalogTierMultiplier = getCatalogTierIncomeMultiplier(state);
+  if (catalogTierMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "catalog-tiers",
+      label: "Catalog tiers",
+      multiplier: catalogTierMultiplier,
+    });
+  }
+
+  const craftedMultiplier = getCraftedBoostIncomeMultiplier(state);
+  if (craftedMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "crafted-tools",
+      label: "Crafted tools",
+      multiplier: craftedMultiplier,
+    });
+  }
+
+  const abilityMultiplier = getWatchAbilityIncomeMultiplier(state);
+  if (abilityMultiplier !== 1) {
+    multiplierTerms.push({
+      id: "watch-abilities",
+      label: "Watch abilities",
+      multiplier: abilityMultiplier,
+    });
+  }
 
   const wornMultiplier = getWornWatchEnjoymentMultiplier(state);
   if (state.wornWatchId !== null && wornMultiplier !== 1) {
@@ -1183,34 +1240,6 @@ export function canBuyItem(state: GameState, id: WatchItemId, quantity = 1): boo
 
 export function canBuyUpgrade(state: GameState, id: UpgradeId, quantity = 1): boolean {
   return state.currencyCents >= getUpgradePriceCents(state, id, quantity);
-}
-
-export function getWorkshopIncomeMultiplier(state: GameState): number {
-  return WORKSHOP_UPGRADES.reduce((multiplier, upgrade) => {
-    if (!upgrade.incomeMultiplier || !hasWorkshopUpgrade(state, upgrade.id)) {
-      return multiplier;
-    }
-
-    return multiplier * upgrade.incomeMultiplier;
-  }, 1);
-}
-
-export function getMaisonIncomeMultiplier(state: GameState): number {
-  const upgradeMultiplier = MAISON_UPGRADES.reduce((multiplier, upgrade) => {
-    if (!upgrade.incomeMultiplier || !hasMaisonUpgrade(state, upgrade.id)) {
-      return multiplier;
-    }
-
-    return multiplier * upgrade.incomeMultiplier;
-  }, 1);
-
-  return MAISON_LINES.reduce((multiplier, line) => {
-    if (!line.incomeMultiplier || !hasMaisonLine(state, line.id)) {
-      return multiplier;
-    }
-
-    return multiplier * line.incomeMultiplier;
-  }, upgradeMultiplier);
 }
 
 export function getMaisonCollectionBonusMultiplier(state: GameState): number {

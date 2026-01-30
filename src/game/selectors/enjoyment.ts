@@ -3,6 +3,15 @@ import { WATCH_MODELS } from "../data/watchModels";
 import { formatMoneyFromCents } from "../format";
 import type { GameState, WatchItemDefinition, WatchItemId } from "../model/types";
 import { getDuplicateRewardSum } from "./duplicates";
+import {
+  getActiveSetBonuses,
+  getCatalogTierIncomeMultiplier,
+  getCraftedBoostIncomeMultiplier,
+  getMaisonIncomeMultiplier,
+  getUpgradeIncomeMultiplier,
+  getWatchAbilityIncomeMultiplier,
+  getWorkshopIncomeMultiplier,
+} from "./incomeMultipliers";
 
 const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]));
 const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
@@ -91,7 +100,31 @@ export function getEnjoymentRateCentsPerSec(state: GameState): number {
     );
   }, 0);
 
-  return baseRate * getPrestigeLegacyMultiplier(state) * getWornWatchEnjoymentMultiplier(state);
+  const upgradeMultiplier = getUpgradeIncomeMultiplier(state);
+  const setBonusMultiplier = getActiveSetBonuses(state).reduce(
+    (multiplier, bonus) => multiplier * bonus.incomeMultiplier,
+    1,
+  );
+  const workshopMultiplier = getWorkshopIncomeMultiplier(state);
+  const maisonMultiplier = getMaisonIncomeMultiplier(state);
+  const catalogTierMultiplier = getCatalogTierIncomeMultiplier(state);
+  const craftedMultiplier = getCraftedBoostIncomeMultiplier(state);
+  const abilityMultiplier = getWatchAbilityIncomeMultiplier(state);
+  const enjoymentMultiplier =
+    upgradeMultiplier *
+    setBonusMultiplier *
+    workshopMultiplier *
+    maisonMultiplier *
+    catalogTierMultiplier *
+    craftedMultiplier *
+    abilityMultiplier;
+
+  return (
+    baseRate *
+    enjoymentMultiplier *
+    getPrestigeLegacyMultiplier(state) *
+    getWornWatchEnjoymentMultiplier(state)
+  );
 }
 
 export function getEnjoymentThresholdLabel(cents: number): string {
