@@ -316,7 +316,7 @@ Introduce a model-level purchasable watch system (IDs stable, mapped to catalog 
 **Goal:** Catalog is the default landing and primary purchase surface with in-context help.
 **Depends on:** Phase 25
 **Requirements:** CATALOG-01, CATALOG-02, CATALOG-03, CATALOG-04
-**Plans:** 7/8 plans complete
+**Plans:** 8/8 plans complete
 
 Plans:
 - [x] 26-01-PLAN.md — Make Catalog the default landing tab (+ deep link override)
@@ -325,7 +325,7 @@ Plans:
 - [x] 26-04-PLAN.md — Add single Catalog help button + expandable card details + micro-feedback + unit coverage
 - [x] 26-05-PLAN.md — Human verify catalog-first shop UX (desktop + mobile)
 - [x] 26-06-PLAN.md — Gap closure: remove separate Catalog tab + preserve deep links/last-tab
-- [ ] 26-07-PLAN.md — Gap closure: embed catalog cards into Vault + remove split watch-buy UI
+- [x] 26-07-PLAN.md — Gap closure: embed catalog cards into Vault + remove split watch-buy UI
 - [x] 26-08-PLAN.md — Gap closure: human verify consolidated purchase surface
 
 **Success criteria:**
@@ -433,6 +433,21 @@ Plans:
 
 **Details:**
 Tighten Workshop/Atelier presentation and tune bonuses for better pacing; refresh Help content to match v3.0 systems.
+
+### Phase 31: Rate Clarity Gap Closure
+
+**Goal:** Rates and rate previews match actual accrual; upgrades no longer claim cash multipliers and instead affect non-cash progression.
+**Depends on:** Phase 30
+**Gap Closure:** v3.0 milestone audit gaps (upgrade previews, event multiplier wiring).
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 31 to break down)
+
+**Success criteria:**
+1. Buying an upgrade produces a visible, measurable change (e.g. Enjoyment/sec) and the preview matches reality.
+2. Events apply consistently to both dollars/sec and enjoyment/sec (or help/copy is updated to match the implemented behavior).
+3. No UI copy claims that upgrades increase dollars/sec if cash remains career-salary driven.
 
 ---
 

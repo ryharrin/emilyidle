@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 ## Current Position
 
-Phase: 30 of 30 (Workshop/Atelier + Docs)
-Plan: 4 of 4
-Status: Phase complete
-Last activity: 2026-01-30 — Completed 30-04-PLAN.md
+Phase: 31 of 31 (Rate Clarity Gap Closure)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-30 — Milestone audit found gaps; queued Phase 31 gap closure
 Progress: ███████████ 100%
-Next Phase: None (phase complete)
+Next Phase: Phase 31 (gap closure)
 
 ## Accumulated Context
 
@@ -69,6 +69,7 @@ Next Phase: None (phase complete)
 ### Blockers/Concerns Carried Forward
 - Catalog cards should be the sole purchase flow for watches.
 - Vault information needs to be merged into the Catalog surface.
+- Upgrade copy and previews must not claim cash multipliers if cash accrual is career-salary driven.
 
 ### Quick Tasks Completed
 
@@ -77,7 +78,7 @@ Next Phase: None (phase complete)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-30T04:13:33Z
-Stopped at: Completed 30-04-PLAN.md
+Last session: 2026-01-30T14:26:48Z
+Stopped at: Milestone v3.0 audit gaps identified; ready to plan Phase 31
 
 Resume file: None
