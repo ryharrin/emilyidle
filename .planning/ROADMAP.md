@@ -416,11 +416,11 @@ Generalize interactions into watch-type gated mini-games; improve winding UX and
 **Goal:** Workshop/Atelier UX is clearer, balance improves, and help matches v3.0.
 **Depends on:** Phase 29
 **Requirements:** WORK-01, WORK-02, BAL-01, HELP-01, HELP-02
-**Plans:** 0/4 plans complete
+**Plans:** 1/4 plans complete
 
 Plans:
 - [ ] 30-01-PLAN.md — Gate dismantle behind Atelier unlock + add next-Blueprint progress + tune legacy pace
-- [ ] 30-02-PLAN.md — Expand Help content + add stable section IDs for v3.0 systems
+- [x] 30-02-PLAN.md — Expand Help content + add stable section IDs for v3.0 systems
 - [ ] 30-03-PLAN.md — Wire ExplainButtons in Atelier/Career/Upgrades/Interactions + add micro-copy
 - [ ] 30-04-PLAN.md — Human verify Workshop/Atelier clarity + Help deep-links
 
