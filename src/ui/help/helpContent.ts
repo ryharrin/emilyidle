@@ -9,6 +9,11 @@ export const HELP_SECTION_IDS = {
   gates: "gates",
   rates: "rates",
   catalogShop: "catalog-shop",
+  catalogFirst: "catalog-first",
+  atelierReset: "atelier-reset",
+  careerProgression: "career-progression",
+  upgrades: "upgrades",
+  interactions: "interactions",
   nostalgiaUnlocks: "nostalgia-unlocks",
   wornWatchBonus: "worn-watch-bonus",
 } as const;
@@ -18,8 +23,8 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: "overview",
     title: "Overview",
     body: [
-      "Buy watches to grow your vault, then reinvest to unlock new lines.",
-      "Every watch adds enjoyment and cash, and both unlock the next steps.",
+      "Browse the catalog to buy watches, build enjoyment, and unlock new tiers.",
+      "Dollars come from your career salary and sessions, not from owning watches.",
       "Prestige loops reset short-term progress to earn long-term bonuses.",
     ],
   },
@@ -27,8 +32,10 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: HELP_SECTION_IDS.currencies,
     title: "Currencies",
     body: [
-      "Enjoyment reflects your collection's momentum and unlocks new tiers.",
-      "Dollars are spent on purchases and scale with careers and events.",
+      "Enjoyment reflects collection momentum and unlocks higher tiers.",
+      "Enjoyment is sometimes spent (therapist sessions after the free first session).",
+      "Dollars are spent on purchases and upgrades and earned from your career.",
+      "Cash bursts can also come from interactions like quartz time-setting.",
       "Memories track sentimental value and power catalog bonuses.",
     ],
   },
@@ -38,7 +45,19 @@ export const HELP_SECTIONS: HelpSection[] = [
     body: [
       "Some watches require a minimum enjoyment level to purchase.",
       "Cash is always spent; enjoyment is a requirement you must meet.",
-      "If you're blocked, check whether the gate is enjoyment or dollars.",
+      "Example: Price $120k + Enjoyment 50k means you must have 50k enjoyment and pay $120k.",
+      "If you have $90k and 80k enjoyment, you are cash-gated; if $150k and 20k, you are enjoyment-gated.",
+      "Enjoyment gates are checked when you buy; the requirement is not consumed.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.catalogFirst,
+    title: "Catalog-first economy",
+    body: [
+      "The catalog is the primary purchase surface (Phase 26+).",
+      "Each catalog card shows owned count, price, and the next gate if locked.",
+      "Buying a watch reveals its entry and contributes to catalog discovery bonuses.",
+      "Use other tabs for context, but the catalog is where purchases happen.",
     ],
   },
   {
@@ -46,8 +65,32 @@ export const HELP_SECTIONS: HelpSection[] = [
     title: "Catalog shopping",
     body: [
       "Buying duplicates yields diminishing returns; the next purchase shows the next multiplier.",
-      "If a card says Need $X more, you're short on cash for that purchase.",
+      "Cards show whether you are cash-gated or enjoyment-gated before you buy.",
+      "If a card says Need $X more, you are short on cash for that purchase.",
       "If a card mentions enjoyment, you need more enjoyment before it unlocks.",
+      "Owned counts update immediately after a purchase to confirm the buy.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.careerProgression,
+    title: "Career progression",
+    body: [
+      "Career level grants points to spend in the progression tree.",
+      "Tracks unlock at level 3 and determine whether sessions are available.",
+      "Some tracks focus on steady salary only; others add session bursts.",
+      "Sessions grant XP, cost enjoyment after the free first session, and have cooldowns.",
+      "Cash/sec reflects salary and active events; sessions are burst payouts and are not averaged in.",
+      "You can respec to refund spent points and reallocate them.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.upgrades,
+    title: "Upgrades",
+    body: [
+      "Upgrades live in their own tab to keep shopping and progression separate.",
+      "Each upgrade shows a before/after preview so you can see the delta.",
+      "If a stat line is missing from the preview, that upgrade does not affect it.",
+      "Upgrades cost dollars; some may require blueprints or prestige currency.",
     ],
   },
   {
@@ -70,6 +113,29 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Chronograph: x1.08 enjoyment",
       "Tourbillon: x1.12 enjoyment",
       "There is no scaling: switching watches updates immediately, and wearing none removes the bonus.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.interactions,
+    title: "Interactions & mini-games",
+    body: [
+      "Interactions are gated by watch movement: manual winding, automatic balance, quartz time-setting.",
+      "Each mini-game has Miss, Good, and Perfect tiers based on timing or stability.",
+      "Winding rewards enjoyment and triggers a short cooldown on that watch.",
+      "Quartz time-setting rewards a cash burst; higher tiers pay more.",
+      "Automatic balance charges power reserve, boosting enjoyment while charged.",
+      "Cooldowns are per watch item; you can only interact when the timer is ready.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.atelierReset,
+    title: "Atelier reset",
+    body: [
+      "Atelier resets vault progress to earn Blueprints and unlock permanent upgrades.",
+      "Reset gain is based on your total enjoyment at the moment you reset.",
+      "The Next blueprint line shows the enjoyment needed to earn +1 blueprint on reset.",
+      "A faster second run comes from Atelier upgrades plus Prestige legacy multipliers.",
+      "If you are unsure, wait until the gain and next blueprint targets look worthwhile.",
     ],
   },
   {
