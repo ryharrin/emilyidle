@@ -36,25 +36,36 @@ Emily Idle is a browser-based idle/incremental game themed around luxury watch c
 - `pnpm run test:e2e`
 - `pnpm run build`
 
-## Current Milestone: v3.0 Catalog-First Economy & Interactions
+## Last Shipped Milestone: v3.0 Catalog-First Economy & Interactions (Shipped: 2026-01-30)
 
-**Goal:** Ship the remaining NOTES.md backlog with a focus on a catalog-first purchase flow, career-first cash economy, and deeper watch interactions.
+**Delivered:** Catalog-first purchase flow with a career-first cash economy, model-based watches, and movement-gated interactions.
+
+**Highlights:**
+- Catalog-first shop embedded into the Vault as the primary purchase flow (with in-context help).
+- Career-driven cash economy (salary + sessions) and dedicated Upgrades surface with truthful previews.
+- Watch models replace generic tiers; duplicates have diminishing returns.
+- Wear exactly one watch for a visible bonus (persisted; reflected in rate breakdown).
+- Interactions mini-games for manual/automatic/quartz watches with distinct modals, rewards, and cooldowns.
+- Workshop/Atelier clarity + pacing improvements; Help deep-links for v3.0 systems.
+
+## Next Milestone (Proposed): v3.1 Career Depth & Landing (Planning)
+
+**Goal:** Make Career the default landing and deepen career progression into clear stages with lasting choices.
 
 **Target features:**
-- Catalog becomes the default starting view; watch purchases move into the catalog experience.
-- Career progression becomes the primary (or only) money faucet; therapist session cost rules updated (first session free).
-- Watch itemization moves from generic tiers toward specific models, including wear-one-watch bonuses and diminishing returns for duplicates.
-- Watch interaction improvements: richer winding feedback/animation, plus additional mini-games for automatic watches.
-- Workshop/Atelier clarity + balance: hide dismantle until unlocked, show next blueprint cost, and adjust atelier bonuses to make the 2nd vault run meaningfully faster.
+- Default landing on Career for fresh saves.
+- Career stages from grad student to private practice, with branching specializations and meaningful, permanent choices.
+- Clear progress feedback toward next career unlocks (progress + next-action cues).
 
 ## Current State
 
-Shipped v2.0 on 2026-01-25:
+Shipped v3.0 on 2026-01-30:
 
-- Enjoyment-first collection economy (tier-based per-watch enjoyment rates)
-- Therapist career cash generation (salary + sessions) and dual-currency watch acquisition (cash spent, enjoyment gate)
-- Nostalgia prestige + permanent unlock store
-- Codebase refactor into model/data/selectors/actions/runtime with tab extraction to `src/ui/tabs/*`
+- Catalog-first purchase flow (Vault embeds catalog shopping + help)
+- Career-first cash economy and dedicated Upgrades surface
+- Model-based watch ownership with duplicates diminishing returns
+- Wear-one bonus + movement-gated interactions mini-games
+- Workshop/Atelier clarity + updated Help deep-links
 
 ## Known Gaps / Tech Debt
 
@@ -64,4 +75,4 @@ Shipped v2.0 on 2026-01-25:
 
 ---
 
-*Last updated: 2026-01-30 after Phase 30 (Workshop/Atelier + Docs)*
+*Last updated: 2026-01-30 after v3.0 milestone completion*

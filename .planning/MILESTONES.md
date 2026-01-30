@@ -1,5 +1,31 @@
 # Project Milestones: Emily Idle
 
+## v3.0 Catalog-First Economy & Interactions (Shipped: 2026-01-30)
+
+**Delivered:** Catalog-first purchase flow with a career-first cash economy, model-based watches, interactions mini-games, and clearer workshop/atelier pacing.
+
+**Phases completed:** 25-31 (41 plans total)
+
+**Key accomplishments:**
+- Moved watch ownership to real model IDs with duplicate diminishing returns and legacy migration.
+- Made the Vault embed catalog shopping as the primary purchase flow with in-context help.
+- Reworked the cash economy to be career-driven (salary + sessions) and separated upgrades into a dedicated surface.
+- Added wear-one watch selection with persistent equip state and a visible rate breakdown line.
+- Added movement-gated interactions (winding/automatic/quartz) with distinct mini-games, rewards, cooldowns, and mobile-friendly modals.
+- Tightened Workshop/Atelier clarity + Help deep-links, then closed rate-clarity gaps (events apply to cash + enjoyment; upgrades affect enjoyment only; previews match accrual).
+
+**Stats:**
+- 359 files changed
+- +21,683 / -1,176 lines (TypeScript/TSX/CSS + tests)
+- 7 phases, 41 plans, 78 tasks
+- 3 days (2026-01-27 -> 2026-01-30)
+
+**Git range:** `ae2f0f5b` -> `3830d58`
+
+**What's next:** Start v3.1 focused on a deeper Career progression + making Career the default landing view.
+
+---
+
 ## v2.0 Upcoming Major Changes to Game Design (Shipped: 2026-01-25)
 
 **Delivered:** Enjoyment-first economy with dual-currency purchases, nostalgia prestige/unlocks, and a modularized codebase.

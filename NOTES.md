@@ -99,8 +99,13 @@ Features to plan:
 - Add more watch brands and models to the catalog to increase variety and appeal to different tastes.
 - Introduce a storyline or lore that unfolds as players collect more watches, adding depth to the game.
 - Add achievements or badges for collecting certain sets of watches or reaching specific milestones in the game.
-
+- mini games should reward enjoyment, not cash.
+- the career page should be the first page the user sees when starting the game, not the catalog. 
+- The career system should have more depth. It should start with the user as a grad student, then progress through career stages ending at running a private practice. The branches should offer different benefits and challenges, such as specializing in different therapy types. The career system should feel meaningful and integrated into the overall gameplay loop. Choices in it should be permanent and have lasting effects on the player's money-earning potential and gameplay experience. There should be clear progress feedback toward the next career unlocks (progress bar + "next unlock" callout). There should be at least five career stages, with choices in each after the first.
+- The career system progression system should be well balanced to ensure a smooth and engaging experience for players. Each career stage should offer unique challenges and rewards, encouraging players to strategize their progression path. The pacing of career advancements should be designed to maintain player interest and provide a sense of accomplishment at each milestone.
 
 Bug Fixes to do:
 - Fix missing images for certain watch models in the catalog.
 - Undiscovered watches should not appear at all until they are unlocked.
+- Check mini game ui, the set time game watch display is not aligned properly.
+- Remove differentiation between discovered and undiscovered watches in the catalog. All watches should be visible, but undiscovered ones should be greyed out with a lock icon.

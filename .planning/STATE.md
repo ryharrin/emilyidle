@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** v3.0 Catalog-First Economy & Interactions (roadmap ready)
+**Current focus:** Planning v3.1 (Career Depth & Landing)
 
 ## Current Position
 
-Phase: 31 of 31 (Rate Clarity Gap Closure)
-Plan: 03 of 03
-Status: Phase complete
-Last activity: 2026-01-30 — Completed 31-03 (rate clarity gap closure tests)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-30 — v3.0 milestone complete; ready to start v3.1
 Progress: ████████████ 100%
-Next Phase: None (Phase complete)
+Next Phase: New milestone
 
 ## Accumulated Context
 
@@ -26,6 +26,7 @@ Next Phase: None (Phase complete)
 - v2.1 roadmap added: Phases 20-24 (Onboarding & UX)
 - Milestone v2.0 archived under .planning/milestones/
 - Milestone v3.0 kickoff: catalog-first economy + interactions (phases 25-30)
+- Milestone v3.0 archived under .planning/milestones/ (phases 25-31)
 
 ### Decisions
 | Phase | Decision | Rationale |
@@ -79,7 +80,7 @@ Next Phase: None (Phase complete)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-30T16:12:21Z
-Stopped at: Phase 31 complete (rate clarity gap closure)
+Last session: 2026-01-30T16:16:42Z
+Stopped at: v3.0 milestone complete; ready to start v3.1
 
 Resume file: None
