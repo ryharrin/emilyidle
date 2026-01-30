@@ -777,6 +777,10 @@ export function getTotalCashRateCentsPerSec(state: GameState): number {
   return getTherapistCashRateCentsPerSec(state);
 }
 
+export function getEffectiveCashRateCentsPerSec(state: GameState, eventMultiplier = 1): number {
+  return getTotalCashRateCentsPerSec(state) * eventMultiplier;
+}
+
 export type RateBreakdownMultiplierTerm = {
   id: string;
   label: string;

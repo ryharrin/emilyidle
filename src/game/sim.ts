@@ -6,9 +6,9 @@ import {
   discoverCatalogEntries,
   getCatalogEntryIdsForItems,
   getCollectionValueCents,
+  getEffectiveCashRateCentsPerSec,
   getEnjoymentRateCentsPerSec,
   getEventIncomeMultiplier,
-  getTotalCashRateCentsPerSec,
 } from "./state";
 
 export const SIM_TICK_MS = 100;
@@ -65,7 +65,7 @@ export function step(state: GameState, dtMs: number, nowMs = Date.now()): GameSt
   const collectionValue = getCollectionValueCents(withReserveDecay);
   const withEvents = applyEventState(withReserveDecay, nowMs, collectionValue);
   const eventMultiplier = getEventIncomeMultiplier(withEvents, nowMs);
-  const incomeRate = getTotalCashRateCentsPerSec(withEvents);
+  const incomeRate = getEffectiveCashRateCentsPerSec(withEvents, eventMultiplier);
   const earnedCents = (incomeRate * clampedDtMs) / 1_000;
 
   const enjoymentRate = getEnjoymentRateCentsPerSec(withEvents) * eventMultiplier;
