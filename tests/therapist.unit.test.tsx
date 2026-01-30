@@ -4,11 +4,16 @@ import { decodeSaveString, encodeSaveString } from "../src/game/persistence";
 
 import {
   createInitialState,
+  applyEventState,
+  getCollectionValueCents,
+  getEventIncomeMultiplier,
+  getEnjoymentRateCentsPerSec,
   getTherapistCashRateCentsPerSec,
   getTherapistSessionCashPayoutCents,
   getTherapistSessionEnjoymentCostCents,
   getTotalCashRateCentsPerSec,
   getTherapistXpRequiredForNextLevel,
+  getWatchModels,
   performTherapistSession,
 } from "../src/game/state";
 
@@ -106,6 +111,90 @@ describe("therapist career", () => {
     const totalRate = getTotalCashRateCentsPerSec(seededState);
     const nextState = step(seededState, 1_000, 0);
     expect(nextState.currencyCents).toBe(seededState.currencyCents + totalRate);
+  });
+
+  it("applies event multiplier to cash accrual in sim", () => {
+    const baseState = createInitialState();
+    const nowMs = 1_700_000_000_000;
+    const seededState = {
+      ...baseState,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        level: 2,
+      },
+      eventStates: {
+        ...baseState.eventStates,
+        "auction-weekend": {
+          activeUntilMs: nowMs + 60_000,
+          nextAvailableAtMs: 0,
+          incomeMultiplier: 1.15,
+        },
+      },
+    };
+
+    const withEvents = applyEventState(seededState, nowMs, getCollectionValueCents(seededState));
+    const eventMultiplier = getEventIncomeMultiplier(withEvents, nowMs);
+    const expected = getTotalCashRateCentsPerSec(withEvents) * eventMultiplier;
+
+    const nextState = step(seededState, 1_000, nowMs);
+    const actualDelta = nextState.currencyCents - seededState.currencyCents;
+
+    expect(actualDelta).toBeGreaterThanOrEqual(expected - 1);
+    expect(actualDelta).toBeLessThanOrEqual(expected + 1);
+  });
+
+  it("matches enjoyment accrual with upgrades under events", () => {
+    const baseState = createInitialState();
+    const nowMs = 1_700_000_000_000;
+    const [firstModel] = getWatchModels();
+
+    expect(firstModel).toBeTruthy();
+    if (!firstModel) {
+      return;
+    }
+
+    const seededState = {
+      ...baseState,
+      watchModels: {
+        ...baseState.watchModels,
+        [firstModel.id]: 2,
+      },
+    };
+    const eventStates = {
+      ...baseState.eventStates,
+      "auction-weekend": {
+        activeUntilMs: nowMs + 60_000,
+        nextAvailableAtMs: 0,
+        incomeMultiplier: 1.15,
+      },
+    };
+
+    const withoutUpgrade = {
+      ...seededState,
+      eventStates,
+    };
+    const withUpgrade = {
+      ...seededState,
+      upgrades: {
+        ...seededState.upgrades,
+        "polishing-tools": 1,
+      },
+      eventStates,
+    };
+
+    expect(getEnjoymentRateCentsPerSec(withUpgrade)).not.toBe(
+      getEnjoymentRateCentsPerSec(withoutUpgrade),
+    );
+
+    const withEvents = applyEventState(withUpgrade, nowMs, getCollectionValueCents(withUpgrade));
+    const eventMultiplier = getEventIncomeMultiplier(withEvents, nowMs);
+
+    const nextState = step(withUpgrade, 1_000, nowMs);
+    const actualDelta = nextState.enjoymentCents - withUpgrade.enjoymentCents;
+    const expected = getEnjoymentRateCentsPerSec(withEvents) * eventMultiplier;
+
+    expect(actualDelta).toBeGreaterThanOrEqual(expected - 1);
+    expect(actualDelta).toBeLessThanOrEqual(expected + 1);
   });
 });
 
