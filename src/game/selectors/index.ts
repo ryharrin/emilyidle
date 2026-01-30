@@ -69,43 +69,25 @@ import {
   getWorkshopIncomeMultiplier,
 } from "./incomeMultipliers";
 import { getDuplicateRewardSum } from "./duplicates";
+import { getTherapistCareerEffectMultipliers } from "./careerStages";
+import {
+  getTherapistBaseSessionCashPayoutCents,
+  getTherapistBaseSessionCooldownMs,
+  getTherapistBaseSessionEnjoymentCostCents,
+  getTherapistSalaryCentsPerSec,
+} from "./therapistPolicy";
 
 export * from "./enjoyment";
 export * from "./incomeMultipliers";
 export * from "./interactions";
 export * from "./watchModels";
+export * from "./careerStages";
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
 const INCOME_SOFTCAP_CENTS_PER_SEC = 60_000;
 const INCOME_SOFTCAP_EXPONENT = 0.6;
 
-const THERAPIST_BASE_SALARY_CENTS_PER_SEC = 4;
-const THERAPIST_SALARY_CENTS_PER_SEC_PER_LEVEL = 2;
-
-const THERAPIST_BASE_SESSION_COOLDOWN_MS = 30_000;
-const THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS = 150;
-const THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS = 500;
-
-const THERAPIST_SESSION_TRACK_CONFIG: Record<
-  CareerTrackId,
-  { enjoymentCostMultiplier: number; cashPayoutMultiplier: number; cooldownMs: number }
-> = {
-  "private-practice": {
-    enjoymentCostMultiplier: 1,
-    cashPayoutMultiplier: 1,
-    cooldownMs: 30_000,
-  },
-  "va-hospital": {
-    enjoymentCostMultiplier: 0.9,
-    cashPayoutMultiplier: 0.8,
-    cooldownMs: 45_000,
-  },
-  "research-teaching": {
-    enjoymentCostMultiplier: 0.85,
-    cashPayoutMultiplier: 0.75,
-    cooldownMs: 60_000,
-  },
-};
+// Therapist economy constants live in therapistConstants.ts; formulas in therapistPolicy.ts.
 
 const COLLECTION_BONUS_STEPS: Array<{ thresholdCents: number; multiplier: number }> = [
   { thresholdCents: 7_500, multiplier: 1.02 },
@@ -742,11 +724,12 @@ export function getEffectiveIncomeRateCentsPerSec(state: GameState, eventMultipl
 }
 
 export function getTherapistCashRateCentsPerSec(state: GameState): number {
-  const clampedLevel = Math.max(1, Math.floor(state.therapistCareer.level));
-  const baseSalary =
-    THERAPIST_BASE_SALARY_CENTS_PER_SEC +
-    (clampedLevel - 1) * THERAPIST_SALARY_CENTS_PER_SEC_PER_LEVEL;
-  return Math.max(0, Math.floor(baseSalary)) * getPrestigeLegacyMultiplier(state);
+  const effects = getTherapistCareerEffectMultipliers(state);
+  return getTherapistSalaryCentsPerSec({
+    level: state.therapistCareer.level,
+    prestigeLegacyMultiplier: getPrestigeLegacyMultiplier(state),
+    salaryMultiplier: effects.salaryMultiplier,
+  });
 }
 
 export function getTotalCashRateCentsPerSec(state: GameState): number {
@@ -990,48 +973,39 @@ export type TherapistSessionPolicy = {
 };
 
 export function getTherapistSessionCooldownMs(
-  level: number,
+  state: GameState,
   trackId: CareerTrackId | null,
 ): number {
-  void level;
   if (!trackId) {
     return 0;
   }
-  return THERAPIST_SESSION_TRACK_CONFIG[trackId]?.cooldownMs ?? THERAPIST_BASE_SESSION_COOLDOWN_MS;
+  const effects = getTherapistCareerEffectMultipliers(state);
+  const base = getTherapistBaseSessionCooldownMs(trackId);
+  return Math.max(0, Math.floor(base * effects.sessionCooldownMultiplier));
 }
 
 export function getTherapistSessionEnjoymentCostCents(
-  level: number,
+  state: GameState,
   trackId: CareerTrackId | null,
 ): number {
   if (!trackId) {
     return 0;
   }
-  const clampedLevel = Math.max(1, Math.floor(level));
-  const multiplier = THERAPIST_SESSION_TRACK_CONFIG[trackId]?.enjoymentCostMultiplier ?? 1;
-  return Math.max(
-    0,
-    Math.floor(
-      THERAPIST_BASE_SESSION_ENJOYMENT_COST_CENTS * (1 + 0.12 * (clampedLevel - 1)) * multiplier,
-    ),
-  );
+  const effects = getTherapistCareerEffectMultipliers(state);
+  const base = getTherapistBaseSessionEnjoymentCostCents(state.therapistCareer.level, trackId);
+  return Math.max(0, Math.floor(base * effects.sessionEnjoymentCostMultiplier));
 }
 
 export function getTherapistSessionCashPayoutCents(
-  level: number,
+  state: GameState,
   trackId: CareerTrackId | null,
 ): number {
   if (!trackId) {
     return 0;
   }
-  const clampedLevel = Math.max(1, Math.floor(level));
-  const multiplier = THERAPIST_SESSION_TRACK_CONFIG[trackId]?.cashPayoutMultiplier ?? 1;
-  return Math.max(
-    0,
-    Math.floor(
-      THERAPIST_BASE_SESSION_CASH_PAYOUT_CENTS * (1 + 0.18 * (clampedLevel - 1)) * multiplier,
-    ),
-  );
+  const effects = getTherapistCareerEffectMultipliers(state);
+  const base = getTherapistBaseSessionCashPayoutCents(state.therapistCareer.level, trackId);
+  return Math.max(0, Math.floor(base * effects.sessionCashPayoutMultiplier));
 }
 
 export function getTherapistSessionPolicy(state: GameState): TherapistSessionPolicy {
@@ -1050,9 +1024,9 @@ export function getTherapistSessionPolicy(state: GameState): TherapistSessionPol
 
   return {
     supportsSessions,
-    enjoymentCostCents: getTherapistSessionEnjoymentCostCents(career.level, trackId),
-    cashPayoutCents: getTherapistSessionCashPayoutCents(career.level, trackId),
-    cooldownMs: getTherapistSessionCooldownMs(career.level, trackId),
+    enjoymentCostCents: getTherapistSessionEnjoymentCostCents(state, trackId),
+    cashPayoutCents: getTherapistSessionCashPayoutCents(state, trackId),
+    cooldownMs: getTherapistSessionCooldownMs(state, trackId),
   };
 }
 

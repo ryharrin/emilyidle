@@ -41,11 +41,11 @@ describe("therapist career", () => {
 
     const nowMs = 1_000;
     const payout = getTherapistSessionCashPayoutCents(
-      seededState.therapistCareer.level,
+      seededState,
       seededState.therapistCareer.activeTrackId,
     );
     const cost = getTherapistSessionEnjoymentCostCents(
-      seededState.therapistCareer.level,
+      seededState,
       seededState.therapistCareer.activeTrackId,
     );
 
