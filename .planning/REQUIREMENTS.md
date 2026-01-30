@@ -126,7 +126,6 @@ Deferred to a future milestone.
 | CAREER-02 | Phase 27 | Complete |
 | WATCH-01 | Phase 25 | Complete |
 | WATCH-02 | Phase 25 | Complete |
-| WATCH-03 | Phase 28 | Pending |
 | WATCH-03 | Phase 28 | Complete |
 | ACT-01 | Phase 29 | Complete |
 | ACT-02 | Phase 29 | Complete |
