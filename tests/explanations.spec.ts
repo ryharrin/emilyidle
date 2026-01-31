@@ -71,6 +71,24 @@ test("catalog help opens shopping guidance", async ({ page }) => {
   await expect(page.getByTestId("help-active-section")).toHaveText(/Catalog shopping/);
 });
 
+test("career start explain trigger opens starting-career help", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Career" }).click();
+
+  await page.getByTestId("explain-career-start").click();
+  await expect(page.getByTestId("help-modal")).toBeVisible();
+  await expect(page.getByTestId("help-active-section")).toHaveText(/Starting your career/);
+});
+
+test("career stages explain trigger opens stages help", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Career" }).click();
+
+  await page.getByTestId("explain-career-stages").click();
+  await expect(page.getByTestId("help-modal")).toBeVisible();
+  await expect(page.getByTestId("help-active-section")).toHaveText(/Career stages/);
+});
+
 test("stats rate breakdown disclosures render line items", async ({ page }) => {
   const seededState = {
     currencyCents: 10_000,
