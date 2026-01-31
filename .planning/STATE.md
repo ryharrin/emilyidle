@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 ## Current Position
 
-Phase: 35-balance-and-help-clarity
-Plan: 35-02
+Phase: 36-carry-forward-ux-bugfixes
+Plan: 36-01
 Status: Phase complete
-Last activity: 2026-01-31 — updated Help + ExplainButtons; verified via typecheck/unit/e2e
-Progress: ███████████░ 99%
-Next Phase: 36-01 — Carry-forward UX bugfixes
+Last activity: 2026-01-31 — fixed quartz set-time alignment; added e2e regression; verified via typecheck/e2e
+Progress: ████████████ 100%
+Next Phase: (none) — v3.1 ready (pacing feel still needs human playtest)
 
 ## Accumulated Context
 
@@ -63,6 +63,7 @@ Next Phase: 36-01 — Carry-forward UX bugfixes
 | 30-04 | None - followed plan as specified (checkpoint approved via UAT evidence) | Verified via 30-UAT.md artifacts |
 | 31-01 | Reframe upgrades to affect enjoyment (not dollars) and apply events to both enjoyment + cash | Close v3.0 audit gaps while keeping career-first cash economy |
 | 35-02 | None - followed plan as specified | No deviations |
+| 36-01 | None - followed plan as specified | No deviations |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)

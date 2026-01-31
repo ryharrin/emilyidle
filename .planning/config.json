@@ -10,6 +10,13 @@
     "execute_next_plan": false,
     "issues_review": false,
     "confirm_transition": false
+  },  "parallelization": {
+    "enabled": true,
+    "plan_level": true,
+    "task_level": true,
+    "skip_checkpoints": true,
+    "max_concurrent_agents": 5,
+    "min_plans_for_parallel": 2
   },
   "safety": {
     "always_confirm_destructive": true,
