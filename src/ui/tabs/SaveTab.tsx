@@ -2,6 +2,7 @@ import React from "react";
 
 import { createInitialState, getMilestones } from "../../game/state";
 import type { GameState, WatchItemDefinition } from "../../game/state";
+import { ConfirmModal } from "../components/ConfirmModal";
 
 type ThemeMode = "system" | "light" | "dark";
 
@@ -57,6 +58,7 @@ type SaveTabProps = {
   onExport: () => void;
   onImport: () => void;
   saveStatus: string;
+  onClearSave: () => void;
 };
 
 export function SaveTab({
@@ -77,7 +79,10 @@ export function SaveTab({
   onExport,
   onImport,
   saveStatus,
+  onClearSave,
 }: SaveTabProps) {
+  const [confirmClearOpen, setConfirmClearOpen] = React.useState(false);
+
   return (
     <section
       className="panel"
@@ -91,9 +96,9 @@ export function SaveTab({
           <header className="panel-header">
             <div>
               <p className="eyebrow">Preferences</p>
-              <h2>Save</h2>
+              <h2>Settings</h2>
               <p className="muted">
-                Back up your progress, import a save string, and tweak settings.
+                Back up your progress, import a save string, and adjust settings.
               </p>
             </div>
           </header>
@@ -101,7 +106,30 @@ export function SaveTab({
             <button type="button" className="secondary" onClick={onExport}>
               Export
             </button>
+            <button
+              type="button"
+              className="danger"
+              data-testid="settings-clear-save"
+              onClick={() => setConfirmClearOpen(true)}
+            >
+              Clear save
+            </button>
           </div>
+
+          <ConfirmModal
+            open={confirmClearOpen}
+            title="Clear local save?"
+            description="This clears the local save on this device and reloads the page. Export first if you want a backup."
+            confirmLabel="Clear save"
+            confirmClassName="danger"
+            confirmTestId="settings-clear-save-confirm"
+            cancelTestId="settings-clear-save-cancel"
+            onCancel={() => setConfirmClearOpen(false)}
+            onConfirm={() => {
+              setConfirmClearOpen(false);
+              onClearSave();
+            }}
+          />
 
           <fieldset className="controls" data-testid="audio-controls">
             <legend>Audio settings</legend>

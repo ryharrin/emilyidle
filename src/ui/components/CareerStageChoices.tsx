@@ -4,6 +4,9 @@ import { CAREER_STAGES, type CareerStageId } from "../../game/data/careerStages"
 import { getTherapistCareer, getTherapistCareerStage } from "../../game/state";
 import type { GameState } from "../../game/state";
 import { CareerStageChoiceBlocks } from "./CareerStageChoiceBlocks";
+import { CareerStageChoiceSummary } from "./CareerStageChoiceSummary";
+import { ExplainButton } from "../help/ExplainButton";
+import { HELP_SECTION_IDS } from "../help/helpContent";
 
 type CareerStageChoicesProps = {
   state: GameState;
@@ -29,6 +32,7 @@ function StageTimeline({
             Stages unlock at specific career levels and include permanent choices.
           </p>
         </div>
+        <ExplainButton sectionId={HELP_SECTION_IDS.careerStages} label="Explain career stages" />
         <div className="career-track-level" data-testid="career-stage-current">
           {currentLabel} - Level {level.toLocaleString()}
         </div>
@@ -65,6 +69,7 @@ export function CareerStageChoices({ state, onPurchase }: CareerStageChoicesProp
   return (
     <>
       <StageTimeline currentStageId={currentStage.id} level={career.level} />
+      <CareerStageChoiceSummary state={state} />
       <CareerStageChoiceBlocks state={state} onPurchase={onPurchase} />
     </>
   );

@@ -218,7 +218,7 @@ export function CollectionTab({
       nextUnlockItems.push({
         id: "catalog",
         eyebrow: "Next unlock",
-        title: "Catalog",
+        title: "Shop",
         detail: detail.label,
         currentLabel: formatMoneyFromCents(detail.current),
         thresholdLabel: formatMoneyFromCents(detail.threshold),
@@ -351,7 +351,7 @@ export function CollectionTab({
               <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
                 <header className="panel-header">
                   <div>
-                    <p className="eyebrow">Catalog bonuses</p>
+                    <p className="eyebrow">Archive bonuses</p>
                     <h3>Tier bonuses</h3>
                     <p className="muted">Unlock archive tiers by discovering references.</p>
                   </div>
@@ -406,6 +406,9 @@ export function CollectionTab({
               </div>
             </div>
             <section className="panel catalog-panel" id="catalog-shop" data-testid="catalog-shop">
+              <p className="muted">
+                Shop is the purchase flow. Catalog is the archive tab for references and licensing.
+              </p>
               <CatalogPurchasePanel
                 state={state}
                 onNavigate={onNavigate}

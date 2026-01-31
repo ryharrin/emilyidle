@@ -106,6 +106,7 @@ export function CatalogPurchasePanel({
   atelierUnlocked = true,
 }: CatalogPurchasePanelProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
+  const embeddedInVault = showBalance;
   const craftingPartsPerWatch = getCraftingPartsPerWatch();
   const watchModels = getWatchModels();
   const watchItems = getWatchItems();
@@ -126,6 +127,14 @@ export function CatalogPurchasePanel({
   const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
   const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
   const purchaseHighlightTimeouts = React.useRef<Map<string, number>>(new Map());
+
+  const handleBrowseWatches = React.useCallback(() => {
+    onCatalogTabChange("unowned");
+    if (typeof document === "undefined") {
+      return;
+    }
+    document.getElementById("catalog-unowned")?.scrollIntoView({ block: "start" });
+  }, [onCatalogTabChange]);
 
   const handleDetailsToggle = React.useCallback((entryId: string, isOpen: boolean) => {
     setExpandedCards((prev) => ({
@@ -231,9 +240,13 @@ export function CatalogPurchasePanel({
     <>
       <header className="panel-header catalog-header">
         <div>
-          <p className="eyebrow">Archive</p>
-          <h2>Catalog</h2>
-          <p className="muted">Explore reference pieces and track licensing sources.</p>
+          <p className="eyebrow">{embeddedInVault ? "Shop" : "Archive"}</p>
+          {embeddedInVault ? <h3>Shop</h3> : <h2>Catalog</h2>}
+          <p className="muted">
+            {embeddedInVault
+              ? "Buy watches here; the Catalog tab is the archive for references and licensing."
+              : "Browse references and licensing details; buy watches from the Shop in Vault."}
+          </p>
         </div>
         <div className="catalog-header-actions">
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
@@ -242,7 +255,7 @@ export function CatalogPurchasePanel({
           <div className="catalog-help" data-testid="catalog-help">
             <ExplainButton
               sectionId={HELP_SECTION_IDS.catalogShop}
-              label="Catalog help"
+              label={embeddedInVault ? "Shop help" : "Catalog help"}
               className="help-open-button"
             />
           </div>
@@ -349,7 +362,11 @@ export function CatalogPurchasePanel({
         </div>
         <div className="filter-field" data-testid="catalog-owned-tabs">
           <span className="filter-label">View</span>
-          <div className="catalog-tablist" role="tablist" aria-label="Catalog ownership">
+          <div
+            className="catalog-tablist"
+            role="tablist"
+            aria-label={embeddedInVault ? "Shop view" : "Catalog ownership"}
+          >
             {(
               [
                 { id: "unowned", label: "Unowned" },
@@ -373,87 +390,79 @@ export function CatalogPurchasePanel({
           </div>
         </div>
       </form>
-      <section className="catalog-collection" aria-labelledby="catalog-collection-title">
-        <header className="panel-header">
-          <div>
-            <p className="eyebrow">Collection book</p>
-            <h3 id="catalog-collection-title">Archive shelf</h3>
-            <p className="muted">Discovered references appear here for quick review.</p>
-          </div>
-          <div className="results-count" data-testid="catalog-discovered-count">
-            {discoveredCatalogEntries.length} / {catalogEntries.length} discovered
-          </div>
-        </header>
-        {discoveredCatalogEntries.length > 0 ? (
-          <div className="catalog-grid" data-testid="catalog-discovered-grid">
-            {discoveredCatalogEntries.map((entry) => {
-              const tags = getCatalogEntryTags(entry);
-              return (
-                <article
-                  key={entry.id}
-                  className="catalog-card catalog-discovered"
-                  data-testid="catalog-card"
-                >
-                  <div className="catalog-media">
-                    <img
-                      src={getCatalogImageUrl(entry)}
-                      alt={`${entry.brand} ${entry.model}`}
-                      loading="lazy"
-                      onError={(event) => {
-                        const target = event.currentTarget;
-                        const placeholder =
-                          "data:image/svg+xml;utf8," +
-                          encodeURIComponent(
-                            `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                              `<rect width='100%' height='100%' fill='#131720'/>` +
-                              `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                              `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                              `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                              `</svg>`,
-                          );
+      {!embeddedInVault && (
+        <section className="catalog-collection" aria-labelledby="catalog-collection-title">
+          <header className="panel-header">
+            <div>
+              <p className="eyebrow">Collection book</p>
+              <h3 id="catalog-collection-title">Archive shelf</h3>
+              <p className="muted">Discovered references appear here for quick review.</p>
+            </div>
+            <div className="results-count" data-testid="catalog-discovered-count">
+              {discoveredCatalogEntries.length} / {catalogEntries.length} discovered
+            </div>
+          </header>
+          {discoveredCatalogEntries.length > 0 ? (
+            <div className="catalog-grid" data-testid="catalog-discovered-grid">
+              {discoveredCatalogEntries.map((entry) => {
+                const tags = getCatalogEntryTags(entry);
+                return (
+                  <article
+                    key={entry.id}
+                    className="catalog-card catalog-discovered"
+                    data-testid="catalog-card"
+                  >
+                    <div className="catalog-media">
+                      <img
+                        src={getCatalogImageUrl(entry)}
+                        alt={`${entry.brand} ${entry.model}`}
+                        loading="lazy"
+                        onError={(event) => {
+                          const target = event.currentTarget;
+                          const placeholder =
+                            "data:image/svg+xml;utf8," +
+                            encodeURIComponent(
+                              `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
+                                `<rect width='100%' height='100%' fill='#131720'/>` +
+                                `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
+                                `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
+                                `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
+                                `</svg>`,
+                            );
 
-                        if (target.dataset.fallback !== "true") {
-                          target.dataset.fallback = "true";
-                          target.src = placeholder;
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="catalog-content">
-                    <div className="catalog-title">
-                      <div>
-                        <p className="catalog-brand">{entry.brand}</p>
-                        <h3>{entry.model}</h3>
-                      </div>
-                      <p className="catalog-year">{entry.year}</p>
+                          if (target.dataset.fallback !== "true") {
+                            target.dataset.fallback = "true";
+                            target.src = placeholder;
+                          }
+                        }}
+                      />
                     </div>
-                    <p>{entry.description}</p>
-                    <p className="catalog-tags">{tags.join(" · ")}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="catalog-empty" data-testid="catalog-discovered-empty">
-            <EmptyStateCTA
-              title="No references discovered yet"
-              body="Buy and interact with watch models in the Vault to discover catalog references and unlock tier bonuses."
-              ctaLabel="Go to Vault"
-              onCta={() => onNavigate("collection", "catalog-shop")}
-            />
-          </div>
-        )}
-      </section>
-      {showBalance && (
-        <div className="catalog-balance" data-testid="catalog-balance">
-          <div className="results-count">
-            Vault dollars {formatMoneyFromCents(state.currencyCents)}
-          </div>
-          <div className="results-count">
-            Vault enjoyment {formatMoneyFromCents(state.enjoymentCents)}
-          </div>
-        </div>
+                    <div className="catalog-content">
+                      <div className="catalog-title">
+                        <div>
+                          <p className="catalog-brand">{entry.brand}</p>
+                          <h3>{entry.model}</h3>
+                        </div>
+                        <p className="catalog-year">{entry.year}</p>
+                      </div>
+                      <p>{entry.description}</p>
+                      <p className="catalog-tags">{tags.join(" · ")}</p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="catalog-empty" data-testid="catalog-discovered-empty">
+              <EmptyStateCTA
+                title="No references discovered yet"
+                body="Buy and interact with watch models in the Vault to discover catalog references and unlock tier bonuses."
+                ctaLabel="Go to Vault"
+                onCta={() => onNavigate("collection", "catalog-shop")}
+              />
+            </div>
+          )}
+        </section>
       )}
       <section
         id="catalog-unowned"
@@ -715,9 +724,17 @@ export function CatalogPurchasePanel({
               <div className="catalog-empty" data-testid="catalog-owned-empty">
                 <EmptyStateCTA
                   title="No owned references yet"
-                  body="Build your vault collection to start filling your archive shelf with owned references."
-                  ctaLabel="Build collection"
-                  onCta={() => onNavigate("collection", "catalog-shop")}
+                  body={
+                    embeddedInVault
+                      ? "Buy watches to start filling your shelf with owned references."
+                      : "Build your vault collection to start filling your archive shelf with owned references."
+                  }
+                  ctaLabel={embeddedInVault ? "Browse watches" : "Build collection"}
+                  onCta={
+                    embeddedInVault
+                      ? handleBrowseWatches
+                      : () => onNavigate("collection", "catalog-shop")
+                  }
                 />
               </div>
             ) : (
@@ -1126,7 +1143,9 @@ export function CatalogTabLegacy({
             <div>
               <p className="eyebrow">Archive</p>
               <h2>Catalog</h2>
-              <p className="muted">Explore reference pieces and track licensing sources.</p>
+              <p className="muted">
+                Archive reference pieces and licensing sources. The Shop in Vault handles purchases.
+              </p>
             </div>
             <div className="catalog-header-actions">
               <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
