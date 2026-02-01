@@ -47,14 +47,18 @@ Emily Idle is a browser-based idle/incremental game themed around luxury watch c
 - Sessions work immediately after entering the program (pre-track window) so the salary window refresh loop is achievable before level 3.
 - Quartz set-time mini-game alignment is fixed on desktop + mobile (with regression coverage).
 
-## Next Milestone (Proposed): v3.2 Catalog/Vault Consolidation (Planning)
+## Next Milestone (Proposed): v4.0 Watch Interactions & Catalog Polish (Planning)
 
-**Goal:** Make Catalog/Vault feel like one coherent surface: unified purchase flow, clearer vault information, and fewer places to "learn the same thing twice".
+**Goal:** Deepen the watch interaction experience with improved mini-games and catalog polish.
 
-**Target features:**
-- Merge/clarify Vault info directly into the Catalog shopping surface.
-- Ensure Catalog cards remain the sole purchase flow for watches.
-- Audit upgrade copy + previews to avoid implying watch-driven cash multipliers.
+**Target features (from NOTES.md backlog):**
+- Winding mini-game: More interactive control with visual winding animation
+- Additional automatic watch mini-games: Setting time/date, changing strap
+- Catalog expansion: More watch brands and models
+- Catalog visibility fixes: Undiscovered watches greyed out with lock icon
+- Fix missing catalog images for certain watch models
+
+**Intermediate milestone (optional):** v3.2 Catalog/Vault Consolidation - Merge vault info into catalog shopping surface
 
 ## Current State
 

@@ -1,5 +1,26 @@
 # Project Milestones: Emily Idle
 
+## v4.0 Watch Interactions & Catalog Polish (Planned)
+
+**Goal:** Deepen watch interaction mini-games and polish the catalog experience.
+
+**Target Features (from NOTES.md):**
+- Winding mini-game: More interactive control with visual winding animation
+- Additional automatic watch mini-games: Setting time/date, changing strap
+- Catalog expansion: More watch brands and models
+- Catalog visibility fixes: Undiscovered watches greyed out with lock icon (not hidden)
+- Fix missing catalog images for certain watch models
+
+**Bug Fixes:**
+- Undiscovered watches visibility (greyed out vs hidden)
+- Missing catalog images
+
+**Status:** Planning phase - requirements and roadmap to be defined
+
+**Depends on:** v3.2 Catalog/Vault Consolidation (optional intermediate milestone)
+
+---
+
 ## v3.1 Career Depth & Landing (Shipped: 2026-02-01)
 
 **Delivered:** Career becomes the default landing with staged progression, permanent choices, progress guidance, and a clearer salary window + sessions loop.

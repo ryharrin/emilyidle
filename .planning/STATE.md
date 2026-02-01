@@ -6,7 +6,7 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Planning next milestone
+**Current focus:** Planning v4.0 milestone (Watch Interactions & Catalog Polish)
 
 ## Current Position
 
@@ -72,9 +72,18 @@ Next Phase: (none) — ready to start the next milestone cycle
 - Test gap: no dedicated Playwright E2E for therapist session deltas/cooldown
 
 ### Blockers/Concerns Carried Forward
+
+**v3.2 Catalog/Vault Consolidation (Intermediate):**
 - Catalog cards should be the sole purchase flow for watches.
 - Vault information needs to be merged into the Catalog surface.
 - Upgrade copy and previews must not claim cash multipliers if cash accrual is career-salary driven.
+
+**v4.0 Watch Interactions & Catalog Polish (from NOTES.md):**
+- Winding mini-game needs more interactive control and visual animation (NOTES.md planned feature)
+- Additional automatic watch mini-games needed: setting time/date, changing strap (NOTES.md planned feature)
+- Catalog needs more watch brands and models (NOTES.md planned feature)
+- Undiscovered watches should be greyed out with lock icon, not hidden (NOTES.md bug fix)
+- Fix missing images for certain watch models in catalog (NOTES.md bug fix)
 
 ### Quick Tasks Completed
 
