@@ -9,6 +9,7 @@ import {
   getEventIncomeMultiplier,
   getEnjoymentRateCentsPerSec,
   getTherapistCashRateCentsPerSec,
+  getTherapistSessionPolicy,
   getTherapistSessionCashPayoutCents,
   getTherapistSessionEnjoymentCostCents,
   getTotalCashRateCentsPerSec,
@@ -27,6 +28,26 @@ describe("therapist career", () => {
     expect(state.therapistCareer.nextAvailableAtMs).toBe(0);
   });
 
+  it("supports sessions before track choice unlock", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+        level: 1,
+        activeTrackId: null,
+        primaryTrackId: null,
+      },
+    };
+
+    const policy = getTherapistSessionPolicy(seededState);
+
+    expect(policy.supportsSessions).toBe(true);
+    expect(policy.cashPayoutCents).toBeGreaterThan(0);
+    expect(policy.cooldownMs).toBeGreaterThan(0);
+  });
+
   it("spends enjoyment to earn cash + XP", () => {
     const baseState = createInitialState();
     const seededState = {
@@ -34,6 +55,7 @@ describe("therapist career", () => {
       enjoymentCents: 10_000,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
         activeTrackId: "private-practice" as const,
         freeSessionAvailable: false,
       },
@@ -65,6 +87,7 @@ describe("therapist career", () => {
       enjoymentCents: 10_000,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
         activeTrackId: "private-practice" as const,
         freeSessionAvailable: false,
         level: 1,
@@ -84,6 +107,7 @@ describe("therapist career", () => {
       enjoymentCents: 2_000,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
         activeTrackId: "private-practice" as const,
         freeSessionAvailable: true,
       },
@@ -97,19 +121,22 @@ describe("therapist career", () => {
 
   it("adds passive salary to cash rate and sim ticks", () => {
     const baseState = createInitialState();
+    const nowMs = 0;
     const seededState = {
       ...baseState,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+        salaryActiveUntilMs: 1_000_000,
         level: 2,
       },
     };
 
-    const therapistRate = getTherapistCashRateCentsPerSec(seededState);
+    const therapistRate = getTherapistCashRateCentsPerSec(seededState, nowMs);
     expect(therapistRate).toBeGreaterThan(0);
 
-    const totalRate = getTotalCashRateCentsPerSec(seededState);
-    const nextState = step(seededState, 1_000, 0);
+    const totalRate = getTotalCashRateCentsPerSec(seededState, nowMs);
+    const nextState = step(seededState, 1_000, nowMs);
     expect(nextState.currencyCents).toBe(seededState.currencyCents + totalRate);
   });
 
@@ -120,6 +147,8 @@ describe("therapist career", () => {
       ...baseState,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+        salaryActiveUntilMs: nowMs + 300_000,
         level: 2,
       },
       eventStates: {
@@ -134,7 +163,7 @@ describe("therapist career", () => {
 
     const withEvents = applyEventState(seededState, nowMs, getCollectionValueCents(seededState));
     const eventMultiplier = getEventIncomeMultiplier(withEvents, nowMs);
-    const expected = getTotalCashRateCentsPerSec(withEvents) * eventMultiplier;
+    const expected = getTotalCashRateCentsPerSec(withEvents, nowMs) * eventMultiplier;
 
     const nextState = step(seededState, 1_000, nowMs);
     const actualDelta = nextState.currencyCents - seededState.currencyCents;
@@ -260,7 +289,7 @@ describe("therapist persistence", () => {
     expect(decoded.save.state.therapistCareer.xp).toBe(0);
     expect(decoded.save.state.therapistCareer.nextAvailableAtMs).toBe(0);
     expect(decoded.save.state.therapistCareer.activeTrackId).toBeNull();
-    expect(decoded.save.state.therapistCareer.pointsAvailable).toBe(1);
+    expect(decoded.save.state.therapistCareer.pointsAvailable).toBe(0);
     expect(decoded.save.state.therapistCareer.spentNodes).toEqual({});
     expect(decoded.save.state.therapistCareer.freeSessionAvailable).toBe(true);
   });
