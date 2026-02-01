@@ -7,13 +7,10 @@
 **Target Features (from NOTES.md):**
 - Winding mini-game: More interactive control with visual winding animation
 - Additional automatic watch mini-games: Setting time/date, changing strap
-- Catalog expansion: More watch brands and models
+- Catalog expansion: More watch brands and models, from low end to luxury
 - Catalog visibility fixes: Undiscovered watches greyed out with lock icon (not hidden)
-- Fix missing catalog images for certain watch models
-
-**Bug Fixes:**
-- Undiscovered watches visibility (greyed out vs hidden)
-- Missing catalog images
+- Individual watch stats: Show enjoyment/cash rates per watch in catalog and vault and make them more varied
+- Improved mobile experience: Responsive design and touch-friendly interactions
 
 **Status:** Planning phase - requirements and roadmap to be defined
 
