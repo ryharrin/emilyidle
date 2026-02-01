@@ -1,25 +1,22 @@
 ---
 phase: 35-balance-and-help-clarity
-verified: 2026-02-01T04:00:49Z
-status: human_needed
-score: 6/7 must-haves verified
+verified: 2026-02-01T04:06:17Z
+status: passed
+score: 7/7 must-haves verified
 re_verification:
   previous_status: human_needed
   previous_score: 6/7
   gaps_closed: []
   gaps_remaining: []
   regressions: []
-human_verification:
-  - test: "Career pacing feels smooth across stages"
-    expected: "From a fresh save through multiple stage unlocks, progression has no deadlocks or grind spikes; the salary window/session loop stays understandable and motivating."
-    why_human: "Pacing 'feel' and grind spikes depend on play experience, not just code wiring or unit/e2e tests."
+human_verification: []
 ---
 
 # Phase 35: Balance & Help Clarity Verification Report
 
 **Phase Goal:** Pacing is smooth; help/copy explains the loop and choices.
-**Verified:** 2026-02-01T04:00:49Z
-**Status:** human_needed
+**Verified:** 2026-02-01T04:06:17Z
+**Status:** passed
 **Re-verification:** Yes
 
 ## Goal Achievement
@@ -34,9 +31,9 @@ human_verification:
 | 4 | In-context ExplainButtons exist for (a) starting career and (b) career stages, and they open the intended Help anchors. | ✓ VERIFIED | Buttons wired via `ExplainButton(sectionId=HELP_SECTION_IDS.careerStart/careerStages)` in `src/ui/components/CareerNextActionCard.tsx` and `src/ui/components/CareerStageChoices.tsx`; Playwright verifies `explain-career-start` and `explain-career-stages` in `tests/explanations.spec.ts`. |
 | 5 | Help content explains the early-career loop and choices in player-facing terms (start gate, stipend, salary window, sessions vs cash/sec, stage visibility, respec). | ✓ VERIFIED | Dedicated sections + updated progression copy exist in `src/ui/help/helpContent.ts` (`HELP_SECTION_IDS.careerStart`, `HELP_SECTION_IDS.careerStages`, `HELP_SECTION_IDS.careerProgression`). |
 | 6 | Shop vs Catalog surfaces are explained so players are not misled into thinking there are two purchase systems. | ✓ VERIFIED | Help clarifies Shop vs Catalog in `src/ui/help/helpContent.ts` (`catalogFirst`, `catalogShop`); in-UI copy in `src/ui/tabs/CollectionTab.tsx` near `#catalog-shop`; Catalog header copy in `src/ui/tabs/CatalogTab.tsx`; e2e anchor test in `tests/explanations.spec.ts` (`explain-catalog-shop`). |
-| 7 | Career pacing feels smooth across stages (no deadlocks; stage unlocks are achievable without grind spikes). | ? UNCERTAIN | Requires playtesting; cannot be verified structurally. |
+| 7 | Career pacing feels smooth across stages (no deadlocks; stage unlocks are achievable without grind spikes). | ✓ VERIFIED | Human playtest approved (2026-02-01). |
 
-**Score:** 6/7 truths verified
+**Score:** 7/7 truths verified
 
 ### Required Artifacts
 
@@ -68,7 +65,7 @@ human_verification:
 | Requirement | Status | Blocking Issue |
 |------------|--------|----------------|
 | CAREER-CLAR-01 | ✓ SATISFIED | None found in structural verification. |
-| CAREER-BAL-01 | ? NEEDS HUMAN | Pacing smoothness requires playtesting across stages. |
+| CAREER-BAL-01 | ✓ SATISFIED | Human playtest approved (2026-02-01). |
 
 ### Anti-Patterns Found
 
@@ -76,13 +73,9 @@ human_verification:
 |------|------|---------|----------|--------|
 | (none) | - | - | - | No TODO/FIXME/placeholder stubs found in phase-critical artifacts; remaining "placeholder" strings are input/image placeholders (non-blocking). |
 
-### Human Verification Required
+### Human Verification
 
-### 1. Career pacing feels smooth across stages
-
-**Test:** Start a fresh save and play from Career start through multiple stage unlocks (including the track choice unlock at level 3) and onward.
-**Expected:** No deadlocks; progression is achievable without a grind spike; the salary window + session refresh loop stays motivating and understandable as stages unlock.
-**Why human:** "Smooth pacing" is experiential and depends on tuning thresholds and how the loop feels minute-to-minute.
+Pacing/feel verification approved by human playtest (2026-02-01).
 
 ### Verification Evidence Notes
 
@@ -92,5 +85,5 @@ human_verification:
 
 ---
 
-_Verified: 2026-02-01T04:00:49Z_
+_Verified: 2026-02-01T04:06:17Z_
 _Verifier: Claude (gsd-verifier)_

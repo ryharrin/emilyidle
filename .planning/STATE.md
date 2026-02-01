@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Planning v3.1 (Career Depth & Landing)
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 35-balance-and-help-clarity
-Plan: 35-03
-Status: Phase complete
-Last activity: 2026-02-01 — restored pre-track sessions and added unit regressions; verified via typecheck/unit
-Progress: ████████████████████ 99%
-Next Phase: 36-carry-forward-ux-bugfixes (complete)
+Phase: (none)
+Plan: Not started
+Status: Milestone complete
+Last activity: 2026-02-01 — completed v3.1 milestone (Career Depth & Landing)
+Progress: ████████████ 100%
+Next Phase: (none) — ready to start the next milestone cycle
 
 ## Accumulated Context
 

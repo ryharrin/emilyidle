@@ -1,5 +1,31 @@
 # Project Milestones: Emily Idle
 
+## v3.1 Career Depth & Landing (Shipped: 2026-02-01)
+
+**Delivered:** Career becomes the default landing with staged progression, permanent choices, progress guidance, and a clearer salary window + sessions loop.
+
+**Phases completed:** 32-36 (13 plans total)
+
+**Key accomplishments:**
+- Fresh saves land on Career by default; deep links override without overwriting last-tab persistence.
+- Added 5+ career stages with permanent, persisted choices and clear before/after previews.
+- Added progress bar + next unlock callout and a next-action cue.
+- Restored early-career sessions pre-track so the salary window refresh loop works immediately after entering the program.
+- Tightened help deep-links for career start/stages and clarified Shop vs Catalog purchase language.
+- Fixed quartz set-time alignment and added regression coverage (desktop + mobile).
+
+**Stats:**
+- 209 files changed
+- +11,629 / -922 lines (TypeScript/TSX/CSS + tests)
+- 5 phases, 13 plans, 26 tasks
+- 2 days (2026-01-30 -> 2026-02-01)
+
+**Git range:** `v3.0` -> `v3.1`
+
+**What's next:** Start v3.2 focused on consolidating Catalog/Vault surfaces and making watch purchasing + vault info feel unified.
+
+---
+
 ## v3.0 Catalog-First Economy & Interactions (Shipped: 2026-01-30)
 
 **Delivered:** Catalog-first purchase flow with a career-first cash economy, model-based watches, interactions mini-games, and clearer workshop/atelier pacing.
