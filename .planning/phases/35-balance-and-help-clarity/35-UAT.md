@@ -1,11 +1,11 @@
 ---
-status: complete
+status: diagnosed
 phase: 35-balance-and-help-clarity
 source:
   - 35-01-SUMMARY.md
   - 35-02-SUMMARY.md
 started: 2026-01-31T05:57:50Z
-updated: 2026-02-01T02:56:41Z
+updated: 2026-02-01T03:01:20Z
 ---
 
 ## Current Test
@@ -59,7 +59,6 @@ skipped: 0
   reason: "User reported: I'm unable to run sessions for some reason. It says sessions unavailable"
   severity: major
   test: 4
-  root_cause: ""
   artifacts:
     - path: ".planning/uat-artifacts/35/09-career-started-session-state.png"
       issue: "Session cost/payout/cooldown show Unavailable and label says Sessions unavailable after starting career"
@@ -67,5 +66,8 @@ skipped: 0
       issue: "After entering program, sessions UI is present but appears unavailable"
     - path: ".planning/uat-artifacts/35/05-after-session.png"
       issue: "After session attempt screenshot (may remain blocked if sessions are unavailable)"
-  missing: []
-  debug_session: ""
+  root_cause: "Sessions are gated on therapistCareer.activeTrackId, but entering the PhD program starts the career without setting a track; track choice unlocks at level 3, so sessions show as unavailable immediately after career start."
+  missing:
+    - "Allow pre-track sessions (fallback track/session policy) until track unlock at level 3"
+    - "Ensure salary window refresh loop is achievable before level 3"
+  debug_session: ".planning/debug/35-sessions-unavailable.md"
