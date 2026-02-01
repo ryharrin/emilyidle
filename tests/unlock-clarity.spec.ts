@@ -70,8 +70,8 @@ test("catalog empty state CTA returns to vault", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
-    items: { starter: 150, classic: 0, chronograph: 0, tourbillon: 0 },
-    watchModels: { [TOURBILLON_MODEL_ID]: 1 },
+    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
+    watchModels: {},
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
     workshopBlueprints: 0,
@@ -123,10 +123,14 @@ test("catalog empty state CTA returns to vault", async ({ page }) => {
 
   await page.goto("/");
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
-
-  await expect(page.getByTestId("catalog-discovered-empty")).toBeVisible();
-  await page.getByRole("button", { name: "Go to Vault" }).click();
+  await page.getByRole("tab", { name: "Owned", exact: true }).click();
+  await expect(page.getByTestId("catalog-owned-empty")).toBeVisible();
+  await page.getByRole("button", { name: "Browse watches" }).click();
 
   await expect(page.getByRole("tab", { name: "Vault" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByTestId("catalog-shop")).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Unowned", exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
 });

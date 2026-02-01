@@ -60,6 +60,6 @@ test("tabs respect hidden preferences", async ({ page }) => {
 
   const tabList = page.getByRole("tablist", { name: "Primary navigation" });
   await expect(tabList.getByRole("tab", { name: "Vault" })).toBeVisible();
-  await expect(tabList.getByRole("tab", { name: "Save" })).toBeVisible();
+  await expect(tabList.getByRole("tab", { name: "Settings" })).toBeVisible();
   await expect(tabList.getByRole("tab", { name: "Catalog" })).toHaveCount(0);
 });

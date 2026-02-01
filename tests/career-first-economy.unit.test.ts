@@ -15,8 +15,16 @@ import type { CareerTrackId } from "../src/game/model/types";
 
 describe("career-first economy", () => {
   it("keeps cash rate tied to career only, even with watches and events", () => {
-    const baseState = createInitialState();
     const nowMs = 1_700_000_000_000;
+    const baseStateRaw = createInitialState();
+    const baseState = {
+      ...baseStateRaw,
+      therapistCareer: {
+        ...baseStateRaw.therapistCareer,
+        careerStartId: "phd-program" as const,
+        salaryActiveUntilMs: nowMs + 300_000,
+      },
+    };
     const [firstModel] = getWatchModels();
     const stateWithWatches = {
       ...baseState,
@@ -39,19 +47,19 @@ describe("career-first economy", () => {
       },
     };
 
-    const baseRate = getTotalCashRateCentsPerSec(baseState);
-    const watchRate = getTotalCashRateCentsPerSec(stateWithWatches);
+    const baseRate = getTotalCashRateCentsPerSec(baseState, nowMs);
+    const watchRate = getTotalCashRateCentsPerSec(stateWithWatches, nowMs);
 
     expect(getEventIncomeMultiplier(baseState, nowMs)).toBe(1);
     expect(getEventIncomeMultiplier(stateWithWatches, nowMs)).toBeGreaterThan(1);
     expect(watchRate).toBeCloseTo(baseRate, 6);
 
     const eventMultiplier = getEventIncomeMultiplier(stateWithWatches, nowMs);
-    const effectiveRate = getEffectiveCashRateCentsPerSec(stateWithWatches, eventMultiplier);
+    const effectiveRate = getEffectiveCashRateCentsPerSec(stateWithWatches, nowMs, eventMultiplier);
 
     expect(effectiveRate).toBeCloseTo(baseRate * eventMultiplier, 6);
 
-    const breakdown = getCashRateBreakdown(stateWithWatches, eventMultiplier);
+    const breakdown = getCashRateBreakdown(stateWithWatches, nowMs, eventMultiplier);
     expect(breakdown.totalCentsPerSec).toBeCloseTo(effectiveRate, 6);
   });
 
@@ -63,6 +71,7 @@ describe("career-first economy", () => {
       enjoymentCents: 10_000,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
         activeTrackId: "private-practice" as CareerTrackId,
         nextAvailableAtMs: 0,
         freeSessionAvailable: true,
@@ -79,21 +88,22 @@ describe("career-first economy", () => {
     expect(canPerformTherapistSession(afterSession, nowMs + policy.cooldownMs - 1)).toBe(false);
   });
 
-  it("blocks therapist sessions for non-session tracks", () => {
+  it("allows therapist sessions across tracks", () => {
     const baseState = createInitialState();
     const nowMs = 1_700_000_000_000;
-    const nonSessionState = {
+    const sessionState = {
       ...baseState,
       enjoymentCents: 10_000,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
         activeTrackId: "va-hospital" as CareerTrackId,
         nextAvailableAtMs: 0,
         freeSessionAvailable: true,
       },
     };
 
-    expect(canPerformTherapistSession(nonSessionState, nowMs)).toBe(false);
-    expect(performTherapistSession(nonSessionState, nowMs)).toBe(nonSessionState);
+    expect(canPerformTherapistSession(sessionState, nowMs)).toBe(true);
+    expect(performTherapistSession(sessionState, nowMs)).not.toBe(sessionState);
   });
 });

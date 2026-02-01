@@ -8,24 +8,15 @@ import {
   type CareerStageDefinition,
   type CareerStageId,
 } from "../data/careerStages";
-import { CAREER_TRACKS } from "../data/career";
 import type {
   CareerExpansionFocusId,
   CareerModalityId,
   CareerOperatingStyleId,
   CareerTrackId,
   GameState,
+  TherapistCareerEffectMultipliers,
 } from "../model/types";
-import { getPrestigeLegacyMultiplier } from "./enjoyment";
-import {
-  applyTherapistSessionMultipliers,
-  getTherapistBaseSessionCashPayoutCents,
-  getTherapistBaseSessionCooldownMs,
-  getTherapistBaseSessionEnjoymentCostCents,
-  getTherapistSalaryCentsPerSec,
-  type TherapistCareerEffectMultipliers,
-  type TherapistSessionTerms,
-} from "./therapistPolicy";
+import { getTherapistCareerNodeEffectMultipliers } from "./therapistNodeEffects";
 
 export { type CareerStageId };
 
@@ -33,13 +24,23 @@ const CAREER_STAGE_LOOKUP = new Map<CareerStageId, CareerStageDefinition>(
   CAREER_STAGES.map((stage) => [stage.id, stage]),
 );
 
-const CAREER_TRACK_HAS_SESSIONS = new Map<CareerTrackId, boolean>(
-  CAREER_TRACKS.map((track) => [track.id, track.hasSessions]),
-);
-
 function multiplyEffects(
   base: TherapistCareerEffectMultipliers,
   effect: CareerChoiceEffect,
+): TherapistCareerEffectMultipliers {
+  return {
+    salaryMultiplier: base.salaryMultiplier * effect.salaryMultiplier,
+    sessionCashPayoutMultiplier:
+      base.sessionCashPayoutMultiplier * effect.sessionCashPayoutMultiplier,
+    sessionCooldownMultiplier: base.sessionCooldownMultiplier * effect.sessionCooldownMultiplier,
+    sessionEnjoymentCostMultiplier:
+      base.sessionEnjoymentCostMultiplier * effect.sessionEnjoymentCostMultiplier,
+  };
+}
+
+function multiplyMultipliers(
+  base: TherapistCareerEffectMultipliers,
+  effect: TherapistCareerEffectMultipliers,
 ): TherapistCareerEffectMultipliers {
   return {
     salaryMultiplier: base.salaryMultiplier * effect.salaryMultiplier,
@@ -82,6 +83,34 @@ export type CareerChoiceStatus = {
 
 export function getTherapistCareerChoiceStatus(state: GameState): CareerChoiceStatus[] {
   const career = state.therapistCareer;
+  if (career.careerStartId === null) {
+    return [
+      {
+        stageId: "licensed-associate",
+        unlocked: false,
+        chosen: false,
+        available: false,
+      },
+      {
+        stageId: "specialist-certification",
+        unlocked: false,
+        chosen: false,
+        available: false,
+      },
+      {
+        stageId: "practice-builder",
+        unlocked: false,
+        chosen: false,
+        available: false,
+      },
+      {
+        stageId: "private-practice-owner",
+        unlocked: false,
+        chosen: false,
+        available: false,
+      },
+    ];
+  }
   const level = Math.max(1, Math.floor(career.level));
   const lockedTrackId = career.primaryTrackId ?? career.activeTrackId;
 
@@ -152,119 +181,20 @@ export function getTherapistCareerEffectMultipliers(
   const focusEffects = career.expansionFocusId
     ? CAREER_EXPANSION_FOCUSES.find((choice) => choice.id === career.expansionFocusId)?.effects
     : null;
-  return focusEffects ? multiplyEffects(withStyle, focusEffects) : withStyle;
-}
+  const withFocus = focusEffects ? multiplyEffects(withStyle, focusEffects) : withStyle;
 
-function getTherapistSessionTermsWithEffects(
-  state: GameState,
-  trackId: CareerTrackId | null,
-  multipliers: TherapistCareerEffectMultipliers,
-): { supportsSessions: boolean; terms: TherapistSessionTerms | null } {
-  if (!trackId) {
-    return { supportsSessions: false, terms: null };
-  }
+  const nodeEffects = getTherapistCareerNodeEffectMultipliers(state);
+  const withNodes = multiplyMultipliers(withFocus, nodeEffects);
 
-  if (!(CAREER_TRACK_HAS_SESSIONS.get(trackId) ?? false)) {
-    return { supportsSessions: false, terms: null };
-  }
-
-  const level = state.therapistCareer.level;
-  const baseTerms: TherapistSessionTerms = {
-    cooldownMs: getTherapistBaseSessionCooldownMs(trackId),
-    enjoymentCostCents: getTherapistBaseSessionEnjoymentCostCents(level, trackId),
-    cashPayoutCents: getTherapistBaseSessionCashPayoutCents(level, trackId),
-  };
-  return {
-    supportsSessions: true,
-    terms: applyTherapistSessionMultipliers(baseTerms, multipliers),
-  };
-}
-
-export type CareerChoicePreview = {
-  before: {
-    salaryCentsPerSec: number;
-    supportsSessions: boolean;
-    session: TherapistSessionTerms | null;
-  };
-  after: {
-    salaryCentsPerSec: number;
-    supportsSessions: boolean;
-    session: TherapistSessionTerms | null;
-  };
-};
-
-export function getCareerChoicePreview(
-  state: GameState,
-  args:
-    | { stageId: "licensed-associate"; choiceId: CareerTrackId }
-    | { stageId: "specialist-certification"; choiceId: CareerModalityId }
-    | { stageId: "practice-builder"; choiceId: CareerOperatingStyleId }
-    | { stageId: "private-practice-owner"; choiceId: CareerExpansionFocusId },
-): CareerChoicePreview {
-  const career = state.therapistCareer;
-  const lockedTrackId = career.primaryTrackId ?? career.activeTrackId;
-
-  const beforeMultipliers = getTherapistCareerEffectMultipliers(state);
-  const beforeSalaryCentsPerSec = getTherapistSalaryCentsPerSec({
-    level: career.level,
-    prestigeLegacyMultiplier: getPrestigeLegacyMultiplier(state),
-    salaryMultiplier: beforeMultipliers.salaryMultiplier,
-  });
-  const beforeSessions = getTherapistSessionTermsWithEffects(
-    state,
-    lockedTrackId,
-    beforeMultipliers,
-  );
-
-  const nextCareer = (() => {
-    if (args.stageId === "licensed-associate") {
-      return {
-        ...career,
-        primaryTrackId: args.choiceId,
-        activeTrackId: args.choiceId,
-      };
-    }
-    if (args.stageId === "specialist-certification") {
-      return {
-        ...career,
-        modalityId: args.choiceId,
-      };
-    }
-    if (args.stageId === "practice-builder") {
-      return {
-        ...career,
-        operatingStyleId: args.choiceId,
-      };
-    }
+  const stageId = getTherapistCareerStageId(career.level);
+  if (stageId === "retirement") {
     return {
-      ...career,
-      expansionFocusId: args.choiceId,
+      salaryMultiplier: withNodes.salaryMultiplier * 0.9,
+      sessionCashPayoutMultiplier: withNodes.sessionCashPayoutMultiplier,
+      sessionCooldownMultiplier: withNodes.sessionCooldownMultiplier,
+      sessionEnjoymentCostMultiplier: withNodes.sessionEnjoymentCostMultiplier,
     };
-  })();
-  const nextState: GameState = { ...state, therapistCareer: nextCareer };
+  }
 
-  const afterMultipliers = getTherapistCareerEffectMultipliers(nextState);
-  const afterSalaryCentsPerSec = getTherapistSalaryCentsPerSec({
-    level: nextCareer.level,
-    prestigeLegacyMultiplier: getPrestigeLegacyMultiplier(nextState),
-    salaryMultiplier: afterMultipliers.salaryMultiplier,
-  });
-  const afterSessions = getTherapistSessionTermsWithEffects(
-    nextState,
-    nextCareer.activeTrackId,
-    afterMultipliers,
-  );
-
-  return {
-    before: {
-      salaryCentsPerSec: beforeSalaryCentsPerSec,
-      supportsSessions: beforeSessions.supportsSessions,
-      session: beforeSessions.terms,
-    },
-    after: {
-      salaryCentsPerSec: afterSalaryCentsPerSec,
-      supportsSessions: afterSessions.supportsSessions,
-      session: afterSessions.terms,
-    },
-  };
+  return withNodes;
 }

@@ -36,8 +36,9 @@ type StatsTabProps = {
 };
 
 export function StatsTab({ isActive, state, stats, currentEventMultiplier }: StatsTabProps) {
+  const nowMs = Date.now();
   const enjoymentRateBreakdown = getEnjoymentRateBreakdown(state, currentEventMultiplier);
-  const cashRateBreakdown = getCashRateBreakdown(state, currentEventMultiplier);
+  const cashRateBreakdown = getCashRateBreakdown(state, nowMs, currentEventMultiplier);
 
   return (
     <section id="stats" role="tabpanel" aria-labelledby="stats-tab" hidden={!isActive}>

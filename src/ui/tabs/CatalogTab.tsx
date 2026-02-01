@@ -4,6 +4,7 @@ import { EmptyStateCTA } from "../components/EmptyStateCTA";
 import { UnlockHint } from "../components/UnlockHint";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
+import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
 
 import { formatMoneyFromCents } from "../../game/format";
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
@@ -128,6 +129,26 @@ export function CatalogPurchasePanel({
   const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
   const purchaseHighlightTimeouts = React.useRef<Map<string, number>>(new Map());
 
+  const filterSignature = React.useMemo(
+    () =>
+      [
+        catalogTab,
+        catalogSearch,
+        catalogBrand,
+        catalogStyle,
+        catalogSort,
+        catalogEra,
+        catalogType,
+      ].join("|"),
+    [catalogBrand, catalogEra, catalogSearch, catalogSort, catalogStyle, catalogTab, catalogType],
+  );
+
+  const stableCatalogEntries = useStableCatalogEntries({
+    entries: filteredCatalogEntries,
+    allEntries: catalogEntries,
+    signature: filterSignature,
+  });
+
   const handleBrowseWatches = React.useCallback(() => {
     onCatalogTabChange("unowned");
     if (typeof document === "undefined") {
@@ -250,7 +271,7 @@ export function CatalogPurchasePanel({
         </div>
         <div className="catalog-header-actions">
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-            {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
+            {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
           </div>
           <div className="catalog-help" data-testid="catalog-help">
             <ExplainButton
@@ -472,7 +493,7 @@ export function CatalogPurchasePanel({
       >
         {catalogTab === "unowned" && (
           <div className="catalog-grid" data-testid="catalog-grid">
-            {filteredCatalogEntries.map((entry) => {
+            {stableCatalogEntries.map((entry) => {
               const discovered = discoveredCatalogIds.includes(entry.id);
               const tags = getCatalogEntryTags(entry);
               const tierId = getWatchModelTierId(entry.id);
@@ -739,7 +760,7 @@ export function CatalogPurchasePanel({
               </div>
             ) : (
               <div className="catalog-grid" data-testid="catalog-grid">
-                {filteredCatalogEntries.map((entry) => {
+                {stableCatalogEntries.map((entry) => {
                   const discovered = discoveredCatalogIds.includes(entry.id);
                   const tags = getCatalogEntryTags(entry);
                   const tierId = getWatchModelTierId(entry.id);
@@ -1029,6 +1050,26 @@ export function CatalogTabLegacy({
   const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
   const purchaseHighlightTimeouts = React.useRef<Map<string, number>>(new Map());
 
+  const filterSignature = React.useMemo(
+    () =>
+      [
+        catalogTab,
+        catalogSearch,
+        catalogBrand,
+        catalogStyle,
+        catalogSort,
+        catalogEra,
+        catalogType,
+      ].join("|"),
+    [catalogBrand, catalogEra, catalogSearch, catalogSort, catalogStyle, catalogTab, catalogType],
+  );
+
+  const stableCatalogEntries = useStableCatalogEntries({
+    entries: filteredCatalogEntries,
+    allEntries: catalogEntries,
+    signature: filterSignature,
+  });
+
   const handleDetailsToggle = React.useCallback((entryId: string, isOpen: boolean) => {
     setExpandedCards((prev) => ({
       ...prev,
@@ -1149,8 +1190,7 @@ export function CatalogTabLegacy({
             </div>
             <div className="catalog-header-actions">
               <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-                {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length}{" "}
-                discovered
+                {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
               </div>
               <div className="catalog-help" data-testid="catalog-help">
                 <ExplainButton
@@ -1368,7 +1408,7 @@ export function CatalogTabLegacy({
           >
             {catalogTab === "unowned" && (
               <div className="catalog-grid" data-testid="catalog-grid">
-                {filteredCatalogEntries.map((entry) => {
+                {stableCatalogEntries.map((entry) => {
                   const discovered = discoveredCatalogIds.includes(entry.id);
                   const tags = getCatalogEntryTags(entry);
                   const ownedCount = getWatchModelOwnedCount(state, entry.id);
@@ -1479,7 +1519,7 @@ export function CatalogTabLegacy({
                   </div>
                 ) : (
                   <div className="catalog-grid" data-testid="catalog-grid">
-                    {filteredCatalogEntries.map((entry) => {
+                    {stableCatalogEntries.map((entry) => {
                       const discovered = discoveredCatalogIds.includes(entry.id);
                       const tags = getCatalogEntryTags(entry);
                       const ownedCount = getWatchModelOwnedCount(state, entry.id);

@@ -4,7 +4,19 @@ export type WatchMovement = "quartz" | "manual" | "automatic";
 export type UpgradeId = "polishing-tools" | "assembly-jigs" | "guild-contracts" | "archive-guides";
 export type MilestoneId = "collector-shelf" | "showcase" | "atelier" | "archive-curator";
 export type CareerTrackId = "private-practice" | "va-hospital" | "research-teaching";
+
+export type CareerStartId = "phd-program";
+export type CareerModalityId = "cbt" | "psychodynamic" | "act";
+export type CareerOperatingStyleId = "boutique" | "high-volume" | "group-practice";
+export type CareerExpansionFocusId = "referrals" | "media" | "supervision";
 export type CareerNodeId = string;
+
+export type TherapistCareerEffectMultipliers = {
+  salaryMultiplier: number;
+  sessionCashPayoutMultiplier: number;
+  sessionCooldownMultiplier: number;
+  sessionEnjoymentCostMultiplier: number;
+};
 
 export type SetBonusId =
   | "starter-set"
@@ -152,10 +164,16 @@ export type EventState = {
 };
 
 export type TherapistCareerState = {
+  careerStartId: CareerStartId | null;
+  salaryActiveUntilMs: number;
   level: number;
   xp: number;
   nextAvailableAtMs: number;
   activeTrackId: CareerTrackId | null;
+  primaryTrackId: CareerTrackId | null;
+  modalityId: CareerModalityId | null;
+  operatingStyleId: CareerOperatingStyleId | null;
+  expansionFocusId: CareerExpansionFocusId | null;
   pointsAvailable: number;
   spentNodes: Record<CareerNodeId, boolean>;
   freeSessionAvailable: boolean;
@@ -224,10 +242,16 @@ export type PersistedGameState = {
   nostalgiaLastGain?: number;
   nostalgiaLastPrestigedAtMs?: number;
   therapistCareer?: {
+    careerStartId?: string | null;
+    salaryActiveUntilMs?: number;
     level?: number;
     xp?: number;
     nextAvailableAtMs?: number;
     activeTrackId?: string | null;
+    primaryTrackId?: string | null;
+    modalityId?: string | null;
+    operatingStyleId?: string | null;
+    expansionFocusId?: string | null;
     pointsAvailable?: number;
     spentNodes?: Record<string, boolean>;
     freeSessionAvailable?: boolean;

@@ -69,19 +69,20 @@ import {
   getWorkshopIncomeMultiplier,
 } from "./incomeMultipliers";
 import { getDuplicateRewardSum } from "./duplicates";
-import { getTherapistCareerEffectMultipliers } from "./careerStages";
-import {
-  getTherapistBaseSessionCashPayoutCents,
-  getTherapistBaseSessionCooldownMs,
-  getTherapistBaseSessionEnjoymentCostCents,
-  getTherapistSalaryCentsPerSec,
-} from "./therapistPolicy";
+import { getTherapistCashRateCentsPerSec as getTherapistCashRateWithWindowCentsPerSec } from "./therapistSalary";
 
 export * from "./enjoyment";
 export * from "./incomeMultipliers";
 export * from "./interactions";
 export * from "./watchModels";
 export * from "./careerStages";
+export * from "./careerChoicePreview";
+export * from "./careerProgress";
+export * from "./careerNextAction";
+export * from "./therapistSessions";
+export * from "./therapistSalary";
+export * from "./therapistNodeEffects";
+export { getTherapistXpRequiredForNextLevel } from "./therapistPolicy";
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
 const INCOME_SOFTCAP_CENTS_PER_SEC = 60_000;
@@ -351,7 +352,10 @@ export type WorkshopNextBlueprintProgress = {
   cashEarnedDuringEtaCents: number;
 };
 
-export function getWorkshopNextBlueprintProgress(state: GameState): WorkshopNextBlueprintProgress {
+export function getWorkshopNextBlueprintProgress(
+  state: GameState,
+  nowMs: number,
+): WorkshopNextBlueprintProgress {
   const enjoyment = getEnjoymentCents(state);
   const currentBlueprintGain = getWorkshopPrestigeGain(state);
   const nextBlueprintGain = currentBlueprintGain + 1;
@@ -374,7 +378,7 @@ export function getWorkshopNextBlueprintProgress(state: GameState): WorkshopNext
   const cashEarnedDuringEtaCents =
     etaSeconds === null
       ? 0
-      : Math.max(0, Math.floor(getTotalCashRateCentsPerSec(state) * etaSeconds));
+      : Math.max(0, Math.floor(getTotalCashRateCentsPerSec(state, nowMs) * etaSeconds));
 
   return {
     currentBlueprintGain,
@@ -723,21 +727,20 @@ export function getEffectiveIncomeRateCentsPerSec(state: GameState, eventMultipl
   return applySoftcap(rawIncome, getWorkshopSoftcapValue(state), getWorkshopSoftcapExponent(state));
 }
 
-export function getTherapistCashRateCentsPerSec(state: GameState): number {
-  const effects = getTherapistCareerEffectMultipliers(state);
-  return getTherapistSalaryCentsPerSec({
-    level: state.therapistCareer.level,
-    prestigeLegacyMultiplier: getPrestigeLegacyMultiplier(state),
-    salaryMultiplier: effects.salaryMultiplier,
-  });
+export function getTherapistCashRateCentsPerSec(state: GameState, nowMs: number): number {
+  return getTherapistCashRateWithWindowCentsPerSec(state, nowMs);
 }
 
-export function getTotalCashRateCentsPerSec(state: GameState): number {
-  return getTherapistCashRateCentsPerSec(state);
+export function getTotalCashRateCentsPerSec(state: GameState, nowMs: number): number {
+  return getTherapistCashRateCentsPerSec(state, nowMs);
 }
 
-export function getEffectiveCashRateCentsPerSec(state: GameState, eventMultiplier = 1): number {
-  return getTotalCashRateCentsPerSec(state) * eventMultiplier;
+export function getEffectiveCashRateCentsPerSec(
+  state: GameState,
+  nowMs: number,
+  eventMultiplier = 1,
+): number {
+  return getTotalCashRateCentsPerSec(state, nowMs) * eventMultiplier;
 }
 
 export type RateBreakdownMultiplierTerm = {
@@ -897,8 +900,12 @@ export type CashRateBreakdown = {
   totalCentsPerSec: number;
 };
 
-export function getCashRateBreakdown(state: GameState, eventMultiplier = 1): CashRateBreakdown {
-  const therapistSalaryCentsPerSec = getTherapistCashRateCentsPerSec(state);
+export function getCashRateBreakdown(
+  state: GameState,
+  nowMs: number,
+  eventMultiplier = 1,
+): CashRateBreakdown {
+  const therapistSalaryCentsPerSec = getTherapistCashRateCentsPerSec(state, nowMs);
   const careerAddends: RateBreakdownAddendTerm[] = [
     { id: "career-salary", label: "Career salary", centsPerSec: therapistSalaryCentsPerSec },
   ];
@@ -910,7 +917,7 @@ export function getCashRateBreakdown(state: GameState, eventMultiplier = 1): Cas
     careerAddends,
     multiplierTerms,
     eventMultiplier,
-    totalCentsPerSec: getEffectiveCashRateCentsPerSec(state, eventMultiplier),
+    totalCentsPerSec: getEffectiveCashRateCentsPerSec(state, nowMs, eventMultiplier),
   };
 }
 
@@ -955,113 +962,6 @@ export function getTherapistCareer(state: GameState): TherapistCareerState {
 
 export function getActiveCareerTrackId(state: GameState): CareerTrackId | null {
   return state.therapistCareer.activeTrackId;
-}
-
-export function doesActiveCareerTrackSupportSessions(state: GameState): boolean {
-  const trackId = getActiveCareerTrackId(state);
-  if (!trackId) {
-    return false;
-  }
-  return CAREER_TRACK_LOOKUP.get(trackId)?.hasSessions ?? false;
-}
-
-export type TherapistSessionPolicy = {
-  supportsSessions: boolean;
-  enjoymentCostCents: number;
-  cashPayoutCents: number;
-  cooldownMs: number;
-};
-
-export function getTherapistSessionCooldownMs(
-  state: GameState,
-  trackId: CareerTrackId | null,
-): number {
-  if (!trackId) {
-    return 0;
-  }
-  const effects = getTherapistCareerEffectMultipliers(state);
-  const base = getTherapistBaseSessionCooldownMs(trackId);
-  return Math.max(0, Math.floor(base * effects.sessionCooldownMultiplier));
-}
-
-export function getTherapistSessionEnjoymentCostCents(
-  state: GameState,
-  trackId: CareerTrackId | null,
-): number {
-  if (!trackId) {
-    return 0;
-  }
-  const effects = getTherapistCareerEffectMultipliers(state);
-  const base = getTherapistBaseSessionEnjoymentCostCents(state.therapistCareer.level, trackId);
-  return Math.max(0, Math.floor(base * effects.sessionEnjoymentCostMultiplier));
-}
-
-export function getTherapistSessionCashPayoutCents(
-  state: GameState,
-  trackId: CareerTrackId | null,
-): number {
-  if (!trackId) {
-    return 0;
-  }
-  const effects = getTherapistCareerEffectMultipliers(state);
-  const base = getTherapistBaseSessionCashPayoutCents(state.therapistCareer.level, trackId);
-  return Math.max(0, Math.floor(base * effects.sessionCashPayoutMultiplier));
-}
-
-export function getTherapistSessionPolicy(state: GameState): TherapistSessionPolicy {
-  const career = state.therapistCareer;
-  const trackId = getActiveCareerTrackId(state);
-  const supportsSessions = doesActiveCareerTrackSupportSessions(state);
-
-  if (!supportsSessions) {
-    return {
-      supportsSessions: false,
-      enjoymentCostCents: 0,
-      cashPayoutCents: 0,
-      cooldownMs: 0,
-    };
-  }
-
-  return {
-    supportsSessions,
-    enjoymentCostCents: getTherapistSessionEnjoymentCostCents(state, trackId),
-    cashPayoutCents: getTherapistSessionCashPayoutCents(state, trackId),
-    cooldownMs: getTherapistSessionCooldownMs(state, trackId),
-  };
-}
-
-export function getTherapistSessionCostLabel(state: GameState): string {
-  const career = state.therapistCareer;
-  const policy = getTherapistSessionPolicy(state);
-  if (!policy.supportsSessions) {
-    return "Sessions unavailable";
-  }
-  if (career.freeSessionAvailable) {
-    return "Free first session";
-  }
-  return `${formatMoneyFromCents(policy.enjoymentCostCents)} enjoyment`;
-}
-
-export function getTherapistXpRequiredForNextLevel(level: number): number {
-  const clampedLevel = Math.max(1, Math.floor(level));
-  return Math.max(10, Math.floor(50 * 1.22 ** (clampedLevel - 1)));
-}
-
-export function canPerformTherapistSession(state: GameState, nowMs: number): boolean {
-  const career = state.therapistCareer;
-  const policy = getTherapistSessionPolicy(state);
-  if (!policy.supportsSessions) {
-    return false;
-  }
-  if (nowMs < career.nextAvailableAtMs) {
-    return false;
-  }
-
-  if (career.freeSessionAvailable) {
-    return true;
-  }
-
-  return state.enjoymentCents >= policy.enjoymentCostCents;
 }
 
 export function getEventStatusLabel(state: GameState, eventId: EventId, nowMs: number): string {

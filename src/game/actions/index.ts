@@ -46,6 +46,7 @@ import {
   getNostalgiaPrestigeGain,
   getNostalgiaUnlockCost,
   getTherapistSessionPolicy,
+  getTherapistSalaryActiveWindowMs,
   getTherapistXpRequiredForNextLevel,
   getUpgradeLevel,
   getUpgradePriceCents,
@@ -59,10 +60,23 @@ import {
   isUpgradeUnlocked,
 } from "../selectors";
 
-const THERAPIST_SESSION_XP_GAIN = 10;
-const THERAPIST_PASSIVE_XP_PER_SEC = 10;
+export {
+  chooseCareerExpansionFocus,
+  chooseCareerModality,
+  chooseCareerOperatingStyle,
+  enterPhdProgram,
+  respecCareerNodes,
+  selectPrimaryCareerTrack,
+  spendCareerNode,
+} from "./therapistCareer";
+
+const THERAPIST_SESSION_XP_GAIN = 8;
+const THERAPIST_PASSIVE_XP_PER_SEC = 3;
 
 export function applyTherapistPassiveProgress(state: GameState, dtMs: number): GameState {
+  if (state.therapistCareer.careerStartId === null) {
+    return state;
+  }
   const clampedDtMs = Math.max(0, Math.floor(dtMs));
   if (clampedDtMs <= 0) {
     return state;
@@ -246,11 +260,17 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
     nostalgiaLastGain: gain,
     nostalgiaLastPrestigedAtMs: Math.max(0, Math.floor(nowMs)),
     therapistCareer: {
+      careerStartId: null,
+      salaryActiveUntilMs: 0,
       level: 1,
       xp: 0,
       nextAvailableAtMs: 0,
       activeTrackId: null,
-      pointsAvailable: 1,
+      primaryTrackId: null,
+      modalityId: null,
+      operatingStyleId: null,
+      expansionFocusId: null,
+      pointsAvailable: 0,
       spentNodes: {},
       freeSessionAvailable: true,
     },
@@ -486,9 +506,14 @@ export function applyWindSessionRewards(
 }
 
 export function performTherapistSession(state: GameState, nowMs: number): GameState {
+  if (state.therapistCareer.careerStartId === null) {
+    return state;
+  }
   if (!canPerformTherapistSession(state, nowMs)) {
     return state;
   }
+
+  const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
 
   const career = state.therapistCareer;
   const policy = getTherapistSessionPolicy(state);
@@ -507,6 +532,9 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
     nextLevel += 1;
   }
 
+  const salaryWindowMs = getTherapistSalaryActiveWindowMs(state);
+  const salaryActiveUntilMs = Math.max(career.salaryActiveUntilMs, clampedNowMs + salaryWindowMs);
+
   return {
     ...state,
     currencyCents: state.currencyCents + payout,
@@ -515,8 +543,9 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
       ...career,
       level: nextLevel,
       xp: nextXp,
-      nextAvailableAtMs: nowMs + policy.cooldownMs,
+      nextAvailableAtMs: clampedNowMs + policy.cooldownMs,
       freeSessionAvailable: isFreeSession ? false : career.freeSessionAvailable,
+      salaryActiveUntilMs,
     },
   };
 }

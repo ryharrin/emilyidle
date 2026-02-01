@@ -76,7 +76,7 @@ export function WorkshopTab({
   renderCraftingRecipes,
   renderCraftingBoosts,
 }: WorkshopTabProps) {
-  const nextBlueprintProgress = getWorkshopNextBlueprintProgress(state);
+  const nextBlueprintProgress = getWorkshopNextBlueprintProgress(state, Date.now());
   const etaLabel =
     nextBlueprintProgress.etaSeconds === null
       ? "ETA unavailable"

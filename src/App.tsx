@@ -18,6 +18,7 @@ import { AutomaticMiniGameModal } from "./ui/components/AutomaticMiniGameModal";
 import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
+import { resolveLandingTab, resolveTabAlias } from "./ui/navigation/landing";
 
 import {
   formatMoneyFromCents,
@@ -99,14 +100,14 @@ const AUDIO_SETTINGS_KEY = "emily-idle:audio";
 const SETTINGS_KEY = "emily-idle:settings";
 const NAVIGATION_KEY = "emily-idle:navigation";
 const TAB_DEFINITIONS = [
-  { id: "collection", label: "Vault" },
   { id: "career", label: "Career" },
+  { id: "collection", label: "Vault" },
   { id: "upgrades", label: "Upgrades" },
   { id: "workshop", label: "Atelier" },
   { id: "maison", label: "Maison" },
   { id: "nostalgia", label: "Nostalgia" },
   { id: "stats", label: "Stats" },
-  { id: "save", label: "Save" },
+  { id: "save", label: "Settings" },
 ] as const;
 
 type TabId = (typeof TAB_DEFINITIONS)[number]["id"] | "catalog";
@@ -148,15 +149,6 @@ const DEFAULT_SETTINGS: Settings = {
   hiddenTabs: [],
   coachmarksDismissed: {},
   confirmNostalgiaUnlocks: true,
-};
-
-const isTabId = (value: string): value is TabId => TAB_DEFINITIONS.some((tab) => tab.id === value);
-
-const resolveTabAlias = (value: string): TabId | null => {
-  if (value === "catalog") {
-    return "collection";
-  }
-  return isTabId(value) ? value : null;
 };
 
 const loadNavigationState = (): NavigationState | null => {
@@ -581,10 +573,32 @@ export default function App() {
     setSaveStatus(`Imported save from ${decoded.save.savedAt}.`);
   };
 
+  const handleClearSave = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    clearLocalStorageSave();
+    window.localStorage.removeItem(NAVIGATION_KEY);
+
+    const fresh = createInitialState();
+    setState(fresh);
+    resetSimulationClock();
+    persistNow("clear-save", fresh);
+
+    setImportText("");
+    setSaveStatus("Cleared save. Starting fresh.");
+
+    setActiveTab("career");
+    setFocusedTab("career");
+    focusTabById("career");
+    window.localStorage.setItem(NAVIGATION_KEY, JSON.stringify({ lastTabId: "career" }));
+  };
+
   const stats = useMemo(() => {
     const nowMs = Date.now();
     const eventMultiplier = getEventIncomeMultiplier(state, nowMs);
-    const cashRate = getEffectiveCashRateCentsPerSec(state, eventMultiplier);
+    const cashRate = getEffectiveCashRateCentsPerSec(state, nowMs, eventMultiplier);
     const enjoymentRate = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
 
     return {
@@ -713,31 +727,17 @@ export default function App() {
       return { tabId: "collection", source: "system" };
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const requestedTab = params.get("tab");
-    const requestedAlias = requestedTab ? resolveTabAlias(requestedTab) : null;
-    if (requestedAlias && isVisible(requestedAlias)) {
-      return { tabId: requestedAlias, source: "deep-link" };
-    }
-
     const navigationState = loadNavigationState();
     const hasSave = window.localStorage.getItem("emily-idle:save") !== null;
 
-    if (!hasSave && !navigationState) {
-      return {
-        tabId: "collection",
-        source: "system" as TabActivationSource,
-      };
-    }
+    const { tabId, source } = resolveLandingTab({
+      search: window.location.search,
+      hasSave,
+      navigationState,
+      isVisible,
+    });
 
-    if (navigationState && isVisible(navigationState.lastTabId)) {
-      return { tabId: navigationState.lastTabId, source: "system" as TabActivationSource };
-    }
-
-    return {
-      tabId: "collection",
-      source: "system",
-    };
+    return { tabId, source };
   }, [combinedTabVisibility]);
 
   useLayoutEffect(() => {
@@ -1413,6 +1413,7 @@ export default function App() {
           onExport={handleExport}
           onImport={handleImport}
           saveStatus={saveStatus}
+          onClearSave={handleClearSave}
         />
 
         <HelpModal

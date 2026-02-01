@@ -1,7 +1,7 @@
 import React from "react";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
-import type { CareerChoicePreview } from "../../game/selectors/careerStages";
+import type { CareerChoicePreview } from "../../game/state";
 
 function formatCooldownMs(ms: number): string {
   return `${Math.max(0, Math.ceil(ms / 1000))}s`;

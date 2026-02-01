@@ -132,6 +132,15 @@ function sanitizeState(value: unknown): GameState | null {
       : 0,
     therapistCareer: therapistRecord
       ? {
+          careerStartId:
+            therapistRecord.careerStartId === null
+              ? null
+              : typeof therapistRecord.careerStartId === "string"
+                ? therapistRecord.careerStartId
+                : undefined,
+          salaryActiveUntilMs: isFiniteNumber(therapistRecord.salaryActiveUntilMs)
+            ? Math.max(0, Math.floor(therapistRecord.salaryActiveUntilMs))
+            : undefined,
           level: isFiniteNumber(therapistRecord.level)
             ? Math.max(1, Math.floor(therapistRecord.level))
             : undefined,
@@ -146,6 +155,30 @@ function sanitizeState(value: unknown): GameState | null {
               ? null
               : typeof therapistRecord.activeTrackId === "string"
                 ? therapistRecord.activeTrackId
+                : undefined,
+          primaryTrackId:
+            therapistRecord.primaryTrackId === null
+              ? null
+              : typeof therapistRecord.primaryTrackId === "string"
+                ? therapistRecord.primaryTrackId
+                : undefined,
+          modalityId:
+            therapistRecord.modalityId === null
+              ? null
+              : typeof therapistRecord.modalityId === "string"
+                ? therapistRecord.modalityId
+                : undefined,
+          operatingStyleId:
+            therapistRecord.operatingStyleId === null
+              ? null
+              : typeof therapistRecord.operatingStyleId === "string"
+                ? therapistRecord.operatingStyleId
+                : undefined,
+          expansionFocusId:
+            therapistRecord.expansionFocusId === null
+              ? null
+              : typeof therapistRecord.expansionFocusId === "string"
+                ? therapistRecord.expansionFocusId
                 : undefined,
           pointsAvailable: isFiniteNumber(therapistRecord.pointsAvailable)
             ? Math.max(0, Math.floor(therapistRecord.pointsAvailable))

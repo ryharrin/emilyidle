@@ -191,7 +191,7 @@ test.describe("collection loop", () => {
   });
 
   test("export and import save round trip", async ({ page }) => {
-    await page.getByRole("tab", { name: "Save" }).click();
+    await page.getByRole("tab", { name: "Settings" }).click();
     await page.getByRole("button", { name: "Export" }).click();
     const saveText = await page.inputValue(selectors.importText);
     expect(saveText.length).toBeGreaterThan(0);
@@ -206,7 +206,7 @@ test.describe("collection loop", () => {
   });
 
   test("audio toggles render and respond", async ({ page }) => {
-    await page.getByRole("tab", { name: "Save" }).click();
+    await page.getByRole("tab", { name: "Settings" }).click();
 
     const sfxToggle = page.getByTestId("audio-sfx-toggle");
     const bgmToggle = page.getByTestId("audio-bgm-toggle");
@@ -282,7 +282,7 @@ test.describe("collection loop", () => {
 
     const tabList = page.getByRole("tablist", { name: "Primary navigation" });
     await expect(tabList.getByRole("tab", { name: "Vault" })).toBeVisible();
-    await expect(tabList.getByRole("tab", { name: "Save" })).toBeVisible();
+    await expect(tabList.getByRole("tab", { name: "Settings" })).toBeVisible();
     await expect(tabList.getByRole("tab", { name: "Catalog" })).toHaveCount(0);
   });
 
@@ -492,11 +492,12 @@ test.describe("collection loop", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Atelier" }).click();
     await expect(page.locator(selectors.workshopPanel)).toBeVisible();
-    await expect(page.locator(selectors.workshopGain).last()).toContainText("+1 Blueprints");
+    await expect(page.locator(selectors.workshopGain).nth(1)).toContainText("+1 Blueprints");
     await expect(page.locator(selectors.workshopResetButton)).toBeEnabled();
   });
 
   test("automation toggle appears after automation upgrade", async ({ page }) => {
+    await page.getByRole("tab", { name: "Vault" }).click();
     const automationToggle = page.locator(selectors.automationToggle);
     await expect(automationToggle).toContainText("Unlock automation with Atelier blueprints.");
 
@@ -806,7 +807,7 @@ test.describe("collection loop", () => {
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 800_000,
-      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 2 },
+      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 3 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
       workshopBlueprints: 0,

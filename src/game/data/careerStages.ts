@@ -10,7 +10,8 @@ export type CareerStageId =
   | "licensed-associate"
   | "specialist-certification"
   | "practice-builder"
-  | "private-practice-owner";
+  | "private-practice-owner"
+  | "retirement";
 
 export type CareerStageDefinition = {
   id: CareerStageId;
@@ -60,9 +61,15 @@ export const CAREER_STAGES: ReadonlyArray<CareerStageDefinition> = [
   },
   {
     id: "private-practice-owner",
-    label: "Private practice owner",
+    label: "Practice owner",
     description: "Pick an expansion focus for lasting income leverage.",
     unlockLevel: 15,
+  },
+  {
+    id: "retirement",
+    label: "Retirement",
+    description: "Steady, moderate income with fewer obligations.",
+    unlockLevel: 20,
   },
 ];
 

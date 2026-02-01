@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { formatMoneyFromCents } from "../../game/format";
 
@@ -73,7 +73,7 @@ export function QuartzMiniGameModal({
 
   const prefersReducedMotion = useMemo(() => getPrefersReducedMotion(), []);
 
-  const resetRun = () => {
+  const resetRun = useCallback(() => {
     startTimeRef.current = null;
     if (rafIdRef.current !== null) {
       cancelAnimationFrame(rafIdRef.current);
@@ -81,7 +81,7 @@ export function QuartzMiniGameModal({
     }
     setProgress(0);
     setResult(null);
-  };
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -121,7 +121,7 @@ export function QuartzMiniGameModal({
         rafIdRef.current = null;
       }
     };
-  }, [open, prefersReducedMotion]);
+  }, [open, prefersReducedMotion, resetRun]);
 
   if (!open) {
     return null;
@@ -180,13 +180,16 @@ export function QuartzMiniGameModal({
         </header>
 
         <div className="quartz-modal-body">
-          <div className="quartz-dial" aria-hidden="true">
+          <div className="quartz-dial" data-testid="quartz-dial" aria-hidden="true">
             <div className="quartz-target" aria-hidden="true" />
-            <div
-              className="quartz-hand"
-              aria-hidden="true"
-              style={{ transform: `translateX(-50%) rotate(${progress * 360}deg)` }}
-            />
+            <div className="quartz-anchor" data-testid="quartz-anchor" aria-hidden="true">
+              <div
+                className="quartz-hand"
+                data-testid="quartz-hand"
+                aria-hidden="true"
+                style={{ transform: `rotate(${progress * 360}deg)` }}
+              />
+            </div>
           </div>
 
           {!result ? (

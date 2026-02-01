@@ -53,8 +53,9 @@ const buildRatePreview = (
   nextState: GameState,
   eventMultiplier: number,
 ): RatePreview => {
-  const beforeCash = getEffectiveCashRateCentsPerSec(state, eventMultiplier);
-  const afterCash = getEffectiveCashRateCentsPerSec(nextState, eventMultiplier);
+  const nowMs = Date.now();
+  const beforeCash = getEffectiveCashRateCentsPerSec(state, nowMs, eventMultiplier);
+  const afterCash = getEffectiveCashRateCentsPerSec(nextState, nowMs, eventMultiplier);
   const beforeEnjoyment = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
   const afterEnjoyment = getEnjoymentRateCentsPerSec(nextState) * eventMultiplier;
 

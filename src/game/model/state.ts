@@ -8,8 +8,12 @@ import { getDuplicateRewardSum } from "../selectors/duplicates";
 import type {
   AchievementDefinition,
   AchievementId,
+  CareerStartId,
   CareerNodeId,
   CareerTrackId,
+  CareerExpansionFocusId,
+  CareerModalityId,
+  CareerOperatingStyleId,
   CatalogEntryId,
   CatalogTierBonusDefinition,
   CatalogTierId,
@@ -39,6 +43,21 @@ const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
 const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]));
 const CAREER_TRACK_IDS = new Set(CAREER_TRACKS.map((track) => track.id));
 const CAREER_NODE_IDS = new Set(CAREER_NODES.map((node) => node.id));
+const CAREER_MODALITY_IDS: ReadonlyArray<CareerModalityId> = ["cbt", "psychodynamic", "act"];
+const CAREER_OPERATING_STYLE_IDS: ReadonlyArray<CareerOperatingStyleId> = [
+  "boutique",
+  "high-volume",
+  "group-practice",
+];
+const CAREER_EXPANSION_FOCUS_IDS: ReadonlyArray<CareerExpansionFocusId> = [
+  "referrals",
+  "media",
+  "supervision",
+];
+const CAREER_MODALITY_ID_SET = new Set(CAREER_MODALITY_IDS);
+const CAREER_OPERATING_STYLE_ID_SET = new Set(CAREER_OPERATING_STYLE_IDS);
+const CAREER_EXPANSION_FOCUS_ID_SET = new Set(CAREER_EXPANSION_FOCUS_IDS);
+const CAREER_START_ID_SET = new Set<CareerStartId>(["phd-program"]);
 
 export const ALL_MILESTONE_IDS: MilestoneId[] = [
   "collector-shelf",
@@ -386,11 +405,17 @@ export function createInitialState(): GameState {
     nostalgiaLastGain: 0,
     nostalgiaLastPrestigedAtMs: 0,
     therapistCareer: {
+      careerStartId: null,
+      salaryActiveUntilMs: 0,
       level: 1,
       xp: 0,
       nextAvailableAtMs: 0,
       activeTrackId: null,
-      pointsAvailable: 1,
+      primaryTrackId: null,
+      modalityId: null,
+      operatingStyleId: null,
+      expansionFocusId: null,
+      pointsAvailable: 0,
       spentNodes: {},
       freeSessionAvailable: true,
     },
@@ -447,6 +472,45 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
           CAREER_TRACK_IDS.has(activeTrackIdRaw as CareerTrackId)
         ? (activeTrackIdRaw as CareerTrackId)
         : null;
+  const primaryTrackIdRaw = therapistRecord?.primaryTrackId;
+  const primaryTrackIdParsed =
+    primaryTrackIdRaw === null
+      ? null
+      : typeof primaryTrackIdRaw === "string" &&
+          CAREER_TRACK_IDS.has(primaryTrackIdRaw as CareerTrackId)
+        ? (primaryTrackIdRaw as CareerTrackId)
+        : null;
+  const primaryTrackId = primaryTrackIdParsed ?? null;
+  const migratedPrimaryTrackId =
+    primaryTrackId === null && activeTrackId !== null ? activeTrackId : primaryTrackId;
+  const pinnedActiveTrackId = migratedPrimaryTrackId ?? null;
+
+  const modalityIdRaw = therapistRecord?.modalityId;
+  const modalityId =
+    modalityIdRaw === null
+      ? null
+      : typeof modalityIdRaw === "string" &&
+          CAREER_MODALITY_ID_SET.has(modalityIdRaw as CareerModalityId)
+        ? (modalityIdRaw as CareerModalityId)
+        : null;
+
+  const operatingStyleIdRaw = therapistRecord?.operatingStyleId;
+  const operatingStyleId =
+    operatingStyleIdRaw === null
+      ? null
+      : typeof operatingStyleIdRaw === "string" &&
+          CAREER_OPERATING_STYLE_ID_SET.has(operatingStyleIdRaw as CareerOperatingStyleId)
+        ? (operatingStyleIdRaw as CareerOperatingStyleId)
+        : null;
+
+  const expansionFocusIdRaw = therapistRecord?.expansionFocusId;
+  const expansionFocusId =
+    expansionFocusIdRaw === null
+      ? null
+      : typeof expansionFocusIdRaw === "string" &&
+          CAREER_EXPANSION_FOCUS_ID_SET.has(expansionFocusIdRaw as CareerExpansionFocusId)
+        ? (expansionFocusIdRaw as CareerExpansionFocusId)
+        : null;
   const spentNodes: Record<CareerNodeId, boolean> = {};
   const spentNodesRaw =
     therapistRecord?.spentNodes && typeof therapistRecord.spentNodes === "object"
@@ -459,7 +523,26 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       }
     }
   }
+  const careerStartIdRaw = therapistRecord?.careerStartId;
+  const parsedCareerStartId: CareerStartId | null =
+    careerStartIdRaw === null
+      ? null
+      : typeof careerStartIdRaw === "string" &&
+          CAREER_START_ID_SET.has(careerStartIdRaw as CareerStartId)
+        ? (careerStartIdRaw as CareerStartId)
+        : null;
+
+  const salaryActiveUntilMsRaw = therapistRecord?.salaryActiveUntilMs;
+  const salaryActiveUntilMs =
+    typeof salaryActiveUntilMsRaw === "number" && Number.isFinite(salaryActiveUntilMsRaw)
+      ? Math.max(0, Math.floor(salaryActiveUntilMsRaw))
+      : careerStartIdRaw === null
+        ? 0
+        : Number.MAX_SAFE_INTEGER;
+
   const therapistCareer = {
+    careerStartId: careerStartIdRaw === undefined ? ("phd-program" as const) : parsedCareerStartId,
+    salaryActiveUntilMs,
     level:
       typeof levelRaw === "number" && Number.isFinite(levelRaw)
         ? Math.max(1, Math.floor(levelRaw))
@@ -469,11 +552,15 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       typeof nextAvailableAtMsRaw === "number" && Number.isFinite(nextAvailableAtMsRaw)
         ? Math.max(0, Math.floor(nextAvailableAtMsRaw))
         : 0,
-    activeTrackId,
+    activeTrackId: pinnedActiveTrackId,
+    primaryTrackId: migratedPrimaryTrackId,
+    modalityId,
+    operatingStyleId,
+    expansionFocusId,
     pointsAvailable:
       typeof pointsAvailableRaw === "number" && Number.isFinite(pointsAvailableRaw)
         ? Math.max(0, Math.floor(pointsAvailableRaw))
-        : 1,
+        : 0,
     spentNodes,
     freeSessionAvailable:
       therapistRecord && typeof therapistRecord.freeSessionAvailable === "boolean"

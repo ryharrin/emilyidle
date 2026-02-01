@@ -65,7 +65,7 @@ export function step(state: GameState, dtMs: number, nowMs = Date.now()): GameSt
   const collectionValue = getCollectionValueCents(withReserveDecay);
   const withEvents = applyEventState(withReserveDecay, nowMs, collectionValue);
   const eventMultiplier = getEventIncomeMultiplier(withEvents, nowMs);
-  const incomeRate = getEffectiveCashRateCentsPerSec(withEvents, eventMultiplier);
+  const incomeRate = getEffectiveCashRateCentsPerSec(withEvents, nowMs, eventMultiplier);
   const earnedCents = (incomeRate * clampedDtMs) / 1_000;
 
   const enjoymentRate = getEnjoymentRateCentsPerSec(withEvents) * eventMultiplier;

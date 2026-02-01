@@ -115,6 +115,7 @@ describe("rate breakdown selectors", () => {
 
   it("matches cash rate totals and includes career salary addend", () => {
     const baseState = createInitialState();
+    const nowMs = 1_700_000_000_000;
     const seededState = {
       ...baseState,
       items: {
@@ -130,15 +131,17 @@ describe("rate breakdown selectors", () => {
       workshopPrestigeCount: 1,
       therapistCareer: {
         ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+        salaryActiveUntilMs: nowMs + 300_000,
         level: 3,
       },
     };
 
     const eventMultiplier = 1.25;
-    const breakdown = getCashRateBreakdown(seededState, eventMultiplier);
+    const breakdown = getCashRateBreakdown(seededState, nowMs, eventMultiplier);
 
     expect(breakdown.totalCentsPerSec).toBeCloseTo(
-      getEffectiveCashRateCentsPerSec(seededState, eventMultiplier),
+      getEffectiveCashRateCentsPerSec(seededState, nowMs, eventMultiplier),
       6,
     );
     expect(breakdown.careerAddends.some((term) => term.id === "career-salary")).toBe(true);

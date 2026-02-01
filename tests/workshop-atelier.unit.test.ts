@@ -15,10 +15,13 @@ describe("workshop atelier progress", () => {
     let lastRemaining = Number.POSITIVE_INFINITY;
 
     for (const enjoyment of checkpoints) {
-      const progress = getWorkshopNextBlueprintProgress({
-        ...baseState,
-        enjoymentCents: Math.floor(enjoyment),
-      });
+      const progress = getWorkshopNextBlueprintProgress(
+        {
+          ...baseState,
+          enjoymentCents: Math.floor(enjoyment),
+        },
+        0,
+      );
       expect(progress.enjoymentRemainingCents).toBeLessThanOrEqual(lastRemaining);
       lastRemaining = progress.enjoymentRemainingCents;
     }
@@ -26,11 +29,14 @@ describe("workshop atelier progress", () => {
 
   it("returns null ETA and zero cash hint when enjoyment rate is zero", () => {
     const baseState = createInitialState();
-    const progress = getWorkshopNextBlueprintProgress({
-      ...baseState,
-      watchModels: {},
-      enjoymentCents: Math.floor(getWorkshopPrestigeThresholdCents() * 0.5),
-    });
+    const progress = getWorkshopNextBlueprintProgress(
+      {
+        ...baseState,
+        watchModels: {},
+        enjoymentCents: Math.floor(getWorkshopPrestigeThresholdCents() * 0.5),
+      },
+      0,
+    );
 
     expect(progress.etaSeconds).toBeNull();
     expect(progress.cashEarnedDuringEtaCents).toBe(0);
