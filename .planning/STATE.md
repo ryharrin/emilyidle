@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 ## Current Position
 
-Phase: 36-carry-forward-ux-bugfixes
-Plan: 36-01
+Phase: 35-balance-and-help-clarity
+Plan: 35-03
 Status: Phase complete
-Last activity: 2026-01-31 — fixed quartz set-time alignment; added e2e regression; verified via typecheck/e2e
-Progress: ████████████ 100%
-Next Phase: (none) — v3.1 ready (pacing feel still needs human playtest)
+Last activity: 2026-02-01 — restored pre-track sessions and added unit regressions; verified via typecheck/unit
+Progress: ████████████████████ 99%
+Next Phase: 36-carry-forward-ux-bugfixes (complete)
 
 ## Accumulated Context
 
@@ -64,6 +64,7 @@ Next Phase: (none) — v3.1 ready (pacing feel still needs human playtest)
 | 31-01 | Reframe upgrades to affect enjoyment (not dollars) and apply events to both enjoyment + cash | Close v3.0 audit gaps while keeping career-first cash economy |
 | 35-02 | None - followed plan as specified | No deviations |
 | 36-01 | None - followed plan as specified | No deviations |
+| 35-03 | None - followed plan as specified | No deviations |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -82,7 +83,7 @@ Next Phase: (none) — v3.1 ready (pacing feel still needs human playtest)
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-01-31T05:45:25Z
-Stopped at: Completed 35-02-PLAN.md
+Last session: 2026-02-01T03:25:35Z
+Stopped at: Completed 35-03-PLAN.md
 
 Resume file: None
