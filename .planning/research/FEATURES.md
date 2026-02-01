@@ -1,8 +1,8 @@
 # Feature Research
 
-**Domain:** Idle/incremental watch-collecting game — v3.0 "Catalog-First Economy & Interactions"
-**Researched:** 2026-01-27
-**Confidence:** MEDIUM (grounded in current repo behavior + common incremental patterns; exact tuning is design-dependent)
+**Domain:** Unified catalog/shop + vault/inventory surface (games + e-commerce patterns), applied to Emily Idle milestone v3.2
+**Researched:** 2026-02-01
+**Confidence:** MEDIUM (based on common UX patterns; exact affordances are product/tuning dependent)
 
 ## Feature Landscape
 
@@ -12,15 +12,15 @@ Features users assume exist. Missing these = product feels incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Catalog-first purchase hub (buy from Catalog) | If "catalog-first" is the headline, players expect the catalog is the shop | HIGH | Default landing view shows a catalog grid/list; each entry has price + "Buy" CTA + owned count; clear locked/unlocked states; aligns with existing Catalog UI patterns (`src/ui/tabs/CatalogTab.tsx`) but adds purchase affordances |
-| Default view = Catalog (or Catalog-centric hub) | Players expect the "main loop" screen on load | MEDIUM | App currently defaults to Collection (`src/App.tsx` activeTab "collection"); expected behavior: new saves land on catalog hub; existing saves may preserve last-tab or migrate safely |
-| Clear progression signals inside Catalog | Catalog browsing needs "what's next" guidance | MEDIUM | Expect: filters/search/sort persist; entry badges (Owned, Undiscovered, Locked); "Next unlock" pointers similar to Collection's next-unlock patterns |
-| Career-first cash loop that avoids deadlocks | If "career-first cash economy" is a goal, cash must be reachable early and reliably | HIGH | Current therapist loop converts enjoyment -> cash; session cost rule changes must preserve visible cost/payout/cooldown and avoid circular dependencies |
-| Watch models (more than 4 coarse tiers) | A catalog-first experience implies variety and identity | HIGH | Today: 4 item IDs (generic tiers). Expected: explicit model IDs with deterministic mapping + stats + unlock gates |
-| Diminishing returns on duplicates (transparent) | Players accept nerfs if explained; they reject hidden nerfs | HIGH | Expected UI: shows base stats + "marginal gain next copy" or "efficiency %"; explains why copy #10 is weaker; avoids breaking satisfaction of buying in bulk |
-| Wear-one-watch (equip slot) + clear active bonus | Equipping is only fun if it's obvious what changes | MEDIUM | Expected: one active "worn" slot with swap UX; worn watch bonus is immediate + visible in rate breakdowns; equipping should not turn off income from the rest of the vault |
-| Interactions from owned/worn watches | Players expect "interactions" to be actionable and rewarding | MEDIUM | Current Interact always opens wind session; expected: interactions vary by watch model/type and/or worn watch; interaction availability (cooldown/charges) must be communicated |
-| Mini-games: winding polish + automatics (accessible + optional) | New mini-games are only "content" if they're reachable and repeatable | HIGH | Expected: short (10-60s), optional, yields burst reward (cash/enjoyment) and/or temporary buff; clear failure/partial-success outcomes; caps/cooldowns to prevent mandatory grinding |
+| Single source of truth for purchasing (catalog cards) | When catalog is the shop, users expect one consistent purchase affordance | MEDIUM | Each card has one primary purchase CTA (or disabled state) and clearly communicates price + requirements (cash + enjoyment threshold). Remove competing Vault purchase entry points |
+| Owned state is visible in the same surface as shopping | Unified catalog/storage implies you can see "do I own this?" while browsing | MEDIUM | Card shows Owned count and owned status (e.g., Owned 0/1+). Avoid forcing users to switch tabs to confirm ownership |
+| Capacity-awareness at point of purchase | In inventory-limited games, users expect the UI to prevent or warn about full storage | HIGH | If vault is full, buy CTA is disabled with a clear reason and an immediate path: "Upgrade vault" / "Free space" (if freeing space exists; if not, only upgrade) |
+| Vault summary is always available while shopping | When merging surfaces, "how full am I?" is table stakes | LOW | Show capacity used/max, current vault upgrade tier/level, and (if relevant) vault value in a fixed header/section on the Catalog tab |
+| Item card supports both shop and owned actions | Players expect they can act on owned items from where they see them | HIGH | Owned cards surface secondary actions like equip/unequip (existing) and show equipped state. Keep the primary CTA for purchase distinct from ownership actions |
+| Clear affordability and requirement messaging | Dual-currency/requirements are only acceptable if they're legible | MEDIUM | Card clearly differentiates: "Cost: $X" and "Requires: Enjoyment >= Y" (or equivalent) and highlights the blocking requirement (not enough cash vs not enough enjoyment) |
+| Purchase feedback and state updates are immediate | One-tap buying expects instant UI feedback | MEDIUM | After purchase: owned count updates, vault usage updates, any new unlock state updates, and the CTA changes appropriately (e.g., Buy -> Owned/Buy again) |
+| Low-friction browsing tools (sort/filter) | Unified surfaces get dense quickly; users expect ways to navigate | MEDIUM | At minimum: sort by price/owned/affordable; filter owned/unowned; keep selection stable when purchasing (no surprise scroll jumps) |
+| No data loss across consolidation | Users expect their inventory, upgrades, and equipped state to survive UI changes | HIGH | Maintain save compatibility and migrate any old Vault purchase history into the new card purchase model without deleting items |
 
 ### Differentiators (Competitive Advantage)
 
@@ -28,11 +28,11 @@ Features that set the product apart. Not required, but valuable.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Catalog entries are real references and economic objects | Makes the catalog feel meaningful, not just a gallery | HIGH | "Owned reference" = something you bought; "Discovered reference" = something you've encountered; discovery is experienced as a direct result of catalog play |
-| Wear-one-watch bonus tied to brand/era/type tags | Creates identity + build variety beyond pure numbers | HIGH | Use tags to drive perk families, but avoid combinatorial explosion; ensure readability |
-| Interaction-driven discovery | "Doing things" finds references faster than passive accumulation | MEDIUM | Interactions can grant a discovery roll or temporary "archive focus" buff |
-| Careers as the spender | Shifts feel from "career is a side button" to a core decision loop | HIGH | Make sessions influence catalog economy (dealer access, price growth tweaks, discovery rate) while keeping cost->reward legible |
-| Model sets / collections as goals | Encourages collecting for theme, not only ROI | MEDIUM | Builds on existing set-bonus patterns; show progress and rewards |
+| Mode-switching card layout (shop vs owned) | Keeps unified UI readable without adding more screens | MEDIUM | Cards present a compact shop view until owned, then expand/collapse to show owned controls and vault-specific info (equipped, count, contribution) |
+| "Capacity coach" UX | Reduces frustration and increases upgrade conversion without dark patterns | MEDIUM | When full: show "You're full" with one-click navigation to upgrade; optionally show "X purchases until full" when near capacity |
+| Purchase intent preservation | Avoids the classic "I forgot what I was shopping for" problem | LOW | After upgrading capacity, return the user to the same catalog item with the buy CTA enabled |
+| Contribution/benefit explanation on owned cards | Improves comprehension of enjoyment-only multipliers and reduces mis-buying | HIGH | Owned state shows what the watch affects (enjoyment multiplier only) and where it applies. Helps support "upgrade copy" update work |
+| "Affordable now" quick filter | Turns the catalog into a decision tool rather than a scroll gallery | LOW | One-tap filter or section: affordable items, with explicit reasons for ineligible items (cash vs enjoyment vs capacity) |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
@@ -40,79 +40,99 @@ Features that seem good but create problems.
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Gacha / lootbox packs | Feels exciting; easy content scaling | Undermines catalog-first intentionality; fairness concerns | Deterministic catalog with unlock gates + curated rotations |
-| Punitive durability decay | Adds realism | Turns idle into chores; negative loops | Wear as a soft cap on active bonus only (temporary fatigue) |
-| Only the worn watch produces income | Makes equipping feel important | Breaks idle accumulation fantasy; encourages micromanagement | Entire vault produces; worn watch grants a multiplier/utility perk |
-| Player-to-player trading | Auctions are thematic | Huge scope + exploit risk | NPC dealer + periodic events |
-| Too many new currencies | Tuning knobs | Cognitive overload | Keep currencies minimal; use buffs/flags/perks |
+| Two separate purchase surfaces (Catalog + Vault) | Familiar "shop + inventory" split | Duplicates logic, creates inconsistencies, and confuses "where do I buy?" | Make catalog cards the only purchase flow; vault becomes informational/management only |
+| Shopping cart / multi-step checkout | Feels "proper" like e-commerce | Adds friction, increases modal complexity, and doesn't fit one-tap idle loops | One-tap buy with clear disabled states; optional confirm only for extremely expensive buys |
+| Auto-buy while browsing (accidental purchases) | Convenience | Players feel tricked; hard to recover in a constrained economy | Explicit Buy CTA; optional bulk-buy affordances behind a deliberate control |
+| Auto-selling / deleting items to make room | Prevents being blocked by capacity | Violates ownership expectations; risks perceived loss | Disable buy when full and route to capacity upgrade (or an explicit, reversible "manage space" action if it exists) |
+| Overloading every card with too many buttons | Power users want shortcuts | Turns browsing into a cluttered control panel | Progressive disclosure: primary CTA + 1-2 secondary actions; details in expandable panel |
 
 ## Feature Dependencies
 
 ```
-[Catalog-first purchase hub]
-    -> [Watch models (explicit mapping to catalog entries)]
-           -> [Save/state schema update + migration]
+[Catalog cards are sole purchase flow]
+    -> requires -> [Existing purchase logic (cash + enjoyment threshold)]
+        -> requires -> [Clear requirement messaging]
 
-[Wear-one-watch slot] -> enhances -> [Mini-games + interactions]
+[Vault info embedded in Catalog]
+    -> requires -> [Existing vault capacity + upgrades]
+        -> requires -> [Capacity-aware purchase gating]
 
-[Career-first cash economy]
-    -> [Session rule changes (cost, payout, cooldown)]
-    -> enhances -> [Catalog buy loop (affordability, rotations, discounts)]
+[Owned/equipped actions on cards]
+    -> requires -> [Existing watch ownership + equipped state]
 
-[Diminishing returns]
-    -> conflicts -> [Bulk-buy "always optimal" purchasing]
+[Save compatibility]
+    -> requires -> [Migration of any Vault-purchase UI state into catalog-driven UX]
+
+[Upgrade copy: enjoyment-only multipliers]
+    -> requires -> [Current upgrade system behavior (enjoyment affects cash indirectly)]
 ```
+
+### Dependency Notes
+
+- **Catalog cards are sole purchase flow requires existing purchase logic:** buying remains one action (no divergent logic between tabs).
+- **Vault info embedded in Catalog requires capacity-aware purchase gating:** otherwise the unified surface creates accidental deadlocks (user sees buy, but can't store).
+- **Owned/equipped actions on cards requires ownership + equipped state:** card must be able to represent both "shop" and "inventory" states accurately.
+- **Upgrade copy requires current upgrade system behavior:** copy must match reality (enjoyment-only multiplier) even if downstream cash changes.
 
 ## MVP Definition
 
-### Launch With (v3.0)
+### Launch With (v3.2)
 
-- Catalog-first default view + purchase from Catalog entries
-- Watch model ownership + worn slot with one clear, visible bonus
-- One new interaction/mini-game path beyond current winding (e.g., polishing)
-- Career session rule changes that keep early cash reliable
-- Diminishing returns v1 (simple, explainable)
+- [ ] Catalog cards are the only purchase flow (Vault purchase removed) - 1:1 parity with existing purchase rules
+- [ ] Vault summary (capacity used/max, upgrade status) visible on Catalog tab while browsing
+- [ ] Capacity-aware purchasing (disabled buy with explanation + route to upgrade)
+- [ ] Card states: unowned vs owned (owned count) vs equipped (if applicable), with minimal-but-sufficient actions
+- [ ] Upgrade copy updated to "enjoyment-only multiplier" language and aligned with displayed effects
+- [ ] Save compatibility preserved (migrations + UI state changes do not delete items/upgrades)
 
-### Add After Validation (v3.0.x)
+### Add After Validation (v3.2.x)
 
-- Model sets/collections with progress rewards
-- Automatics mini-game + model-specific interaction table
-- Dealer rotations (curated offers)
+- [ ] Sort/filter quality pass (affordable/owned/unowned, price) - 1: based on playtest friction
+- [ ] Progressive disclosure card layout (expand owned cards) if catalog feels too dense
+- [ ] Better post-purchase feedback (micro-animations, focus retention) if users lose their place
 
 ### Future Consideration (v4+)
 
-- Deep condition/maintenance systems (only if "wear" proves fun)
-- Complex market simulation (only if economy is stable)
+- [ ] Rich inventory management primitives (sell/trade/scrap) only if a strong game loop needs them
+- [ ] Multiple vault types / separate storages only if content scale forces it
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Catalog-first purchase hub + default view | HIGH | HIGH | P1 |
-| Watch models (explicit mapping + stats) | HIGH | HIGH | P1 |
-| Wear-one-watch slot + visible bonus | HIGH | MEDIUM | P1 |
-| Career-first cash loop (session rule change) | HIGH | HIGH | P1 |
-| Diminishing returns (transparent v1) | MEDIUM | HIGH | P1 |
-| Polishing mini-game | MEDIUM | MEDIUM | P2 |
-| Automatics mini-game | MEDIUM | HIGH | P2 |
-| Dealer rotations | MEDIUM | MEDIUM | P2 |
-| Model collections/sets | MEDIUM | MEDIUM | P2 |
-| Tag-based perk families | HIGH | HIGH | P3 |
+| Catalog cards are sole purchase flow (remove Vault purchase) | HIGH | MEDIUM | P1 |
+| Vault summary embedded in Catalog | HIGH | LOW | P1 |
+| Capacity-aware purchase gating + upgrade routing | HIGH | HIGH | P1 |
+| Card state model (owned/equipped) + owned actions | HIGH | MEDIUM | P1 |
+| Upgrade copy aligned to enjoyment-only multipliers | MEDIUM | LOW | P1 |
+| Save compatibility + migration coverage | HIGH | HIGH | P1 |
+| Sort/filter improvements (affordable/owned/unowned) | MEDIUM | MEDIUM | P2 |
+| Progressive disclosure card layout for owned items | MEDIUM | MEDIUM | P2 |
+| Contribution/benefit explanation on owned cards | MEDIUM | HIGH | P2 |
+| "Capacity coach" UX | MEDIUM | MEDIUM | P3 |
 
 **Priority key:**
-- P1: Must have for v3.0 launch
+- P1: Must have for v3.2 launch
 - P2: Should have, add when possible
 - P3: Nice to have, future consideration
 
+## Competitor Feature Analysis
+
+| Feature | Competitor A | Competitor B | Our Approach |
+|---------|--------------|--------------|--------------|
+| Unified browse + owned state in one list | "Collection" screens that show owned/unowned with acquisition method (common in CCG/collection games) | E-commerce product listings with "in your library/owned" indicators (common in digital storefronts) | Catalog cards show Owned count + equipped state alongside Buy CTA (or disabled) |
+| Capacity/limit blocking at purchase | Inventory-limited RPG shops often block purchase when over capacity | Digital storefronts rarely have capacity, but subscriptions/storage quotas show warnings | Block buy when vault is full; surface upgrade option directly from catalog |
+| One-tap buying vs cart | Mobile F2P shops favor one-tap CTAs | General e-commerce uses cart/checkout | Keep one-tap buy; avoid cart; optional confirm only for edge cases |
+
 ## Sources
 
-- Repo behavior and UI structure:
+- Repo feature context (existing Catalog/Vault/equip/upgrade behaviors):
+  - `.planning/PROJECT.md`
   - `src/ui/tabs/CatalogTab.tsx`
-  - `src/ui/tabs/CollectionTab.tsx`
-  - `src/ui/tabs/CareerTab.tsx`
-  - `src/game/selectors/index.ts`
-  - `src/game/actions/index.ts`
+  - `src/ui/tabs/VaultTab.tsx`
+  - `src/game/persistence.ts`
+- General UX patterns (no single authoritative source; treat as MEDIUM confidence): inventory-limited shop patterns in games + owned-state indicators in digital storefronts
 
 ---
-*Feature research for: v3.0 Catalog-First Economy & Interactions*
-*Researched: 2026-01-27*
+*Feature research for: unified catalog/shop + vault consolidation (Emily Idle v3.2)*
+*Researched: 2026-02-01*

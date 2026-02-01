@@ -1,87 +1,86 @@
 # Stack Research
 
-**Domain:** Browser idle game (Vite + React + TS) — "catalog-first" economy + interaction mini-games
-**Researched:** 2026-01-27
-**Confidence:** HIGH (repo reality + npm registry for optional deps)
+**Domain:** Browser-based idle game UI consolidation (catalog + vault)
+**Researched:** 2026-02-01
+**Confidence:** HIGH
 
 ## Recommended Stack
+
+This milestone is a UI/UX consolidation. No new runtime libraries are required; the existing React/Vite/TypeScript stack already supports a single “catalog-first” purchase surface, and the repo already has a reusable purchase panel (`src/ui/tabs/CatalogTab.tsx` exports `CatalogPurchasePanel`) consumed by the vault tab (`src/ui/tabs/CollectionTab.tsx`).
 
 ### Core Technologies
 
 | Technology | Version | Purpose | Why Recommended |
 |------------|---------|---------|-----------------|
-| React | 18.3.1 (current in repo) | UI + interaction surfaces (Catalog becomes primary purchase UI) | Already integrated; component/state patterns are sufficient for shop flows + mini-games without introducing global state libs |
-| Vite | 6.0.0 (current in repo) | Build/dev server | Already working; no new build needs implied by catalog/economy/itemization changes |
-| TypeScript | 5.8.0 (current in repo) | Type-safe domain modeling (catalog models, itemization, diminishing returns rules) | Domain complexity increases; strict TS is the cheapest "stack upgrade" for correctness and refactors |
+| React | 18.3.1 | UI rendering + component model | Already the app foundation; consolidation is a component composition/refactor problem, not a platform change.
+| Vite | 6.0.0 | Dev server + build | Already configured; supports fast iteration while reshaping tab composition and CSS.
+| TypeScript | 5.8.0 | Type-safe domain/UI refactors | Consolidation touches shared props and selectors; strict typing reduces regressions.
+| Plain CSS (global + component classes) | (repo CSS) | Styling unified cards + surface layout | Existing styling approach matches the codebase; avoids introducing a second styling system for a single milestone.
 
 ### Supporting Libraries
 
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| zod | 4.3.6 | Runtime validation for save migrations + catalog/model invariants | Recommended if v3.0 adds new save shape (career-only economy, itemization by model ID, duplicate counters, wear bonuses). Prevents "corrupt save" edge cases from silently producing broken state |
-| @tanstack/react-virtual | 3.13.18 | List virtualization for large catalogs | Only if catalog grows enough to cause scroll/render perf issues (e.g., hundreds/thousands of models, rich cards, images) |
-| xstate | 5.26.0 | Explicit state machines for mini-games / modal flows | Only if interaction mini-games expand into multi-step, interruptible flows (pause/resume, failure states, timers, multiple inputs). Otherwise stick to current reducer/discriminated-union UI state |
+| lucide-react | 0.563.0 | Icons for unified catalog cards (status, gates, actions) | Use for lightweight visual encoding (owned, equipped, locked, cooldown) without adding a component library.
 
 ### Development Tools
 
 | Tool | Purpose | Notes |
 |------|---------|-------|
-| Playwright | 1.49.1 (current in repo) | E2E coverage for "Catalog is default + purchase surface" | Keep stable `data-testid` selectors; add coverage around purchase flow relocation + new economy rules |
-| Vitest + Testing Library | vitest 1.6.0 / @testing-library/react 16.1.0 (current in repo) | Unit tests for pure domain rules | Prioritize tests for: pricing, therapist session rules (first free), diminishing returns, wear-one-watch bonus, duplicate handling |
+| Playwright | E2E regression coverage for “purchase only via Catalog” | Update selectors/copy carefully; keep `data-testid` stable when moving UI.
+| Vitest + Testing Library | Unit-level safety for selectors/actions used by unified cards | Prefer unit tests around purchase gating/owned counts if UI behavior changes.
+| ESLint + Prettier | Keep refactor diffs readable | Consolidation tends to touch large components; formatting prevents noise.
 
 ## Installation
 
 ```bash
-# Supporting (only if needed)
-pnpm add zod
-pnpm add @tanstack/react-virtual
-pnpm add xstate
+# No new dependencies required for this milestone.
+
+# (Optional) if you later need list virtualization for thousands of catalog entries:
+# pnpm add @tanstack/react-virtual
 ```
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| "No new state library" (keep existing domain separation + local UI state) | Redux Toolkit / Zustand | Only if you introduce cross-tab UI orchestration that becomes hard to trace with current patterns (not implied by the milestone; domain already centralized in `src/game/*`) |
-| zod | io-ts / runtypes | Only if the team already standardizes on them elsewhere; otherwise zod is the most common TS-first validation choice |
-| @tanstack/react-virtual | react-window / react-virtuoso | Use if you need a higher-level component API; otherwise TanStack Virtual stays headless and lightweight |
+| Reuse existing `CatalogPurchasePanel` as the canonical purchase surface and mount it in Catalog | Add a new “Shop” feature tab / router-based flow | Only if you need deep-linking, multiple shopping funnels, or large-scale navigation beyond the current tab model.
+| Keep state in existing `GameState` + selectors/actions (pure functions) | Add a client state library (Redux/Zustand/MobX) for UI consolidation | Only if cross-tab UI state becomes complex (e.g., multi-step checkout, undo stack, background sync). Not justified for “move purchase UI” work.
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
-|------|-----|-------------|
-| Heavy animation frameworks (e.g., Framer Motion) | Adds bundle + mental overhead; milestone is rules + purchase surface shift, not animation-driven UI | CSS transitions + small targeted animations; keep interactions responsive and testable |
-| Full "app state" frameworks by default | Rework risk + selector churn; existing architecture already separates domain logic from UI | Extend `src/game/model|data|selectors|actions` and keep UI state local per modal/tab |
+|-------|-----|-------------|
+| Component libraries (MUI/Chakra/Ant/etc.) | High surface-area + styling conflicts for a small consolidation; harder to keep the game’s bespoke vibe | Keep bespoke markup + CSS; factor internal UI primitives if needed (`src/ui/components/*`).
+| Global state libraries for this milestone | Consolidation is largely presentational/structural; new state layers add risk | Keep `GameState` as source of truth; add selectors to expose “vault info” needed by catalog cards.
+| Client-side routing | Tabs already cover navigation; routing adds URL/state complexity and test churn | Keep the tab system and add CTA navigation hooks (`onNavigate`).
 
 ## Stack Patterns by Variant
 
-**If the catalog becomes "big" (perf issues when scrolling):**
-- Use `@tanstack/react-virtual`
-- Because it solves the one real scaling risk (render cost) without re-architecting UI state
+**If Catalog becomes the sole purchase flow (milestone goal):**
+- Treat `CatalogPurchasePanel` as the canonical buy UI and mount it in the Catalog tab (not in Vault/Collection).
+- Add/extend selectors for “vault info” shown on cards (owned count, equipped state, interact cooldown, dismantle availability) and keep them pure under `src/game/selectors/*`.
+- Keep Vault/Collection as management/progression (automation toggles, set bonuses, worn watch picker, etc.) and make all “Buy” CTAs route to Catalog.
 
-**If mini-games become multi-step with interrupts/timeouts + analytics-like events:**
-- Use `xstate` (or keep an explicit reducer if still simple)
-- Because explicit state machines prevent "boolean soup" and make edge cases testable
-
-**If v3.0 includes a save migration that changes core identifiers (tier -> model IDs, duplicate tracking):**
-- Use `zod`
-- Because runtime validation catches partial/old/invalid saves early and makes migrations safer
+**If the catalog list becomes very large (future-proofing):**
+- Add list virtualization (e.g., `@tanstack/react-virtual`) specifically for the card grid.
+- Keep filtering/sorting pure and memoized; avoid rendering thousands of `<article>` nodes.
 
 ## Version Compatibility
 
 | Package A | Compatible With | Notes |
 |-----------|-----------------|-------|
-| @tanstack/react-virtual@3.13.18 | react@18.3.1 | Declares peer support for React 18 |
-| zod@4.3.6 | typescript@5.8.0 | TS-only integration; runtime validation library |
-| xstate@5.26.0 | react@18.3.1 | Core library; React bindings optional depending on integration style |
+| react@18.3.1 | react-dom@18.3.1 | Keep React/ReactDOM aligned to avoid subtle runtime mismatches.
+| react@18.3.1 | @types/react@18.3.3 | Types should track React 18 APIs used by components and hooks.
+| vite@6.0.0 | @vitejs/plugin-react@4.3.4 | Plugin must support the Vite major version used by the repo.
 
 ## Sources
 
-- `package.json` - current repo versions (React/Vite/TS/tooling)
-- https://registry.npmjs.org/zod/latest - verified zod version (4.3.6)
-- https://registry.npmjs.org/@tanstack/react-virtual/latest - verified react-virtual version (3.13.18)
-- https://registry.npmjs.org/xstate/latest - verified xstate version (5.26.0)
+- `package.json` (repo) — current pinned versions for React/Vite/TypeScript/tooling
+- https://react.dev/ — React reference (HIGH)
+- https://vite.dev/ — Vite reference (HIGH)
+- https://playwright.dev/ — Playwright reference (HIGH)
 
 ---
-*Stack research for: catalog-first economy + interactions (v3.0)*
-*Researched: 2026-01-27*
+*Stack research for: catalog/vault consolidation*
+*Researched: 2026-02-01*

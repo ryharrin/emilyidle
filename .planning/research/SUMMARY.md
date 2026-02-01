@@ -1,116 +1,153 @@
 # Project Research Summary
 
-**Project:** Emily Idle (watch-idle)
-**Domain:** Browser-based idle/incremental game — v3.0 "Catalog-First Economy & Interactions"
-**Researched:** 2026-01-27
+**Project:** Emily Idle
+**Domain:** Idle game UI consolidation (Catalog as sole purchase surface + Vault info embedded)
+**Researched:** 2026-02-01
 **Confidence:** MEDIUM-HIGH
 
 ## Executive Summary
 
-v3.0 is a structural shift: the Catalog becomes the primary shop/progression surface (default landing + purchase CTAs), while the economy and interactions evolve from coarse tier items into explicit watch models with ownership, equip-one bonuses, and short repeatable activities/mini-games. The most robust approach keeps domain logic pure and centralized (selectors/actions), treats catalog metadata and gameplay tuning as separate layers, and introduces inventory + activities as first-class subdomains rather than scattering logic across UI components.
+This milestone is a UI consolidation: make the Catalog the single purchase surface while still giving players the Vault context they need to buy confidently (capacity, owned state, equipped state, and upgrade status). The repo already has the right foundations: React/Vite/TypeScript with a thin UI layer over a pure `game/*` domain, and a reusable purchase surface (`CatalogPurchasePanel`) that can be mounted as the canonical shop.
 
-Recommended approach: preserve the existing architecture split (UI vs `src/game/*`), add an inventory slice for model ownership/equip, add an activities slice for interactions, and derive per-model gameplay stats from lightweight archetypes/tags (not bespoke tuning per catalog entry). This keeps the catalog scalable, the economy testable, and UI changes mostly about moving purchase affordances to the catalog.
+The recommended approach is to keep domain logic and persistence contracts stable, and implement the change as tab composition + navigation/CTA rewiring: mount the Catalog tab as a first-class destination, route every "buy" entry point to it, and remove/disable Vault purchase affordances. Add a compact Vault summary panel inside the Catalog rather than pushing global vault stats into every card.
 
-Key risks are semantic save drift (old saves load but feel wrong), double-application/missed application of costs/rewards in the sim loop, and conflating discovered with owned once the catalog becomes the shop. Mitigate with migration invariants + golden saves, centralizing rate-based earnings (apply once), keeping discrete costs in actions only, and maintaining separate state for discovery vs ownership vs equip.
+Key risks are regressions from duplicated computations (two sources of truth), broken deep links/test selectors during component reshuffles, and edge cases around capacity gating + upgrade flows (full vault, return-to-intent). Mitigate by centralizing eligibility/value calculations in selectors/actions, treating `data-testid`/anchor IDs as API, and adding targeted unit + Playwright coverage for the full-vault resolution path and last-tab/deep-link compatibility.
 
 ## Key Findings
 
 ### Recommended Stack
 
-Keep the current stack; v3.0 is primarily a domain/model refactor plus UI surface shift, not a platform rewrite. Add optional libraries only if they unlock concrete risk reduction or scalability.
+No stack changes are needed for v3.2; this is a refactor/composition milestone.
 
-Core technologies:
-- React 18.3.1: UI + catalog-first purchase surface.
-- Vite 6.0.0: build/dev server.
-- TypeScript 5.8.0: safe domain modeling for itemization, diminishing returns, equip rules, and migrations.
+**Core technologies:**
+- React 18.3.1: UI composition/refactor work already fits the existing component model
+- Vite 6.0.0: fast iteration while reshaping tabs and CSS
+- TypeScript 5.8.0 (strict): reduces regressions while moving shared props/selectors
+- Plain CSS: matches existing styling approach; avoid introducing a second styling system
 
-Selective adds (only if needed):
-- zod 4.3.6: runtime validation for save migration + invariants.
-- @tanstack/react-virtual 3.13.18: virtualization if the catalog grows large enough to cause perf issues.
-- xstate 5.26.0: only if mini-games become multi-step/interruptible and state logic becomes complex.
+**Supporting libraries:**
+- `lucide-react` 0.563.0: optional, for lightweight card status/gating icons without adopting a UI kit
 
 ### Expected Features
 
-Must have (table stakes):
-- Catalog-first default view + purchase CTAs on catalog entries (owned counts, locked/unlocked clarity).
-- Explicit watch models (beyond 4 tiers) with stable IDs and deterministic mapping to catalog entries.
-- Career-first cash loop that is reliable early (no deadlocks) with transparent session cost/payout rules.
-- Diminishing returns on duplicates (v1) with UI transparency.
-- Wear-one-watch (equip slot) with a visible, immediate bonus (vault still produces).
+**Must have (table stakes):**
+- Single purchase surface (Catalog cards only) with clear price + requirements (cash + enjoyment threshold)
+- Owned state visible while shopping (owned count + equipped state where applicable)
+- Capacity-aware purchasing: disabled Buy when full, with a clear reason and a direct path to resolution (upgrade)
+- Vault summary visible while shopping (used/max capacity, upgrade status, optionally vault value)
+- Immediate post-purchase UI updates (owned count, capacity, unlock state, CTA state)
+- Save compatibility preserved; consolidation must not delete items/upgrades or change meanings silently
 
-Should have (competitive):
-- Interactions vary by model/type/tags; interactions can drive discovery.
-- Owned vs discovered vs locked remain distinct and meaningful.
-- Model sets/collections as goals once core economy is stable.
+**Should have (competitive):**
+- Mode-switching or progressive disclosure card layout to keep the unified surface readable
+- Purchase intent preservation (after upgrading capacity, return user to the same item/state)
+- "Affordable now" quick filter and/or better reasons for ineligible items
+- Contribution/benefit explanation on owned cards (especially to reinforce enjoyment-only multipliers)
 
-Defer (v3.0.x / v4+):
-- Dealer rotations, deeper interaction tables, automatics mini-game (after validating v1 activities + economy).
-- Maintenance/condition systems and market simulation (high tuning risk).
+**Defer (v3.2.x / v4+):**
+- Sort/filter quality pass based on playtest friction
+- "Capacity coach" UX enhancements (near-full warnings, "X purchases until full")
+- Rich inventory management (sell/trade/scrap) unless a new loop depends on it
+- List virtualization unless the catalog grows large enough to create measurable jank
 
 ### Architecture Approach
 
-The existing separation is strong enough; v3.0 should extend it by adding inventory + activities modules and avoiding monolithic growth in `selectors/index.ts` and `actions/index.ts`.
+Keep the existing boundary: UI moves purchase entry points, domain stays pure and canonical.
 
-Major components:
-1. `src/game/data/catalogEconomy.ts` — derive gameplay stats/prices from catalog tags/archetypes.
-2. `src/game/selectors/inventory.ts` + `src/game/actions/inventory.ts` — ownership/equip rules and purchase gates.
-3. `src/game/selectors/activities.ts` + `src/game/actions/activities.ts` + `src/game/data/activities.ts` — interaction gating/cooldowns/rewards as data.
-4. `src/game/persistence.ts` + `src/game/model/state.ts` — migration seam; new fields with defaults; golden-save verification.
-5. UI (`src/ui/tabs/CatalogTab.tsx`, `src/ui/tabs/CollectionTab.tsx`, `src/App.tsx`) — move purchase surface, add equip/interaction entrypoints, keep UI state ephemeral.
+**Major components:**
+1. `src/App.tsx` - composition root (tab wiring, derived props, persistence, navigation)
+2. `src/ui/tabs/CatalogTab.tsx` - becomes the sole purchase surface; wraps `CatalogPurchasePanel` with Vault context
+3. `src/ui/tabs/CollectionTab.tsx` - Vault/inventory management only (no purchase UI), routes users to Catalog for buying
+4. `src/ui/tabs/CatalogTab.tsx#CatalogPurchasePanel` - canonical purchase list UI (keep it side-effect free; delegate to App)
+5. `src/game/state.ts` + `src/game/selectors/*` + `src/game/actions/*` - single source of truth for eligibility/value/owned counts
+
+Key integration/contracts to keep stable:
+- Deep-link/scroll anchors (notably `id="catalog-shop"`) used by `App.tsx#navigateTo()`
+- `data-testid` attributes referenced by Playwright/Vitest
+- Save/load behavior in `src/game/persistence.ts` (no schema/semantic drift for a UI-only milestone)
 
 ### Critical Pitfalls
 
-1. Economy semantic drift breaks saves.
-2. Session costs vs non-negative currency semantics.
-3. Double-application/missed application in sim loop.
-4. Discovery/ownership conflation.
-5. ID churn orphaning inventories.
-6. Equip-one bonus stacking/reset bugs.
-7. Mini-game reroll exploits / nondeterminism.
+1. **Two sources of truth (ownership/value/eligibility)** - centralize computations into selectors/actions; add unit tests comparing UI affordances to domain eligibility
+2. **Two purchase entry points diverge** - remove/hard-disable legacy Vault purchase UI; ensure a single purchase path remains reachable
+3. **Lost wayfinding/muscle memory** - keep a clearly labeled "Vault" panel within Catalog; consider a one-time hint that Vault moved
+4. **Card cognitive overload** - keep global vault info in one place; keep cards focused on item-level info with progressive disclosure
+5. **Capacity edge cases + upgrade loops** - define explicit eligibility rules; add Playwright coverage for full-vault blocked purchase -> upgrade -> return
+6. **Selector/test/deep-link breakage** - treat `data-testid` and anchor IDs as public API; migrate in one sweep
+7. **Performance regressions** - avoid per-card global aggregations; compute heavy stats once and pass down; profile while ticking
 
 ## Implications for Roadmap
 
-Front-load save safety + domain boundaries, then shift UI surfaces, then layer interactions, and only then do major economy rebalance/balancing.
+Suggested phase structure (aligned to dependencies and known repo contracts):
 
-### Phase 1: Save-Safe v3 State + Migration Scaffolding
-Rationale: biggest irreversible risk is player trust via broken/"wrong" saves.
+### Phase 1: UX/IA + Copy Contract
+**Rationale:** Wayfinding, card density, and upgrade copy all drive perceived correctness; locking these first prevents rework.
+**Delivers:** layout decisions (Vault panel placement), card information hierarchy, CTA labels/disabled reasons, and an explicit copy-to-formula mapping for upgrades.
+**Addresses:** Vault summary while shopping; clear requirement messaging; avoid muscle-memory break and cognitive overload.
+**Avoids:** pitfalls 3, 4, 7.
 
-### Phase 2: Catalog Economy Mapping (Archetype + Instance)
-Rationale: defines what a watch model means economically without UI changes.
+### Phase 2: Domain Invariants + Compatibility (Minimal)
+**Rationale:** UI must reflect a single canonical truth, and eligibility edge cases must be enforced consistently.
+**Delivers:** selector/action contracts for purchase eligibility (cash + enjoyment + capacity), upgrade preview derivation rules, golden-save checks/migrations if any semantics must change.
+**Addresses:** capacity-aware gating, save compatibility, copy/economy alignment.
+**Avoids:** pitfalls 1, 5, 6.
 
-### Phase 3: Inventory Slice + Catalog-First Purchase Surface
-Rationale: ship the headline (catalog-first shop) once domain primitives exist.
+### Phase 3: UI Merge Implementation
+**Rationale:** Once rules and IA are fixed, implementation is mostly wiring and component refactors.
+**Delivers:** Catalog tab exposed + routable; all buy CTAs route to Catalog; Vault tab no longer contains purchase UI; VaultSummary embedded in Catalog; deep link + last-tab mapping preserved.
+**Uses:** existing `CatalogPurchasePanel` as canonical shop; add small UI components (`VaultSummaryPanel`) instead of inflating mode flags.
+**Avoids:** pitfalls 2, 6, 9.
 
-### Phase 4: Wear-One Equip + Visible Bonus
-Rationale: high-salience mechanic that anchors interactions.
+### Phase 4: QA, Regression, and Performance Pass
+**Rationale:** Consolidation risk is mostly regressions; verify the core flows and guard against tick-driven jank.
+**Delivers:** Playwright coverage for "purchase only via Catalog", full-vault blocked path, and last-tab/deep-link behavior; profiling-driven perf fixes; optional P2 sort/filter polish.
+**Avoids:** pitfalls 5, 6, 9, 10.
 
-### Phase 5: Activities Framework + First New Mini-Game
-Rationale: shared gating/cooldown/reward patterns prevent bespoke state per interaction.
+### Phase Ordering Rationale
 
-### Phase 6: Career-First Economy Rules + Balancing Pass
-Rationale: easiest to validate after migration + UI surfaces are stable.
+- Lock UX + copy first to prevent implementation churn and to keep Vault concepts findable after the move.
+- Establish domain invariants (eligibility/value/copy contracts) before UI rewiring to prevent two-sources-of-truth drift.
+- Implement routing/anchors/test IDs as a single compatibility sweep, since navigation and tests are tightly coupled.
+- Verify edge cases and performance last; only add virtualization/sort/filter after you see real friction.
+
+### Research Flags
+
+Phases likely needing deeper research during planning:
+- **Phase 1:** UX/IA decisions (what lives in the Vault panel vs on cards) benefit from a quick playtest hypothesis + acceptance criteria.
+- **Phase 4:** performance/virtualization is data-dependent (catalog size and tick frequency); plan based on profiling.
+
+Phases with standard patterns (skip research-phase):
+- **Phase 2:** selector/action invariants + save compatibility are well-understood in this repo.
+- **Phase 3:** tab wiring + CTA routing are straightforward given existing `CatalogPurchasePanel` reuse.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Grounded in current repo versions; optional deps are scoped. |
-| Features | MEDIUM | Genre norms; tuning is design-dependent. |
-| Architecture | MEDIUM | Based on current code structure; implementation will validate boundaries. |
-| Pitfalls | MEDIUM | Rooted in persistence/sim patterns; mitigations are standard. |
+| Stack | HIGH | Repo already has the needed stack; no new dependencies required (STACK.md)
+| Features | MEDIUM | Based on common inventory-limited shop UX patterns; exact affordances need playtest tuning (FEATURES.md)
+| Architecture | HIGH | Grounded in direct code structure and existing reuse of `CatalogPurchasePanel` (ARCHITECTURE.md)
+| Pitfalls | MEDIUM | Grounded in repo constraints (save/test IDs/tick re-render); exact failure modes depend on implementation choices (PITFALLS.md)
 
-## Gaps to Address
+**Overall confidence:** MEDIUM-HIGH
 
-- Exact v3.0 economy targets (rates, time-to-first-afford, prestige pacing).
-- Catalog model ID source of truth (existing catalog entry IDs vs curated subset).
-- Discovery rules under catalog-first shop (gate purchases vs informational).
-- Mini-game reward structure (deterministic vs random) to choose persistence/seed strategy.
+### Gaps to Address
+
+- **Exact Vault info scope in Catalog:** decide what is global (panel) vs per-card (owned/equipped/value) to avoid overload while still enabling confident buying.
+- **Upgrade copy mapping:** confirm which upgrades are enjoyment-only multipliers and ensure previews derive from selectors (not hardcoded UI strings).
+- **Compatibility contracts:** inventory existing deep links/anchors and Playwright selectors to avoid accidental breakage during tab reshuffle.
 
 ## Sources
 
-- Internal repo: `src/game/persistence.ts`, `src/game/model/state.ts`, `src/game/model/types.ts`, `src/game/sim.ts`, `src/ui/tabs/CatalogTab.tsx`, `src/ui/tabs/CollectionTab.tsx`, `src/ui/tabs/CareerTab.tsx`, `src/game/selectors/index.ts`, `src/game/actions/index.ts`
-- Package verification: https://registry.npmjs.org/zod/latest, https://registry.npmjs.org/@tanstack/react-virtual/latest, https://registry.npmjs.org/xstate/latest
+### Primary (HIGH confidence)
+- Local codebase inspection: `src/App.tsx`, `src/ui/tabs/CatalogTab.tsx`, `src/ui/tabs/CollectionTab.tsx`, `src/game/state.ts`, `src/game/persistence.ts`
+- https://react.dev/ - React reference
+- https://vite.dev/ - Vite reference
+- https://playwright.dev/ - Playwright reference
+
+### Secondary (MEDIUM confidence)
+- Common UX patterns: inventory-limited shops (games) + owned-state indicators (digital storefronts)
 
 ---
-*Research completed: 2026-01-27*
+*Research completed: 2026-02-01*
 *Ready for roadmap: yes*

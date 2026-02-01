@@ -1,263 +1,197 @@
 # Architecture Research
 
-**Domain:** Idle/incremental game — catalog-first economy + interactions
-**Researched:** 2026-01-27
-**Confidence:** MEDIUM (based on direct code reads; design intent inferred)
+**Domain:** Idle game UI consolidation (React tabs + pure game state)
+**Researched:** 2026-02-01
+**Confidence:** HIGH
 
 ## Standard Architecture
 
 ### System Overview
 
-Current architecture is already "clean-ish": pure domain in `src/game/*`, UI in `src/ui/*`, runtime/persistence isolated.
-
-For v3.0, keep that split, but introduce a new "catalog-as-inventory" subdomain and an "activities" subsystem.
+This codebase already follows a clean, “thin UI / pure domain” split. Catalog/Vault consolidation should stay entirely in the UI layer (tab composition + components), reusing existing pure actions/selectors.
 
 ```
-┌───────────────────────────────────────────────────────────────────────────────┐
-│ UI (React)                                                                     │
-├───────────────────────────────────────────────────────────────────────────────┤
-│ App.tsx                                                                        │
-│  - owns runtime hook + persistence triggering + tab composition                │
-│  - owns modal routing (today: wind modal)                                      │
-│                                                                               │
-│ Tabs                                                                           │
-│  - CollectionTab: show owned inventory + equip + interact entrypoints          │
-│  - CatalogTab: marketplace + archive views; buys happen here                   │
-│  - CareerTab / WorkshopTab / MaisonTab / NostalgiaTab: prestige/upgrades       │
-├───────────────────────────────────────────────────────────────────────────────┤
-│ Domain Facade                                                                  │
-├───────────────────────────────────────────────────────────────────────────────┤
-│ src/game/state.ts (re-exports model/data/selectors/actions)                    │
-├───────────────────────────────────────────────────────────────────────────────┤
-│ Pure Domain                                                                    │
-├───────────────────────────────────────────────────────────────────────────────┤
-│ model/                                                                         │
-│  - types.ts: GameState/PersistedGameState                                      │
-│  - state.ts: createInitialState/createStateFromSave + model-level helpers      │
-│ data/                                                                          │
-│  - items.ts: current tier items + gates                                        │
-│  - (new) catalog-economy.ts: map catalog entries -> gameplay archetype/stats   │
-│ selectors/                                                                     │
-│  - index.ts: derived computations (income, gates, discovery, etc.)             │
-│  - (new) inventory.ts: owned/equipped selectors + tagging/type gating          │
-│  - (new) activities.ts: canStart/resolve costs/payouts/cooldowns               │
-│ actions/                                                                       │
-│  - index.ts: state transitions (buy, prestige, sessions)                       │
-│  - (new) inventory.ts: buyCatalogWatch/equipWatch/sell/scrap                   │
-│  - (new) activities.ts: start/resolve mini-games (pure transitions)            │
-│ runtime/                                                                       │
-│  - useGameRuntime: tick + autosave                                             │
-│ sim.ts: step() tick loop                                                       │
-│ persistence.ts: save decode/encode + sanitize                                  │
-└───────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ UI Layer (React)                                                             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐   ┌──────────────────────────┐   ┌───────────────────────┐  │
+│  │ App.tsx     │ → │ Tabs (ui/tabs/*)          │ → │ Shared panels         │  │
+│  │ (wiring)    │   │ Collection/Catalog/etc.   │   │ CatalogPurchasePanel  │  │
+│  └──────┬──────┘   └──────────────┬───────────┘   └───────────┬───────────┘  │
+│         │                          │                           │              │
+├─────────┴──────────────────────────┴───────────────────────────┴──────────────┤
+│ Runtime Layer (game/runtime/*)                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  useGameRuntime: RAF tick + autosave + persistence integration                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Domain Layer (pure TS)                                                        │
+│  game/actions/* + game/selectors/* + game/model/* + game/data/*               │
+│  (exposed via game/state.ts facade)                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
 | Component | Responsibility | Typical Implementation |
 |-----------|----------------|------------------------|
-| `src/App.tsx` | Composition root; owns runtime hook, persistence triggers, modal routing | Keeps game state in hook; passes `state` + `onPurchase` down |
-| `src/ui/tabs/CatalogTab.tsx` | "Catalog-first" purchase surface + archive browsing | Adds buy/equip CTA per entry; filters/search remain local UI state |
-| `src/ui/tabs/CollectionTab.tsx` | Owned inventory + equip + interact entrypoints | Lists owned watches; delegates to activity modals |
-| `src/game/data/*` | Static definitions | Catalog metadata stays in `catalog.ts`; gameplay mapping lives separately |
-| `src/game/selectors/*` | Derived values and gates | Computes price, unlock visibility, activity eligibility, multipliers |
-| `src/game/actions/*` | Pure state transitions | Buy/equip/activities return new `GameState` |
-| `src/game/persistence.ts` + `src/game/model/state.ts` | Save sanitization + migration | Accepts old shapes, produces valid current `GameState` |
+| `src/App.tsx` | Owns active tab state, wires selectors/actions into tab props, persists saves | React state + `useGameRuntime`, passes derived data and callbacks |
+| `src/ui/tabs/CollectionTab.tsx` | “Vault” surface: owned items, interactions, progression panels (currently embeds Shop) | Tab panel receiving `state` and view-model props |
+| `src/ui/tabs/CatalogTab.tsx` | Catalog surface (currently not mounted in nav); hosts `CatalogPurchasePanel` | Tab panel wrapper around shared panel |
+| `src/ui/tabs/CatalogTab.tsx#CatalogPurchasePanel` | Purchase list + discovered/owned catalog views; calls `buyWatchModel` and delegates to `onPurchase` | Shared component used in multiple surfaces |
+| `src/game/state.ts` | Facade re-export of domain actions/selectors/types | “Public API” for UI |
+| `src/game/persistence.ts` | Save encode/decode; localStorage I/O | Pure-ish validation + browser storage |
 
 ## Recommended Project Structure
 
-Add new code as new modules rather than further bloating existing large files (notably `src/App.tsx`, `src/game/selectors/index.ts`, `src/game/actions/index.ts`).
+Keep the existing conventions: tabs remain in `src/ui/tabs/`, shared UI extracted into `src/ui/components/`.
+
+Proposed additions for consolidation:
 
 ```
-src/game/
-├── catalog.ts                  # existing: licensing metadata + tags + image URLs
-├── data/
-│   ├── items.ts                # existing: tier archetypes + legacy gates
-│   ├── catalogEconomy.ts       # NEW: derive purchasable watch stats from catalog entry tags
-│   └── activities.ts           # NEW: mini-game definitions (ids, types, tuning)
-├── model/
-│   ├── types.ts                # MODIFY: add inventory/equip/activity state
-│   └── state.ts                # MODIFY: createInitialState + createStateFromSave migration
-├── selectors/
-│   ├── index.ts                # MODIFY: re-export new selector modules + integrate multipliers
-│   ├── inventory.ts            # NEW: owned/equipped helpers + watch-type classification
-│   └── activities.ts           # NEW: gates (cooldown/cost/watch-type) + payouts
-├── actions/
-│   ├── index.ts                # MODIFY: re-export new action modules
-│   ├── inventory.ts            # NEW: buyCatalogWatch/equipCatalogWatch/scrapCatalogWatch
-│   └── activities.ts           # NEW: applyActivityResult/startActivity/etc
-└── persistence.ts              # MODIFY: sanitize/migrate new fields + optional version bump
+src/
+├── ui/
+│   ├── tabs/
+│   │   ├── CatalogTab.tsx              # Becomes the sole purchase surface
+│   │   └── CollectionTab.tsx           # Vault inventory + interactions (no purchases)
+│   ├── components/
+│   │   ├── VaultSummaryPanel.tsx       # NEW: compact vault state shown inside Catalog
+│   │   └── VaultCapacityMeter.tsx      # NEW (optional): capacity/slots visualization
+│   └── navigation/
+│       └── landing.ts                  # Update tab alias/deep-link behavior if needed
+└── game/
+    └── state.ts                        # No structural change; UI keeps calling actions/selectors
 ```
 
 ### Structure Rationale
 
-- Keep `catalog.ts` "real-world metadata only": licensing/attribution concerns stay separate from gameplay tuning.
-- Introduce an inventory slice: v3.0 adds "own specific models" + "equip exactly one"; this is a coherent boundary.
-- Introduce an activities slice: mini-games + gating/costs/cooldowns are cross-cutting; centralizing prevents one-off state shapes.
+- **`src/ui/tabs/`:** tabs stay as “screen-level” composition; consolidation is a screen-level routing decision.
+- **`src/ui/components/`:** vault info embedded into catalog should be small, reusable components (summary, meters), not more props stuffed into `CatalogPurchasePanel`.
 
 ## Architectural Patterns
 
-### Pattern 1: "Archetype + Instance" (Catalog Entry -> Gameplay Archetype)
+### Pattern 1: “App As Composition Root” (Derived Props + Callbacks)
 
-**What:** Treat each catalog entry as a "watch model instance" but derive its gameplay stats from an archetype (tier/type tags), instead of hand-defining stats for every entry.
+**What:** `App.tsx` computes derived data from `state` (selectors) and passes view-model props + callbacks to tabs.
+**When to use:** Cross-tab shared state (search filters, selected tab, navigation) or behavior that triggers persistence.
+**Trade-offs:** Lots of props, but keeps tabs “dumb” and keeps domain pure.
 
-**When to use:** When "all catalog entries are purchasable" but tuning must stay tractable.
-
-**Trade-offs:** Less bespoke per-watch balancing; faster to expand catalog; consistent economy.
-
-Example (pseudo):
-
-```ts
-type WatchArchetypeId = "starter" | "classic" | "chronograph" | "tourbillon";
-
-type CatalogWatchStats = {
-  archetype: WatchArchetypeId;
-  basePriceCents: number;
-  incomeCentsPerSec: number;
-  enjoymentCentsPerSec: number;
-  scrapParts: number;
-  equipBonus?: { type: "incomeMultiplier"; value: number };
-};
+**Example:**
+```typescript
+// UI component calls a pure action; App owns persistence side-effects.
+onPurchase(buyWatchModel(state, entryId));
 ```
 
-### Pattern 2: "Pure Action, Derived Gate"
+### Pattern 2: Shared Panel With Mode Flags (Current Approach)
 
-**What:** UI queries selectors for eligibility (price, enjoyment gate, cooldown), then calls a pure action that re-checks and returns either unchanged state or next state.
+**What:** A reusable panel (`CatalogPurchasePanel`) can be embedded in different tabs with flags like `showBalance` and extra callbacks.
+**When to use:** Same purchase list UI needs to appear in multiple contexts (e.g., Vault + Catalog during transition).
+**Trade-offs:** Mode flags can accrete and become confusing; prefer composing a wrapper tab (Catalog) that adds/removes surrounding UI.
 
-**When to use:** Purchases, equip, and every activity/mini-game resolution.
-
-**Trade-offs:** Some duplication; big win in testability and save safety.
-
-```ts
-const gate = getCatalogWatchPurchaseGate(state, catalogEntryId);
-if (!gate.ok) return state;
-return buyCatalogWatch(state, catalogEntryId);
+**Example:**
+```typescript
+<CatalogPurchasePanel
+  state={state}
+  onPurchase={onPurchase}
+  showBalance
+  nowMs={nowMs}
+  onInteract={onInteract}
+/>
 ```
 
-### Pattern 3: "Activities as First-Class Definitions"
+### Pattern 3: “UI-Only Consolidation” (No Domain Changes)
 
-**What:** Define mini-games as data: id, required watch types/tags, costs, cooldown, rewards; implement shared selectors/actions.
-
-**When to use:** Multiple mini-games gated by watch type.
-
-**Trade-offs:** Slight upfront abstraction; prevents N bespoke states and UI forks.
+**What:** Move purchase entry points between tabs without touching `game/*`.
+**When to use:** The underlying state transitions and persistence format remain valid.
+**Trade-offs:** Requires careful navigation + CTA updates so the player flow remains coherent.
 
 ## Data Flow
 
-### Purchase + Equip
+### Request Flow (Purchase)
 
 ```
-[CatalogTab Buy Button]
+[User clicks Buy in Catalog]
     ↓
-selectors: getCatalogWatchPurchaseGate(state, entryId)
+CatalogPurchasePanel → buyWatchModel(state, modelId) → onPurchase(nextState)
     ↓
-actions: buyCatalogWatch(state, entryId)
-    ↓
-App.onPurchase(nextState) → persistNow("purchase", nextState)
+App.tsx handlePurchase → setState(nextState) + markSaveDirty() + persistNow("purchase")
 ```
 
-### Interact / Mini-game
+### State Management
 
 ```
-[CollectionTab Interact] or [CatalogTab Interact]
-    ↓
-App opens Activity modal (activityId + context: equipped watch or chosen watch)
-    ↓
-selectors: canStartActivity(state, activityId, watchId, nowMs) + cost breakdown
-    ↓
-actions: applyActivityResult(state, activityId, watchId, outcome, nowMs)
-    ↓
-(optional) actions: activateManualEvent(...) for temporary buffs
-    ↓
-App.onPurchase(nextState) → persistNow("purchase", nextState)
+GameState (useGameRuntime)
+    ↓ (props)
+Tabs (CollectionTab, CatalogTab)
+    ↓ (callbacks)
+App.tsx handlers → pure actions/selectors → new GameState
 ```
 
-## Save Migration Strategy Impacts
+### Key Data Flows Impacted By Consolidation
 
-### Current Save Pipeline (observed)
-
-- `persistence.ts` encodes `SaveV2` with `state: GameState`.
-- On decode, `sanitizeState()` reconstructs a persisted shape by picking known fields, then calls `createStateFromSave(persisted)` (in `src/game/model/state.ts`).
-
-This is already a robust migration seam: unknown fields are ignored; missing fields default.
-
-### v3 changes that stress saves
-
-- Replacing tier-based `items: Record<WatchItemId, number>` with specific-model ownership
-- Adding `equippedWatchId`
-- Adding new mini-game/activity state (cooldowns/results)
-- Changing economy rules (cash sources + gating + session costs)
-
-### Recommended migration approach (minimize risk)
-
-1. Avoid destructive field renames in-place.
-2. Introduce new fields with defaults in `createStateFromSave`:
-   - `ownedCatalogWatches: CatalogEntryId[]` or `Record<CatalogEntryId, number>`
-   - `equippedCatalogWatchId: CatalogEntryId | null`
-   - `activityStates: Record<ActivityId, { nextAvailableAtMs: number; ... }>`
-3. Only bump save version if you truly break shape.
-4. Migration of legacy tier counts should be non-lossy:
-   - Do not fabricate many owned models.
-   - Keep legacy tier holdings contributing until players naturally transition.
-   - Consider a one-time conversion UI later if retiring legacy.
-5. Add unit tests around decode/migrate paths.
-
-## Integration Points
-
-### New vs modified modules/components
-
-Modify (domain):
-- `src/game/model/types.ts`
-- `src/game/model/state.ts`
-- `src/game/persistence.ts`
-- `src/game/selectors/index.ts`
-
-Add (domain):
-- `src/game/data/catalogEconomy.ts`
-- `src/game/selectors/inventory.ts`
-- `src/game/actions/inventory.ts`
-- `src/game/data/activities.ts`
-- `src/game/selectors/activities.ts`
-- `src/game/actions/activities.ts`
-
-Modify (UI):
-- `src/ui/tabs/CatalogTab.tsx`
-- `src/ui/tabs/CollectionTab.tsx`
-- `src/App.tsx`
-
-## Build Order (minimize risk)
-
-1. Add new state fields + migrations first (save safety).
-2. Introduce catalog-economy derivation (no UI changes yet).
-3. Add inventory actions/selectors (minimal UI).
-4. Move purchase surface to CatalogTab.
-5. Refactor CollectionTab to inventory-first.
-6. Generalize activities (wind session -> activity framework).
-7. Economy rule changes last (after surfaces and migration are stable).
+1. **Navigation to purchase list:** `App.tsx#navigateTo()` currently has special-case scrolling for `scrollTargetId === "catalog-shop"` and expects an element with `id="catalog-shop"` (currently in `CollectionTab.tsx`). Moving purchases to the Catalog tab requires updating this deep-link contract.
+2. **Unlock/CTA routing:** CTAs in `CatalogPurchasePanel` and `CollectionTab` currently point to Vault for purchases or discovery. With Catalog as sole purchase surface, these CTAs should route to `tabId: "catalog"` and appropriate anchors (`#catalog-unowned`, etc.).
+3. **Vault context inside Catalog:** Catalog already has access to owned counts via `state` and `getWatchModelOwnedCount`. Embedding “vault info” should read from the same state and selectors rather than duplicating tracking.
 
 ## Scaling Considerations
 
-- Avoid O(N) catalog scans every tick; replace heuristic matching with explicit ids.
-- Add virtualization only if catalog size/perf warrants it.
+| Scale | Architecture Adjustments |
+|-------|--------------------------|
+| 0-1k users | No changes needed; keep client-only state and localStorage persistence |
+| 1k-100k users | Focus on UI performance (virtualize long lists if catalog grows), keep selectors memoized in `App.tsx` |
+| 100k+ users | Only relevant if moving to server sync/cloud saves; outside this milestone |
+
+### Scaling Priorities
+
+1. **First bottleneck:** large catalog rendering; mitigate via memoization + list virtualization.
+2. **Second bottleneck:** prop drilling in `App.tsx`; mitigate via per-tab view-model helpers or context for UI-only state.
 
 ## Anti-Patterns
 
-- Keep fuzzy mapping from owned watches to catalog discovery after switching to model IDs.
-- Add bespoke mini-game state slices per activity.
-- Let UI-only state leak into `GameState`.
+### Anti-Pattern 1: Moving Purchase Side Effects Into UI Components
+
+**What people do:** Let `CatalogPurchasePanel` write to localStorage or call `persistNow`.
+**Why it's wrong:** Breaks the current boundary (pure domain actions + centralized persistence), makes reuse harder.
+**Do this instead:** Keep purchase as `buyWatchModel(...)` + `onPurchase(nextState)` and let `App.tsx` own persistence.
+
+### Anti-Pattern 2: Breaking Deep-Link/Test Selectors During Consolidation
+
+**What people do:** Rename/remove `id`/`data-testid` anchors like `catalog-shop` without updating `navigateTo` and Playwright selectors.
+**Why it's wrong:** Silent UX regressions (CTAs scroll to nowhere) and test flakiness.
+**Do this instead:** Introduce new anchors in Catalog (e.g. `id="catalog-shop"` on the Catalog tab) or update the navigation contract in one sweep.
+
+## Integration Points
+
+### Internal Boundaries
+
+| Boundary | Communication | Notes |
+|----------|---------------|-------|
+| `src/App.tsx` ↔ `src/ui/tabs/CatalogTab.tsx` | props + callbacks | Add Catalog to `TAB_DEFINITIONS` and visibility gating; ensure anchor ids line up with `navigateTo` |
+| `src/App.tsx` ↔ `src/ui/tabs/CollectionTab.tsx` | props + callbacks | Remove embedded shop section; keep inventory/interactions and route purchases to Catalog |
+| `src/ui/tabs/*` ↔ `src/game/state.ts` | direct imports of actions/selectors | No change expected; purchases remain `buyWatchModel` |
+| `src/ui/navigation/landing.ts` ↔ tab ids | string ids / alias resolution | Ensure deep links/aliases recognize `catalog` once it becomes visible |
+
+### Components To Modify vs Add
+
+| Component | Change Type | Why |
+|----------|-------------|-----|
+| `src/App.tsx` | Modify | Mount `CatalogTab`, make it visible, update navigation/scroll targets from `catalog-shop` in Vault to the Catalog tab |
+| `src/ui/tabs/CollectionTab.tsx` | Modify | Remove/replace the embedded `CatalogPurchasePanel` section; keep vault ownership + interactions; add CTA to Catalog |
+| `src/ui/tabs/CatalogTab.tsx` | Modify | Make it the “sole purchase surface”; wrap `CatalogPurchasePanel` with embedded vault summary UI |
+| `src/ui/components/VaultSummaryPanel.tsx` | Add | Provide the “vault info embedded” requirement without bloating purchase panel props |
+| `src/ui/navigation/landing.ts` | Possibly modify | Ensure tab aliasing and landing resolution can navigate to Catalog |
+
+## Suggested Build Order
+
+1. **Expose the Catalog tab (routing only):** Add `catalog` to `TAB_DEFINITIONS`, implement visibility gating, and mount `CatalogTab` in `App.tsx`.
+2. **Redirect purchase entry points:** Update CTAs and `navigateTo` scroll targets so “Buy watches” always routes to Catalog.
+3. **Remove embedded shop from Vault:** Delete/replace `CollectionTab`’s `#catalog-shop` section; leave vault inventory + interactions intact.
+4. **Embed vault context into Catalog:** Add `VaultSummaryPanel` (capacity/owned/worn watch summaries) and render it above `CatalogPurchasePanel`.
+5. **Stabilize selectors/tests:** Keep or migrate `data-testid` and anchor ids in one pass (especially `catalog-shop` / `catalog-unowned`).
 
 ## Sources
 
-- Internal code (direct reads):
-  - `src/App.tsx`
-  - `src/game/persistence.ts`
-  - `src/game/model/types.ts`
-  - `src/game/model/state.ts`
-  - `src/game/selectors/index.ts`
-  - `src/game/actions/index.ts`
-  - `src/ui/tabs/CollectionTab.tsx`
-  - `src/ui/tabs/CatalogTab.tsx`
+- Local codebase inspection (HIGH confidence): `src/App.tsx`, `src/ui/tabs/CollectionTab.tsx`, `src/ui/tabs/CatalogTab.tsx`, `src/game/state.ts`
 
 ---
-*Architecture research for: v3.0 Catalog-First Economy & Interactions*
-*Researched: 2026-01-27*
+*Architecture research for: Catalog/Vault consolidation*
+*Researched: 2026-02-01*
