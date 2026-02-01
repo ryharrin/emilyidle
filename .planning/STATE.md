@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Planning v4.0 milestone (Watch Interactions & Catalog Polish)
+**Current focus:** Starting v3.2 milestone (Catalog/Vault Consolidation)
 
 ## Current Position
 
-Phase: (none)
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-02-01 — completed v3.1 milestone (Career Depth & Landing)
-Progress: ████████████ 100%
-Next Phase: (none) — ready to start the next milestone cycle
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-01 — started milestone v3.2 (Catalog/Vault Consolidation)
+Progress: ○○○○○○○○○○ 0%
+Next Phase: To be determined
 
 ## Accumulated Context
 
