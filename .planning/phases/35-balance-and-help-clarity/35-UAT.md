@@ -1,11 +1,11 @@
 ---
-status: diagnosed
+status: complete
 phase: 35-balance-and-help-clarity
 source:
   - 35-01-SUMMARY.md
   - 35-02-SUMMARY.md
 started: 2026-01-31T05:57:50Z
-updated: 2026-02-01T03:01:20Z
+updated: 2026-02-01T03:38:51Z
 ---
 
 ## Current Test
@@ -28,9 +28,12 @@ result: pass
 
 ### 4. Salary window refresh via session
 expected: After starting a career, Career shows a clear "salary window" concept and running a session visibly refreshes/extends it
-result: issue
-reported: "I'm unable to run sessions for some reason. It says sessions unavailable"
-severity: major
+result: pass
+evidence:
+  - path: ".planning/uat-artifacts/35/10-career-started-sessions-available.png"
+    note: "After entering program, session payout/cooldown show values (not Unavailable) and Run session is enabled before track unlock."
+  - path: ".planning/uat-artifacts/35/11-after-pretrack-session.png"
+    note: "After running a pre-track session, Career state updates (cooldown/status/XP changes visible)."
 
 ### 5. Career start ExplainButton opens correct Help section
 expected: The ExplainButton near the start-career CTA opens Help focused on the "Starting your career" section (not just generic Help)
@@ -47,27 +50,9 @@ result: pass
 ## Summary
 
 total: 7
-passed: 6
-issues: 1
+passed: 7
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
-
-- truth: "After starting a career, Career shows a clear salary window concept and running a session visibly refreshes/extends it"
-  status: failed
-  reason: "User reported: I'm unable to run sessions for some reason. It says sessions unavailable"
-  severity: major
-  test: 4
-  artifacts:
-    - path: ".planning/uat-artifacts/35/09-career-started-session-state.png"
-      issue: "Session cost/payout/cooldown show Unavailable and label says Sessions unavailable after starting career"
-    - path: ".planning/uat-artifacts/35/03-career-started.png"
-      issue: "After entering program, sessions UI is present but appears unavailable"
-    - path: ".planning/uat-artifacts/35/05-after-session.png"
-      issue: "After session attempt screenshot (may remain blocked if sessions are unavailable)"
-  root_cause: "Sessions are gated on therapistCareer.activeTrackId, but entering the PhD program starts the career without setting a track; track choice unlocks at level 3, so sessions show as unavailable immediately after career start."
-  missing:
-    - "Allow pre-track sessions (fallback track/session policy) until track unlock at level 3"
-    - "Ensure salary window refresh loop is achievable before level 3"
-  debug_session: ".planning/debug/35-sessions-unavailable.md"
