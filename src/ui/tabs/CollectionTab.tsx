@@ -445,7 +445,7 @@ export function CollectionTab({
                         : `${line.cost} Reputation`;
                     const effectLabel = (() => {
                       if (line.incomeMultiplier) {
-                        return `+${Math.round((line.incomeMultiplier - 1) * 100)}% cash`;
+                        return `+${Math.round((line.incomeMultiplier - 1) * 100)}% enjoyment`;
                       }
                       if (line.collectionBonusMultiplier) {
                         return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
