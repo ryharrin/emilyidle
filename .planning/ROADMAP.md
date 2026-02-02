@@ -78,7 +78,12 @@ Plans:
   1. Catalog surface shows upgrade status without requiring a separate upgrades surface.
   2. Upgrade copy does not claim cash multipliers and clearly describes enjoyment-only multipliers.
   3. Upgrade previews match actual enjoyment accrual behavior the player experiences after purchase.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 40-01-PLAN.md — Add Catalog upgrade status summary in the shopping header
+- [ ] 40-02-PLAN.md — Scrub upgrade-related UI/help copy to enjoyment-only language
+- [ ] 40-03-PLAN.md — Adjust upgrade previews so they don’t imply cash changes
 
 ### Phase 41: Stability & Regression Guardrails
 **Goal**: Consolidation ships without breaking existing saves, storage, selectors, or catalog images.
