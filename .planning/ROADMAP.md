@@ -18,7 +18,7 @@ Emily Idle evolves by shipping coherent player-visible improvements in continuou
 
 - [x] **Phase 37: Catalog Purchase Surface** - Catalog cards become the only purchase flow.
 - [x] **Phase 38: Catalog Lock + Disabled Explanations** - Locked/disabled states are visible and explained in-place.
-- [ ] **Phase 39: Collection Info Embedded in Catalog** - Capacity/value and "Collection" naming are integrated into catalog.
+- [x] **Phase 39: Collection Info Embedded in Catalog** - Capacity/value and "Collection" naming are integrated into catalog.
 - [ ] **Phase 40: Upgrade Status + Copy Alignment** - Upgrade status is visible in catalog and all upgrade copy/previews match enjoyment-only behavior.
 - [ ] **Phase 41: Stability & Regression Guardrails** - Consolidation ships without save/key/selector/image regressions.
 
@@ -46,7 +46,7 @@ Plans:
   1. Undiscovered watches appear in the catalog greyed out with a lock icon (not fully hidden).
   2. When a purchase action is disabled, the catalog provides a clear "Why can't I buy?" explanation in context.
   3. The explanation points to the specific gating reason (e.g. locked/undiscovered, insufficient resources).
-**Plans**: 3 plans
+**Plans**: 5 plans
 
 Plans:
 - [x] 38-01-PLAN.md — Add lock overlay + in-context "Why can't I buy?" explainer without changing buy/gate semantics
@@ -61,7 +61,14 @@ Plans:
   1. Catalog UI shows current/max collection capacity in the shopping context.
   2. Catalog UI shows current collection value in the shopping context.
   3. The tab label and player-facing copy consistently use "Collection" instead of "Vault".
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [x] 39-01-PLAN.md — Show collection capacity/value in Catalog header
+- [x] 39-02-PLAN.md — Rename UI/help "Vault" -> "Collection" (no selector changes)
+- [x] 39-03-PLAN.md — Rename domain display strings (milestones/achievements/upgrades)
+- [x] 39-04-PLAN.md — Update tests for Collection naming
+- [x] 39-05-PLAN.md — Add catalog context pill regression coverage
 
 ### Phase 40: Upgrade Status + Copy Alignment
 **Goal**: Players can see upgrade status while shopping, and upgrade UI copy/previews accurately reflect enjoyment-only behavior.
@@ -90,6 +97,6 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 37. Catalog Purchase Surface | v3.2 | 2/2 | Complete | 2026-02-02 |
 | 38. Catalog Lock + Disabled Explanations | v3.2 | 3/3 | Complete | 2026-02-02 |
-| 39. Collection Info Embedded in Catalog | v3.2 | 0/TBD | Not started | - |
+| 39. Collection Info Embedded in Catalog | v3.2 | 5/5 | Complete | 2026-02-02 |
 | 40. Upgrade Status + Copy Alignment | v3.2 | 0/TBD | Not started | - |
 | 41. Stability & Regression Guardrails | v3.2 | 0/TBD | Not started | - |

@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** v3.2 Phase 39 (Collection Info Embedded in Catalog)
+**Current focus:** v3.2 Phase 40 (Upgrade Status + Copy Alignment)
 
 ## Current Position
 
-Phase: 39 of 41 (Collection Info Embedded in Catalog)
-Plan: 5 of 5 in current phase
-Status: Phase complete
-Last activity: 2026-02-02 — Completed 39-05-PLAN.md
-Progress: ██████████ 100%
-Next Phase: Phase 40 (Plan TBD)
+Phase: 40 of 41 (Upgrade Status + Copy Alignment)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-02 — Phase 39 verified (status: passed)
+Progress: ██████░░░░ 60%
+Next Phase: Phase 40 (Plan 01)
 
 ## Accumulated Context
 

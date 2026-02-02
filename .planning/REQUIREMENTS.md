@@ -19,10 +19,10 @@ Unify the catalog shopping experience by merging vault information into the cata
 
 ### Vault Information Integration
 
-- [ ] **VLT-01**: Vault capacity displayed within catalog surface (current/max)
-- [ ] **VLT-02**: Current collection value shown in catalog context
+- [x] **VLT-01**: Vault capacity displayed within catalog surface (current/max)
+- [x] **VLT-02**: Current collection value shown in catalog context
 - [ ] **VLT-03**: Upgrade status visible in catalog (merge from separate upgrades surface)
-- [ ] **VLT-04**: Rename "Vault" tab to "Collection" consistently across UI and copy
+- [x] **VLT-04**: Rename "Vault" tab to "Collection" consistently across UI and copy
 
 ### Upgrade System Alignment
 
@@ -69,10 +69,10 @@ Unify the catalog shopping experience by merging vault information into the cata
 | CAT-02 | Phase 38 | Complete |
 | CAT-03 | Phase 38 | Complete |
 | CAT-04 | Phase 37 | Complete |
-| VLT-01 | Phase 39 | Not started |
-| VLT-02 | Phase 39 | Not started |
+| VLT-01 | Phase 39 | Complete |
+| VLT-02 | Phase 39 | Complete |
 | VLT-03 | Phase 40 | Not started |
-| VLT-04 | Phase 39 | Not started |
+| VLT-04 | Phase 39 | Complete |
 | UPG-01 | Phase 40 | Not started |
 | UPG-02 | Phase 40 | Not started |
 | UPG-03 | Phase 40 | Not started |
