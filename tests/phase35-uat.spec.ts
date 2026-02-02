@@ -123,7 +123,7 @@ test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
     await page.goto("/");
 
     // Navigate to Vault/Collection tab
-    const collectionTab = page.getByRole("tab", { name: "Vault" });
+    const collectionTab = page.getByRole("tab", { name: "Collection" });
     await collectionTab.click();
     await expect(page.getByTestId("collection-setup")).toBeVisible();
 
@@ -131,7 +131,7 @@ test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
     await page.screenshot({ path: `${artifactDir}/06-vault-tab.png` });
 
     // Confirm Vault does not include the catalog-shop purchase surface
-    const vaultPanel = page.getByRole("tabpanel", { name: "Vault" });
+    const vaultPanel = page.getByRole("tabpanel", { name: "Collection" });
     await expect(vaultPanel.locator("[data-testid='catalog-shop']")).toHaveCount(0);
 
     // Navigate to Catalog tab

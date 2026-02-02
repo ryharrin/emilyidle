@@ -48,7 +48,7 @@ test("wear one watch, switch, clear, and verify Stats + help", async ({ page }) 
   await wearA.click();
 
   await expect(page.getByTestId(`watch-equipped-${watchIdA}`)).toBeVisible();
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Collection" }).click();
   await expect(page.getByTestId("worn-watch-summary")).toBeVisible();
   await expect(page.getByTestId("worn-watch-summary")).not.toContainText("None");
 
@@ -76,7 +76,7 @@ test("wear one watch, switch, clear, and verify Stats + help", async ({ page }) 
   await expect(page.getByTestId("help-active-section")).toHaveText(/Worn watch bonus/);
   await page.getByTestId("help-close").click();
 
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Collection" }).click();
   await page.getByTestId("worn-watch-change").click();
   await expect(page.getByTestId("worn-watch-picker-modal")).toBeVisible();
   await page.getByTestId("worn-watch-option-none").click();

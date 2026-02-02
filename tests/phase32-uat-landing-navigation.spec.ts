@@ -68,7 +68,7 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
       const careerTab = tabList.getByRole("tab", { name: "Career" });
-      const vaultTab = tabList.getByRole("tab", { name: "Vault" });
+      const vaultTab = tabList.getByRole("tab", { name: "Collection" });
       const upgradesTab = tabList.getByRole("tab", { name: "Upgrades" });
       const saveTab = tabList.getByRole("tab", { name: "Settings" });
 
@@ -179,7 +179,7 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       });
 
       // Verify tabs are visible and usable in mobile viewport
-      const vaultTab = tabList.getByRole("tab", { name: "Vault" });
+      const vaultTab = tabList.getByRole("tab", { name: "Collection" });
       const upgradesTab = tabList.getByRole("tab", { name: "Upgrades" });
       const saveTab = tabList.getByRole("tab", { name: "Settings" });
 

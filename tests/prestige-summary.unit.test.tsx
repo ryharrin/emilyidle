@@ -13,7 +13,7 @@ describe("prestige summary builders", () => {
     expect(summary.tier).toBe("workshop");
     expect(summary.gain.join(" ")).toContain("+3 Blueprints");
     expect(summary.keep.join(" ")).toContain("Atelier upgrades");
-    expect(summary.lose.join(" ")).toContain("Vault cash");
+    expect(summary.lose.join(" ")).toContain("Cash and enjoyment totals");
   });
 
   it("builds maison summary with the correct tier and gains", () => {

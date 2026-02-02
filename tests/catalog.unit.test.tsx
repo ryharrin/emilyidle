@@ -25,10 +25,10 @@ describe("primary navigation tabs", () => {
     cleanup();
   });
 
-  it("renders vault, career, and save tabs on a fresh save", () => {
+  it("renders collection, career, and save tabs on a fresh save", () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
 
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
     const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Settings/i });
@@ -58,7 +58,7 @@ describe("primary navigation tabs", () => {
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
     const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     const upgradesTab = within(tabList).getByRole("tab", { name: /Upgrades/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Settings/i });
@@ -121,10 +121,10 @@ describe("primary navigation tabs", () => {
     const user = userEvent.setup();
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
     const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
 
-    expect(screen.queryByRole("tabpanel", { name: /Vault/i })).toBeNull();
+    expect(screen.queryByRole("tabpanel", { name: /Collection/i })).toBeNull();
 
     careerTab.focus();
 
@@ -141,7 +141,7 @@ describe("primary navigation tabs", () => {
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     expect(careerTab.getAttribute("aria-selected")).toBe("false");
-    expect(screen.getByRole("tabpanel", { name: /Vault/i })).toBeTruthy();
+    expect(screen.getByRole("tabpanel", { name: /Collection/i })).toBeTruthy();
   });
 
   it("restores the last visited tab for existing saves", () => {
@@ -234,7 +234,7 @@ describe("primary navigation tabs", () => {
 
     try {
       const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-      const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+      const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
       const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
       await user.click(vaultTab);
 
@@ -384,7 +384,7 @@ describe("catalog tier bonuses", () => {
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
     await user.click(vaultTab);
     await waitFor(() => {
       expect(vaultTab.getAttribute("aria-selected")).toBe("true");
@@ -433,7 +433,7 @@ describe("set bonuses", () => {
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
     await user.click(vaultTab);
     await waitFor(() => {
       expect(vaultTab.getAttribute("aria-selected")).toBe("true");
@@ -1064,9 +1064,9 @@ describe("catalog ownership tabs", () => {
     expect(statsTab.getAttribute("aria-selected")).toBe("true");
 
     const metrics = screen.getByTestId("stats-metrics");
-    expect(metrics.textContent).toContain("Vault enjoyment");
+    expect(metrics.textContent).toContain("Collection enjoyment");
     expect(metrics.textContent).toContain("Enjoyment / sec");
-    expect(metrics.textContent).toContain("Vault dollars");
+    expect(metrics.textContent).toContain("Dollars");
     expect(metrics.textContent).toContain("Dollars / sec");
     expect(metrics.textContent).toContain("Memories");
     expect(metrics.textContent).toContain("Atelier resets");
@@ -1522,7 +1522,7 @@ describe("settings preferences", () => {
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
     const saveTab = within(tabList).getByRole("tab", { name: /Settings/i });
 
     await user.click(vaultTab);
@@ -1574,7 +1574,7 @@ describe("coachmarks", () => {
   const openVaultTab = async () => {
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Vault/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
 
     await user.click(vaultTab);
 
@@ -1602,7 +1602,7 @@ describe("coachmarks", () => {
         .textContent?.trim(),
     );
 
-    expect(titles).toContain("Vault basics");
+    expect(titles).toContain("Collection basics");
     expect(titles).toContain("Catalog archive");
     expect(titles).toContain("Atelier reset");
     expect(titles).toContain("Maison legacy");

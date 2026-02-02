@@ -69,7 +69,7 @@ describe("career landing", () => {
     expect(result).toEqual({ tabId: "career", source: "system" });
   });
 
-  it("falls back to Vault/collection when Career is hidden on a fresh save", () => {
+  it("falls back to Collection when Career is hidden on a fresh save", () => {
     const result = resolveLandingTab({
       search: "",
       hasSave: false,

@@ -4,7 +4,7 @@ const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 const TOURBILLON_MODEL_ID =
   "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
 
-test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
+test("collection shows next unlocks panel for hidden systems", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
@@ -54,7 +54,7 @@ test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
 
   await page.goto("/");
 
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Collection" }).click();
   await expect(page.getByTestId("next-unlocks")).toBeVisible();
   await expect(page.getByTestId("next-unlock-career")).toBeVisible();
   await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();

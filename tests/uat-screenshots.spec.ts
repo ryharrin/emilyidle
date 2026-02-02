@@ -20,7 +20,7 @@ test.describe("UAT Screenshot Inspection", () => {
     });
 
     // Click Vault tab to ensure we're on collection
-    const vaultTab = page.getByRole("tab", { name: /Vault/i });
+    const vaultTab = page.getByRole("tab", { name: /Collection/i });
     await vaultTab.click();
     await page.waitForTimeout(500);
 
@@ -103,7 +103,7 @@ test.describe("UAT Screenshot Inspection", () => {
     });
 
     // Click Vault
-    const vaultTab = page.getByRole("tab", { name: /Vault/i });
+    const vaultTab = page.getByRole("tab", { name: /Collection/i });
     await vaultTab.click();
     await page.waitForTimeout(500);
 
@@ -138,7 +138,7 @@ test.describe("UAT Screenshot Inspection", () => {
     await page.waitForLoadState("networkidle");
 
     // Click Vault
-    const vaultTab = page.getByRole("tab", { name: /Vault/i });
+    const vaultTab = page.getByRole("tab", { name: /Collection/i });
     await vaultTab.click();
     await page.waitForTimeout(500);
 
@@ -196,7 +196,7 @@ test.describe("UAT Screenshot Inspection", () => {
     await page.waitForLoadState("networkidle");
 
     // Click Vault
-    const vaultTab = page.getByRole("tab", { name: /Vault/i });
+    const vaultTab = page.getByRole("tab", { name: /Collection/i });
     await vaultTab.click();
     await page.waitForTimeout(500);
 

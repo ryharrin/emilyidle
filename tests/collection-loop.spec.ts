@@ -106,7 +106,7 @@ test.describe("collection loop", () => {
   });
 
   test("renders collection structure and stats", async ({ page }) => {
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Collection" }).click();
     await expect(page.locator(selectors.currency)).toHaveText(/\$/);
     await expect(page.locator(selectors.income)).toHaveText(/\$/);
     await expect(page.locator(selectors.collectionValue)).toHaveText(/\$/);
@@ -282,7 +282,7 @@ test.describe("collection loop", () => {
     await page.goto("/");
 
     const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-    await expect(tabList.getByRole("tab", { name: "Vault" })).toBeVisible();
+    await expect(tabList.getByRole("tab", { name: "Collection" })).toBeVisible();
     await expect(tabList.getByRole("tab", { name: "Settings" })).toBeVisible();
     await expect(tabList.getByRole("tab", { name: "Catalog" })).toHaveCount(0);
   });
@@ -500,7 +500,7 @@ test.describe("collection loop", () => {
   });
 
   test("automation toggle appears after automation upgrade", async ({ page }) => {
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Collection" }).click();
     const automationToggle = page.locator(selectors.automationToggle);
     await expect(automationToggle).toContainText("Unlock automation with Atelier blueprints.");
 
@@ -554,7 +554,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Collection" }).click();
     await expect(page.locator(selectors.automationToggle).getByRole("button")).toHaveText(
       /Auto-buy (on|off)/,
     );
@@ -671,7 +671,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Collection" }).click();
     await expect(page.getByRole("heading", { name: "Achievements" })).toBeVisible();
 
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
