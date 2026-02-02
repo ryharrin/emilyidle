@@ -131,7 +131,7 @@ describe("unlock UI components", () => {
     expect(onCta).toHaveBeenCalledTimes(1);
   });
 
-  it("wires Catalog discovered empty state CTA to Vault navigation", async () => {
+  it("wires Catalog discovered empty state CTA to Catalog navigation", async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     const onPurchase = vi.fn();
@@ -170,11 +170,11 @@ describe("unlock UI components", () => {
     );
 
     expect(screen.queryByTestId("catalog-discovered-empty")).not.toBeNull();
-    await user.click(screen.getByRole("button", { name: "Go to Vault" }));
-    expect(onNavigate).toHaveBeenCalledWith("collection", "catalog-shop");
+    await user.click(screen.getByRole("button", { name: "Shop catalog" }));
+    expect(onNavigate).toHaveBeenCalledWith("catalog", "catalog-shop");
   });
 
-  it("wires Catalog owned empty state CTA to Vault navigation", async () => {
+  it("wires Catalog owned empty state CTA to Catalog navigation", async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     const onPurchase = vi.fn();
@@ -214,6 +214,6 @@ describe("unlock UI components", () => {
 
     expect(screen.queryByTestId("catalog-owned-empty")).not.toBeNull();
     await user.click(screen.getByRole("button", { name: "Build collection" }));
-    expect(onNavigate).toHaveBeenCalledWith("collection", "catalog-shop");
+    expect(onNavigate).toHaveBeenCalledWith("catalog", "catalog-shop");
   });
 });

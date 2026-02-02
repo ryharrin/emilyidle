@@ -64,6 +64,8 @@ type CatalogTabProps = {
   catalogEntries: ReadonlyArray<CatalogEntry>;
   hasOwnedCatalogTiers: boolean;
   onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
+  nowMs?: number;
+  onInteract?: (itemId: WatchItemId) => void;
 };
 
 export type PurchaseMeta = {
@@ -261,12 +263,12 @@ export function CatalogPurchasePanel({
     <>
       <header className="panel-header catalog-header">
         <div>
-          <p className="eyebrow">{embeddedInVault ? "Shop" : "Archive"}</p>
+          <p className="eyebrow">{embeddedInVault ? "Shop" : "Catalog"}</p>
           {embeddedInVault ? <h3>Shop</h3> : <h2>Catalog</h2>}
           <p className="muted">
             {embeddedInVault
-              ? "Buy watches here; the Catalog tab is the archive for references and licensing."
-              : "Browse references and licensing details; buy watches from the Shop in Vault."}
+              ? "Buy watches here, then explore catalog references and licensing details."
+              : "Buy watches directly from catalog cards and track references as you discover them."}
           </p>
         </div>
         <div className="catalog-header-actions">
@@ -477,9 +479,9 @@ export function CatalogPurchasePanel({
             <div className="catalog-empty" data-testid="catalog-discovered-empty">
               <EmptyStateCTA
                 title="No references discovered yet"
-                body="Buy and interact with watch models in the Vault to discover catalog references and unlock tier bonuses."
-                ctaLabel="Go to Vault"
-                onCta={() => onNavigate("collection", "catalog-shop")}
+                body="Buy and interact with watch models in the Catalog to discover references and unlock tier bonuses."
+                ctaLabel="Shop catalog"
+                onCta={() => onNavigate("catalog", "catalog-shop")}
               />
             </div>
           )}
@@ -754,7 +756,7 @@ export function CatalogPurchasePanel({
                   onCta={
                     embeddedInVault
                       ? handleBrowseWatches
-                      : () => onNavigate("collection", "catalog-shop")
+                      : () => onNavigate("catalog", "catalog-shop")
                   }
                 />
               </div>
@@ -1393,9 +1395,9 @@ export function CatalogTabLegacy({
               <div className="catalog-empty" data-testid="catalog-discovered-empty">
                 <EmptyStateCTA
                   title="No references discovered yet"
-                  body="Buy and interact with watch models in the Vault to discover catalog references and unlock tier bonuses."
-                  ctaLabel="Go to Vault"
-                  onCta={() => onNavigate("collection", "catalog-shop")}
+                  body="Buy and interact with watch models in the Catalog to discover references and unlock tier bonuses."
+                  ctaLabel="Shop catalog"
+                  onCta={() => onNavigate("catalog", "catalog-shop")}
                 />
               </div>
             )}
@@ -1514,7 +1516,7 @@ export function CatalogTabLegacy({
                       title="No owned references yet"
                       body="Build your vault collection to start filling your archive shelf with owned references."
                       ctaLabel="Build collection"
-                      onCta={() => onNavigate("collection", "catalog-shop")}
+                      onCta={() => onNavigate("catalog", "catalog-shop")}
                     />
                   </div>
                 ) : (
@@ -1636,11 +1638,9 @@ export function CatalogTab({ isActive, catalogEntries, ...panelProps }: CatalogT
       aria-labelledby="catalog-tab"
       hidden={!isActive}
     >
-      {isActive && (
-        <>
-          <CatalogPurchasePanel {...panelProps} catalogEntries={catalogEntries} />
-        </>
-      )}
+      <section id="catalog-shop" data-testid="catalog-shop">
+        {isActive && <CatalogPurchasePanel {...panelProps} catalogEntries={catalogEntries} />}
+      </section>
     </section>
   );
 }

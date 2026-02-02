@@ -1256,6 +1256,8 @@ export default function App() {
           catalogEntries={catalogEntries}
           hasOwnedCatalogTiers={hasOwnedCatalogTiers}
           onPurchase={handlePurchase}
+          nowMs={nowMs}
+          onInteract={handleInteract}
         />
 
         <CareerTab

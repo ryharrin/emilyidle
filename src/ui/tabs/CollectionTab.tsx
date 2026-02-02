@@ -1,6 +1,6 @@
 import React from "react";
 
-import { CatalogPurchasePanel, type PurchaseMeta } from "./CatalogTab";
+import { type PurchaseMeta } from "./CatalogTab";
 import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
@@ -189,7 +189,7 @@ export function CollectionTab({
 
   const nextUnlockItems: NextUnlockItem[] = [];
   const collectionListCta = {
-    tabId: "collection" as const,
+    tabId: "catalog" as const,
     scrollTargetId: "catalog-shop",
   };
 
@@ -405,39 +405,22 @@ export function CollectionTab({
                 </p>
               </div>
             </div>
-            <section className="panel catalog-panel" id="catalog-shop" data-testid="catalog-shop">
-              <p className="muted">
-                Shop is the purchase flow. Catalog is the archive tab for references and licensing.
-              </p>
-              <CatalogPurchasePanel
-                state={state}
-                onNavigate={onNavigate}
-                catalogSearch={catalogSearch}
-                onCatalogSearchChange={onCatalogSearchChange}
-                catalogBrand={catalogBrand}
-                onCatalogBrandChange={onCatalogBrandChange}
-                catalogStyle={catalogStyle}
-                onCatalogStyleChange={onCatalogStyleChange}
-                catalogSort={catalogSort}
-                onCatalogSortChange={onCatalogSortChange}
-                catalogEra={catalogEra}
-                onCatalogEraChange={onCatalogEraChange}
-                catalogType={catalogType}
-                onCatalogTypeChange={onCatalogTypeChange}
-                catalogTab={catalogTab}
-                onCatalogTabChange={onCatalogTabChange}
-                catalogBrands={catalogBrands}
-                filteredCatalogEntries={filteredCatalogEntries}
-                discoveredCatalogEntries={discoveredCatalogEntries}
-                discoveredCatalogIds={discoveredCatalogIds}
-                catalogEntries={catalogEntries}
-                hasOwnedCatalogTiers={hasOwnedCatalogTiers}
-                onPurchase={onPurchase}
-                nowMs={nowMs}
-                onInteract={onInteract}
-                showBalance
-                atelierUnlocked={atelierUnlocked}
-              />
+            <section className="panel catalog-panel" data-testid="catalog-shop-callout">
+              <header className="panel-header">
+                <div>
+                  <p className="eyebrow">Catalog</p>
+                  <h3>Shop in Catalog</h3>
+                  <p className="muted">
+                    Buy watches directly from catalog cards. The Vault focuses on collection and
+                    upgrades once you own them.
+                  </p>
+                </div>
+                <div className="card-actions">
+                  <button type="button" onClick={() => onNavigate("catalog", "catalog-shop")}>
+                    Open Catalog
+                  </button>
+                </div>
+              </header>
             </section>
             {showMaisonLines && (
               <div className="panel maison-lines" data-testid="maison-lines">

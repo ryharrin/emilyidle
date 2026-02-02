@@ -14,7 +14,7 @@ describe("career landing", () => {
     expect(result).toEqual({ tabId: "stats", source: "deep-link" });
   });
 
-  it("treats tab=catalog as an alias for Vault/collection", () => {
+  it("treats tab=catalog as a Catalog deep link", () => {
     const result = resolveLandingTab({
       search: "?tab=catalog",
       hasSave: false,
@@ -22,7 +22,7 @@ describe("career landing", () => {
       isVisible: () => true,
     });
 
-    expect(result).toEqual({ tabId: "collection", source: "deep-link" });
+    expect(result).toEqual({ tabId: "catalog", source: "deep-link" });
   });
 
   it("ignores invalid deep link tabs and falls back to last-tab when available", () => {
