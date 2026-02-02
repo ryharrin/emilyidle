@@ -197,7 +197,7 @@ export function WorkshopTab({
                         const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
                         const effectLabel = (() => {
                           if (upgrade.incomeMultiplier) {
-                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
                           }
                           if (upgrade.softcapMultiplier) {
                             return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;

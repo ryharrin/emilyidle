@@ -166,7 +166,7 @@ export function MaisonTab({
                             : `${upgrade.cost} Reputation`;
                         const effectLabel = (() => {
                           if (upgrade.incomeMultiplier) {
-                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% cash`;
+                            return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
                           }
                           if (upgrade.collectionBonusMultiplier) {
                             return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
