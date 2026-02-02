@@ -56,6 +56,13 @@ describe("upgrades preview", () => {
     expect(cardScope.getByText(/Enjoyment \+/)).toBeTruthy();
     expect(cardScope.queryByText(/Cash \+/)).toBeNull();
 
+    const cashLines = cardScope
+      .queryAllByText(/^Cash /)
+      .map((node) => node.textContent ?? "")
+      .filter((text) => !text.includes("+"));
+
+    expect(cashLines).toHaveLength(0);
+
     const enjoymentLines = cardScope
       .getAllByText(/^Enjoyment /)
       .map((node) => node.textContent ?? "")
