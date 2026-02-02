@@ -275,6 +275,35 @@ describe("primary navigation tabs", () => {
       rafSpy.mockRestore();
     }
   });
+
+  it("keeps catalog buy buttons inside the catalog tabpanel", async () => {
+    const user = userEvent.setup();
+
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+
+    await waitFor(() => {
+      expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    });
+
+    const catalogPanelId = catalogTab.getAttribute("aria-controls");
+    if (!catalogPanelId) {
+      throw new Error("Expected catalog tabpanel id");
+    }
+
+    const catalogPanel = document.getElementById(catalogPanelId);
+    if (!catalogPanel) {
+      throw new Error("Expected catalog tabpanel element");
+    }
+
+    const buyButtons = await waitFor(() => screen.getAllByTestId(/catalog-buy-/));
+    expect(buyButtons.length).toBeGreaterThan(0);
+
+    buyButtons.forEach((button) => {
+      expect(catalogPanel.contains(button)).toBe(true);
+    });
+  });
 });
 
 describe("career tab unlock", () => {

@@ -29,7 +29,7 @@ async function seedQuartzSave(page: any, args: SeedArgs) {
 
 async function openQuartzModal(page: any) {
   await page.goto("/");
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Catalog" }).click();
 
   const interactButton = page
     .locator('[data-testid="vault-interact-starter"]:not([disabled])')

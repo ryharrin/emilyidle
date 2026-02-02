@@ -130,7 +130,7 @@ type AudioSettings = {
 };
 
 type ThemeMode = "system" | "light" | "dark";
-const HIDEABLE_TAB_IDS: TabId[] = ["career", "workshop", "maison", "stats"];
+const HIDEABLE_TAB_IDS: TabId[] = ["career", "catalog", "workshop", "maison", "stats"];
 
 type Settings = {
   themeMode: ThemeMode;
@@ -707,7 +707,7 @@ export default function App() {
       nostalgia: tabVisibility.nostalgia,
       career: tabVisibility.career && !hiddenTabsSet.has("career"),
       upgrades: tabVisibility.upgrades,
-      catalog: tabVisibility.catalog,
+      catalog: tabVisibility.catalog && !hiddenTabsSet.has("catalog"),
       stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
       workshop: tabVisibility.workshop && !hiddenTabsSet.has("workshop"),
       maison: tabVisibility.maison && !hiddenTabsSet.has("maison"),

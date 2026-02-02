@@ -36,25 +36,31 @@ test("wear one watch, switch, clear, and verify Stats + help", async ({ page }) 
   await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Catalog" }).click();
 
   await page
     .getByTestId("catalog-owned-tabs")
     .getByRole("tab", { name: /^Owned$/ })
     .click();
 
-  await expect(page.getByTestId("worn-watch-summary")).toBeVisible();
-
   const wearA = page.getByTestId(`watch-wear-${watchIdA}`);
   await wearA.scrollIntoViewIfNeeded();
   await wearA.click();
 
   await expect(page.getByTestId(`watch-equipped-${watchIdA}`)).toBeVisible();
+  await page.getByRole("tab", { name: "Vault" }).click();
+  await expect(page.getByTestId("worn-watch-summary")).toBeVisible();
   await expect(page.getByTestId("worn-watch-summary")).not.toContainText("None");
 
   await page.getByTestId("worn-watch-change").click();
   await expect(page.getByTestId("worn-watch-picker-modal")).toBeVisible();
   await page.getByTestId(`worn-watch-option-${watchIdB}`).click();
+
+  await page.getByRole("tab", { name: "Catalog" }).click();
+  await page
+    .getByTestId("catalog-owned-tabs")
+    .getByRole("tab", { name: /^Owned$/ })
+    .click();
 
   await expect(page.getByTestId(`watch-equipped-${watchIdA}`)).toHaveCount(0);
   await expect(page.getByTestId(`watch-equipped-${watchIdB}`)).toBeVisible();

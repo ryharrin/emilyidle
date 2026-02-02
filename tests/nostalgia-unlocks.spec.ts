@@ -98,7 +98,7 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await expect(page.getByTestId("nostalgia-unlock-refund-classic")).toBeEnabled();
   await expect(page.getByTestId("nostalgia-balance")).toHaveText(/0 Nostalgia/);
 
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Catalog" }).click();
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
   await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
   const classicBuyButton = page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`);
@@ -115,7 +115,7 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await expect(page.getByTestId("nostalgia-unlock-buy-classic")).toBeDisabled();
   await expect(page.getByTestId("nostalgia-unlock-refund-classic")).toBeEnabled();
 
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Catalog" }).click();
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
   await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
   const classicBuyAfterReload = page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`);

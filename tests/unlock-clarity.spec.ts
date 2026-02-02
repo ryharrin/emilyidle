@@ -54,10 +54,12 @@ test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
 
   await page.goto("/");
 
+  await page.getByRole("tab", { name: "Vault" }).click();
   await expect(page.getByTestId("next-unlocks")).toBeVisible();
   await expect(page.getByTestId("next-unlock-career")).toBeVisible();
   await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();
 
+  await page.getByRole("tab", { name: "Catalog" }).click();
   const lockedItemHint = page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`);
   await lockedItemHint.scrollIntoViewIfNeeded();
   await expect(lockedItemHint).toBeVisible();
@@ -66,7 +68,7 @@ test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
   await expect(page.getByTestId("locked-upgrade-hint-assembly-jigs")).toBeVisible();
 });
 
-test("catalog empty state CTA returns to vault", async ({ page }) => {
+test("catalog empty state CTA stays in catalog", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
@@ -122,15 +124,12 @@ test("catalog empty state CTA returns to vault", async ({ page }) => {
   );
 
   await page.goto("/");
+  await page.getByRole("tab", { name: "Catalog" }).click();
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
   await page.getByRole("tab", { name: "Owned", exact: true }).click();
   await expect(page.getByTestId("catalog-owned-empty")).toBeVisible();
-  await page.getByRole("button", { name: "Browse watches" }).click();
+  await page.getByRole("button", { name: "Build collection" }).click();
 
-  await expect(page.getByRole("tab", { name: "Vault" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Catalog" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByTestId("catalog-shop")).toBeVisible();
-  await expect(page.getByRole("tab", { name: "Unowned", exact: true })).toHaveAttribute(
-    "aria-selected",
-    "true",
-  );
 });

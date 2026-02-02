@@ -56,10 +56,10 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: HELP_SECTION_IDS.catalogFirst,
     title: "Catalog-first economy",
     body: [
-      "The Shop panel is the primary purchase surface for watches.",
-      "Shop lives inside the Vault tab (and may appear elsewhere as a shortcut).",
-      "Catalog is the archive tab for references and licensing details, not a second shop.",
-      "Each Shop card shows owned count, price, and the next gate if locked.",
+      "Catalog is the primary purchase surface for watches.",
+      "The catalog shop lives in the Catalog tab (and may appear elsewhere as a shortcut).",
+      "Vault focuses on your collection and bonus panels, not a separate shop.",
+      "Each catalog card shows owned count, price, and the next gate if locked.",
       "Buying a watch reveals its entry and contributes to catalog discovery bonuses.",
     ],
   },
@@ -67,7 +67,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: HELP_SECTION_IDS.catalogShop,
     title: "Catalog shopping",
     body: [
-      "Shop is where you actually buy watches; Catalog is the archive view.",
+      "Catalog is where you actually buy watches and review what you own.",
       "Buying duplicates yields diminishing returns; the next purchase shows the next multiplier.",
       "Cards show whether you are cash-gated or enjoyment-gated before you buy.",
       "If a card says Need $X more, you are short on cash for that purchase.",

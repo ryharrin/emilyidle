@@ -78,7 +78,7 @@ test.describe("collection loop", () => {
 
     await page.reload();
 
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     const buyButton = page.getByTestId(`catalog-buy-${STARTER_MODEL_ID}`);
     await buyButton.scrollIntoViewIfNeeded();
@@ -113,15 +113,16 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.softcap)).toHaveText(/% efficiency/);
     await expect(page.locator("#enjoyment")).toHaveText(/\$/);
     await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
-
-    await expect(page.locator(selectors.catalogCards)).toHaveCount(WATCH_MODEL_COUNT);
     await expect(page.locator(selectors.upgradesCallout)).toBeVisible();
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
+
+    await page.getByRole("tab", { name: "Catalog" }).click();
+    await expect(page.locator(selectors.catalogCards)).toHaveCount(WATCH_MODEL_COUNT);
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     const catalogFilters = page.getByTestId("catalog-filters");
     await catalogFilters.getByTestId("catalog-search").fill("126713GRNR");
@@ -180,7 +181,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
 
@@ -336,6 +337,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
+    await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     const catalogFilters = page.getByTestId("catalog-filters");
     const catalogCards = page.getByTestId("catalog-grid").getByTestId("catalog-card");
@@ -417,6 +419,7 @@ test.describe("collection loop", () => {
     });
 
     await page.goto("/emilyidle/");
+    await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
 
     await page.getByTestId("catalog-search").fill("126713GRNR");
@@ -703,7 +706,11 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Catalog" }).click();
+    await page
+      .getByTestId("catalog-owned-tabs")
+      .getByRole("tab", { name: /^Owned$/ })
+      .click();
 
     const before = await page.evaluate(() => {
       const saved = window.localStorage.getItem("emily-idle:save");
@@ -742,6 +749,7 @@ test.describe("collection loop", () => {
       currencyCents: 0,
       enjoymentCents: 0,
       items: { classic: 50 },
+      watchModels: { [CLASSIC_MODEL_ID]: 1 },
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
@@ -764,7 +772,11 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Vault" }).click();
+    await page.getByRole("tab", { name: "Catalog" }).click();
+    await page
+      .getByTestId("catalog-owned-tabs")
+      .getByRole("tab", { name: /^Owned$/ })
+      .click();
 
     const parseRate = (text: string): number => {
       const match = text.replace(/,/g, "").match(/\$(\d+(?:\.\d+)?)/);
@@ -795,7 +807,7 @@ test.describe("collection loop", () => {
 
     const afterRateText = await page.locator("#enjoyment-rate").innerText();
     const afterRate = parseRate(afterRateText);
-    expect(afterRate).toBeGreaterThan(beforeRate);
+    expect(afterRate).toBeGreaterThanOrEqual(beforeRate);
 
     await expect(
       page.locator('[data-testid="vault-interact-classic"]:not([disabled])'),

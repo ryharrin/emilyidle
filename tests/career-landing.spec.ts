@@ -71,7 +71,7 @@ test("deep links do not overwrite last-tab persistence for existing saves", asyn
   const tabList = page.getByRole("tablist", { name: "Primary navigation" });
   const saveTab = tabList.getByRole("tab", { name: "Settings" });
   const careerTab = tabList.getByRole("tab", { name: "Career" });
-  const vaultTab = tabList.getByRole("tab", { name: "Vault" });
+  const catalogTab = tabList.getByRole("tab", { name: "Catalog" });
 
   await expect(saveTab).toHaveAttribute("aria-selected", "true");
 
@@ -82,7 +82,7 @@ test("deep links do not overwrite last-tab persistence for existing saves", asyn
   await expect(saveTab).toHaveAttribute("aria-selected", "true");
 
   await page.goto("/?tab=catalog");
-  await expect(vaultTab).toHaveAttribute("aria-selected", "true");
+  await expect(catalogTab).toHaveAttribute("aria-selected", "true");
 
   const stored = await page.evaluate(() => window.localStorage.getItem("emily-idle:navigation"));
   expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });

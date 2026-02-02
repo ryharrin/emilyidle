@@ -142,16 +142,16 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       expect(storedFinal ? JSON.parse(storedFinal) : null).toEqual({ lastTabId: "save" });
     });
 
-    test("4. Deep link alias: ?tab=catalog lands on Vault", async ({ page }) => {
+    test("4. Deep link alias: ?tab=catalog lands on Catalog", async ({ page }) => {
       await seedExistingSave(page, "save");
 
       await page.goto("/?tab=catalog");
       await page.waitForLoadState("networkidle");
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-      const vaultTab = tabList.getByRole("tab", { name: "Vault" });
+      const catalogTab = tabList.getByRole("tab", { name: "Catalog" });
 
-      await expect(vaultTab).toHaveAttribute("aria-selected", "true");
+      await expect(catalogTab).toHaveAttribute("aria-selected", "true");
     });
   });
 

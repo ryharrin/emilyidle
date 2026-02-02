@@ -130,45 +130,31 @@ test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
     // Screenshot: Vault tab
     await page.screenshot({ path: `${artifactDir}/06-vault-tab.png` });
 
-    // Find the embedded Shop area (catalog-shop)
-    const shopPanel = page.getByTestId("catalog-shop");
+    // Confirm Vault does not include the catalog-shop purchase surface
+    const vaultPanel = page.getByRole("tabpanel", { name: "Vault" });
+    await expect(vaultPanel.locator("[data-testid='catalog-shop']")).toHaveCount(0);
+
+    // Navigate to Catalog tab
+    const catalogTab = page.getByRole("tab", { name: "Catalog" });
+    await catalogTab.click();
+    const catalogPanel = page.getByRole("tabpanel", { name: "Catalog" });
+    await expect(catalogPanel).toBeVisible();
+
+    // Catalog tab owns the purchase surface
+    const shopPanel = catalogPanel.getByTestId("catalog-shop");
     await expect(shopPanel).toBeVisible();
 
-    // Confirm the copy indicates Shop is for buying and Catalog is archive/reference
-    // Look for the clarifying text in the shop panel
-    const shopClarification = shopPanel.locator(
-      "text=Shop is the purchase flow. Catalog is the archive tab for references and licensing.",
-    );
-    await expect(shopClarification).toBeVisible();
+    // Screenshot: Catalog shop surface
+    await page.screenshot({ path: `${artifactDir}/07-catalog-shop.png`, fullPage: false });
 
-    // Screenshot: Shop clarification text
-    await page.screenshot({ path: `${artifactDir}/07-shop-clarification.png`, fullPage: false });
+    // Verify buy/gate affordances appear inside catalog shop
+    await expect(
+      shopPanel.locator("[data-testid^='catalog-buy-'], [data-testid^='catalog-gate-']").first(),
+    ).toBeVisible();
 
-    // Verify help is available for catalog-first economy
-    const explainCatalogFirst = page.getByTestId("explain-catalog-first");
-    // Note: This might not exist directly, check for catalog-shop explain button
-
-    // Look for any explain button in the catalog shop area
-    const catalogShopExplain = shopPanel.locator("[data-testid^='explain-']").first();
-    if (await catalogShopExplain.isVisible().catch(() => false)) {
-      await catalogShopExplain.click();
-      await expect(page.getByTestId("help-modal")).toBeVisible();
-
-      // Screenshot: Catalog help
-      await page.screenshot({ path: `${artifactDir}/08-catalog-help.png` });
-
-      await page.getByTestId("help-close").click();
-    }
-
-    // Verify the copy clearly distinguishes Shop vs Catalog
+    // Confirm copy reflects catalog as the purchase surface
     const shopText = await shopPanel.textContent();
-
-    // Shop should be described as purchase flow
-    expect(shopText).toMatch(/shop/i);
-    expect(shopText).toMatch(/purchase|buy/i);
-
-    // Catalog should be described as archive/reference
     expect(shopText).toMatch(/catalog/i);
-    expect(shopText).toMatch(/archive|reference/i);
+    expect(shopText).toMatch(/buy watches directly|buy watches/i);
   });
 });

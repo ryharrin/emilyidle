@@ -63,7 +63,7 @@ test("catalog help opens shopping guidance", async ({ page }) => {
   await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Vault" }).click();
+  await page.getByRole("tab", { name: "Catalog" }).click();
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
 
   await page.getByTestId("explain-catalog-shop").click();
