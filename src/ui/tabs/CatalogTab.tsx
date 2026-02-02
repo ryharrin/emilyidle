@@ -8,6 +8,7 @@ import { HELP_SECTION_IDS } from "../help/helpContent";
 import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
 import { LockIcon } from "../icons/coreIcons";
 import { getCatalogCollectionContext } from "../catalog/collectionContext";
+import { getCatalogUpgradeContext } from "../catalog/upgradeContext";
 
 import { formatMoneyFromCents } from "../../game/format";
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
@@ -155,8 +156,16 @@ export function CatalogPurchasePanel({
   });
 
   const { ownedCount, maxCapacity, collectionValueCents } = getCatalogCollectionContext(state);
+  const upgradeContext = getCatalogUpgradeContext(state);
   const ownedCountLabel = formatCount(ownedCount);
   const maxCapacityLabel = formatCount(maxCapacity);
+  const upgradeLevelsLabel = formatCount(upgradeContext.totalUpgradeLevels);
+  const workshopOwnedLabel = formatCount(upgradeContext.workshopOwned);
+  const workshopTotalLabel = formatCount(upgradeContext.workshopTotal);
+  const maisonOwnedLabel = formatCount(upgradeContext.maisonOwned);
+  const maisonTotalLabel = formatCount(upgradeContext.maisonTotal);
+  const maisonLinesActiveLabel = formatCount(upgradeContext.maisonLinesActive);
+  const maisonLinesTotalLabel = formatCount(upgradeContext.maisonLinesTotal);
 
   const handleBrowseWatches = React.useCallback(() => {
     onCatalogTabChange("unowned");
@@ -285,6 +294,21 @@ export function CatalogPurchasePanel({
             </span>
             <span> · </span>
             <span>Collection value: {formatMoneyFromCents(collectionValueCents)}</span>
+          </div>
+          <div className="catalog-upgrade-context" data-testid="catalog-upgrade-context">
+            <span>Upgrades: {upgradeLevelsLabel} levels</span>
+            <span> · </span>
+            <span>
+              Workshop {workshopOwnedLabel}/{workshopTotalLabel}
+            </span>
+            <span> · </span>
+            <span>
+              Maison {maisonOwnedLabel}/{maisonTotalLabel}
+            </span>
+            <span> · </span>
+            <span>
+              Lines {maisonLinesActiveLabel}/{maisonLinesTotalLabel}
+            </span>
           </div>
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
             {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
