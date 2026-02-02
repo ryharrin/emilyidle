@@ -103,5 +103,5 @@ Plans:
 | 37. Catalog Purchase Surface | v3.2 | 2/2 | Complete | 2026-02-02 |
 | 38. Catalog Lock + Disabled Explanations | v3.2 | 3/3 | Complete | 2026-02-02 |
 | 39. Collection Info Embedded in Catalog | v3.2 | 5/5 | Complete | 2026-02-02 |
-| 40. Upgrade Status + Copy Alignment | v3.2 | 2/3 | In progress | - |
+| 40. Upgrade Status + Copy Alignment | v3.2 | 3/3 | Complete | 2026-02-02 |
 | 41. Stability & Regression Guardrails | v3.2 | 0/TBD | Not started | - |
