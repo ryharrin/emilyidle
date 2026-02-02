@@ -451,80 +451,7 @@ export function CatalogPurchasePanel({
           </div>
         </div>
       </form>
-      {!embeddedInVault && (
-        <section className="catalog-collection" aria-labelledby="catalog-collection-title">
-          <header className="panel-header">
-            <div>
-              <p className="eyebrow">Collection book</p>
-              <h3 id="catalog-collection-title">Archive shelf</h3>
-              <p className="muted">Discovered references appear here for quick review.</p>
-            </div>
-            <div className="results-count" data-testid="catalog-discovered-count">
-              {discoveredCatalogEntries.length} / {catalogEntries.length} discovered
-            </div>
-          </header>
-          {discoveredCatalogEntries.length > 0 ? (
-            <div className="catalog-grid" data-testid="catalog-discovered-grid">
-              {discoveredCatalogEntries.map((entry) => {
-                const tags = getCatalogEntryTags(entry);
-                return (
-                  <article
-                    key={entry.id}
-                    className="catalog-card catalog-discovered"
-                    data-testid="catalog-card"
-                  >
-                    <div className="catalog-media">
-                      <img
-                        src={getCatalogImageUrl(entry)}
-                        alt={`${entry.brand} ${entry.model}`}
-                        loading="lazy"
-                        onError={(event) => {
-                          const target = event.currentTarget;
-                          const placeholder =
-                            "data:image/svg+xml;utf8," +
-                            encodeURIComponent(
-                              `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                                `<rect width='100%' height='100%' fill='#131720'/>` +
-                                `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                                `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                                `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                                `</svg>`,
-                            );
 
-                          if (target.dataset.fallback !== "true") {
-                            target.dataset.fallback = "true";
-                            target.src = placeholder;
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="catalog-content">
-                      <div className="catalog-title">
-                        <div>
-                          <p className="catalog-brand">{entry.brand}</p>
-                          <h3>{entry.model}</h3>
-                        </div>
-                        <p className="catalog-year">{entry.year}</p>
-                      </div>
-                      <p>{entry.description}</p>
-                      <p className="catalog-tags">{tags.join(" · ")}</p>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="catalog-empty" data-testid="catalog-discovered-empty">
-              <EmptyStateCTA
-                title="No references discovered yet"
-                body="Buy and interact with watch models in the Catalog to discover references and unlock tier bonuses."
-                ctaLabel="Shop catalog"
-                onCta={() => onNavigate("catalog", "catalog-shop")}
-              />
-            </div>
-          )}
-        </section>
-      )}
       <section
         id="catalog-unowned"
         role="tabpanel"
@@ -581,7 +508,7 @@ export function CatalogPurchasePanel({
                   : 0;
               const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
               const interactionHint =
-                tierOwned <= 0
+                modelOwned <= 0
                   ? "Own one to interact"
                   : cooldownSeconds > 0
                     ? `Cooldown ${cooldownSeconds}s`
@@ -707,7 +634,7 @@ export function CatalogPurchasePanel({
                             Wear
                           </button>
                         )}
-                        {canShowInteract && (
+                        {canShowInteract && modelOwned > 0 && (
                           <button
                             type="button"
                             className="secondary"
@@ -744,9 +671,6 @@ export function CatalogPurchasePanel({
                             </div>
                           ))}
                       </div>
-                    )}
-                    {canShowInteract && interactionHint && (
-                      <p className="muted interaction-hint">{interactionHint}</p>
                     )}
                   </div>
                 </article>
@@ -832,7 +756,7 @@ export function CatalogPurchasePanel({
                       : 0;
                   const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
                   const interactionHint =
-                    tierOwned <= 0
+                    modelOwned <= 0
                       ? "Own one to interact"
                       : cooldownSeconds > 0
                         ? `Cooldown ${cooldownSeconds}s`
@@ -965,7 +889,7 @@ export function CatalogPurchasePanel({
                                 Wear
                               </button>
                             )}
-                            {canShowInteract && (
+                            {canShowInteract && modelOwned > 0 && (
                               <button
                                 type="button"
                                 className="secondary"
@@ -1004,9 +928,6 @@ export function CatalogPurchasePanel({
                                 </div>
                               ))}
                           </div>
-                        )}
-                        {canShowInteract && interactionHint && (
-                          <p className="muted interaction-hint">{interactionHint}</p>
                         )}
                       </div>
                     </article>
@@ -1330,78 +1251,7 @@ export function CatalogTabLegacy({
               </div>
             </div>
           </form>
-          <section className="catalog-collection" aria-labelledby="catalog-collection-title">
-            <header className="panel-header">
-              <div>
-                <p className="eyebrow">Collection book</p>
-                <h3 id="catalog-collection-title">Archive shelf</h3>
-                <p className="muted">Discovered references appear here for quick review.</p>
-              </div>
-              <div className="results-count" data-testid="catalog-discovered-count">
-                {discoveredCatalogEntries.length} / {catalogEntries.length} discovered
-              </div>
-            </header>
-            {discoveredCatalogEntries.length > 0 ? (
-              <div className="catalog-grid" data-testid="catalog-discovered-grid">
-                {discoveredCatalogEntries.map((entry) => {
-                  const tags = getCatalogEntryTags(entry);
-                  return (
-                    <article
-                      key={entry.id}
-                      className="catalog-card catalog-discovered"
-                      data-testid="catalog-card"
-                    >
-                      <div className="catalog-media">
-                        <img
-                          src={getCatalogImageUrl(entry)}
-                          alt={`${entry.brand} ${entry.model}`}
-                          loading="lazy"
-                          onError={(event) => {
-                            const target = event.currentTarget;
-                            const placeholder =
-                              "data:image/svg+xml;utf8," +
-                              encodeURIComponent(
-                                `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                                  `<rect width='100%' height='100%' fill='#131720'/>` +
-                                  `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                                  `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                                  `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                                  `</svg>`,
-                              );
 
-                            if (target.dataset.fallback !== "true") {
-                              target.dataset.fallback = "true";
-                              target.src = placeholder;
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="catalog-content">
-                        <div className="catalog-title">
-                          <div>
-                            <p className="catalog-brand">{entry.brand}</p>
-                            <h3>{entry.model}</h3>
-                          </div>
-                          <p className="catalog-year">{entry.year}</p>
-                        </div>
-                        <p>{entry.description}</p>
-                        <p className="catalog-tags">{tags.join(" · ")}</p>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="catalog-empty" data-testid="catalog-discovered-empty">
-                <EmptyStateCTA
-                  title="No references discovered yet"
-                  body="Buy and interact with watch models in the Catalog to discover references and unlock tier bonuses."
-                  ctaLabel="Shop catalog"
-                  onCta={() => onNavigate("catalog", "catalog-shop")}
-                />
-              </div>
-            )}
-          </section>
           <section
             id="catalog-unowned"
             role="tabpanel"
