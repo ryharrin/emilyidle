@@ -32,7 +32,11 @@ Emily Idle evolves by shipping coherent player-visible improvements in continuou
   1. Player can complete a watch purchase directly from a catalog card (no separate Vault/Collection purchase button).
   2. Catalog clearly distinguishes actionable (affordable) cards from non-actionable cards at a glance.
   3. Any previous Vault/Collection purchase entry point is removed or non-existent in the UI.
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 37-01-PLAN.md — Promote Catalog tab as the shop surface; remove embedded Vault shop; update help/tests
+- [ ] 37-02-PLAN.md — Add actionable vs non-actionable catalog card affordances (CAT-04)
 
 ### Phase 38: Catalog Lock + Disabled Explanations
 **Goal**: Players can see undiscovered/disabled watches in the catalog and understand why purchase is unavailable.
@@ -79,7 +83,7 @@ Emily Idle evolves by shipping coherent player-visible improvements in continuou
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 37. Catalog Purchase Surface | v3.2 | 0/TBD | Not started | - |
+| 37. Catalog Purchase Surface | v3.2 | 0/2 | Not started | - |
 | 38. Catalog Lock + Disabled Explanations | v3.2 | 0/TBD | Not started | - |
 | 39. Collection Info Embedded in Catalog | v3.2 | 0/TBD | Not started | - |
 | 40. Upgrade Status + Copy Alignment | v3.2 | 0/TBD | Not started | - |
