@@ -2,6 +2,7 @@ import React from "react";
 
 import { EmptyStateCTA } from "../components/EmptyStateCTA";
 import { UnlockHint } from "../components/UnlockHint";
+import { CatalogPurchaseGate } from "../components/catalog/CatalogPurchaseGate";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
@@ -646,43 +647,17 @@ export function CatalogPurchasePanel({
                           Next x{duplicateMultiplier.toFixed(2)}
                         </span>
                       </div>
-                      {(() => {
-                        if (!unlocked) {
-                          return (
-                            <div className="catalog-gate" data-testid={`catalog-gate-${entry.id}`}>
-                              Locked
-                            </div>
-                          );
-                        }
-
-                        if (gate.ok) {
-                          return (
-                            <button
-                              type="button"
-                              data-testid={`catalog-buy-${entry.id}`}
-                              onClick={() => handlePurchase(entry.id)}
-                            >
-                              {buyLabel}
-                            </button>
-                          );
-                        }
-
-                        return (
-                          <div className="catalog-gate" data-testid={`catalog-gate-${entry.id}`}>
-                            {gate.blocksBy === "enjoyment" && (
-                              <>
-                                Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
-                                {gate.enjoymentDeficitCents !== undefined && (
-                                  <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
-                                )}
-                              </>
-                            )}
-                            {gate.blocksBy === "cash" && (
-                              <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
-                            )}
-                          </div>
-                        );
-                      })()}
+                      <CatalogPurchaseGate
+                        entryId={entry.id}
+                        discovered={discovered}
+                        unlocked={unlocked}
+                        unlockDetail={unlockDetail}
+                        unlockCurrentLabel={unlockCurrentLabel}
+                        unlockThresholdLabel={unlockThresholdLabel}
+                        gate={gate}
+                        buyLabel={buyLabel}
+                        onBuy={() => handlePurchase(entry.id)}
+                      />
                     </div>
                     {(canWear || canShowInteract || (craftingPartsPerWatch[tierId] ?? 0) > 0) && (
                       <div className="card-actions">
@@ -928,49 +903,17 @@ export function CatalogPurchasePanel({
                               Next x{duplicateMultiplier.toFixed(2)}
                             </span>
                           </div>
-                          {(() => {
-                            if (!unlocked) {
-                              return (
-                                <div
-                                  className="catalog-gate"
-                                  data-testid={`catalog-gate-${entry.id}`}
-                                >
-                                  Locked
-                                </div>
-                              );
-                            }
-
-                            if (gate.ok) {
-                              return (
-                                <button
-                                  type="button"
-                                  data-testid={`catalog-buy-${entry.id}`}
-                                  onClick={() => handlePurchase(entry.id)}
-                                >
-                                  {buyLabel}
-                                </button>
-                              );
-                            }
-
-                            return (
-                              <div
-                                className="catalog-gate"
-                                data-testid={`catalog-gate-${entry.id}`}
-                              >
-                                {gate.blocksBy === "enjoyment" && (
-                                  <>
-                                    Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
-                                    {gate.enjoymentDeficitCents !== undefined && (
-                                      <>({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
-                                    )}
-                                  </>
-                                )}
-                                {gate.blocksBy === "cash" && (
-                                  <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
-                                )}
-                              </div>
-                            );
-                          })()}
+                          <CatalogPurchaseGate
+                            entryId={entry.id}
+                            discovered={discovered}
+                            unlocked={unlocked}
+                            unlockDetail={unlockDetail}
+                            unlockCurrentLabel={unlockCurrentLabel}
+                            unlockThresholdLabel={unlockThresholdLabel}
+                            gate={gate}
+                            buyLabel={buyLabel}
+                            onBuy={() => handlePurchase(entry.id)}
+                          />
                         </div>
                         {(canWear ||
                           canShowInteract ||
