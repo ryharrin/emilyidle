@@ -113,7 +113,8 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: HELP_SECTION_IDS.upgrades,
     title: "Upgrades",
     body: [
-      "Upgrades live in their own tab to keep shopping and progression separate.",
+      "Upgrades live in their own tab, with status visible while shopping.",
+      "Upgrades primarily boost enjoyment/sec; cash/sec comes from your career salary and sessions.",
       "Each upgrade shows a before/after preview so you can see the delta.",
       "If a stat line is missing from the preview, that upgrade does not affect it.",
       "Upgrades cost dollars; some may require blueprints or prestige currency.",
@@ -125,7 +126,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     body: [
       "Rates are shown as base + modifiers.",
       "Events can multiply both dollars/sec and enjoyment/sec.",
-      "Softcap reduces dollars/sec above a threshold; therapist salary is separate.",
+      "Softcap reduces collection-derived rates above a threshold; career salary is separate.",
     ],
   },
   {
