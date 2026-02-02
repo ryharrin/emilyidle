@@ -524,6 +524,14 @@ describe("catalog filters", () => {
     expect(ownedTab.getAttribute("aria-selected")).toBe("false");
   });
 
+  it("renders the catalog collection context pill", () => {
+    const context = screen.getByTestId("catalog-collection-context");
+    const contextText = context.textContent ?? "";
+
+    expect(contextText).toMatch(/Collection:\s*[\d,]+\s*\/\s*[\d,]+/);
+    expect(contextText).toMatch(/Collection value:/);
+  });
+
   it("filters catalog by search text", async () => {
     const user = userEvent.setup();
 
