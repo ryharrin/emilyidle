@@ -323,8 +323,8 @@ export function CollectionTab({
       {isActive && (
         <>
           <div>
-            <h2>Vault</h2>
-            <p className="muted">Build your vault: buy, wear, and interact with watches.</p>
+            <h2>Collection</h2>
+            <p className="muted">Build your collection: buy, wear, and interact with watches.</p>
             <div className="inline-icon-button">
               <ExplainButton
                 sectionId={HELP_SECTION_IDS.interactions}
@@ -363,7 +363,7 @@ export function CollectionTab({
                   <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
                     <p className="muted">
                       Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold} · Unlock
-                      Archive guides to boost vault income.
+                      Archive guides to boost collection income.
                     </p>
                     <p className="catalog-tier-curator-status">
                       {archiveCuratorUnlocked
@@ -411,8 +411,8 @@ export function CollectionTab({
                   <p className="eyebrow">Catalog</p>
                   <h3>Shop in Catalog</h3>
                   <p className="muted">
-                    Buy watches directly from catalog cards. The Vault focuses on collection and
-                    upgrades once you own them.
+                    Buy watches directly from catalog cards. The Collection focuses on owned watches
+                    and upgrades once you own them.
                   </p>
                 </div>
                 <div className="card-actions">
@@ -574,7 +574,7 @@ export function CollectionTab({
             </div>
             <div className="panel">
               <h3>Achievements</h3>
-              <p className="muted">Permanent proof of your vault milestones.</p>
+              <p className="muted">Permanent proof of your collection milestones.</p>
               <div className="card-stack">
                 {achievements
                   .filter((achievement) => {
@@ -678,7 +678,7 @@ export function CollectionTab({
             <div className="panel" data-testid="crafting-panel">
               <h3>Crafting workshop</h3>
               <p className="muted">
-                Break down watches into parts, then craft permanent vault boosts.
+                Break down watches into parts, then craft permanent collection boosts.
               </p>
               <div className="results-count" data-testid="crafting-parts">
                 {craftingParts} parts

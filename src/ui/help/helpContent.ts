@@ -58,7 +58,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     body: [
       "Catalog is the primary purchase surface for watches.",
       "The catalog shop lives in the Catalog tab (and may appear elsewhere as a shortcut).",
-      "Vault focuses on your collection and bonus panels, not a separate shop.",
+      "Collection focuses on owned watches and bonus panels, not a separate shop.",
       "Each catalog card shows owned count, price, and the next gate if locked.",
       "Buying a watch reveals its entry and contributes to catalog discovery bonuses.",
     ],
@@ -125,7 +125,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     body: [
       "Rates are shown as base + modifiers.",
       "Events can multiply both dollars/sec and enjoyment/sec.",
-      "Softcap reduces vault dollars/sec above a threshold; therapist salary is separate.",
+      "Softcap reduces dollars/sec above a threshold; therapist salary is separate.",
     ],
   },
   {
@@ -157,7 +157,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: HELP_SECTION_IDS.atelierReset,
     title: "Atelier reset",
     body: [
-      "Atelier resets vault progress to earn Blueprints and unlock permanent upgrades.",
+      "Atelier resets collection progress to earn Blueprints and unlock permanent upgrades.",
       "Reset gain is based on your total enjoyment at the moment you reset.",
       "The Next blueprint line shows the enjoyment needed to earn +1 blueprint on reset.",
       "A faster second run comes from Atelier upgrades plus Prestige legacy multipliers.",
@@ -168,7 +168,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: "prestige",
     title: "Prestige",
     body: [
-      "Atelier resets vault progress for Blueprints and permanent upgrades.",
+      "Atelier resets collection progress for Blueprints and permanent upgrades.",
       "Maison resets further to earn Heritage and Reputation multipliers.",
       "Nostalgia converts deep progress into a new currency and unlock store.",
     ],

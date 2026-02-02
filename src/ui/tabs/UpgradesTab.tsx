@@ -135,9 +135,9 @@ export function UpgradesTab({
           <header className="panel upgrades-header">
             <div>
               <p className="eyebrow">Upgrades</p>
-              <h2>Vault improvements</h2>
+              <h2>Collection improvements</h2>
               <p className="muted">
-                Compare rate changes before committing to vault, Atelier, or Maison upgrades.
+                Compare rate changes before committing to collection, Atelier, or Maison upgrades.
               </p>
               <div className="inline-icon-button">
                 <ExplainButton sectionId={HELP_SECTION_IDS.upgrades} label="Explain upgrades" />
@@ -149,8 +149,8 @@ export function UpgradesTab({
           <section className="panel upgrades-group" aria-labelledby="upgrades-cash-title">
             <header className="panel-header">
               <div>
-                <p className="eyebrow">Vault enjoyment</p>
-                <h3 id="upgrades-cash-title">Vault upgrades</h3>
+                <p className="eyebrow">Collection enjoyment</p>
+                <h3 id="upgrades-cash-title">Collection upgrades</h3>
                 <p className="muted">Spend cash to lift enjoyment growth with clear previews.</p>
               </div>
             </header>
@@ -231,7 +231,7 @@ export function UpgradesTab({
               <div>
                 <p className="eyebrow">Atelier</p>
                 <h3 id="upgrades-workshop-title">Workshop upgrades</h3>
-                <p className="muted">Spend Blueprints to compound vault efficiency.</p>
+                <p className="muted">Spend Blueprints to compound collection efficiency.</p>
               </div>
             </header>
             <div className="card-stack" data-testid="upgrades-workshop-list">

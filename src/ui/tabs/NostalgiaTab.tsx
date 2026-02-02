@@ -108,7 +108,8 @@ export function NostalgiaTab({
                   <p className="eyebrow">Prestige loop</p>
                   <h3 id="nostalgia-title">Nostalgia</h3>
                   <p className="muted">
-                    Reset your vault to bank Nostalgia points and carry your collection forward.
+                    Reset your collection to bank Nostalgia points and carry your collection
+                    forward.
                   </p>
                 </div>
                 <div className="results-count" data-testid="nostalgia-balance">
@@ -305,7 +306,8 @@ export function NostalgiaTab({
                   <div className="nostalgia-modal-card">
                     <h3>Confirm nostalgia prestige</h3>
                     <p className="muted">
-                      You will gain +{nostalgiaPrestigeGain} Nostalgia and reset vault progress.
+                      You will gain +{nostalgiaPrestigeGain} Nostalgia and reset collection
+                      progress.
                     </p>
                     <PrestigeSummary
                       summary={buildNostalgiaPrestigeSummary(nostalgiaPrestigeGain)}
@@ -379,7 +381,7 @@ export function NostalgiaTab({
             <div className="panel-teaser-content" data-testid="nostalgia-teaser">
               <p className="eyebrow">Prestige loop</p>
               <h3>Nostalgia</h3>
-              <p className="muted">Your vault is nearing its first nostalgia reset.</p>
+              <p className="muted">Your collection is nearing its first nostalgia reset.</p>
               <div className="teaser-progress">
                 <div className="teaser-track">
                   <div

@@ -21,9 +21,9 @@ export function buildWorkshopPrestigeSummary(gainBlueprints: number): PrestigeSu
       "Catalog discoveries and achievements",
     ],
     lose: [
-      "Vault cash and enjoyment totals",
-      "Owned watch counts in your vault",
-      "Vault upgrades and purchase progress",
+      "Cash and enjoyment totals",
+      "Owned watch counts in your collection",
+      "Collection upgrades and purchase progress",
     ],
   };
 }
@@ -43,9 +43,9 @@ export function buildMaisonPrestigeSummary(
       "Catalog discoveries and achievements",
     ],
     lose: [
-      "Vault cash and enjoyment totals",
-      "Owned watch counts in your vault",
-      "Vault upgrades and Atelier progress (Blueprints and upgrades)",
+      "Cash and enjoyment totals",
+      "Owned watch counts in your collection",
+      "Collection upgrades and Atelier progress (Blueprints and upgrades)",
     ],
   };
 }
@@ -62,9 +62,9 @@ export function buildNostalgiaPrestigeSummary(gainNostalgia: number): PrestigeSu
       "Nostalgia unlock store purchases",
     ],
     lose: [
-      "Vault cash and enjoyment totals",
+      "Cash and enjoyment totals",
       "Career level and cooldown progress",
-      "All vault upgrades and automation",
+      "All collection upgrades and automation",
       "Atelier + Maison legacy progress (Blueprints, Heritage, Reputation, lines)",
       "Events, crafting parts, and crafted boosts",
     ],

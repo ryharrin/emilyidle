@@ -102,7 +102,7 @@ const SETTINGS_KEY = "emily-idle:settings";
 const NAVIGATION_KEY = "emily-idle:navigation";
 const TAB_DEFINITIONS = [
   { id: "career", label: "Career" },
-  { id: "collection", label: "Vault" },
+  { id: "collection", label: "Collection" },
   { id: "catalog", label: "Catalog" },
   { id: "upgrades", label: "Upgrades" },
   { id: "workshop", label: "Atelier" },
@@ -770,7 +770,7 @@ export default function App() {
     () => [
       {
         id: "vault-basics",
-        title: "Vault basics",
+        title: "Collection basics",
         text: "Buy watches for enjoyment and memories. Career earns cash. Interact to trigger special moments.",
       },
       {
@@ -1086,7 +1086,7 @@ export default function App() {
           <div>
             <p className="eyebrow">Collection loop</p>
             <h1>Emily Idle</h1>
-            <p className="muted">Build your vault, unlock new lines, and stack bonuses.</p>
+            <p className="muted">Build your collection, unlock new lines, and stack bonuses.</p>
             <nav className="page-nav" aria-label="Primary navigation">
               <div role="tablist" aria-label="Primary navigation" className="page-nav-tabs">
                 {visibleTabs.map((tab) => {
@@ -1137,12 +1137,12 @@ export default function App() {
           </div>
           <section className="stats" aria-labelledby="vault-stats-title">
             <h2 id="vault-stats-title" className="visually-hidden">
-              Vault stats
+              Collection stats
             </h2>
             <dl className="stats-grid">
               <div>
                 <dt className="inline-icon-button">
-                  Vault enjoyment
+                  Collection enjoyment
                   <ExplainButton
                     sectionId={HELP_SECTION_IDS.currencies}
                     label="Explain currencies"
@@ -1155,7 +1155,7 @@ export default function App() {
                 <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
               </div>
               <div>
-                <dt>Vault dollars</dt>
+                <dt>Dollars</dt>
                 <dd id="currency">{stats.cash}</dd>
               </div>
               <div>

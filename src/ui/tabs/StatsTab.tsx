@@ -53,7 +53,7 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
           </header>
           <dl className="stats-grid" data-testid="stats-metrics">
             <div>
-              <dt>Vault enjoyment</dt>
+              <dt>Collection enjoyment</dt>
               <dd data-testid="stats-enjoyment">{stats.enjoyment}</dd>
             </div>
             <div>
@@ -61,7 +61,7 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
               <dd data-testid="stats-enjoyment-rate">{stats.enjoymentRate}</dd>
             </div>
             <div>
-              <dt>Vault dollars</dt>
+              <dt>Dollars</dt>
               <dd data-testid="stats-cash">{stats.cash}</dd>
             </div>
             <div>
@@ -151,17 +151,17 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
                   {
                     id: "collector-shelf",
                     title: "First arrivals",
-                    text: "The first pieces find their way into the vault, still warm from wrists and stories. You learn their rhythms, their quirks, and the quiet pull of the next addition.",
+                    text: "The first pieces find their way into the collection, still warm from wrists and stories. You learn their rhythms, their quirks, and the quiet pull of the next addition.",
                   },
                   {
                     id: "showcase",
                     title: "The cabinet grows",
-                    text: "The vault starts to feel curated instead of accidental. A pattern emerges: what you seek, what you keep, and what you let go as the collection takes shape.",
+                    text: "The collection starts to feel curated instead of accidental. A pattern emerges: what you seek, what you keep, and what you let go as the collection takes shape.",
                   },
                   {
                     id: "atelier",
                     title: "Atelier nights",
-                    text: "Late hours in the atelier turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the vault responds in kind.",
+                    text: "Late hours in the atelier turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the collection responds in kind.",
                   },
                 ] as const
               )

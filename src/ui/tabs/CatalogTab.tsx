@@ -746,7 +746,7 @@ export function CatalogPurchasePanel({
                   body={
                     embeddedInVault
                       ? "Buy watches to start filling your shelf with owned references."
-                      : "Build your vault collection to start filling your archive shelf with owned references."
+                      : "Build your collection to start filling your archive shelf with owned references."
                   }
                   ctaLabel={embeddedInVault ? "Browse watches" : "Build collection"}
                   onCta={
@@ -1162,7 +1162,8 @@ export function CatalogTabLegacy({
               <p className="eyebrow">Archive</p>
               <h2>Catalog</h2>
               <p className="muted">
-                Archive reference pieces and licensing sources. The Shop in Vault handles purchases.
+                Archive reference pieces and licensing sources. The Shop in Collection handles
+                purchases.
               </p>
             </div>
             <div className="catalog-header-actions">
@@ -1489,7 +1490,7 @@ export function CatalogTabLegacy({
                   <div className="catalog-empty" data-testid="catalog-owned-empty">
                     <EmptyStateCTA
                       title="No owned references yet"
-                      body="Build your vault collection to start filling your archive shelf with owned references."
+                      body="Build your collection to start filling your archive shelf with owned references."
                       ctaLabel="Build collection"
                       onCta={() => onNavigate("catalog", "catalog-shop")}
                     />

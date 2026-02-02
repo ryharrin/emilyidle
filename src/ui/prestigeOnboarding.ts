@@ -103,9 +103,9 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
     const reputation = clampGain(event.gained.reputation ?? 0).toLocaleString();
     return {
       title: "Maison prestige complete",
-      body: `You gained +${heritage} Heritage and +${reputation} Reputation. Your vault is reset, but Maison legacy remains.`,
+      body: `You gained +${heritage} Heritage and +${reputation} Reputation. Your collection is reset, but Maison legacy remains.`,
       recommended: {
-        label: "Return to Vault and rebuild enjoyment for the next legacy",
+        label: "Return to Collection and rebuild enjoyment for the next legacy",
         tabId: "collection",
       },
     };
@@ -114,7 +114,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
   const nostalgia = clampGain(event.gained.nostalgia ?? 0).toLocaleString();
   return {
     title: "Nostalgia prestige complete",
-    body: `You gained +${nostalgia} Nostalgia. Your collection carries forward; rebuild the vault and spend points on permanent unlocks.`,
+    body: `You gained +${nostalgia} Nostalgia. Your collection carries forward; rebuild the collection and spend points on permanent unlocks.`,
     recommended: {
       label: "Visit the Unlock store to spend Nostalgia",
       tabId: "nostalgia",

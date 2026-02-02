@@ -245,7 +245,7 @@ export function WorkshopTab({
                 <div className="panel-teaser-content" data-testid="workshop-teaser">
                   <p className="eyebrow">Reset loop</p>
                   <h3>Atelier</h3>
-                  <p className="muted">Your vault is close to yielding Blueprints.</p>
+                  <p className="muted">Your collection is close to yielding Blueprints.</p>
                   <div className="teaser-progress">
                     <div className="teaser-track">
                       <div

@@ -27,7 +27,9 @@ export function WorkshopCraftingSection({
   return (
     <section className="panel workshop-crafting" data-testid="workshop-crafting">
       <h3>Crafting workshop</h3>
-      <p className="muted">Break down watches into parts, then craft permanent vault boosts.</p>
+      <p className="muted">
+        Break down watches into parts, then craft permanent collection boosts.
+      </p>
       <div className="results-count" data-testid="workshop-crafting-parts">
         {craftingParts} parts
       </div>
