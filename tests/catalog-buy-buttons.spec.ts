@@ -11,6 +11,7 @@ test("fresh save shows catalog buy buttons in collection shop", async ({ page })
   await page.getByTestId("next-unlock-cta-career").click();
 
   await expect(page.getByTestId("catalog-collection-context")).toBeVisible();
+  await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();
 
   const buyButtons = page.locator('[data-testid^="catalog-buy-"]');
   await expect(buyButtons.first()).toBeInViewport();

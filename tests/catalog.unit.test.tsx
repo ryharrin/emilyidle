@@ -530,6 +530,9 @@ describe("catalog filters", () => {
 
     expect(contextText).toMatch(/Collection:\s*[\d,]+\s*\/\s*[\d,]+/);
     expect(contextText).toMatch(/Collection value:/);
+
+    const upgradeContext = screen.getByTestId("catalog-upgrade-context");
+    expect(upgradeContext.textContent).toContain("Upgrades");
   });
 
   it("filters catalog by search text", async () => {
