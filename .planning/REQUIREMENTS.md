@@ -78,32 +78,32 @@ Deepen the watch interaction experience with improved mini-games and catalog pol
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| WATCH-01 | TBD | Not started |
-| WATCH-02 | TBD | Not started |
-| WATCH-03 | TBD | Not started |
-| WATCH-04 | TBD | Not started |
-| WATCH-05 | TBD | Not started |
-| WATCH-06 | TBD | Not started |
-| CAT-05 | TBD | Not started |
-| CAT-06 | TBD | Not started |
-| CAT-07 | TBD | Not started |
-| CAT-08 | TBD | Not started |
-| CAT-09 | TBD | Not started |
-| CAT-10 | TBD | Not started |
-| STATS-01 | TBD | Not started |
-| STATS-02 | TBD | Not started |
-| STATS-03 | TBD | Not started |
-| STATS-04 | TBD | Not started |
-| STATS-05 | TBD | Not started |
-| MOBILE-01 | TBD | Not started |
-| MOBILE-02 | TBD | Not started |
-| MOBILE-03 | TBD | Not started |
-| MOBILE-04 | TBD | Not started |
-| MOBILE-05 | TBD | Not started |
-| MOBILE-06 | TBD | Not started |
-| MOBILE-07 | TBD | Not started |
-| MOBILE-08 | TBD | Not started |
-| MOBILE-09 | TBD | Not started |
+| WATCH-01 | Phase 42 | Not started |
+| WATCH-02 | Phase 43 | Not started |
+| WATCH-03 | Phase 43 | Not started |
+| WATCH-04 | Phase 43 | Not started |
+| WATCH-05 | Phase 44 | Not started |
+| WATCH-06 | Phase 44 | Not started |
+| CAT-05 | Phase 46 | Not started |
+| CAT-06 | Phase 46 | Not started |
+| CAT-07 | Phase 46 | Not started |
+| CAT-08 | Phase 46 | Not started |
+| CAT-09 | Phase 46 | Not started |
+| CAT-10 | Phase 46 | Not started |
+| STATS-01 | Phase 45 | Not started |
+| STATS-02 | Phase 45 | Not started |
+| STATS-03 | Phase 45 | Not started |
+| STATS-04 | Phase 45 | Not started |
+| STATS-05 | Phase 45 | Not started |
+| MOBILE-01 | Phase 47 | Not started |
+| MOBILE-02 | Phase 47 | Not started |
+| MOBILE-03 | Phase 47 | Not started |
+| MOBILE-04 | Phase 47 | Not started |
+| MOBILE-05 | Phase 47 | Not started |
+| MOBILE-06 | Phase 47 | Not started |
+| MOBILE-07 | Phase 47 | Not started |
+| MOBILE-08 | Phase 47 | Not started |
+| MOBILE-09 | Phase 47 | Not started |
 
 ---
 
