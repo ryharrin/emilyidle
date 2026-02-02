@@ -94,7 +94,13 @@ Plans:
   2. localStorage keys and data structures remain unchanged for existing players.
   3. Existing UI selectors (`id`, `data-testid`) remain stable so automated tests can locate the same elements.
   4. Catalog images load correctly everywhere they are shown in the consolidated UI.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 41-01-PLAN.md — Lock localStorage key strings with strict unit contract tests (TEC-02)
+- [ ] 41-02-PLAN.md — Add save payload + legacy key migration unit guardrails (TEC-01)
+- [ ] 41-03-PLAN.md — Add curated Playwright selector contract coverage (TEC-03)
+- [ ] 41-04-PLAN.md — Add catalog image mapping + rendering guardrails under /emilyidle (TEC-04)
 
 ## Progress
 
