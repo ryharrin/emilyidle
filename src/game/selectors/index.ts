@@ -573,7 +573,7 @@ export function getAchievementRequirementLabel(achievementId: AchievementId): st
 
   const requirement = achievement.requirement;
   if (requirement.type === "totalItems") {
-    return `Hold ${requirement.threshold} watches in the vault`;
+    return `Hold ${requirement.threshold} watches in the collection`;
   }
 
   if (requirement.type === "collectionValue") {

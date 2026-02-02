@@ -4,7 +4,7 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
   {
     id: "starter",
     name: "Starter Quartz",
-    description: "Reliable entry pieces to seed the vault.",
+    description: "Reliable entry pieces to seed the collection.",
     movement: "quartz",
     basePriceCents: 125,
     priceGrowth: 1.145,
@@ -39,7 +39,7 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
   {
     id: "tourbillon",
     name: "Tourbillon",
-    description: "Prestige pieces for the vault centerpiece.",
+    description: "Prestige pieces for the collection centerpiece.",
     movement: "manual",
     basePriceCents: 150_000,
     priceGrowth: 1.195,

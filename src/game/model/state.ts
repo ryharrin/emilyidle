@@ -70,14 +70,14 @@ export const WORKSHOP_UPGRADES: ReadonlyArray<WorkshopUpgradeDefinition> = [
   {
     id: "etched-ledgers",
     name: "Etched ledgers",
-    description: "Blueprinted accounting boosts vault enjoyment.",
+    description: "Blueprinted accounting boosts collection enjoyment.",
     blueprintCost: 2,
     incomeMultiplier: 1.08,
   },
   {
     id: "vault-calibration",
-    name: "Vault calibration",
-    description: "Better vault tuning lifts the vault softcap.",
+    name: "Collection calibration",
+    description: "Better collection tuning lifts the collection softcap.",
     blueprintCost: 4,
     softcapMultiplier: 1.25,
   },
@@ -117,7 +117,7 @@ export const MAISON_UPGRADES: ReadonlyArray<MaisonUpgradeDefinition> = [
   {
     id: "global-vitrine",
     name: "Global vitrine",
-    description: "International vitrines loosen the vault softcap.",
+    description: "International vitrines loosen the collection softcap.",
     currency: "reputation",
     cost: 4,
     softcapMultiplier: 1.2,
@@ -162,7 +162,7 @@ export const CATALOG_TIER_BONUSES: CatalogTierBonusDefinition[] = [
   {
     id: "classic",
     name: "Classic index",
-    description: "Discover 4 classic icons to amplify vault earnings.",
+    description: "Discover 4 classic icons to amplify collection earnings.",
     requiredCount: 4,
     incomeMultiplier: 1.05,
   },
@@ -186,12 +186,12 @@ export const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
   {
     id: "first-drawer",
     name: "First drawer",
-    description: "Hold 12 watches in the vault.",
+    description: "Hold 12 watches in the collection.",
     requirement: { type: "totalItems", threshold: 12 },
   },
   {
     id: "six-figure-vault",
-    name: "Six-figure vault",
+    name: "Six-figure collection",
     description: "Reach $120k in Memories.",
     requirement: { type: "collectionValue", thresholdCents: 120_000 },
   },
@@ -209,8 +209,8 @@ export const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
   },
   {
     id: "vault-century",
-    name: "Vault century",
-    description: "Hold 100 watches in the vault.",
+    name: "Collection century",
+    description: "Hold 100 watches in the collection.",
     requirement: { type: "totalItems", threshold: 100 },
   },
   {
@@ -255,7 +255,7 @@ export const EVENTS: ReadonlyArray<EventDefinition> = [
   {
     id: "wind-up",
     name: "Wind-up",
-    description: "A freshly wound crown keeps the vault humming.",
+    description: "A freshly wound crown keeps the collection humming.",
     trigger: { type: "manual" },
     durationMs: 60_000,
     cooldownMs: 120_000,

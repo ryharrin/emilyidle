@@ -12,7 +12,7 @@ export const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
   {
     id: "assembly-jigs",
     name: "Assembly jigs",
-    description: "Repeatable fixtures keep vault progress moving faster.",
+    description: "Repeatable fixtures keep collection progress moving faster.",
     basePriceCents: 5_000,
     priceGrowth: 1.7,
     incomeMultiplierPerLevel: 0.08,
@@ -30,7 +30,7 @@ export const UPGRADES: ReadonlyArray<UpgradeDefinition> = [
   {
     id: "archive-guides",
     name: "Archive guides",
-    description: "Cataloged references deepen vault enjoyment.",
+    description: "Cataloged references deepen collection enjoyment.",
     basePriceCents: 85_000,
     priceGrowth: 1.85,
     incomeMultiplierPerLevel: 0.1,
