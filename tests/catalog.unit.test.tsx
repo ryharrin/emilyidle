@@ -888,6 +888,20 @@ describe("catalog purchase CTA", () => {
       expect(nextOwnedCount).toBeGreaterThan(ownedCount);
     });
   });
+
+  it("marks affordable catalog cards as actionable", async () => {
+    const catalogGrid = screen.getByTestId("catalog-grid");
+    const buyButtons = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-buy-/));
+
+    expect(buyButtons.length).toBeGreaterThan(0);
+
+    const card = buyButtons[0]?.closest('[data-testid="catalog-card"]');
+    if (!(card instanceof HTMLElement)) {
+      throw new Error("Expected a catalog card for the buy button");
+    }
+
+    expect(card.classList.contains("catalog-actionable")).toBe(true);
+  });
 });
 
 describe("catalog help entry", () => {
