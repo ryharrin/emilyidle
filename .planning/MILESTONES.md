@@ -12,6 +12,16 @@
 - Individual watch stats: Show enjoyment/cash rates per watch in catalog and vault and make them more varied
 - Improved mobile experience: Responsive design and touch-friendly interactions
 
+**UI/UX improvements (visual review 2026-02-02):**
+- Mobile navigation: replace multi-row tab pills with a horizontal scroll tab bar (snap + swipe) and keep it sticky.
+- Settings polish: restyle fieldsets/legends and checkbox groups so they don't look like unstyled browser defaults.
+- Vault/Catalog: split the mega-scroll into sections with an in-page subnav; keep primary buy actions easy to reach.
+- Catalog shop: highlight actionable cards (affordable vs locked) and add "Why can't I buy?" explanations on disabled purchase actions.
+- Help modal: add search + improve mobile chips layout (wrap/scroll) with a sticky modal header.
+- Interaction modals: increase touch targets and add clearer success/failure + reward feedback.
+- Stats breakdown: group modifiers and show subtotals to reduce the long list on mobile.
+- Naming: rename "Vault" tab to "Collection" consistently (UI + copy).
+
 **Status:** Planning phase - requirements and roadmap to be defined
 
 **Depends on:** v3.2 Catalog/Vault Consolidation (optional intermediate milestone)
