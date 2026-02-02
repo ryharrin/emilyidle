@@ -12,10 +12,10 @@ Unify the catalog shopping experience by merging vault information into the cata
 
 ### Catalog Shopping Experience
 
-- [ ] **CAT-01**: Catalog cards are the sole purchase flow for watches (remove separate Vault purchase button)
-- [ ] **CAT-02**: Undiscovered watches display as greyed out with lock icon (not completely hidden)
-- [ ] **CAT-03**: Catalog shows "Why can't I buy?" explanations on disabled purchase actions
-- [ ] **CAT-04**: Catalog highlights actionable cards (affordable vs locked) with visual distinction
+- [x] **CAT-01**: Catalog cards are the sole purchase flow for watches (remove separate Vault purchase button)
+- [x] **CAT-02**: Undiscovered watches display as greyed out with lock icon (not completely hidden)
+- [x] **CAT-03**: Catalog shows "Why can't I buy?" explanations on disabled purchase actions
+- [x] **CAT-04**: Catalog highlights actionable cards (affordable vs locked) with visual distinction
 
 ### Vault Information Integration
 
@@ -66,8 +66,8 @@ Unify the catalog shopping experience by merging vault information into the cata
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CAT-01 | Phase 37 | Complete |
-| CAT-02 | Phase 38 | Not started |
-| CAT-03 | Phase 38 | Not started |
+| CAT-02 | Phase 38 | Complete |
+| CAT-03 | Phase 38 | Complete |
 | CAT-04 | Phase 37 | Complete |
 | VLT-01 | Phase 39 | Not started |
 | VLT-02 | Phase 39 | Not started |
