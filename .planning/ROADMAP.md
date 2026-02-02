@@ -82,8 +82,8 @@ Plans:
 
 Plans:
 - [ ] 40-01-PLAN.md — Add Catalog upgrade status summary in the shopping header
-- [ ] 40-02-PLAN.md — Scrub upgrade-related UI/help copy to enjoyment-only language
-- [ ] 40-03-PLAN.md — Adjust upgrade previews so they don’t imply cash changes
+- [x] 40-02-PLAN.md — Scrub upgrade-related UI/help copy to enjoyment-only language
+- [x] 40-03-PLAN.md — Adjust upgrade previews so they don’t imply cash changes
 
 ### Phase 41: Stability & Regression Guardrails
 **Goal**: Consolidation ships without breaking existing saves, storage, selectors, or catalog images.
@@ -103,5 +103,5 @@ Plans:
 | 37. Catalog Purchase Surface | v3.2 | 2/2 | Complete | 2026-02-02 |
 | 38. Catalog Lock + Disabled Explanations | v3.2 | 3/3 | Complete | 2026-02-02 |
 | 39. Collection Info Embedded in Catalog | v3.2 | 5/5 | Complete | 2026-02-02 |
-| 40. Upgrade Status + Copy Alignment | v3.2 | 0/TBD | Not started | - |
+| 40. Upgrade Status + Copy Alignment | v3.2 | 2/3 | In progress | - |
 | 41. Stability & Regression Guardrails | v3.2 | 0/TBD | Not started | - |
