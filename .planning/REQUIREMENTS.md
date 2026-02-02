@@ -32,10 +32,10 @@ Unify the catalog shopping experience by merging vault information into the cata
 
 ### Technical Requirements
 
-- [ ] **TEC-01**: Maintain existing save compatibility (no save format changes)
-- [ ] **TEC-02**: Preserve all localStorage keys and data structures
-- [ ] **TEC-03**: Keep UI selectors stable (`id`, `data-testid`) for test protection
-- [ ] **TEC-04**: Ensure catalog images continue to load correctly after consolidation
+- [x] **TEC-01**: Maintain existing save compatibility (no save format changes)
+- [x] **TEC-02**: Preserve all localStorage keys and data structures
+- [x] **TEC-03**: Keep UI selectors stable (`id`, `data-testid`) for test protection
+- [x] **TEC-04**: Ensure catalog images continue to load correctly after consolidation
 
 ---
 
@@ -76,10 +76,10 @@ Unify the catalog shopping experience by merging vault information into the cata
 | UPG-01 | Phase 40 | Complete |
 | UPG-02 | Phase 40 | Complete |
 | UPG-03 | Phase 40 | Complete |
-| TEC-01 | Phase 41 | Not started |
-| TEC-02 | Phase 41 | Not started |
-| TEC-03 | Phase 41 | Not started |
-| TEC-04 | Phase 41 | Not started |
+| TEC-01 | Phase 41 | Complete |
+| TEC-02 | Phase 41 | Complete |
+| TEC-03 | Phase 41 | Complete |
+| TEC-04 | Phase 41 | Complete |
 
 ---
 

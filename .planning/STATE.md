@@ -6,16 +6,16 @@ See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** v3.2 Phase 41 (Stability & Regression Guardrails)
+**Current focus:** v3.2 Milestone Complete
 
 ## Current Position
 
-Phase: 41 of 41 (Stability & Regression Guardrails)
-Plan: 4 of 4 in current phase
-Status: Phase complete
-Last activity: 2026-02-02 — Completed 41-01-PLAN.md
+Phase: v3.2 complete (Phases 37-41)
+Plan: -
+Status: Ready to complete milestone
+Last activity: 2026-02-02 — Phase 41 verified (status: passed)
 Progress: ██████████ 100%
-Next Phase: None (all plans complete)
+Next Phase: Start next milestone
 
 ## Accumulated Context
 

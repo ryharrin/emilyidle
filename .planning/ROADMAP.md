@@ -20,7 +20,7 @@ Emily Idle evolves by shipping coherent player-visible improvements in continuou
 - [x] **Phase 38: Catalog Lock + Disabled Explanations** - Locked/disabled states are visible and explained in-place.
 - [x] **Phase 39: Collection Info Embedded in Catalog** - Capacity/value and "Collection" naming are integrated into catalog.
 - [x] **Phase 40: Upgrade Status + Copy Alignment** - Upgrade status is visible in catalog and all upgrade copy/previews match enjoyment-only behavior.
-- [ ] **Phase 41: Stability & Regression Guardrails** - Consolidation ships without save/key/selector/image regressions.
+- [x] **Phase 41: Stability & Regression Guardrails** - Consolidation ships without save/key/selector/image regressions.
 
 ## Phase Details
 
@@ -97,10 +97,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 41-01-PLAN.md — Lock localStorage key strings with strict unit contract tests (TEC-02)
-- [ ] 41-02-PLAN.md — Add save payload + legacy key migration unit guardrails (TEC-01)
-- [ ] 41-03-PLAN.md — Add curated Playwright selector contract coverage (TEC-03)
-- [ ] 41-04-PLAN.md — Add catalog image mapping + rendering guardrails under /emilyidle (TEC-04)
+- [x] 41-01-PLAN.md — Lock localStorage key strings with strict unit contract tests (TEC-02)
+- [x] 41-02-PLAN.md — Add save payload + legacy key migration unit guardrails (TEC-01)
+- [x] 41-03-PLAN.md — Add curated Playwright selector contract coverage (TEC-03)
+- [x] 41-04-PLAN.md — Add catalog image mapping + rendering guardrails under /emilyidle (TEC-04)
 
 ## Progress
 
@@ -110,4 +110,4 @@ Plans:
 | 38. Catalog Lock + Disabled Explanations | v3.2 | 3/3 | Complete | 2026-02-02 |
 | 39. Collection Info Embedded in Catalog | v3.2 | 5/5 | Complete | 2026-02-02 |
 | 40. Upgrade Status + Copy Alignment | v3.2 | 3/3 | Complete | 2026-02-02 |
-| 41. Stability & Regression Guardrails | v3.2 | 0/TBD | Not started | - |
+| 41. Stability & Regression Guardrails | v3.2 | 4/4 | Complete | 2026-02-02 |
