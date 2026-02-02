@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-30)
+See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** Starting v3.2 milestone (Catalog/Vault Consolidation)
+**Current focus:** v3.2 Phase 37 (Catalog Purchase Surface)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-01 — milestone v3.2 initialized, proceeding to requirements
+Phase: 37 of 41 (Catalog Purchase Surface)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-02 — created v3.2 roadmap (Phases 37-41)
 Progress: ○○○○○○○○○○ 0%
-Next Phase: To be determined (will start at Phase 37)
+Next Phase: Phase 37
 
 ## Accumulated Context
 

@@ -65,21 +65,21 @@ Unify the catalog shopping experience by merging vault information into the cata
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAT-01 | TBD | Not started |
-| CAT-02 | TBD | Not started |
-| CAT-03 | TBD | Not started |
-| CAT-04 | TBD | Not started |
-| VLT-01 | TBD | Not started |
-| VLT-02 | TBD | Not started |
-| VLT-03 | TBD | Not started |
-| VLT-04 | TBD | Not started |
-| UPG-01 | TBD | Not started |
-| UPG-02 | TBD | Not started |
-| UPG-03 | TBD | Not started |
-| TEC-01 | TBD | Not started |
-| TEC-02 | TBD | Not started |
-| TEC-03 | TBD | Not started |
-| TEC-04 | TBD | Not started |
+| CAT-01 | Phase 37 | Not started |
+| CAT-02 | Phase 38 | Not started |
+| CAT-03 | Phase 38 | Not started |
+| CAT-04 | Phase 37 | Not started |
+| VLT-01 | Phase 39 | Not started |
+| VLT-02 | Phase 39 | Not started |
+| VLT-03 | Phase 40 | Not started |
+| VLT-04 | Phase 39 | Not started |
+| UPG-01 | Phase 40 | Not started |
+| UPG-02 | Phase 40 | Not started |
+| UPG-03 | Phase 40 | Not started |
+| TEC-01 | Phase 41 | Not started |
+| TEC-02 | Phase 41 | Not started |
+| TEC-03 | Phase 41 | Not started |
+| TEC-04 | Phase 41 | Not started |
 
 ---
 
