@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-02-01)
 ## Current Position
 
 Phase: 37 of 41 (Catalog Purchase Surface)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-02 — created v3.2 roadmap (Phases 37-41)
-Progress: ○○○○○○○○○○ 0%
-Next Phase: Phase 37
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-02 — Completed 37-01-PLAN.md
+Progress: ██████████ 98%
+Next Phase: Phase 37 (Plan 02)
 
 ## Accumulated Context
 
@@ -65,6 +65,7 @@ Next Phase: Phase 37
 | 35-02 | None - followed plan as specified | No deviations |
 | 36-01 | None - followed plan as specified | No deviations |
 | 35-03 | None - followed plan as specified | No deviations |
+| 37-01 | Catalog tab is hideable via Settings preferences | Align hidden tab behavior with new Catalog surface |
 
 ### Deferred Issues
 - Planning process gap: `.planning/REQUIREMENTS.md` missing for v2.0 (archived as reconstructed requirements)
@@ -92,7 +93,7 @@ Next Phase: Phase 37
 | 001 | There are missing images in the catalog. Create an e2e test that checks for any missing images. Also, find and download any missing images, save them to the repo. | 2026-01-28 | 893f9f2 | [001-there-are-missing-images-in-the-catalog](./quick/001-there-are-missing-images-in-the-catalog/) |
 
 ### Session Continuity
-Last session: 2026-02-01T03:25:35Z
-Stopped at: Completed 35-03-PLAN.md
+Last session: 2026-02-02T05:09:25Z
+Stopped at: Completed 37-01-PLAN.md
 
 Resume file: None
