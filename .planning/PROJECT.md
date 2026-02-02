@@ -36,49 +36,52 @@ Emily Idle is a browser-based idle/incremental game themed around luxury watch c
 - `pnpm run test:e2e`
 - `pnpm run build`
 
-## Last Shipped Milestone: v3.1 Career Depth & Landing (Shipped: 2026-02-01)
+## Last Shipped Milestone: v3.2 Catalog/Vault Consolidation (Shipped: 2026-02-02)
 
-**Delivered:** Career becomes the default landing and grows into a staged progression with permanent choices, clear previews, and stronger next-action guidance.
+**Delivered:** Unified catalog shopping experience with vault information merged into the catalog surface, making watch purchasing seamless and intuitive.
 
 **Highlights:**
-- Fresh saves land on Career by default without breaking deep links or existing-save last-tab behavior.
-- Career has 5+ stages with persisted permanent choices and clear before/after previews.
-- Career shows progress (next unlock + progress bar) and a single next-action cue.
-- Sessions work immediately after entering the program (pre-track window) so the salary window refresh loop is achievable before level 3.
-- Quartz set-time mini-game alignment is fixed on desktop + mobile (with regression coverage).
+- Catalog cards became the sole purchase flow for watches (removed separate Vault purchase entry point).
+- Added lock overlay with greyed-out styling for undiscovered watches plus "Why can't I buy?" contextual explanations.
+- Merged collection capacity and value information directly into the catalog shopping header.
+- Renamed "Vault" to "Collection" consistently across all UI labels, help text, and domain strings.
+- Made upgrade status visible in catalog header and aligned all upgrade copy/previews to reflect enjoyment-only multipliers.
+- Protected existing saves with localStorage key contract tests, save payload guardrails, and selector stability coverage.
+- Verified catalog image loading under /emilyidle base URL with regression tests.
 
-## Current Milestone: v3.2 Catalog/Vault Consolidation (In Progress)
-
-**Goal:** Unify the catalog shopping experience by merging vault information into the catalog surface and making watch purchasing feel seamless.
-
-**Target features:**
-- Catalog cards become the sole purchase flow for watches (remove separate Vault purchase)
-- Merge vault information (capacity, current value, upgrade status) into catalog surface
-- Update upgrade copy and previews to reflect enjoyment-only multipliers (not cash)
-- Maintain existing save compatibility and localStorage keys
-
-**Status:** Requirements and roadmap being defined
-
-## Next Milestone (Proposed): v4.0 Watch Interactions & Catalog Polish
+## Current Milestone: v4.0 Watch Interactions & Catalog Polish (In Progress)
 
 **Goal:** Deepen the watch interaction experience with improved mini-games and catalog polish.
 
-**Target features (from NOTES.md backlog):**
+**Target features (from NOTES.md):**
 - Winding mini-game: More interactive control with visual winding animation
 - Additional automatic watch mini-games: Setting time/date, changing strap
-- Catalog expansion: More watch brands and models
-- Catalog visibility fixes: Undiscovered watches greyed out with lock icon
-- Fix missing catalog images for certain watch models
+- Catalog expansion: More watch brands and models, from low end to luxury
+- Individual watch stats: Show enjoyment/cash rates per watch in catalog and collection and make them more varied
+- Improved mobile experience: Responsive design and touch-friendly interactions
+
+**UI/UX improvements (from visual review 2026-02-02):**
+- Mobile navigation: replace multi-row tab pills with a horizontal scroll tab bar (snap + swipe) and keep it sticky
+- Settings polish: restyle fieldsets/legends and checkbox groups
+- Collection/Catalog: split mega-scroll into sections with in-page subnav
+- Help modal: add search + improve mobile chips layout
+- Interaction modals: increase touch targets and clearer success/failure feedback
+- Stats breakdown: group modifiers and show subtotals
+
+**Status:** Requirements and roadmap to be defined
 
 ## Current State
 
-Shipped v3.1 on 2026-02-01:
+Shipped v3.2 on 2026-02-02:
 
-- Career-first landing behavior (fresh saves default to Career; deep links + last-tab persistence remain predictable)
-- Career stages with permanent choices + preview deltas + persistence
-- Progress feedback and next-action cue on Career
-- Salary window + sessions loop is usable immediately after career start (pre-track sessions supported)
-- Quartz set-time alignment regression fixed
+- Catalog cards are now the only purchase flow for watches
+- Undiscovered watches display as greyed out with lock icon (not hidden)
+- "Why can't I buy?" explanations shown on disabled purchase actions
+- Collection capacity and value visible in catalog context
+- "Vault" renamed to "Collection" consistently across UI and copy
+- Upgrade status visible in catalog with enjoyment-only copy alignment
+- All localStorage keys and UI selectors protected with regression guardrails
+- Catalog images verified loading correctly under /emilyidle base URL
 
 ## Known Gaps / Tech Debt
 
@@ -88,4 +91,4 @@ Shipped v3.1 on 2026-02-01:
 
 ---
 
-*Last updated: 2026-02-01 — started milestone v3.2*
+*Last updated: 2026-02-02 — completed milestone v3.2, starting v4.0*

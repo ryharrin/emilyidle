@@ -2,20 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-01)
+See: .planning/PROJECT.md (updated 2026-02-02)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-
-**Current focus:** v3.2 Milestone Complete
+**Current focus:** Planning v4.0 Watch Interactions & Catalog Polish
 
 ## Current Position
 
-Phase: v3.2 complete (Phases 37-41)
-Plan: -
-Status: Ready to complete milestone
-Last activity: 2026-02-02 — Phase 41 verified (status: passed)
-Progress: ██████████ 100%
-Next Phase: Start next milestone
+Phase: Ready to start v4.0
+Plan: Not started
+Status: Milestone v3.2 complete, ready for new milestone planning
+Last activity: 2026-02-02 — v3.2 milestone archived and tagged
+Progress: Milestone v3.2 ██████████ 100%
+Next Phase: Start v4.0 milestone
 
 ## Accumulated Context
 
@@ -27,6 +26,8 @@ Next Phase: Start next milestone
 - Milestone v2.0 archived under .planning/milestones/
 - Milestone v3.0 kickoff: catalog-first economy + interactions (phases 25-30)
 - Milestone v3.0 archived under .planning/milestones/ (phases 25-31)
+- Milestone v3.1 shipped: Career Depth & Landing (phases 32-36)
+- Milestone v3.2 shipped: Catalog/Vault Consolidation (phases 37-41)
 
 ### Decisions
 | Phase | Decision | Rationale |
@@ -80,17 +81,12 @@ Next Phase: Start next milestone
 
 ### Blockers/Concerns Carried Forward
 
-**v3.2 Catalog/Vault Consolidation (Intermediate):**
-- Catalog cards should be the sole purchase flow for watches.
-- Vault information needs to be merged into the Catalog surface.
-- Upgrade copy and previews must not claim cash multipliers if cash accrual is career-salary driven.
-
-**v4.0 Watch Interactions & Catalog Polish (from NOTES.md):**
-- Winding mini-game needs more interactive control and visual animation (NOTES.md planned feature)
-- Additional automatic watch mini-games needed: setting time/date, changing strap (NOTES.md planned feature)
-- Catalog needs more watch brands and models (NOTES.md planned feature)
-- Undiscovered watches should be greyed out with lock icon, not hidden (NOTES.md bug fix)
-- Fix missing images for certain watch models in catalog (NOTES.md bug fix)
+**v4.0 Watch Interactions & Catalog Polish (Current):**
+- Winding mini-game needs more interactive control and visual animation
+- Additional automatic watch mini-games needed: setting time/date, changing strap
+- Catalog expansion: more watch brands and models needed
+- Individual watch stats: show enjoyment/cash rates per watch (more varied)
+- Mobile experience improvements: responsive design, touch-friendly interactions
 
 ### Quick Tasks Completed
 
@@ -100,6 +96,6 @@ Next Phase: Start next milestone
 
 ### Session Continuity
 Last session: 2026-02-02T08:44:22Z
-Stopped at: Completed 41-01-PLAN.md
+Stopped at: Completed v3.2 milestone
 
 Resume file: None

@@ -8,7 +8,6 @@
 - Winding mini-game: More interactive control with visual winding animation
 - Additional automatic watch mini-games: Setting time/date, changing strap
 - Catalog expansion: More watch brands and models, from low end to luxury
-- Catalog visibility fixes: Undiscovered watches greyed out with lock icon (not hidden)
 - Individual watch stats: Show enjoyment/cash rates per watch in catalog and vault and make them more varied
 - Improved mobile experience: Responsive design and touch-friendly interactions
 
@@ -24,7 +23,33 @@
 
 **Status:** Planning phase - requirements and roadmap to be defined
 
-**Depends on:** v3.2 Catalog/Vault Consolidation (optional intermediate milestone)
+**Depends on:** v3.2 Catalog/Vault Consolidation (completed 2026-02-02)
+
+---
+
+## v3.2 Catalog/Vault Consolidation (Shipped: 2026-02-02)
+
+**Delivered:** Unified catalog shopping experience with vault information merged into the catalog surface, making watch purchasing seamless and intuitive.
+
+**Phases completed:** 37-41 (17 plans total)
+
+**Key accomplishments:**
+- Catalog cards became the sole purchase flow for watches (removed separate Vault purchase entry point).
+- Added lock overlay with greyed-out styling for undiscovered watches plus "Why can't I buy?" contextual explanations.
+- Merged collection capacity and value information directly into the catalog shopping header.
+- Renamed "Vault" to "Collection" consistently across all UI labels, help text, and domain strings.
+- Made upgrade status visible in catalog header and aligned all upgrade copy/previews to reflect enjoyment-only multipliers.
+- Protected existing saves with localStorage key contract tests, save payload guardrails, and selector stability coverage.
+- Verified catalog image loading under /emilyidle base URL with regression tests.
+
+**Stats:**
+- 5 phases, 17 plans
+- All 16 requirements shipped (CAT-01/02/03/04, VLT-01/02/03/04, UPG-01/02/03, TEC-01/02/03/04)
+- 1 day development cycle (2026-02-02)
+
+**Git range:** `feat(37-01)` → `feat(41-04)`
+
+**What's next:** Start v4.0 focused on deepening watch interactions with improved mini-games and catalog polish.
 
 ---
 
