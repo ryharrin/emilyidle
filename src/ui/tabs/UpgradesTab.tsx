@@ -93,23 +93,27 @@ const renderDeltaChips = (preview: RatePreview) => {
   return <div className="upgrade-deltas">{chips}</div>;
 };
 
-const renderPreviewDetails = (preview: RatePreview) => (
-  <details className="card upgrade-preview-details">
-    <summary>Rate preview</summary>
-    <div className="upgrade-preview-grid">
-      <div>
-        <p className="muted">Before</p>
-        <p>Cash {formatRateFromCentsPerSec(preview.beforeCash)}</p>
-        <p>Enjoyment {formatRateFromCentsPerSec(preview.beforeEnjoyment)}</p>
+const renderPreviewDetails = (preview: RatePreview) => {
+  const showCash = preview.beforeCash !== preview.afterCash;
+
+  return (
+    <details className="card upgrade-preview-details">
+      <summary>Rate preview</summary>
+      <div className="upgrade-preview-grid">
+        <div>
+          <p className="muted">Before</p>
+          {showCash && <p>Cash {formatRateFromCentsPerSec(preview.beforeCash)}</p>}
+          <p>Enjoyment {formatRateFromCentsPerSec(preview.beforeEnjoyment)}</p>
+        </div>
+        <div>
+          <p className="muted">After</p>
+          {showCash && <p>Cash {formatRateFromCentsPerSec(preview.afterCash)}</p>}
+          <p>Enjoyment {formatRateFromCentsPerSec(preview.afterEnjoyment)}</p>
+        </div>
       </div>
-      <div>
-        <p className="muted">After</p>
-        <p>Cash {formatRateFromCentsPerSec(preview.afterCash)}</p>
-        <p>Enjoyment {formatRateFromCentsPerSec(preview.afterEnjoyment)}</p>
-      </div>
-    </div>
-  </details>
-);
+    </details>
+  );
+};
 
 export function UpgradesTab({
   isActive,
