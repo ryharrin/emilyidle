@@ -29,7 +29,7 @@ Next Phase: Phase 42 (Winding Refresh)
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
-| 001 | Remove Collection Book/Archive Shelf and fix interaction ownership checks | 2026-02-02 | TBD | [001-remove-archive-shelf](./quick/001-remove-archive-shelf/) |
+| 001 | Remove Collection Book/Archive Shelf and fix interaction ownership checks | 2026-02-02 | c40c2aa | [001-remove-archive-shelf](./quick/001-remove-archive-shelf/) |
 
 ### Carried Gaps / Tech Debt
 
