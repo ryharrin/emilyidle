@@ -7,6 +7,7 @@ import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
 import { LockIcon } from "../icons/coreIcons";
+import { getCatalogCollectionContext } from "../catalog/collectionContext";
 
 import { formatMoneyFromCents } from "../../game/format";
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
@@ -153,6 +154,10 @@ export function CatalogPurchasePanel({
     signature: filterSignature,
   });
 
+  const { ownedCount, maxCapacity, collectionValueCents } = getCatalogCollectionContext(state);
+  const ownedCountLabel = formatCount(ownedCount);
+  const maxCapacityLabel = formatCount(maxCapacity);
+
   const handleBrowseWatches = React.useCallback(() => {
     onCatalogTabChange("unowned");
     if (typeof document === "undefined") {
@@ -274,6 +279,13 @@ export function CatalogPurchasePanel({
           </p>
         </div>
         <div className="catalog-header-actions">
+          <div className="catalog-collection-context" data-testid="catalog-collection-context">
+            <span>
+              Collection: {ownedCountLabel} / {maxCapacityLabel}
+            </span>
+            <span> · </span>
+            <span>Collection value: {formatMoneyFromCents(collectionValueCents)}</span>
+          </div>
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
             {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
           </div>
