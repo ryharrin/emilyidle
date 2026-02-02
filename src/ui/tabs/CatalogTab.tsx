@@ -5,6 +5,7 @@ import { UnlockHint } from "../components/UnlockHint";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
+import { LockIcon } from "../icons/coreIcons";
 
 import { formatMoneyFromCents } from "../../game/format";
 import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
@@ -591,6 +592,11 @@ export function CatalogPurchasePanel({
                         }
                       }}
                     />
+                    {!discovered && (
+                      <span className="catalog-lock-icon" data-testid={`catalog-lock-${entry.id}`}>
+                        <LockIcon />
+                      </span>
+                    )}
                     {!discovered && <span className="catalog-badge">Undiscovered</span>}
                   </div>
                   <div className="catalog-content">
@@ -865,6 +871,14 @@ export function CatalogPurchasePanel({
                             }
                           }}
                         />
+                        {!discovered && (
+                          <span
+                            className="catalog-lock-icon"
+                            data-testid={`catalog-lock-${entry.id}`}
+                          >
+                            <LockIcon />
+                          </span>
+                        )}
                         {!discovered && <span className="catalog-badge">Undiscovered</span>}
                       </div>
                       <div className="catalog-content">
