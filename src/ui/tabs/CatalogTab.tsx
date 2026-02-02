@@ -526,6 +526,7 @@ export function CatalogPurchasePanel({
                   : formatCount(unlockDetail.threshold)
                 : "0";
               const gate = getWatchModelPurchaseGate(state, entry.id);
+              const isActionable = unlocked && gate.ok;
               const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
               const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
               const isHighlighted = purchaseHighlights[entry.id];
@@ -561,7 +562,9 @@ export function CatalogPurchasePanel({
                   key={entry.id}
                   className={`catalog-card ${
                     discovered ? "catalog-discovered" : "catalog-locked"
-                  } ${isHighlighted ? "purchase-flash" : ""}`}
+                  } ${isHighlighted ? "purchase-flash" : ""} ${
+                    isActionable ? "catalog-actionable" : "catalog-nonactionable"
+                  }`}
                   data-testid="catalog-card"
                 >
                   <div className="catalog-media">
@@ -795,6 +798,7 @@ export function CatalogPurchasePanel({
                       : formatCount(unlockDetail.threshold)
                     : "0";
                   const gate = getWatchModelPurchaseGate(state, entry.id);
+                  const isActionable = unlocked && gate.ok;
                   const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
                   const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
                   const isHighlighted = purchaseHighlights[entry.id];
@@ -832,7 +836,9 @@ export function CatalogPurchasePanel({
                       key={entry.id}
                       className={`catalog-card ${
                         discovered ? "catalog-discovered" : "catalog-locked"
-                      } ${isHighlighted ? "purchase-flash" : ""}`}
+                      } ${isHighlighted ? "purchase-flash" : ""} ${
+                        isActionable ? "catalog-actionable" : "catalog-nonactionable"
+                      }`}
                       data-testid="catalog-card"
                     >
                       <div className="catalog-media">
