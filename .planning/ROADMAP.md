@@ -16,7 +16,7 @@ Emily Idle evolves by shipping coherent player-visible improvements in continuou
 - Integer phases (37, 38, ...): Planned milestone work
 - Decimal phases (e.g. 38.1): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 37: Catalog Purchase Surface** - Catalog cards become the only purchase flow.
+- [x] **Phase 37: Catalog Purchase Surface** - Catalog cards become the only purchase flow.
 - [ ] **Phase 38: Catalog Lock + Disabled Explanations** - Locked/disabled states are visible and explained in-place.
 - [ ] **Phase 39: Collection Info Embedded in Catalog** - Capacity/value and "Collection" naming are integrated into catalog.
 - [ ] **Phase 40: Upgrade Status + Copy Alignment** - Upgrade status is visible in catalog and all upgrade copy/previews match enjoyment-only behavior.
@@ -35,8 +35,8 @@ Emily Idle evolves by shipping coherent player-visible improvements in continuou
 **Plans**: 2 plans
 
 Plans:
-- [ ] 37-01-PLAN.md — Promote Catalog tab as the shop surface; remove embedded Vault shop; update help/tests
-- [ ] 37-02-PLAN.md — Add actionable vs non-actionable catalog card affordances (CAT-04)
+- [x] 37-01-PLAN.md — Promote Catalog tab as the shop surface; remove embedded Vault shop; update help/tests
+- [x] 37-02-PLAN.md — Add actionable vs non-actionable catalog card affordances (CAT-04)
 
 ### Phase 38: Catalog Lock + Disabled Explanations
 **Goal**: Players can see undiscovered/disabled watches in the catalog and understand why purchase is unavailable.
@@ -83,7 +83,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 37. Catalog Purchase Surface | v3.2 | 0/2 | Not started | - |
+| 37. Catalog Purchase Surface | v3.2 | 2/2 | Complete | 2026-02-02 |
 | 38. Catalog Lock + Disabled Explanations | v3.2 | 0/TBD | Not started | - |
 | 39. Collection Info Embedded in Catalog | v3.2 | 0/TBD | Not started | - |
 | 40. Upgrade Status + Copy Alignment | v3.2 | 0/TBD | Not started | - |
