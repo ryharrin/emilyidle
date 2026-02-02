@@ -6,11 +6,11 @@
 
 ## Summary
 
-Phase 42 is an in-place upgrade of the existing timing-based winding modal: keep the “marker moves; click/tap to stop” loop, but change the timing (5-6s), scoring bands (under/good/perfect/over), and add a crown + tension animation that visually responds to progress and stop timing. The implementation should remain self-contained to the winding UI layer (no new libraries), preserve existing test selectors, and avoid broad refactors of other mini-games.
+Phase 42 is an in-place upgrade of the existing manual-winding mini-game. The codebase already has a timing-based winding modal (marker moves across a track; player taps/clicks to stop). The locked Phase 42 decisions (see `42-CONTEXT.md`) keep this mechanic, but change the scoring to explicit bands (under/good/perfect/over), extend the run to ~5-6 seconds, and add a crown + tension animation that visibly responds to progress and eases to a stop. "Pace" is therefore *perceived pace* (rotation speed + glow/pulse), while "amount" is the stop position.
 
-The codebase already establishes the mini-game pattern: a modal component owns a `requestAnimationFrame` loop, computes normalized progress, optionally “steps” progress in reduced motion, cancels RAF on close, and calls `onComplete` immediately on action. CSS provides the look; state/reward application is handled in `src/game/actions/interactions.ts` via the existing `InteractionOutcome` (`miss|good|perfect`).
+The best way to implement this in this repo is to follow the existing mini-game pattern used by the quartz and automatic modals: a modal component owns a `requestAnimationFrame` loop, normalizes progress, applies a reduced-motion stepping mode, cancels RAF cleanly on stop/close, and calls `onComplete` immediately so domain rewards apply deterministically. Animation and band visuals belong in CSS, driven by a small set of computed values (`progress01`, `band`, `tension01`, `angleDeg`) exposed as CSS variables or inline styles.
 
-**Primary recommendation:** Implement winding as a single RAF-driven run that updates both marker progress and crown rotation/tension (with a reduced-motion non-rotating fallback), keep existing `data-testid` contracts stable, and add accessibility (aria-live announcements + focus trapping + scroll lock) patterned after existing modal code.
+**Primary recommendation:** Update `src/ui/components/WindingMiniGameModal.tsx` to use Phase 42 band rules and a 5-6s run, add a progress-driven crown/tension animation (RAF-driven angle with stop deceleration), reuse the HelpModal scroll-lock pattern for mobile, and keep the existing `data-testid` contracts stable to avoid widespread test churn.
 
 ## Standard Stack
 
@@ -20,20 +20,20 @@ The codebase already establishes the mini-game pattern: a modal component owns a
 | react | 18.3.1 | UI components + state/effects | Existing app foundation |
 | react-dom | 18.3.1 | DOM rendering | Existing app foundation |
 | TypeScript | 5.8.x | Types + safety | Repo-wide strict TS |
-| Vite | 6.0.x | Dev/build tooling | Repo build contract |
+| Vite | 6.4.1 | Dev/build tooling | Locked by repo tooling + lockfile |
 
 ### Supporting
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| @testing-library/react | 16.1.0 | Unit testing UI behavior | Modal behavior + regression tests |
-| @testing-library/user-event | 14.5.2 | User interaction simulation | Clicking/tapping modal controls |
-| @playwright/test | 1.49.1 | E2E smoke coverage | Winding completes + rewards applied |
+| @testing-library/react | 16.3.1 | Unit testing UI behavior | Winding modal behavior + regression tests |
+| @testing-library/user-event | 14.6.1 | User interaction simulation | Clicking/tapping modal controls |
+| @playwright/test | 1.57.0 | E2E smoke coverage | Winding completes + reward/cooldown applied |
 
 ### Alternatives Considered
 | Instead of | Could Use | Tradeoff |
 |------------|-----------|----------|
-| RAF-driven crown rotation/tension in-component | CSS-only `@keyframes` + `animation-duration` tweaks | CSS-only can’t reliably “mechanically ease to stop” from the current angle; RAF gives deterministic stop easing and is consistent with existing mini-game loops |
-| Hand-rolled modal A11y hooks | A focus-trap library | Adds dependencies not currently in the repo; Phase scope favors a small local implementation |
+| RAF-driven crown rotation + stop deceleration | CSS-only `@keyframes` + duration changes | CSS can’t reliably "ease to stop" from the current angle; RAF matches existing mini-game loops and keeps visuals deterministic |
+| Adding a focus-trap dependency | Hand-rolled "good enough" focus management | New deps not used elsewhere; Phase 42 can focus the primary action and support Escape/keyboard without a full trap |
 
 **Installation:**
 ```bash
@@ -42,37 +42,53 @@ The codebase already establishes the mini-game pattern: a modal component owns a
 
 ## Architecture Patterns
 
-### Files Likely To Change (Exact)
+### Where The Current Winding Mini-Game Lives
 
-UI + styling:
-- `src/ui/components/WindingMiniGameModal.tsx` (core logic, bands, crown/tension behavior, a11y)
-- `src/style.css` (winding crown size, band visuals, tension glow, reduced-motion styling, mobile touch)
-- `src/App.tsx` (only if persisting the “tap hint” via existing settings/coachmarks; keep changes minimal)
+Current implementation ("winding interaction"):
+- `src/ui/components/WindingMiniGameModal.tsx` (RAF run, current scoring, crown + track markup)
+- `src/style.css` (winding crown/track styling, `.winding-crown-running` keyframes)
+- `src/App.tsx` (modal open/close wiring, `onComplete` applies rewards)
+- `src/ui/tabs/CatalogTab.tsx` (interact button `data-testid="vault-interact-${tierId}"` triggers `onInteract(tierId)`)
+- `src/game/actions/interactions.ts` + `src/game/selectors/interactions.ts` (reward + per-item cooldown rules)
 
-Tests:
-- `tests/catalog.unit.test.tsx` (unit coverage references `winding-*` testids; should remain stable)
-- `tests/collection-loop.spec.ts` (E2E smoke test clicks `winding-stop` and asserts reward/cooldown)
-- Optional new test file: `tests/winding-bands.unit.test.tsx` (fast regression on band mapping: 0-30 miss, 30-69 good, 70-95 perfect, >95 miss)
+Test contracts that already pin behavior/selectors:
+- `tests/catalog.unit.test.tsx` (opens modal, clicks `winding-stop`, expects outcome, closes)
+- `tests/collection-loop.spec.ts` (E2E: completes winding; expects enjoyment increased + cooldown disables button)
 
-Supporting reference files (patterns to copy, not necessarily change):
-- `src/ui/components/QuartzMiniGameModal.tsx` (RAF + reduced-motion stepping pattern)
-- `src/ui/components/AutomaticMiniGameModal.tsx` (longer run duration + “test mode” shortening pattern)
-- `src/ui/help/HelpModal.tsx` (Escape handling + body scroll lock pattern)
-- `src/game/actions/interactions.ts` (reward mapping + cooldown; do not change for Phase 42)
+### Best Integration Points For Phase 42 Enhancements
 
-### Recommended Project Structure (for new helpers)
-If `src/ui/components/WindingMiniGameModal.tsx` risks exceeding ~300 LOC, split locally to keep ownership clear:
+Winding bands:
+- Compute from `progress01` at stop time in `src/ui/components/WindingMiniGameModal.tsx` (or a pure helper under `src/ui/components/winding/`).
+- Keep domain tier as `"miss"|"good"|"perfect"` (because `applyWindingReward` accepts only those), but add a UI-only band label to render "Over-wound!" distinctly.
+
+Crown + tension animation:
+- Replace constant `.winding-crown-running` spin with a progress-driven rotation model:
+  - During run: angle increases each tick by a speed derived from `progress01` (slow -> faster -> fastest near 0.70-1.00) and `tension01`.
+  - On stop: keep `onComplete` immediate, but continue animating angle for a short deceleration window (mechanical easing) to "settle".
+- Drive visual intensity (glow/pulse) from `tension01` so reduced-motion users still get readable feedback even though CSS animations are effectively disabled.
+
+Mobile/a11y input handling:
+- Use the HelpModal body scroll lock pattern (`document.body.style.overflow = "hidden"`) while the winding modal is open.
+- Ensure the "tap zone" is a real `<button>` (or contains one) and meets touch target guidance (>=44px) via CSS.
+- Add `touch-action: none` to the tap zone to prevent scroll/rubber-band interference.
+- Add Escape-to-close (patterned after HelpModal).
+- Add an `aria-live="polite"` status region that announces: start -> stopped at X% -> outcome label.
+- On open, focus the primary action (Stop button) so keyboard users can act immediately.
+
+### Recommended Project Structure
+
+If `src/ui/components/WindingMiniGameModal.tsx` would grow beyond ~300 LOC, keep it modular by splitting out helpers:
 ```
 src/ui/components/winding/
-├── windingMath.ts           # band mapping + clamp helpers
-├── useWindingRun.ts         # RAF loop: progress + crown angle/velocity
-└── WindingCrown.tsx         # crown markup (presentational)
+├── windingMath.ts        # band mapping (under/good/perfect/over) + label/tier mapping
+├── useWindingRun.ts      # RAF loop for progress + angle + stop deceleration
+└── WindingCrown.tsx      # presentational crown (CSS vars for angle/tension)
 src/ui/components/WindingMiniGameModal.tsx
 ```
 
-### Pattern 1: RAF Run With Reduced Motion “Stepping”
-**What:** Drive mini-game state from `requestAnimationFrame` with normalized progress; in reduced motion, update in discrete steps.
-**When to use:** Any continuously-progressing UI interaction (winding marker movement, crown rotation).
+### Pattern 1: RAF Run With Reduced Motion "Stepping"
+**What:** Drive progress from `requestAnimationFrame`; in reduced motion, update in discrete steps.
+**When to use:** Winding marker progress and any JS-driven crown motion.
 **Example:**
 ```ts
 // Source: src/ui/components/WindingMiniGameModal.tsx
@@ -90,8 +106,8 @@ const tick = (nowMs: number) => {
 ```
 
 ### Pattern 2: Modal Escape + Body Scroll Lock
-**What:** On open, attach a keydown listener for Escape; lock body scroll by setting `document.body.style.overflow = "hidden"` and restore it on close.
-**When to use:** Full-screen overlays that must prevent background scroll/interference (mobile requirement).
+**What:** Escape closes; lock body scroll while open.
+**When to use:** Full-screen overlays that must prevent background scroll (mobile requirement).
 **Example:**
 ```ts
 // Source: src/ui/help/HelpModal.tsx
@@ -108,64 +124,71 @@ useEffect(() => {
   if (!open || typeof document === "undefined") return;
   const previousOverflow = document.body.style.overflow;
   document.body.style.overflow = "hidden";
-  return () => { document.body.style.overflow = previousOverflow; };
+  return () => {
+    document.body.style.overflow = previousOverflow;
+  };
 }, [open]);
 ```
 
 ### Anti-Patterns to Avoid
-- **Delaying `onComplete` until animations finish:** tests and UX expect the result immediately; animate in parallel.
-- **New localStorage keys for hint state:** would require updating `tests/localstorage-keys.unit.test.ts`; use `Settings.coachmarksDismissed` if persistence is needed.
-- **Changing `data-testid` values:** existing unit/E2E tests rely on `winding-modal`, `winding-stop`, `winding-done`, `winding-outcome`, `winding-track`.
-- **CSS-only “mechanical stop” claim:** pure CSS spin can’t guarantee easing to a stop from the current rotation; use an RAF-driven angle with a deceleration curve.
+- **Changing `data-testid` values:** existing unit/E2E tests rely on `winding-modal`, `winding-track`, `winding-stop`, `winding-outcome`, `winding-done`.
+- **Moving reward logic into UI:** keep rewards/cooldown in `src/game/actions/interactions.ts`.
+- **Waiting for animations before calling `onComplete`:** tests and UX assume immediate result.
+- **Relying on CSS animations for reduced-motion feedback:** global reduced-motion rules clamp animation/transition durations to ~0.
 
 ## Don't Hand-Roll
 
-| Problem | Don’t Build | Use Instead | Why |
+| Problem | Don't Build | Use Instead | Why |
 |---------|-------------|-------------|-----|
-| Reward/cooldown rules | New reward tables or cooldown logic inside UI | `applyWindingReward()` in `src/game/actions/interactions.ts` | Keeps domain rules centralized and covered by unit tests |
-| Reduced-motion detection | Custom settings toggles or animation flags | `matchMedia("(prefers-reduced-motion: reduce)")` pattern already used in mini-games | Consistent behavior across modals |
-| New persistence key for a coachmark | `emily-idle:winding-hint` localStorage key | Existing `Settings.coachmarksDismissed` in `src/App.tsx` | Avoids storage key contract tests and schema churn |
+| Reward/cooldown rules | New reward tables or cooldown logic in UI | `applyWindingReward()` in `src/game/actions/interactions.ts` | Centralizes rules and keeps existing unit tests valid |
+| Reduced-motion handling | Custom settings toggles | Existing `matchMedia("(prefers-reduced-motion: reduce)")` pattern in mini-games | Consistent across mini-games |
+| New persistence keys for coachmarks | New localStorage keys | Existing settings persistence (if needed) | Avoids localStorage key/schema guardrail updates |
 
-**Key insight:** The “winding refresh” is primarily UI/UX; keep domain unchanged and treat the modal as a self-contained interaction surface.
+**Key insight:** Phase 42 is UX polish on an existing mini-game. Keep domain rules stable and treat the winding modal as a self-contained interaction surface.
 
 ## Common Pitfalls
 
-### Pitfall 1: Reduced-motion disables your “pulse” too
-**What goes wrong:** A pulse implemented as CSS animation doesn’t show because global `@media (prefers-reduced-motion: reduce)` clamps all animation/transition durations.
-**Why it happens:** `src/style.css` globally forces `animation-duration: 0.01ms !important` in reduced motion.
-**How to avoid:** In reduced motion, use static styling that maps to progress (e.g., stronger glow as you near 70-95%) or a stepped JS toggle (no CSS animation dependence).
-**Warning signs:** Reduced-motion users see a frozen crown with no other feedback.
+### Pitfall 1: Reduced motion kills your visuals
+**What goes wrong:** In reduced motion, crown spin/glow animations disappear, leaving no feedback.
+**Why it happens:** `src/style.css` applies `animation-duration: 0.01ms !important` for all elements under `@media (prefers-reduced-motion: reduce)`.
+**How to avoid:** Drive feedback from progress via static styling (color/glow intensity) or stepped JS updates rather than pure CSS animation.
+**Warning signs:** Reduced-motion users see a frozen crown and an unreadable run.
 
-### Pitfall 2: Test flakiness from time-based behavior
-**What goes wrong:** Tests become flaky if they rely on waiting 5-6 seconds or if the modal continues RAF after closing.
-**Why it happens:** RAF loops are time-dependent; closing/unmount without cancellation causes state updates after unmount.
-**How to avoid:** Keep the “stop” action immediate and deterministic; cancel RAF on stop/close; avoid “auto-stop after duration” UX that hides results behind timeouts.
+### Pitfall 2: Band rules conflict with domain outcome types
+**What goes wrong:** Over-wind needs a distinct message, but domain rewards only accept `"miss"|"good"|"perfect"`.
+**Why it happens:** `InteractionOutcome` in `src/game/actions/interactions.ts` has no separate "over" outcome.
+**How to avoid:** Keep `tier: "miss"` for both under/over, and carry a UI-only band enum for copy + styling.
+**Warning signs:** Planner tries to change domain types (unnecessary scope) or UI cannot communicate "Over-wound!".
+
+### Pitfall 3: RAF leaks and test flakiness
+**What goes wrong:** RAF keeps running after close/stop, causing state updates after unmount and flaky tests.
+**Why it happens:** Missing cancellation paths or multiple RAF loops started per open.
+**How to avoid:** Centralize cancel logic; ensure stop cancels run RAF; ensure close/unmount cancels all RAF ids.
 **Warning signs:** Vitest warnings about state updates on unmounted components; Playwright timeouts.
 
-### Pitfall 3: Over-wind band conflicts with existing tier type
-**What goes wrong:** UI needs a distinct “Over-wound!” message, but domain rewards only accept `miss|good|perfect`.
-**Why it happens:** `InteractionOutcome` in `src/game/actions/interactions.ts` has no “overwind” tier.
-**How to avoid:** Keep `tier` as `miss` for both under- and over-wind, but carry an additional UI-only band label (`"under"|"good"|"perfect"|"over"`) for copy + styling.
-**Warning signs:** UI displays “Miss” with no indication why, or planner attempts to change domain outcome types.
+### Pitfall 4: Mobile scroll/touch quirks
+**What goes wrong:** Tapping/swiping scrolls the page under the modal or produces rubber-banding that ruins timing.
+**Why it happens:** Fixed overlay alone doesn't prevent body scroll; touch actions propagate.
+**How to avoid:** Apply scroll lock (`document.body.style.overflow = "hidden"`) and add `touch-action: none` on the primary tap zone.
+**Warning signs:** Users report accidental misses because the page moves.
 
-### Pitfall 4: Mobile scroll interference
-**What goes wrong:** Swiping while the mini-game is active scrolls the page behind the overlay, or triggers rubber-banding.
-**Why it happens:** Fixed overlays don’t automatically prevent scroll; touch input can scroll the body.
-**How to avoid:** Apply the HelpModal body overflow lock pattern and set `touch-action: none` on the primary interaction surface (track + crown hit area).
-**Warning signs:** Player can “miss” because the page moved during the tap.
+### Pitfall 5: Accessibility regression from clickable divs
+**What goes wrong:** The tap zone isn't keyboard-accessible (div with `onClick`).
+**Why it happens:** Click handlers on non-interactive elements don't provide default keyboard behavior.
+**How to avoid:** Make tap targets actual buttons; keep `aria-label`s and focus outlines intact.
+**Warning signs:** Keyboard users can't stop the run; automated a11y tooling flags non-interactive click handlers.
 
 ## Code Examples
 
-### Band Mapping (Phase 42 rules)
+### Band Mapping (locked Phase 42 rules)
 ```ts
 // Source: .planning/phases/42-winding-refresh/42-CONTEXT.md
-// Map progress (0..1) to an outcome tier plus a UI band label.
 type WindingBand = "under" | "good" | "perfect" | "over";
 
-function getWindingBand(progress: number): WindingBand {
-  if (progress < 0.3) return "under";
-  if (progress < 0.7) return "good";
-  if (progress <= 0.95) return "perfect";
+function getWindingBand(progress01: number): WindingBand {
+  if (progress01 < 0.3) return "under";
+  if (progress01 < 0.7) return "good";
+  if (progress01 <= 0.95) return "perfect";
   return "over";
 }
 
@@ -174,50 +197,71 @@ function getOutcomeTierFromBand(band: WindingBand): "miss" | "good" | "perfect" 
 }
 ```
 
-### Stable Test Selectors
+### Current Wiring (UI -> domain rewards)
 ```tsx
-// Source: tests/catalog.unit.test.tsx + tests/collection-loop.spec.ts
-// Keep these stable across Phase 42.
-<div data-testid="winding-modal" />
-<div data-testid="winding-track" />
-<button data-testid="winding-stop" />
-<div data-testid="winding-outcome" />
-<button data-testid="winding-done" />
+// Source: src/App.tsx
+<WindingMiniGameModal
+  open={activeInteraction?.kind === "winding"}
+  onComplete={(outcome) => {
+    if (activeInteraction?.kind !== "winding") return;
+    handlePurchase(applyWindingReward(state, activeInteraction.itemId, Date.now(), outcome.tier));
+  }}
+  onClose={() => setActiveInteraction(null)}
+/>
 ```
 
-### Persisting “Tap Hint” Without New Storage Keys
-```ts
-// Source: src/App.tsx (Settings.coachmarksDismissed)
-// Prefer storing a dismissal flag under coachmarksDismissed.
-// Example key: "winding:tap-hint".
+### Test Selector Contract (keep stable)
+```tsx
+// Sources: tests/catalog.unit.test.tsx, tests/collection-loop.spec.ts
+// These IDs are referenced directly.
+data-testid="winding-modal"
+data-testid="winding-track"
+data-testid="winding-stop"
+data-testid="winding-outcome"
+data-testid="winding-done"
 ```
 
 ## State of the Art
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| CSS-only spin (`.winding-crown-running`) at constant speed | Crown rotation speed varies by progress and eases to stop (likely RAF-driven) | Phase 42 | “Feels like winding” and visually communicates tension + penalty zone |
-| 4s linear run + center-based distance scoring | 5-6s run + explicit under/good/perfect/over bands | Phase 42 | Clearer player intent and teaches over-wind avoidance |
+| Constant-speed CSS spin (`.winding-crown-running`) | Progress-driven rotation speed + stop deceleration (best done via RAF) | Phase 42 | Crown "feels" like it tightens; tension/penalty zone becomes legible |
+| Distance-from-center scoring | Explicit band scoring (under/good/perfect/over) | Phase 42 | Easier to message "Over-wound!" without changing domain reward tiers |
 
 **Deprecated/outdated:**
-- “Distance from 0.5” scoring for winding (`getOutcomeTier(progress)` in `src/ui/components/WindingMiniGameModal.tsx`) should be replaced by Phase 42 band rules.
+- Winding scoring by `Math.abs(progress - 0.5)` in `src/ui/components/WindingMiniGameModal.tsx` does not match Phase 42 band rules.
 
 ## Open Questions
 
-1. **What exactly counts as “input pace” given the locked timing mechanic?**
-   - What we know: The mechanic remains “marker moves; click/tap to stop,” with a total run of 5-6 seconds.
-   - What’s unclear: “Pace control” typically implies multi-input control, but Phase 42 defers hold/drag mechanics.
-   - Recommendation: Treat “pace” as *perceived pace* via crown rotation speed curve + tension indicator that responds continuously to progress, and treat “amount” as stop position.
+1. **Should the run auto-complete at 100% (and count as over-wind), or remain stoppable-only?**
+   - What we know: The marker runs across the track for ~5-6s and there is an over-wind penalty zone >95%.
+   - What's unclear: Whether hitting 100% should automatically stop and resolve as "Over-wound!".
+   - Recommendation: Auto-resolve at 100% as over-wind (UI band "over" -> domain tier "miss"), to make the penalty zone meaningful even if the player does nothing.
 
-2. **Should the first-play tap hint persist across sessions?**
-   - What we know: Context requests a “tap-hint on first play.”
-   - What’s unclear: Whether “first play” means per session, per modal-open, or persisted.
-   - Recommendation: Persist via `Settings.coachmarksDismissed["winding:tap-hint"]` (no new keys), but keep Phase 42 changes to `src/App.tsx` minimal.
+2. **Should "tap here" hint persist across sessions?**
+   - What we know: Context calls for a first-play hint and larger touch target.
+   - What's unclear: Whether the hint is per session or persistent.
+   - Recommendation: Keep it session-only unless the planner already intends to wire it into existing settings persistence (avoid introducing new localStorage keys).
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- `src/ui/components/WindingMiniGameModal.tsx` - current loop, selectors, reduced-motion stepping
+- `src/ui/components/WindingMiniGameModal.tsx` (current winding mini-game)
+- `src/style.css` (winding crown/track styles and reduced-motion global rules)
+- `src/App.tsx` (interaction modal wiring and reward application)
+- `src/ui/tabs/CatalogTab.tsx` (interaction entry points + cooldown display)
+- `src/game/actions/interactions.ts` and `src/game/selectors/interactions.ts` (reward/cooldown domain rules)
+- `tests/catalog.unit.test.tsx` and `tests/collection-loop.spec.ts` (existing test contracts)
+
+## Metadata
+
+**Confidence breakdown:**
+- Standard stack: HIGH - versions verified in `package.json` and `pnpm-lock.yaml`
+- Architecture: HIGH - code locations and wiring confirmed in `src/` and `tests/`
+- Pitfalls: HIGH - reduced-motion global CSS and existing RAF patterns confirmed in code
+
+**Research date:** 2026-02-02
+**Valid until:** 2026-03-03
 - `src/style.css` - winding styling and global reduced-motion overrides
 - `src/ui/help/HelpModal.tsx` - Escape handling and body scroll lock pattern
 - `src/game/actions/interactions.ts` - reward outcomes + cooldown, do not change

@@ -816,9 +816,11 @@ export default function App() {
   const filteredCatalogEntries = useMemo(() => {
     const query = catalogSearch.trim().toLowerCase();
     const filteredByOwnership = catalogEntries.filter((entry) => {
-      const ownedCount = getWatchModelOwnedCount(state, entry.id);
-      const isOwned = ownedCount > 0;
-      return catalogTab === "owned" ? isOwned : !isOwned;
+      if (catalogTab !== "owned") {
+        return true;
+      }
+
+      return getWatchModelOwnedCount(state, entry.id) > 0;
     });
 
     const filteredByFilters = filteredByOwnership.filter((entry) => {

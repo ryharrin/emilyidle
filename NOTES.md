@@ -94,19 +94,74 @@ Planned Features:
 - Atelier bonuses should be more powerful to make them feel more impactful. The second vault run should be significantly faster than the first. (Planned fix: adjust the bonus scaling for atelier upgrades.)
   Upcoming Major Changes to Game Design:
 
-
 Features to plan:
+
 - Add more watch brands and models to the catalog to increase variety and appeal to different tastes.
 - Introduce a storyline or lore that unfolds as players collect more watches, adding depth to the game.
 - Add achievements or badges for collecting certain sets of watches or reaching specific milestones in the game.
 - mini games should reward enjoyment, not cash.
-- the career page should be the first page the user sees when starting the game, not the catalog. 
+- the career page should be the first page the user sees when starting the game, not the catalog.
 - The career system should have more depth. It should start with the user as a grad student, then progress through career stages ending at running a private practice. The branches should offer different benefits and challenges, such as specializing in different therapy types. The career system should feel meaningful and integrated into the overall gameplay loop. Choices in it should be permanent and have lasting effects on the player's money-earning potential and gameplay experience. There should be clear progress feedback toward the next career unlocks (progress bar + "next unlock" callout). There should be at least five career stages, with choices in each after the first.
 - The career system progression system should be well balanced to ensure a smooth and engaging experience for players. Each career stage should offer unique challenges and rewards, encouraging players to strategize their progression path. The pacing of career advancements should be designed to maintain player interest and provide a sense of accomplishment at each milestone.
 - Private practice shouldn't be both a career path and a career stage. There should be a different career path instead. Also, track choices shouldn't be clickable until the level stated. And only the next one should be visible. Sessions should be at the top. The leveling curve should be slower. No money should accrue automatically at the start. The user should have to choose to enter a phd program and start earning a small amount of money. For salaried positions, money should accrue automatically but stop after a few minutes until another session is run. The amount of time it lasts should increase with upgrades. Each career stage should have a clear description of its benefits and challenges.
+- Change the session cooldown to not be a hard limit. Instead, the cost per session should increase with each successive session until a break is taken. This would allow players to choose how often to run sessions based on their strategy and current resources.
 
 Bug Fixes to do:
+
 - Fix missing images for certain watch models in the catalog.
 - Undiscovered watches should not appear at all until they are unlocked.
 - Check mini game ui, the set time game watch display is not aligned properly.
 - Remove differentiation between discovered and undiscovered watches in the catalog. All watches should be visible, but undiscovered ones should be greyed out with a lock icon.
+- Cooldown timer for career sessions should be more prominent and closer to the session button. There should also be a visual indicator (e.g., progress bar) showing how much time is left before the next session can be started.
+
+UI/UX Improvements (from comprehensive review 2026-02-01):
+
+- Rename "Vault" tab to "Collection" consistently across codebase and UI to fix naming inconsistency
+- Add visual grouping to tab navigation: Primary (Career, Vault, Upgrades), Progression (Atelier, Maison, Nostalgia), System (Stats, Settings)
+- Add keyboard shortcuts (1-8) for quick tab switching
+- Show a subtle "new" or "ready" indicator on tabs with available actions (career session ready, prestige available, upgrades affordable)
+- Group stats header into logical sections: Primary (Enjoyment, Enjoyment/sec), Secondary (Cash, Cash/sec), Meta (Memories)\
+- Remove softcap from primary stats header to reduce clutter
+- Alert user when career session is not producing cash.
+- Add compact "Next Unlock" preview to stats header showing closest unlock
+- Collapse catalog filters into a single "Filter" button with badge count when active, freeing vertical space
+- Add card hover state showing key watch stats (enjoyment rate, cash contribution) without clicking
+- Highlight affordable watches with subtle glow/border to reduce cognitive load
+- Add circular progress timer for session cooldown near the career session button (visual, not just text)
+- Show career path as timeline visualization, not just map view
+- Implement horizontal scrollable tab bar on mobile with snap points and swipe gestures
+- Increase touch targets to minimum 44px on mini-games for better mobile experience
+- Add subtle "count up" animation when currencies increase (satisfying feedback)
+- Show floating "+X Enjoyment" text near relevant actions for immediate feedback
+- Add contextual tooltips on first encounter with new mechanics (progressive onboarding)
+- Add "Why can't I buy this?" explanation on disabled purchase buttons to reduce confusion
+- Ensure all interactive elements have visible focus states for keyboard navigation
+- Refine light theme colors for better contrast and accessibility
+- Add consistent iconography system (currency icons, lock icons, upgrade icons)
+- Virtualize long catalog lists for better performance with large collections
+- Add skeleton loading states for smoother tab switching experience
+- Sort watches by price ascending by default in catalog
+
+UI/UX Improvements (visual review 2026-02-02):
+
+- Fix Settings styling: remove default-looking fieldset/legend borders and align checkbox/control spacing so the Settings panel matches the rest of the dark UI.
+- Mobile navigation: replace multi-row tab pills with a horizontal scroll tab bar (snap + swipe) and keep it sticky to reduce vertical header bloat.
+- Header stats: collapse/group secondary stats (Memories, Softcap, etc.) behind an expand affordance; keep primary rates visible.
+- Add tab-level "ready" indicators (badge/dot) for actionable states (session ready, prestige ready, upgrades affordable, etc.).
+- Help modal: add search and improve mobile layout (chips row should wrap/scroll; modal header should be sticky; ensure content scrolls without clipping).
+- Vault/Catalog: break the mega-scroll into clearer sections (Overview, Shop, Archive/Tiers, Achievements/Events, Crafting) with a sticky in-page subnav.
+- Catalog shop: highlight actionable cards (affordable vs locked) and add "Why can't I buy?" explanations on disabled purchase actions.
+- Catalog on mobile: use a bottom-sheet details view (instead of a cramped side panel) and keep the buy CTA pinned.
+- Interaction modal (winding/auto/quartz): increase touch targets, add clearer success/failure feedback, and consider a more "gamey" animation beat when rewards land.
+- Nostalgia: make the "Reset complete" panel a dismissible toast/banner so it doesn't consume the top of the page.
+- Stats breakdown: group modifiers (Prestige / Upgrades / Events / Sets / Catalog / Crafted) and show subtotals to reduce the long bullet list on mobile.
+- Naming: rename "Vault" tab to "Collection" consistently (UI + copy) to match intent and reduce ambiguity.
+- Watch levels (like 'starter quartz') should match what type of watch the actual watch is. (e.g., 'Rolex
+Calibrorolex') should not be a 'starter quartz' since it isn't a quartz watch.
+
+tech debt: 
+- Refactor all code for readability and maintainability, ensuring clear separation between core game logic, UI components, and data/models. Organize files into appropriate directories and keep them small and focused.
+- Add comprehensive comments and documentation throughout the codebase to aid future development and onboarding of new contributors.
+- Rewrite complex functions and modules to improve clarity and reduce cognitive load for future maintainers.
+- Implement consistent coding standards and style guidelines across the codebase to enhance readability and collaboration.
+- TypeScript types: ensure all functions, components, and data structures have explicit and accurate TypeScript types to improve type safety and developer experience.

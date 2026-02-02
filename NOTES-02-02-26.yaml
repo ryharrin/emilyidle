@@ -1,0 +1,777 @@
+# Emily Idle - Agent Implementation Guide
+# Generated: 2026-02-02
+# Purpose: Clear guidance for agents on what to implement, skip, or clarify
+
+---
+# ============================================================================
+# UNANSWERED QUESTIONS - RESOLVE BEFORE IMPLEMENTING
+# ============================================================================
+# These items have contradictions or unclear requirements. Ask the user before proceeding.
+
+unanswered_questions:
+
+  - id: undiscovered-watch-visibility
+    priority: HIGH
+    question: "How should undiscovered watches appear in the catalog?"
+    status: "RESOLVED in v3.2 (2026-02-02)"
+    resolution: "Shows greyed-out with lock icon + contextual explanation"
+    reference: ".planning/MILESTONES.md (v3.2 completion)\""
+    contradiction:
+      - "NOTES.md line 112: 'Undiscovered watches should not appear at all until they are unlocked'"
+      - "NOTES.md line 114: 'All watches should be visible, but undiscovered ones should be greyed out with a lock icon'"
+    current_behavior: "Shows undiscovered with lock overlay and explanations (implemented v3.2)"
+    options:
+      a: "Hide undiscovered watches completely"
+      b: "Show all watches, grey out undiscovered with lock icon [CHOSEN - Implemented]"
+      c: "Keep current 'Undiscovered' badge behavior" 
+
+  - id: quartz-mini-game-reward
+    priority: MEDIUM
+    question: "Should the quartz mini-game reward enjoyment instead of cash?"
+    context: "NOTES.md line 102 states 'mini games should reward enjoyment, not cash'"
+    current_behavior: "Quartz mini-game rewards cash (100/250/500 cents)"
+    other_games:
+      winding: "rewards enjoyment ✓"
+      automatic: "rewards power reserve (affects enjoyment rate) ✓"
+    options:
+      a: "Change quartz to reward enjoyment"
+      b: "Keep cash rewards (exception to the rule)"
+      c: "Remove quartz mini-game entirely"
+
+  - id: power-reserve-purpose
+    priority: LOW
+    question: "What exactly does power reserve do and is it documented?"
+    context: "Automatic mini-game rewards 'power reserve' but its effect on gameplay may need documentation"
+    files_to_check:
+      - "src/game/selectors/enjoyment.ts (reserveMultiplier usage)"
+
+  - id: watch-tier-movement-matching
+    priority: MEDIUM
+    question: "Should watch tiers be auto-assigned based on actual watch movement type?"
+    context: "NOTES.md mentions 'Watch levels should match actual watch movement type'"
+    example: "A Rolex with automatic movement shouldn't be categorized as 'starter quartz'"
+    options:
+      a: "Auto-assign tier based on movement from catalog data"
+      b: "Manual curation of tier assignments"
+      c: "Keep current system (tier is price-based, not movement-based)"
+
+# ============================================================================
+# DO NOT IMPLEMENT - Explicitly rejected features
+# ============================================================================
+# These features were explicitly marked as "will not implement" in NOTES.md.
+# Do not build these under any circumstances.
+
+do_not_implement:
+  - id: multiplayer
+    description: "Any multiplayer features"
+    reason: "Out of scope - single-player idle game"
+
+  - id: social-sharing
+    description: "Showcase collections on social media"
+    reason: "Out of scope"
+
+  - id: watch-trading
+    description: "Trade watches between players"
+    reason: "Requires multiplayer"
+
+  - id: augmented-reality
+    description: "AR features for viewing collections"
+    reason: "Technical complexity, out of scope"
+
+  - id: custom-watch-designs
+    description: "Players create and share custom watch designs"
+    reason: "Out of scope"
+
+  - id: virtual-exhibitions
+    description: "Virtual galleries to display collections to other players"
+    reason: "Requires multiplayer"
+
+  - id: mentorship-system
+    description: "Experienced players guide newcomers"
+    reason: "Requires multiplayer"
+
+  - id: watch-clubs
+    description: "Create/join watch clubs/communities"
+    reason: "Requires multiplayer"
+
+  - id: seasonal-events
+    description: "Limited-time challenges with exclusive rewards"
+    reason: "Rejected by design"
+
+  - id: watch-customization
+    description: "Customize straps, dials, engravings"
+    reason: "Out of scope"
+
+# ============================================================================
+# TODO - Features to implement (prioritized)
+# ============================================================================
+
+todo:
+
+  # --------------------------------------------------------------------------
+  # HIGH PRIORITY - Core gameplay improvements
+  # --------------------------------------------------------------------------
+  high_priority:
+
+    - id: session-cooldown-redesign
+      description: "Session cost increases instead of hard cooldown"
+      rationale: "Allows strategic choice vs arbitrary waiting"
+      current: "Hard cooldown (sessionCooldownMs) prevents sessions"
+      target: "Each successive session costs more enjoyment until break taken"
+      files_to_modify:
+        - src/game/selectors/therapistSessions.ts
+        - src/game/actions/index.ts (performTherapistSession)
+
+    - id: cooldown-timer-prominence
+      description: "Session cooldown timer more prominent with circular progress"
+      current: "Text-only cooldown display"
+      target: "Circular progress bar near session button"
+      files_to_modify:
+        - src/ui/tabs/CareerTab.tsx or CareerPanel.tsx
+
+    - id: winding-interactivity
+      description: "Winding mini-game with continuous player control"
+      current: "Timing-based stop game"
+      target: "Player controls winding process directly (drag to turn crown, spring gauge animation)"
+      status: "Phase 42 - Planned and contextualized (2026-02-02)"
+      planning_source: ".planning/phases/42-winding-refresh/42-CONTEXT.md"
+      phase_decisions:
+        - "Primary input: Drag gesture in circular motion (simulates turning crown)"
+        - "Animation: Spring/gauge filling (arc/speedometer style)"
+        - "Completion: Gauge maxes at 100% with subtle glow effect"
+        - "No momentum/inertia — stops when drag stops"
+      files_to_modify:
+        - src/ui/components/WindingMiniGameModal.tsx
+
+    - id: winding-movement-restriction
+      description: "Winding mini-game should only be available for non-automatic watches"
+      source: "NOTES.md Bug fixes section"
+      current: "Winding available for all watches"
+      target: "Disable winding for automatic movement watches"
+      files_to_modify:
+        - src/game/selectors/interactions.ts
+        - src/ui/tabs/CollectionTab.tsx
+
+    - id: atelier-bonus-scaling
+      description: "Atelier bonuses should be more powerful"
+      source: "NOTES.md Bug fixes section"
+      rationale: "Second vault run should be significantly faster than first"
+      files_to_modify:
+        - src/game/model/state.ts (WORKSHOP_UPGRADES)
+        - src/game/selectors/incomeMultipliers.ts
+
+    - id: atelier-blueprint-cost-display
+      description: "Display how much money is needed for next blueprint"
+      source: "NOTES.md Bug fixes section"
+      files_to_modify:
+        - src/ui/tabs/WorkshopTab.tsx
+
+  # --------------------------------------------------------------------------
+  # MEDIUM PRIORITY - UX polish
+  # --------------------------------------------------------------------------
+  medium_priority:
+
+    - id: tab-ready-indicators
+      description: "Badge/dot on tabs with available actions"
+      examples:
+        - "Session ready indicator on Career tab"
+        - "Prestige available indicator on Workshop/Maison/Nostalgia"
+        - "Affordable upgrades indicator"
+      files_to_modify:
+        - src/App.tsx (tab rendering)
+
+    - id: mobile-horizontal-tabs
+      description: "Horizontal scrollable tab bar on mobile"
+      current: "Multi-row tab pills"
+      target: "Single row with horizontal scroll, snap points, swipe gestures"
+      files_to_modify:
+        - src/App.tsx
+        - src/style.css
+
+    - id: keyboard-shortcuts
+      description: "Keyboard shortcuts (1-8) for tab switching"
+      implementation: "Add global keydown listener in App.tsx"
+      files_to_modify:
+        - src/App.tsx
+
+    - id: winding-animation
+      description: "Visual watch winding animation"
+      current: "Progress bar only"
+      target: "Watch-specific winding animation"
+      files_to_modify:
+        - src/ui/components/WindingMiniGameModal.tsx
+        - src/style.css
+
+    - id: settings-styling
+      description: "Fix Settings panel styling"
+      current: "Default fieldset/legend borders"
+      target: "Match dark UI theme"
+      files_to_modify:
+        - src/ui/tabs/SaveTab.tsx
+        - src/style.css
+
+    - id: mobile-touch-targets
+      description: "Increase touch targets to 44px minimum on mini-games"
+      files_to_modify:
+        - src/ui/components/WindingMiniGameModal.tsx
+        - src/ui/components/AutomaticMiniGameModal.tsx
+        - src/ui/components/QuartzMiniGameModal.tsx
+        - src/style.css
+
+  # --------------------------------------------------------------------------
+  # LOW PRIORITY - Nice to have
+  # --------------------------------------------------------------------------
+  low_priority:
+
+    - id: tab-visual-grouping
+      description: "Visual grouping: Primary/Progression/System"
+
+    - id: stats-header-grouping
+      description: "Group stats header into logical sections"
+
+    - id: skeleton-loading
+      description: "Skeleton loading states for tab switching"
+
+    - id: catalog-filter-collapse
+      description: "Collapse filters into single button with badge count"
+
+    - id: hover-watch-stats
+      description: "Card hover showing key watch stats"
+
+    - id: affordable-glow
+      description: "Highlight affordable watches with glow/border"
+
+    - id: currency-animation
+      description: "Count up animation when currencies increase"
+
+    - id: floating-rewards
+      description: "Floating +X text near relevant actions"
+
+    - id: progressive-onboarding
+      description: "Contextual tooltips on first encounter"
+
+    - id: focus-states
+      description: "Visible focus states for keyboard navigation"
+
+    - id: iconography-system
+      description: "Consistent iconography (currency, lock, upgrade)"
+
+    - id: catalog-virtualization
+      description: "Virtualize long catalog lists for performance"
+
+    - id: default-sort-price
+      description: "Sort watches by price ascending by default"
+
+    - id: header-stats-collapse
+      description: "Collapse secondary stats behind expand affordance"
+
+    - id: help-modal-improvements
+      description: "Help modal: add search, improve mobile layout"
+
+    - id: vault-sections
+      description: "Break Collection into sections with sticky subnav"
+
+    - id: catalog-mobile-bottom-sheet
+      description: "Bottom-sheet details view on mobile catalog"
+
+    - id: interaction-modal-improvements
+      description: "Larger touch targets, gamey animations on reward"
+
+    - id: nostalgia-toast
+      description: "Reset complete panel as dismissible toast"
+
+    - id: stats-breakdown-grouping
+      description: "Group modifiers with subtotals"
+
+    - id: light-theme-polish
+      description: "Light theme contrast and accessibility refinements"
+      source: "NOTES.md UI review 2026-02-01"
+      files_to_modify:
+        - src/style.css
+
+    - id: remove-softcap-from-stats-header
+      description: "Remove softcap from primary stats header display"
+      source: "NOTES.md UI review 2026-02-02"
+      rationale: "Softcap is confusing in header; show in detailed breakdown instead"
+      files_to_modify:
+        - src/ui/tabs/StatsTab.tsx or relevant header component
+
+    - id: dismantle-button-visibility
+      description: "Hide 'dismantle' button until workshop is unlocked"
+      source: "NOTES.md Bug fixes section"
+      current: "Dismantle visible before workshop"
+      target: "Show dismantle only after workshop unlocked"
+      files_to_modify:
+        - src/ui/tabs/CollectionTab.tsx
+
+    - id: career-timeline-visualization
+      description: "Visual timeline showing career stage progression"
+      source: "NOTES.md Planned Features section"
+      files_to_modify:
+        - src/ui/tabs/CareerTab.tsx
+        - new: src/ui/components/CareerTimeline.tsx
+
+# ============================================================================
+# ALREADY COMPLETE - Do not re-implement
+# ============================================================================
+# Reference only. These features exist and work. Do not duplicate effort.
+
+already_complete:
+
+  core_systems:
+    - "Dual currency (enjoyment + cash)"
+    - "Nostalgia points as permanent unlock currency"
+    - "Three-tier prestige (Workshop → Maison → Nostalgia)"
+    - "Career system with 6 stages and permanent choices"
+    - "PhD program entry requirement"
+    - "First session free, subsequent cost enjoyment"
+    - "Salary window system (180s base, +30s/point, max 1800s)"
+    - "Retirement permanent salary"
+
+  mini_games:
+    - "Winding (timing-based, rewards enjoyment)"
+    - "Automatic (balance game, rewards power reserve)"
+    - "Quartz (time-setting, rewards cash)"
+
+  catalog:
+    - "Tabbed catalog (owned/unowned)"
+    - "Filters (brand, era, type, style, search)"
+    - "Why can't I buy? explanations"
+    - "Specific watch models with diminishing returns"
+    - "Women's watches filter"
+
+  ui:
+    - "Career as default landing page"
+    - "Vault renamed to Collection"
+    - "Theme toggle (system/light/dark)"
+    - "Audio settings (sfx/bgm)"
+    - "Hide completed achievements setting"
+    - "Dev mode with speed controls"
+    - "Help/tutorial section"
+
+  other:
+    - "Worn watch bonus (tier multipliers: 1.02/1.05/1.08/1.12)"
+    - "Watch abilities (set bonuses)"
+    - "Achievements (8 defined)"
+    - "Events (auction-weekend, emily-birthday, wind-up)"
+    - "Crafting system (3 recipes)"
+    - "GitHub Pages deployment"
+
+  resolved_bugs:
+    - "Missing catalog images (sync script + E2E test added)"
+    - "Quartz mini-game alignment"
+    - "Search wrapper HTML fix"
+    - "RAF Vitest skip"
+    - "Interact modal popup (not background session)"
+
+# ============================================================================
+# ARCHITECTURE REFERENCE
+# ============================================================================
+
+architecture:
+  model_layer:
+    types: "src/game/model/types.ts - GameState, WatchItemId, etc."
+    state: "src/game/model/state.ts - ACHIEVEMENTS, EVENTS, UPGRADES"
+
+  data_layer:
+    items: "src/game/data/items.ts - WATCH_ITEMS, NOSTALGIA_UNLOCK_ORDER"
+    career: "src/game/data/career*.ts - tracks, nodes, stages"
+    catalog: "src/game/catalog.ts - CATALOG_ENTRIES, brands"
+
+  logic_layer:
+    selectors: "src/game/selectors/ - pure computed values"
+    actions: "src/game/actions/ - state transitions"
+    runtime: "src/game/runtime/ - tick loop, autosave"
+
+  ui_layer:
+    tabs: "src/ui/tabs/ - CareerTab, CatalogTab, CollectionTab, etc."
+    components: "src/ui/components/ - mini-games, modals"
+    navigation: "src/ui/navigation/landing.ts - tab landing logic"
+    styles: "src/style.css - all styling"
+
+  key_constants:
+    prestige_thresholds:
+      workshop: "800,000 cents"
+      maison: "4,000,000 cents"
+      nostalgia: "12,000,000 cents"
+    salary_window:
+      base: "180,000 ms (3 min)"
+      per_point: "30,000 ms"
+      max: "1,800,000 ms (30 min)"
+    worn_watch_multipliers:
+      starter: 1.02
+      classic: 1.05
+      chronograph: 1.08
+      tourbillon: 1.12
+    duplicate_decay:
+      rate: "0.7^copyIndex"
+      floor: "0.1 (10%)"
+
+# ============================================================================
+# TECH DEBT (address opportunistically)
+# ============================================================================
+
+tech_debt:
+
+  # --------------------------------------------------------------------------
+  # HIGH PRIORITY - Code quality issues
+  # --------------------------------------------------------------------------
+  high_priority:
+
+    - id: catalog-tab-split
+      description: "Split CatalogTab.tsx (1647 lines) into smaller components"
+      rationale: "File is too large to maintain effectively"
+      suggested_split:
+        - "CatalogFilters.tsx - filter UI and state"
+        - "CatalogGrid.tsx - watch card grid"
+        - "CatalogPurchasePanel.tsx - already partially extracted"
+        - "CatalogCard.tsx - individual watch card"
+      files: ["src/ui/tabs/CatalogTab.tsx"]
+
+    - id: selectors-index-split
+      description: "Split selectors/index.ts (1243 lines) into domain-specific files"
+      rationale: "Monolithic file makes it hard to find specific selectors"
+      suggested_split:
+        - "catalog.ts - catalog-related selectors"
+        - "crafting.ts - crafting recipes and parts"
+        - "prestige.ts - prestige thresholds and gains"
+        - "income.ts - income rate calculations (partially done)"
+      files: ["src/game/selectors/index.ts"]
+
+    - id: duplicate-constants
+      description: "Consolidate duplicate CRAFTED_BOOST_MULTIPLIERS"
+      rationale: "Same constant defined in two files"
+      locations:
+        - "src/game/selectors/index.ts:140"
+        - "src/game/selectors/incomeMultipliers.ts:14"
+      fix: "Extract to shared constants file"
+
+  # --------------------------------------------------------------------------
+  # MEDIUM PRIORITY - Maintainability
+  # --------------------------------------------------------------------------
+  medium_priority:
+
+    - id: app-tsx-size
+      description: "Extract more logic from App.tsx"
+      rationale: "Main component handles too many concerns"
+      suggestions:
+        - "Extract tab visibility logic to useTabVisibility hook"
+        - "Extract mini-game state to useMiniGameState hook"
+        - "Extract navigation logic to useNavigation hook"
+
+    - id: magic-numbers
+      description: "Replace magic numbers with named constants"
+      examples:
+        - "Prestige thresholds (800000, 4000000, 12000000)"
+        - "Reveal threshold ratio (0.8)"
+        - "Mini-game timing values"
+      location: "Various files in selectors/"
+
+    - id: test-coverage-gaps
+      description: "Add missing unit tests for edge cases"
+      areas:
+        - "Career choice validation edge cases"
+        - "Prestige calculations at boundary values"
+        - "Save/load with corrupted data"
+
+    - id: type-safety-improvements
+      description: "Strengthen type definitions"
+      suggestions:
+        - "Use branded types for currency amounts (CentsAmount, NostalgiaPoints)"
+        - "Add const assertions to static data arrays"
+        - "Remove 'any' types where present"
+
+  # --------------------------------------------------------------------------
+  # LOW PRIORITY - Nice to have
+  # --------------------------------------------------------------------------
+  low_priority:
+
+    - id: comments-documentation
+      description: "Add JSDoc comments to exported functions"
+      status: ONGOING
+
+    - id: consistent-naming
+      description: "Audit naming conventions across codebase"
+      examples:
+        - "Some use 'cents' suffix, some don't"
+        - "Mix of 'get*' and direct noun selectors"
+
+    - id: error-boundaries
+      description: "Add React error boundaries for graceful failure"
+      files: ["src/App.tsx", "src/ui/tabs/*.tsx"]
+
+# ============================================================================
+# PROPOSED FIXES - Issues discovered during review
+# ============================================================================
+
+proposed_fixes:
+
+  - id: power-reserve-decay
+    priority: MEDIUM
+    description: "Power reserve should decay over time for automatic watches"
+    rationale: "Currently power reserve only increases, making the mini-game less meaningful"
+    current: "Power reserve persists indefinitely"
+    proposed: "Decay at rate of ~0.01/minute when watch is worn"
+    files_to_modify:
+      - "src/game/sim.ts (add decay in tick)"
+      - "src/game/model/types.ts (ensure powerReserve is tracked per-watch)"
+
+  - id: salary-inactive-alert
+    priority: HIGH
+    description: "Alert user when career session is not producing cash"
+    rationale: "NOTES.md mentions this - users may not realize salary window expired"
+    proposed: "Visual indicator when salary window expires, prompt to run session"
+    files_to_modify:
+      - "src/ui/tabs/CareerTab.tsx"
+      - "src/ui/components/CareerPanel.tsx"
+
+  - id: next-unlock-preview-header
+    priority: MEDIUM
+    description: "Add compact 'Next Unlock' preview to stats header"
+    rationale: "Mentioned in NOTES.md - helps players see closest goal"
+    current: "No unlock preview in header"
+    files_to_modify:
+      - "src/App.tsx (stats header area)"
+
+  - id: upgrade-effect-preview
+    priority: MEDIUM
+    description: "Upgrades should display effect on currency rates before buying"
+    rationale: "Mentioned in NOTES.md - players want to see impact"
+    current: "Upgrades show cost and description only"
+    files_to_modify:
+      - "src/ui/tabs/UpgradesTab.tsx"
+      - "src/game/selectors/ (add preview calculation)"
+
+# ============================================================================
+# PROPOSED NEW FEATURES - Based on codebase understanding
+# ============================================================================
+
+proposed_features:
+
+  # --------------------------------------------------------------------------
+  # Gameplay Depth
+  # --------------------------------------------------------------------------
+  gameplay:
+
+    - id: set-bonus-progress
+      priority: HIGH
+      description: "Show progress toward completing set bonuses"
+      rationale: "Set bonuses exist but no UI shows how close you are"
+      implementation:
+        - "Add SetBonusProgressCard component"
+        - "Show 'X/Y watches collected' for each set"
+        - "Display in CollectionTab or StatsTab"
+      files_to_create:
+        - "src/ui/components/SetBonusProgress.tsx"
+
+    - id: prestige-milestone-preview
+      priority: MEDIUM
+      description: "Show what unlocks at next prestige tier"
+      rationale: "Motivates players to push for prestige"
+      implementation:
+        - "Preview panel showing: points gained, new unlocks available"
+        - "Display on Workshop/Maison/Nostalgia tabs"
+
+    - id: career-timeline-view
+      priority: MEDIUM
+      description: "Visual career progression as timeline"
+      rationale: "Mentioned in NOTES.md - map view exists but timeline requested"
+      implementation:
+        - "Horizontal timeline showing all 6 stages"
+        - "Current position indicator"
+        - "Choice preview at each milestone"
+      files_to_modify:
+        - "src/ui/tabs/career/CareerPanel.tsx"
+
+    - id: watch-comparison
+      priority: LOW
+      description: "Compare two watches side-by-side"
+      rationale: "Helps players decide which watch to buy"
+      implementation:
+        - "Select two watches from catalog"
+        - "Show stats comparison table"
+        - "Price, enjoyment rate, tier, movement"
+
+    - id: collection-statistics
+      priority: LOW
+      description: "Detailed collection analytics"
+      examples:
+        - "Most valuable watch"
+        - "Collection by brand breakdown"
+        - "Collection by era breakdown"
+      files_to_create:
+        - "src/ui/components/CollectionStats.tsx"
+
+  # --------------------------------------------------------------------------
+  # Quality of Life
+  # --------------------------------------------------------------------------
+  quality_of_life:
+
+    - id: offline-progress
+      priority: HIGH
+      description: "Calculate progress made while game was closed"
+      rationale: "Standard idle game feature, improves retention"
+      implementation:
+        - "On load, calculate elapsed time since lastSimulatedAtMs"
+        - "Apply passive enjoyment/cash gains (capped at X hours)"
+        - "Show 'While you were away...' summary"
+      files_to_modify:
+        - "src/game/persistence.ts"
+        - "src/App.tsx (on load handler)"
+
+    - id: save-export-import
+      priority: HIGH
+      description: "Export/import save data as file or string"
+      rationale: "Backup saves, transfer between devices"
+      implementation:
+        - "Export as JSON file download"
+        - "Import via file upload or paste"
+        - "Add to SaveTab.tsx"
+      files_to_modify:
+        - "src/ui/tabs/SaveTab.tsx"
+
+    - id: undo-purchase
+      priority: MEDIUM
+      description: "Undo last purchase within short window"
+      rationale: "Prevents frustration from misclicks"
+      implementation:
+        - "Store last purchase action"
+        - "Allow undo within 10 seconds"
+        - "Toast notification with undo button"
+      files_to_modify:
+        - "src/game/actions/index.ts"
+        - "src/App.tsx (undo state)"
+
+    - id: favorite-watches
+      priority: LOW
+      description: "Mark watches as favorites for quick access"
+      implementation:
+        - "Add favorite toggle on watch cards"
+        - "Filter by favorites in catalog"
+        - "Persist in GameState"
+      files_to_modify:
+        - "src/game/model/types.ts (add favoriteWatchIds)"
+        - "src/ui/tabs/CatalogTab.tsx"
+
+    - id: notification-preferences
+      priority: LOW
+      description: "Configure which events trigger notifications"
+      examples:
+        - "Achievement unlocked"
+        - "Prestige available"
+        - "Session ready"
+        - "Event starting"
+
+  # --------------------------------------------------------------------------
+  # Mini-Game Enhancements
+  # --------------------------------------------------------------------------
+  mini_games:
+
+    - id: mini-game-practice
+      priority: LOW
+      description: "Practice mode for mini-games (no rewards)"
+      rationale: "Let players learn mechanics without pressure"
+      implementation:
+        - "Add 'Practice' button next to 'Play'"
+        - "Same game, no rewards, no cooldown"
+
+    - id: mini-game-difficulty
+      priority: LOW
+      description: "Difficulty scaling based on watch tier"
+      rationale: "Higher tier watches could have harder mini-games for better rewards"
+      implementation:
+        - "Faster timing for winding"
+        - "Narrower band for automatic"
+        - "Less tolerance for quartz"
+
+    - id: mini-game-streaks
+      priority: LOW
+      description: "Streak bonus for consecutive perfect plays"
+      implementation:
+        - "Track consecutive perfect results"
+        - "Bonus multiplier: 1.1x at 3, 1.2x at 5, etc."
+        - "Reset on miss"
+
+  # --------------------------------------------------------------------------
+  # Events & Achievements
+  # --------------------------------------------------------------------------
+  events_achievements:
+
+    - id: achievement-notifications
+      priority: MEDIUM
+      description: "Toast notifications when achievements unlock"
+      rationale: "Current achievements may unlock silently"
+      implementation:
+        - "Toast component with achievement icon + name"
+        - "Auto-dismiss after 5 seconds"
+        - "Click to view achievement details"
+      files_to_create:
+        - "src/ui/components/AchievementToast.tsx"
+
+    - id: more-achievements
+      priority: LOW
+      description: "Add more achievements for variety"
+      suggestions:
+        - "Career milestones (reach each stage)"
+        - "Mini-game mastery (X perfect plays)"
+        - "Prestige milestones (first workshop, first maison, etc.)"
+        - "Speed achievements (reach X in Y time)"
+        - "Collection milestones (own X different models)"
+
+    - id: event-calendar
+      priority: LOW
+      description: "Show upcoming events in UI"
+      rationale: "Events exist but players may not know when they occur"
+      implementation:
+        - "Calendar widget showing event dates"
+        - "Countdown to next event"
+        - "Event bonuses explained"
+
+# ============================================================================
+# COMPLETED INITIATIVES - Reference and context
+# ============================================================================
+
+completed_milestones:
+
+  v32_catalog_vault_consolidation:
+    milestone: "v3.2 Catalog/Vault Consolidation"
+    shipped: "2026-02-02"
+    status: "✅ COMPLETED"
+    description: "Unified catalog shopping experience with vault information merged into catalog surface"
+    key_accomplishments:
+      - "Catalog cards became sole purchase flow (removed separate Vault purchase entry point)"
+      - "Added lock overlay with greyed-out styling for undiscovered watches + contextual explanations"
+      - "Merged collection capacity and value information into catalog shopping header"
+      - "Renamed 'Vault' to 'Collection' consistently across all UI labels, help text, and domain strings"
+      - "Made upgrade status visible in catalog header with enjoyment-only multiplier clarity"
+      - "Protected existing saves with localStorage key contract tests and selector stability coverage"
+    scope:
+      phases: "37-41 (5 phases, 17 plans total)"
+      files_changed: "209"
+      lines_changed: "+11,629 / -922"
+    git_range: "feat(37-01) → feat(41-04)"
+    planning_reference: ".planning/MILESTONES.md"
+
+  quick_task_001_remove_archive_shelf:
+    task: "Quick Task 001: Remove Collection Book/Archive Shelf"
+    completed: "2026-02-02"
+    status: "✅ COMPLETED"
+    description: "Removed redundant Collection Book/Archive Shelf sections and fixed interaction ownership checks"
+    changes_made:
+      - "Removed Collection Book/Archive Shelf sections from CatalogTab.tsx (main and embedded views)"
+      - "Fixed ownership check from tierOwned (any watch in tier) to modelOwned (specific watch model)"
+      - "Hidden interaction button for unowned watches"
+      - "Removed interaction hint display"
+    verification:
+      - "TypeScript compiles without errors"
+      - "No visual regressions"
+      - "Interaction buttons only appear for owned watches"
+    commit: "c40c2aa"
+    planning_reference: ".planning/quick/001-remove-archive-shelf/"
+
+next_milestone:
+  name: "v4.0 Watch Interactions & Catalog Polish (Planned)"
+  focus: "Deepen watch interaction mini-games and polish catalog/mobile UX"
+  phases: "42-47"
+  starting_phase: "Phase 42: Winding Refresh"
+  planning_reference: ".planning/ROADMAP.md"
