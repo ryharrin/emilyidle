@@ -19,7 +19,7 @@ Emily Idle evolves by shipping coherent player-visible improvements in continuou
 - [x] **Phase 37: Catalog Purchase Surface** - Catalog cards become the only purchase flow.
 - [x] **Phase 38: Catalog Lock + Disabled Explanations** - Locked/disabled states are visible and explained in-place.
 - [x] **Phase 39: Collection Info Embedded in Catalog** - Capacity/value and "Collection" naming are integrated into catalog.
-- [ ] **Phase 40: Upgrade Status + Copy Alignment** - Upgrade status is visible in catalog and all upgrade copy/previews match enjoyment-only behavior.
+- [x] **Phase 40: Upgrade Status + Copy Alignment** - Upgrade status is visible in catalog and all upgrade copy/previews match enjoyment-only behavior.
 - [ ] **Phase 41: Stability & Regression Guardrails** - Consolidation ships without save/key/selector/image regressions.
 
 ## Phase Details
@@ -81,7 +81,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 40-01-PLAN.md — Add Catalog upgrade status summary in the shopping header
+- [x] 40-01-PLAN.md — Add Catalog upgrade status summary in the shopping header
 - [x] 40-02-PLAN.md — Scrub upgrade-related UI/help copy to enjoyment-only language
 - [x] 40-03-PLAN.md — Adjust upgrade previews so they don’t imply cash changes
 

@@ -21,14 +21,14 @@ Unify the catalog shopping experience by merging vault information into the cata
 
 - [x] **VLT-01**: Vault capacity displayed within catalog surface (current/max)
 - [x] **VLT-02**: Current collection value shown in catalog context
-- [ ] **VLT-03**: Upgrade status visible in catalog (merge from separate upgrades surface)
+- [x] **VLT-03**: Upgrade status visible in catalog (merge from separate upgrades surface)
 - [x] **VLT-04**: Rename "Vault" tab to "Collection" consistently across UI and copy
 
 ### Upgrade System Alignment
 
-- [ ] **UPG-01**: Upgrade copy reflects enjoyment-only multipliers (remove cash multiplier claims)
-- [ ] **UPG-02**: Upgrade previews match actual accrual behavior (enjoyment calculation)
-- [ ] **UPG-03**: Remove or reframe any upgrade descriptions implying cash multipliers
+- [x] **UPG-01**: Upgrade copy reflects enjoyment-only multipliers (remove cash multiplier claims)
+- [x] **UPG-02**: Upgrade previews match actual accrual behavior (enjoyment calculation)
+- [x] **UPG-03**: Remove or reframe any upgrade descriptions implying cash multipliers
 
 ### Technical Requirements
 
@@ -71,11 +71,11 @@ Unify the catalog shopping experience by merging vault information into the cata
 | CAT-04 | Phase 37 | Complete |
 | VLT-01 | Phase 39 | Complete |
 | VLT-02 | Phase 39 | Complete |
-| VLT-03 | Phase 40 | Not started |
+| VLT-03 | Phase 40 | Complete |
 | VLT-04 | Phase 39 | Complete |
-| UPG-01 | Phase 40 | Not started |
-| UPG-02 | Phase 40 | Not started |
-| UPG-03 | Phase 40 | Not started |
+| UPG-01 | Phase 40 | Complete |
+| UPG-02 | Phase 40 | Complete |
+| UPG-03 | Phase 40 | Complete |
 | TEC-01 | Phase 41 | Not started |
 | TEC-02 | Phase 41 | Not started |
 | TEC-03 | Phase 41 | Not started |
