@@ -45,13 +45,13 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Undiscovered watches appear in the catalog greyed out with a lock icon (not fully hidden).
   2. When a purchase action is disabled, the catalog provides a clear "Why can't I buy?" explanation in context.
-  3. The explanation points to the specific gating reason (e.g. locked/undiscovered, insufficient resources, capacity).
+  3. The explanation points to the specific gating reason (e.g. locked/undiscovered, insufficient resources).
 **Plans**: 3 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Add lock overlay + in-context "Why can't I buy?" explainer without changing buy/gate semantics
-- [ ] 38-02-PLAN.md — Style lock/explanation affordances in both themes without regressing actionable visuals
-- [ ] 38-03-PLAN.md — Add unit + e2e regression coverage for lock/explanation selectors and gating semantics
+- [x] 38-01-PLAN.md — Add lock overlay + in-context "Why can't I buy?" explainer without changing buy/gate semantics
+- [x] 38-02-PLAN.md — Style lock/explanation affordances in both themes without regressing actionable visuals
+- [x] 38-03-PLAN.md — Add unit + e2e regression coverage for lock/explanation selectors and gating semantics
 
 ### Phase 39: Collection Info Embedded in Catalog
 **Goal**: Players can understand collection context (capacity/value) while shopping, with consistent "Collection" naming.
@@ -89,7 +89,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 37. Catalog Purchase Surface | v3.2 | 2/2 | Complete | 2026-02-02 |
-| 38. Catalog Lock + Disabled Explanations | v3.2 | 0/TBD | Not started | - |
+| 38. Catalog Lock + Disabled Explanations | v3.2 | 3/3 | Complete | 2026-02-02 |
 | 39. Collection Info Embedded in Catalog | v3.2 | 0/TBD | Not started | - |
 | 40. Upgrade Status + Copy Alignment | v3.2 | 0/TBD | Not started | - |
 | 41. Stability & Regression Guardrails | v3.2 | 0/TBD | Not started | - |
