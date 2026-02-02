@@ -31,7 +31,7 @@ const isTabId = (value: string): value is TabId => TAB_IDS.includes(value as Tab
 
 export function resolveTabAlias(value: string): TabId | null {
   if (value === "catalog") {
-    return "collection";
+    return "catalog";
   }
 
   return isTabId(value) ? value : null;

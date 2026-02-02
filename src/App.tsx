@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { CareerTab } from "./ui/tabs/CareerTab";
+import { CatalogTab } from "./ui/tabs/CatalogTab";
 import { CollectionTab } from "./ui/tabs/CollectionTab";
 import { MaisonTab } from "./ui/tabs/MaisonTab";
 import { NostalgiaTab } from "./ui/tabs/NostalgiaTab";
@@ -102,6 +103,7 @@ const NAVIGATION_KEY = "emily-idle:navigation";
 const TAB_DEFINITIONS = [
   { id: "career", label: "Career" },
   { id: "collection", label: "Vault" },
+  { id: "catalog", label: "Catalog" },
   { id: "upgrades", label: "Upgrades" },
   { id: "workshop", label: "Atelier" },
   { id: "maison", label: "Maison" },
@@ -690,7 +692,7 @@ export default function App() {
       upgrades: true,
       save: true,
       nostalgia: showNostalgiaSection,
-      catalog: false,
+      catalog: true,
       stats: statsVisibilityRatio >= 0.8,
       workshop: showWorkshopSection,
       maison: showMaisonSection,
@@ -705,7 +707,7 @@ export default function App() {
       nostalgia: tabVisibility.nostalgia,
       career: tabVisibility.career && !hiddenTabsSet.has("career"),
       upgrades: tabVisibility.upgrades,
-      catalog: false,
+      catalog: tabVisibility.catalog,
       stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
       workshop: tabVisibility.workshop && !hiddenTabsSet.has("workshop"),
       maison: tabVisibility.maison && !hiddenTabsSet.has("maison"),
@@ -1227,6 +1229,33 @@ export default function App() {
           nowMs={nowMs}
           onPurchase={handlePurchase}
           onInteract={handleInteract}
+        />
+
+        <CatalogTab
+          isActive={activeTab === "catalog"}
+          state={state}
+          onNavigate={navigateTo}
+          catalogSearch={catalogSearch}
+          onCatalogSearchChange={setCatalogSearch}
+          catalogBrand={catalogBrand}
+          onCatalogBrandChange={setCatalogBrand}
+          catalogStyle={catalogStyle}
+          onCatalogStyleChange={setCatalogStyle}
+          catalogSort={catalogSort}
+          onCatalogSortChange={setCatalogSort}
+          catalogEra={catalogEra}
+          onCatalogEraChange={setCatalogEra}
+          catalogType={catalogType}
+          onCatalogTypeChange={setCatalogType}
+          catalogTab={catalogTab}
+          onCatalogTabChange={setCatalogTab}
+          catalogBrands={catalogBrands}
+          filteredCatalogEntries={filteredCatalogEntries}
+          discoveredCatalogEntries={discoveredCatalogEntries}
+          discoveredCatalogIds={discoveredCatalogIds}
+          catalogEntries={catalogEntries}
+          hasOwnedCatalogTiers={hasOwnedCatalogTiers}
+          onPurchase={handlePurchase}
         />
 
         <CareerTab
