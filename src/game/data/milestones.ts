@@ -10,7 +10,7 @@ export const MILESTONES: ReadonlyArray<MilestoneDefinition> = [
   },
   {
     id: "showcase",
-    name: "Vault showcase",
+    name: "Collection showcase",
     description: "Reach $25k Memories to unlock chronographs.",
     requirement: { type: "collectionValue", thresholdCents: 25_000 },
     unlocks: { items: ["chronograph"], upgrades: ["guild-contracts"] },
