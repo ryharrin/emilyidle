@@ -6,15 +6,15 @@ See: .planning/PROJECT.md (updated 2026-02-01)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-**Current focus:** v3.2 Phase 37 (Catalog Purchase Surface)
+**Current focus:** v3.2 Phase 38 (Catalog Lock + Disabled Explanations)
 
 ## Current Position
 
-Phase: 37 of 41 (Catalog Purchase Surface)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-02 — Completed 37-02-PLAN.md
-Progress: ██████████ 99%
+Phase: 38 of 41 (Catalog Lock + Disabled Explanations)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-02 — Phase 37 verified (status: passed)
+Progress: ██░░░░░░░░ 20%
 Next Phase: Phase 38 (Plan 01)
 
 ## Accumulated Context

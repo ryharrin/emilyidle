@@ -65,10 +65,10 @@ Unify the catalog shopping experience by merging vault information into the cata
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAT-01 | Phase 37 | Not started |
+| CAT-01 | Phase 37 | Complete |
 | CAT-02 | Phase 38 | Not started |
 | CAT-03 | Phase 38 | Not started |
-| CAT-04 | Phase 37 | Not started |
+| CAT-04 | Phase 37 | Complete |
 | VLT-01 | Phase 39 | Not started |
 | VLT-02 | Phase 39 | Not started |
 | VLT-03 | Phase 40 | Not started |
@@ -83,4 +83,4 @@ Unify the catalog shopping experience by merging vault information into the cata
 
 ---
 
-*Last updated: 2026-02-01*
+*Last updated: 2026-02-02*
