@@ -46,7 +46,12 @@ Plans:
   1. Undiscovered watches appear in the catalog greyed out with a lock icon (not fully hidden).
   2. When a purchase action is disabled, the catalog provides a clear "Why can't I buy?" explanation in context.
   3. The explanation points to the specific gating reason (e.g. locked/undiscovered, insufficient resources, capacity).
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 38-01-PLAN.md — Add lock overlay + in-context "Why can't I buy?" explainer without changing buy/gate semantics
+- [ ] 38-02-PLAN.md — Style lock/explanation affordances in both themes without regressing actionable visuals
+- [ ] 38-03-PLAN.md — Add unit + e2e regression coverage for lock/explanation selectors and gating semantics
 
 ### Phase 39: Collection Info Embedded in Catalog
 **Goal**: Players can understand collection context (capacity/value) while shopping, with consistent "Collection" naming.
