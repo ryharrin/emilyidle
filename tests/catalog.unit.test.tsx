@@ -904,6 +904,66 @@ describe("catalog purchase CTA", () => {
   });
 });
 
+describe("catalog gating explanations", () => {
+  const classicModelId = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+
+  beforeEach(async () => {
+    localStorage.clear();
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      currencyCents: 0,
+      enjoymentCents: 0,
+      discoveredCatalogEntries: [],
+      unlockedMilestones: ["collector-shelf", "showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+    await waitFor(() => {
+      expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders lock overlay and explainer for gated entries", async () => {
+    const user = userEvent.setup();
+    const catalogFilters = screen.getByTestId("catalog-filters");
+    const searchInput = within(catalogFilters).getByTestId("catalog-search");
+
+    await user.type(searchInput, "126713GRNR");
+
+    expect(screen.queryByTestId(`catalog-buy-${classicModelId}`)).toBeNull();
+    expect(screen.getByTestId(`catalog-gate-${classicModelId}`)).toBeTruthy();
+    expect(screen.getByTestId(`catalog-lock-${classicModelId}`)).toBeTruthy();
+
+    const whyButton = screen.getByTestId(`catalog-why-${classicModelId}`);
+    await user.click(whyButton);
+
+    const explainer = screen.getByTestId(`catalog-explain-${classicModelId}`);
+    expect(explainer).toHaveAttribute("open");
+    expect(explainer.textContent).toContain("Enjoyment requirement");
+    expect(explainer.textContent).toContain("Cash requirement");
+  });
+});
+
 describe("catalog help entry", () => {
   beforeEach(async () => {
     localStorage.clear();
