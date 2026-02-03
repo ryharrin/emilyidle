@@ -29,11 +29,12 @@ Milestone v4.0 deepens watch interactions with new/expanded mini-games, surfaces
 **Success Criteria** (what must be TRUE):
   1. Player can start the winding interaction and sees a winding animation that responds to their input.
   2. Player controls how much they wind by choosing when to stop (timing/amount), and the UI clearly reflects progress plus perceived pace/tension feedback while winding.
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 - [x] 42-01-PLAN.md — Implement Phase 42 winding bands + crown/tension animation + a11y/mobile behavior
 - [x] 42-02-PLAN.md — Add regression tests for band boundaries and re-verify unit/e2e winding flow
+- [x] 42-03-PLAN.md — Relax over-wind penalties, add new warning copy, and guard regression coverage
 
 ### Phase 43: New Watch Mini-Games
 

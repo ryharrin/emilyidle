@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 ## Current Position
 
 Phase: 42 of 6 (v4.0 Phases 42-47)
-Plan: 2 of 2 in current phase
+Plan: 3 of 3 in current phase
 Status: Phase complete
-Last activity: 2026-02-03 — Completed 42-02-PLAN.md
+Last activity: 2026-02-03 — Completed 42-03-PLAN.md
 Progress: Milestone v4.0 ██████████ 100%
 Next Phase: Phase 43 (New Watch Mini-Games)
 
@@ -44,6 +44,8 @@ Next Phase: Phase 43 (New Watch Mini-Games)
 | 42 | Announce the legend with visually hidden copy and add a hidden focus sentinel | Enriching the legend shifted tab order, so the sentinel keeps focus trapped without exposing extra text nodes |
 | 42 | Normalize hook telemetry output so CSS variables and tests consume the same progress/tension/velocity numbers | Keeps animation math centralized and avoids divergence between UI and tests |
 | 42 | Target the stop control via `data-testid`/aria label instead of role-based queries | Prevents selector collisions with the track (also a button) when locking down automation |
+| 42 | Raise the soft penalty margin and treat 98.5% as the strict over-wind cutoff | Gives players more room before the penalty while keeping the warning bound to the new threshold |
+| 42 | Tie the red glow hint to a data attribute driven by the penalty flag | Keeps CSS and copy aligned without re-running the math twice |
 
 ### Blockers / Concerns Carried Forward
 
@@ -51,6 +53,6 @@ Next Phase: Phase 43 (New Watch Mini-Games)
 
 ## Session Continuity
 
-Last session: 2026-02-03T13:39:04Z
-Stopped at: Completed 42-02-PLAN.md
+Last session: 2026-02-03T15:57:05Z
+Stopped at: Completed 42-03-PLAN.md
 Resume file: None
