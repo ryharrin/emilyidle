@@ -26,7 +26,6 @@ type WindingMiniGameModalProps = {
 
 const RUN_DURATION_MS = 5_600;
 const STEP_MS_REDUCED_MOTION = 180;
-const LIVE_RUNNING_MESSAGE = "Winding...";
 const ENJOYMENT_BY_TIER_CENTS: Record<WindingOutcomeTier, number> = {
   miss: 25,
   good: 75,
@@ -35,6 +34,10 @@ const ENJOYMENT_BY_TIER_CENTS: Record<WindingOutcomeTier, number> = {
 
 const focusableSelector =
   "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
+
+const WINDING_PROGRESS_VAR = "--winding-progress" as const;
+const WINDING_TENSION_VAR = "--winding-tension" as const;
+const WINDING_VELOCITY_VAR = "--winding-velocity" as const;
 
 const BAND_ORDER: WindingBand[] = ["under", "good", "perfect", "over"];
 
@@ -76,7 +79,7 @@ export function WindingMiniGameModal({
   onTapHintDismiss,
 }: WindingMiniGameModalProps): JSX.Element | null {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const { progress01, crownAngleDeg, tension01, band, phase, stop, progressVelocity, velocity01 } =
+  const { progress01, crownAngleDeg, tension01, band, phase, stop, velocity01 } =
     useWindingRun({
       open,
       runDurationMs: RUN_DURATION_MS,
@@ -218,9 +221,9 @@ export function WindingMiniGameModal({
     ? `Stopped at ${Math.round(progress01 * 100)}% — ${bandLabel}`
     : `Tension ${tensionPercent}% — ${bandLabel}`;
   const trackStyle = {
-    ["--winding-progress" as "--winding-progress"]: progress01,
-    ["--winding-velocity" as "--winding-velocity"]: velocityPulse,
-    ["--winding-tension" as "--winding-tension"]: tension01,
+    [WINDING_PROGRESS_VAR]: progress01,
+    [WINDING_VELOCITY_VAR]: velocityPulse,
+    [WINDING_TENSION_VAR]: tension01,
   } as React.CSSProperties;
 
   return open ? (

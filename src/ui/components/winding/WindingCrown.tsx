@@ -11,6 +11,11 @@ type Props = {
   progress01: number;
 };
 
+const WINDING_ANGLE_VAR = "--winding-angle" as const;
+const WINDING_PROGRESS_VAR = "--winding-progress" as const;
+const WINDING_TENSION_VAR = "--winding-tension" as const;
+const WINDING_VELOCITY_VAR = "--winding-velocity" as const;
+
 export function WindingCrown({
   angleDeg,
   tension01,
@@ -22,10 +27,10 @@ export function WindingCrown({
 }: Props) {
   const normalizedVelocity = Math.max(0, Math.min(1.25, velocity01));
   const style = {
-    ["--winding-angle" as "--winding-angle"]: `${angleDeg}deg`,
-    ["--winding-progress" as "--winding-progress"]: progress01,
-    ["--winding-tension" as "--winding-tension"]: tension01,
-    ["--winding-velocity" as "--winding-velocity"]: normalizedVelocity,
+    [WINDING_ANGLE_VAR]: `${angleDeg}deg`,
+    [WINDING_PROGRESS_VAR]: progress01,
+    [WINDING_TENSION_VAR]: tension01,
+    [WINDING_VELOCITY_VAR]: normalizedVelocity,
   } as React.CSSProperties;
 
   return (
