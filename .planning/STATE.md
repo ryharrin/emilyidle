@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-02)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** v4.0 Phase 42 (Winding Refresh)
+**Current focus:** v4.0 Phase 43 (New Watch Mini-Games)
 
 ## Current Position
 
-Phase: 42 of 6 (v4.0 Phases 42-47)
-Plan: 3 of 3 in current phase
+Phase: 43 of 6 (v4.0 Phases 42-47)
+Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-02-03 — Completed 42-03-PLAN.md
+Last activity: 2026-02-03 — Completed 43-01-PLAN.md
 Progress: Milestone v4.0 ██████████ 100%
-Next Phase: Phase 43 (New Watch Mini-Games)
+Next Phase: Phase 44 (Interaction Feedback & Rewards)
 
 ## Accumulated Context
 
@@ -46,6 +46,8 @@ Next Phase: Phase 43 (New Watch Mini-Games)
 | 42 | Target the stop control via `data-testid`/aria label instead of role-based queries | Prevents selector collisions with the track (also a button) when locking down automation |
 | 42 | Raise the soft penalty margin and treat 98.5% as the strict over-wind cutoff | Gives players more room before the penalty while keeping the warning bound to the new threshold |
 | 42 | Tie the red glow hint to a data attribute driven by the penalty flag | Keeps CSS and copy aligned without re-running the math twice |
+| 43 | Widened the Good window while keeping Perfect reserved for the tightest hits to reduce starter misses | Broadens the forgiving sweet spot without diluting the prestige of perfect timing |
+| 43 | Exported the quartz outcome helpers so regression tests consume the same deterministic math as the modal | Prevents divergent thresholds between UI and tests and lets future plans reuse the helpers |
 
 ### Blockers / Concerns Carried Forward
 
@@ -53,6 +55,6 @@ Next Phase: Phase 43 (New Watch Mini-Games)
 
 ## Session Continuity
 
-Last session: 2026-02-03T15:57:05Z
-Stopped at: Completed 42-03-PLAN.md
+Last session: 2026-02-03T16:15:14Z
+Stopped at: Completed 43-01-PLAN.md
 Resume file: None
