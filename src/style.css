@@ -667,6 +667,9 @@ button:not(:disabled):active {
   .winding-band-chip.active {
     transform: translateY(0);
   }
+  .winding-track[data-soft-penalty="true"] {
+    box-shadow: 0 0 16px rgba(72, 175, 255, 0.2);
+  }
 }
 
 .winding-track {
@@ -690,6 +693,18 @@ button:not(:disabled):active {
   transition:
     background 220ms ease,
     box-shadow 220ms ease;
+}
+
+.winding-track[data-soft-penalty="true"] {
+  box-shadow:
+    0 0 0 1px rgba(255, 118, 118, 0.6),
+    0 0 20px rgba(255, 118, 118, 0.3),
+    0 0 calc(16px + var(--winding-tension, 0) * 8px) rgba(255, 118, 118, 0.35);
+}
+
+.winding-track[data-soft-penalty="true"]::before,
+.winding-track[data-soft-penalty="true"]::after {
+  opacity: calc(0.12 + var(--winding-tension, 0) * 0.3);
 }
 
 .winding-track::before {
@@ -876,6 +891,23 @@ button:not(:disabled):active {
   justify-content: center;
   letter-spacing: 0.04em;
   gap: 8px;
+}
+
+.winding-soft-hint {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  transition:
+    color 180ms ease,
+    opacity 180ms ease;
+  opacity: 0.8;
+}
+
+.winding-soft-hint.winding-soft-hint-active {
+  color: rgba(255, 118, 118, 0.95);
+  opacity: 1;
 }
 
 .winding-actions {

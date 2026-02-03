@@ -76,13 +76,23 @@ export function WindingMiniGameModal({
   onTapHintDismiss,
 }: WindingMiniGameModalProps): JSX.Element | null {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const { progress01, crownAngleDeg, tension01, band, phase, stop, progressVelocity, velocity01 } =
-    useWindingRun({
-      open,
-      runDurationMs: RUN_DURATION_MS,
-      prefersReducedMotion,
-      stepMsReducedMotion: STEP_MS_REDUCED_MOTION,
-    });
+  const {
+    progress01,
+    crownAngleDeg,
+    tension01,
+    band,
+    phase,
+    stop,
+    progressVelocity,
+    velocity01,
+    softPenalty,
+    strictPenalty,
+  } = useWindingRun({
+    open,
+    runDurationMs: RUN_DURATION_MS,
+    prefersReducedMotion,
+    stepMsReducedMotion: STEP_MS_REDUCED_MOTION,
+  });
 
   const [result, setResult] = useState<WindingOutcome | null>(null);
   const [hintDismissed, setHintDismissed] = useState(!showTapHint);
@@ -213,11 +223,14 @@ export function WindingMiniGameModal({
   const tensionPercent = Math.round(tension01 * 100);
   const progressPercent = Math.round(progress01 * 100);
   const velocityPulse = Math.min(1, Math.max(0, velocity01));
-  const isOverWound = band === "over";
+  const softWarningActive = softPenalty && !strictPenalty;
+  const isOverWound = strictPenalty;
   const legendAnnouncement = "Band legend: Under-wound, Good wind, Perfect tension, Over-wound!";
   const liveMessageText = result
     ? `Stopped at ${progressPercent}% — ${bandLabel}`
-    : `Progress ${progressPercent}% • Tension ${tensionPercent}% — ${bandLabel}`;
+    : softWarningActive
+      ? `Progress ${progressPercent}% • Tension ${tensionPercent}% — ${bandLabel} (closing in on the red glow)`
+      : `Progress ${progressPercent}% • Tension ${tensionPercent}% — ${bandLabel}`;
   const trackStyle = {
     ["--winding-progress" as "--winding-progress"]: progress01,
     ["--winding-velocity" as "--winding-velocity"]: velocityPulse,
@@ -282,6 +295,7 @@ export function WindingMiniGameModal({
           <div
             className="winding-track"
             data-testid="winding-track"
+            data-soft-penalty={softWarningActive ? "true" : "false"}
             role="button"
             tabIndex={0}
             onClick={handleStop}
@@ -333,6 +347,14 @@ export function WindingMiniGameModal({
           >
             {liveMessageText}
           </div>
+
+          <p
+            className={`winding-soft-hint${softWarningActive ? " winding-soft-hint-active" : ""}`}
+            data-testid="winding-soft-hint"
+            aria-live="polite"
+          >
+            Stop before the red glow at 98.5% to keep tension from spiking.
+          </p>
 
           <div className="card-actions winding-actions">
             {!result ? (
