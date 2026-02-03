@@ -45,8 +45,12 @@ function getPrefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+// Target is at 12 o'clock, which corresponds to progress 0 (or 1.0, same position)
+// Distance wraps around since progress 0 and 1.0 are the same physical position
 export function getOutcomeTier(progress: number): QuartzOutcomeTier {
-  const distance = Math.abs(progress - 0.5);
+  // Distance from target at 0/1.0 (wraps around)
+  const rawDistance = Math.abs(progress - 0);
+  const distance = Math.min(rawDistance, 1 - rawDistance);
   if (distance <= PERFECT_DISTANCE_FROM_CENTER) {
     return "perfect";
   }
@@ -57,7 +61,8 @@ export function getOutcomeTier(progress: number): QuartzOutcomeTier {
 }
 
 export function getPerformance(progress: number): number {
-  const distance = Math.abs(progress - 0.5);
+  const rawDistance = Math.abs(progress - 0);
+  const distance = Math.min(rawDistance, 1 - rawDistance);
   return clamp01(1 - distance / 0.5);
 }
 
