@@ -27,6 +27,9 @@ const CASH_PAYOUT_BY_TIER_CENTS: Record<QuartzOutcomeTier, number> = {
   perfect: 500,
 };
 
+const PERFECT_DISTANCE_FROM_CENTER = 0.03;
+const GOOD_DISTANCE_FROM_CENTER = 0.18;
+
 function clamp01(value: number): number {
   if (!Number.isFinite(value)) {
     return 0;
@@ -42,18 +45,18 @@ function getPrefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function getOutcomeTier(progress: number): QuartzOutcomeTier {
+export function getOutcomeTier(progress: number): QuartzOutcomeTier {
   const distance = Math.abs(progress - 0.5);
-  if (distance <= 0.04) {
+  if (distance <= PERFECT_DISTANCE_FROM_CENTER) {
     return "perfect";
   }
-  if (distance <= 0.14) {
+  if (distance <= GOOD_DISTANCE_FROM_CENTER) {
     return "good";
   }
   return "miss";
 }
 
-function getPerformance(progress: number): number {
+export function getPerformance(progress: number): number {
   const distance = Math.abs(progress - 0.5);
   return clamp01(1 - distance / 0.5);
 }
