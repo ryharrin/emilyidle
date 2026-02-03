@@ -550,14 +550,16 @@ button:not(:disabled):active {
     inset 0 2px 0 rgba(255, 255, 255, 0.15);
   position: relative;
   transition:
-    transform 220ms ease,
-    box-shadow 220ms ease,
-    filter 220ms ease;
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    filter 200ms ease;
   --winding-angle: 0deg;
   --winding-progress: 0;
   --winding-velocity: 0;
   --winding-tension: 0;
   transform: rotate(var(--winding-angle));
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.5))
+    brightness(calc(1 + var(--winding-velocity, 0) * 0.15));
 }
 
 .winding-crown::after {
@@ -568,7 +570,8 @@ button:not(:disabled):active {
   background: radial-gradient(circle, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
   opacity: calc(0.1 + var(--winding-velocity) * 0.35);
   filter: blur(calc(4px + var(--winding-tension, 0) * 6px));
-  animation: winding-crown-glow calc(3s - var(--winding-velocity, 0.15) * 1.2s) ease-in-out infinite;
+  animation: winding-crown-glow calc(2.6s - var(--winding-velocity, 0.2) * 1.3s) ease-in-out
+    infinite;
   pointer-events: none;
 }
 
@@ -593,11 +596,23 @@ button:not(:disabled):active {
 }
 
 .winding-crown-phase-running {
-  animation: winding-crown-breathe 3s ease-in-out infinite;
+  animation: winding-crown-breathe calc(3s - var(--winding-velocity, 0.2) * 1.4s) ease-in-out
+    infinite;
 }
 
 .winding-crown-reduced-motion {
-  transform: scale(calc(1 + var(--winding-tension) * 0.15));
+  animation: none !important;
+  transform: rotate(var(--winding-angle)) scale(calc(1 + var(--winding-tension) * 0.18));
+  box-shadow:
+    0 18px 32px rgba(0, 0, 0, 0.45),
+    inset 0 0 calc(10px + var(--winding-tension) * 18px) rgba(255, 255, 255, 0.2);
+}
+
+.winding-crown-over {
+  border-color: rgba(255, 118, 118, 0.9);
+  box-shadow:
+    0 0 0 2px rgba(255, 118, 118, 0.35),
+    0 16px 36px rgba(255, 118, 118, 0.35);
 }
 
 @keyframes winding-crown-breathe {
@@ -634,6 +649,10 @@ button:not(:disabled):active {
   .winding-crown-phase-running,
   .winding-crown::after,
   .winding-track::before,
+  .winding-track::after,
+  .winding-track,
+  .winding-band-chip,
+  .winding-track-hint,
   .winding-actions button {
     animation: none !important;
     transition: none !important;
@@ -642,17 +661,25 @@ button:not(:disabled):active {
 
 .winding-track {
   position: relative;
-  min-height: 48px;
+  min-height: 56px;
   border-radius: 999px;
-  background: rgba(15, 17, 21, 0.9);
-  border: 1px solid #2a2f3b;
+  background: linear-gradient(180deg, rgba(20, 26, 36, 0.95), rgba(15, 17, 21, 0.92));
+  border: 1px solid #2f3542;
   overflow: hidden;
   cursor: pointer;
   touch-action: none;
   overscroll-behavior: contain;
-  padding: 8px 12px;
+  padding: 12px 16px;
   --winding-progress: 0;
   --winding-velocity: 0;
+  --winding-tension: 0;
+  box-shadow:
+    0 0 0 1px rgba(37, 44, 56, 0.9),
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    0 0 calc(12px + var(--winding-velocity, 0) * 22px) rgba(72, 175, 255, 0.2);
+  transition:
+    background 220ms ease,
+    box-shadow 220ms ease;
 }
 
 .winding-track::before {
@@ -666,11 +693,22 @@ button:not(:disabled):active {
       rgba(255, 255, 255, 0.35),
       rgba(255, 255, 255, 0) 45%
     ),
-    linear-gradient(90deg, rgba(72, 175, 255, 0.12), rgba(72, 175, 255, 0.02));
-  opacity: calc(0.05 + var(--winding-velocity) * 0.35 + var(--winding-tension, 0) * 0.15);
+    linear-gradient(90deg, rgba(72, 175, 255, 0.2), rgba(72, 175, 255, 0.04));
+  opacity: calc(0.08 + var(--winding-velocity) * 0.4 + var(--winding-tension, 0) * 0.2);
   pointer-events: none;
   mix-blend-mode: screen;
   transition: opacity 140ms ease;
+}
+
+.winding-track::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(72, 175, 255, 0.25), rgba(72, 175, 255, 0));
+  opacity: calc(0.2 + var(--winding-velocity) * 0.3 + var(--winding-tension, 0) * 0.15);
+  pointer-events: none;
+  transition: opacity 220ms ease;
 }
 
 .winding-track-band {
@@ -734,6 +772,7 @@ button:not(:disabled):active {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
 .winding-band-chip {
@@ -747,6 +786,22 @@ button:not(:disabled):active {
     border-color 180ms ease,
     box-shadow 180ms ease,
     transform 180ms ease;
+  min-height: 32px;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.winding-band-chip::after {
+  content: attr(data-label);
+  display: block;
+  font-size: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  pointer-events: none;
 }
 
 .winding-band-chip.active {
@@ -755,6 +810,23 @@ button:not(:disabled):active {
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
   transform: translateY(-1px) scale(1.02);
+}
+
+.winding-band-chip-under {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.winding-band-chip-good {
+  border-color: rgba(232, 198, 147, 0.45);
+}
+
+.winding-band-chip-perfect {
+  border-color: rgba(72, 175, 255, 0.6);
+}
+
+.winding-band-chip-over {
+  border-color: rgba(255, 118, 118, 0.8);
+  color: #ffcdcd;
 }
 
 .winding-indicator {
@@ -769,10 +841,31 @@ button:not(:disabled):active {
   border: 2px solid rgba(0, 0, 0, 0.5);
 }
 
+.winding-track:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+.winding-track:active,
+.winding-track:focus-visible {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.25),
+    0 0 calc(10px + var(--winding-velocity, 0) * 18px) rgba(72, 175, 255, 0.3);
+}
+
 .winding-live {
-  font-size: 0.88rem;
-  color: #9da3ad;
-  min-height: 20px;
+  font-size: 0.9rem;
+  color: #d3d7e5;
+  min-height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  gap: 8px;
 }
 
 .winding-actions {
@@ -808,6 +901,12 @@ button:not(:disabled):active {
 
 .winding-outcome-perfect {
   border-color: rgba(72, 175, 255, 0.5);
+}
+
+.winding-outcome-warning {
+  color: #ffb5b5;
+  font-size: 0.85rem;
+  margin: 0;
 }
 
 .winding-focus-sentinel {

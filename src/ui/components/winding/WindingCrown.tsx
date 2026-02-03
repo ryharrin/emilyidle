@@ -20,7 +20,7 @@ export function WindingCrown({
   velocity01,
   progress01,
 }: Props) {
-  const normalizedVelocity = Math.max(0, Math.min(1.25, velocity01));
+  const normalizedVelocity = Math.max(0, Math.min(1, velocity01));
   const style = {
     ["--winding-angle" as "--winding-angle"]: `${angleDeg}deg`,
     ["--winding-progress" as "--winding-progress"]: progress01,
