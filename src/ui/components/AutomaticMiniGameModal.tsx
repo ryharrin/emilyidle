@@ -43,6 +43,37 @@ export function getAutomaticLiveMessage({
   return `Keep the rotor balanced • ${targetPercent}% stability`;
 }
 
+type AutomaticRewardCopy = {
+  headline: string;
+  detail: string;
+};
+
+const AUTOMATIC_REWARD_INFO: Record<AutomaticOutcomeTier, { prefix: string; detail: string }> = {
+  miss: {
+    prefix: "Missed pulses keep it calm",
+    detail: "Misses keep the rotor steady but only deliver the baseline reserve boost.",
+  },
+  good: {
+    prefix: "Good balance powers a steady reserve",
+    detail: "Good pulses maintain stability and deliver a reliable charge.",
+  },
+  perfect: {
+    prefix: "Perfect balance pays 2×",
+    detail: "Perfect pulses maximize the reserve while rewarding precision.",
+  },
+};
+
+export function getAutomaticRewardCopy(
+  tier: AutomaticOutcomeTier,
+  percent: number,
+): AutomaticRewardCopy {
+  const info = AUTOMATIC_REWARD_INFO[tier];
+  return {
+    headline: `${info.prefix} · Power reserve +${percent}%`,
+    detail: info.detail,
+  };
+}
+
 function clamp(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) {
     return min;
@@ -206,13 +237,7 @@ export function AutomaticMiniGameModal({
   const liveMessageText = getAutomaticLiveMessage({ result, targetPercent });
 
   const reserveGain = result ? Math.round((RESERVE_GAIN_BY_TIER[result.tier] ?? 0) * 100) : 0;
-  const title = result
-    ? result.tier === "perfect"
-      ? "Perfect"
-      : result.tier === "good"
-        ? "Good"
-        : "Miss"
-    : "Keep the rotor balanced";
+  const rewardCopy = result ? getAutomaticRewardCopy(result.tier, reserveGain) : null;
 
   return (
     <div
@@ -277,20 +302,22 @@ export function AutomaticMiniGameModal({
               </button>
             </div>
           ) : (
-            <div
-              className={`winding-outcome winding-outcome-${result.tier}`}
-              data-testid="automatic-outcome"
-            >
-              <strong>
-                {title} · Power reserve +{reserveGain}%
-              </strong>
-              <p className="muted">Boosted enjoyment while charged.</p>
-              <div className="card-actions">
-                <button type="button" data-testid="automatic-done" onClick={onClose}>
-                  Done
-                </button>
+            rewardCopy && (
+              <div
+                className={`automatic-outcome automatic-outcome-${result.tier}`}
+                data-testid="automatic-outcome"
+                data-tier={result.tier}
+              >
+                <strong>{rewardCopy.headline}</strong>
+                <p className="muted automatic-outcome-copy">{rewardCopy.detail}</p>
+                <p className="muted">Boosted enjoyment while charged.</p>
+                <div className="card-actions">
+                  <button type="button" data-testid="automatic-done" onClick={onClose}>
+                    Done
+                  </button>
+                </div>
               </div>
-            </div>
+            )
           )}
         </div>
       </div>

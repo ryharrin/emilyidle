@@ -57,6 +57,35 @@ export function getWindingLiveMessage({
   return `Keep winding... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel}`;
 }
 
+type WindingRewardCopy = {
+  headline: string;
+  detail: string;
+};
+
+const WINDING_REWARD_INFO: Record<WindingOutcomeTier, { prefix: string; detail: string }> = {
+  miss: {
+    prefix: "Miss hits keep the crown calm 1×",
+    detail: "Miss timing stays safe and earns the baseline enjoyment.",
+  },
+  good: {
+    prefix: "Good timing keeps torque steady",
+    detail: "Good hits deliver steady enjoyment while the needle stays in the green.",
+  },
+  perfect: {
+    prefix: "Perfect timing pays 2×",
+    detail: "Perfect tension doubles the reward without touching the red glow.",
+  },
+};
+
+export function getWindingRewardCopy(tier: WindingOutcomeTier): WindingRewardCopy {
+  const rewardCents = ENJOYMENT_BY_TIER_CENTS[tier];
+  const info = WINDING_REWARD_INFO[tier];
+  return {
+    headline: `${info.prefix} · +${formatMoneyFromCents(rewardCents)} enjoyment`,
+    detail: info.detail,
+  };
+}
+
 const focusableSelector =
   "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
 
@@ -241,7 +270,7 @@ export function WindingMiniGameModal({
     focusables[0]?.focus();
   };
 
-  const rewardCents = result ? ENJOYMENT_BY_TIER_CENTS[result.tier] : 0;
+  const rewardCopy = result ? getWindingRewardCopy(result.tier) : null;
   const shouldShowHint = showTapHint && !hintDismissed;
   const bandLabel = getWindingBandLabel(band);
   const tensionPercent = Math.round(tension01 * 100);
@@ -408,14 +437,14 @@ export function WindingMiniGameModal({
             )}
           </div>
 
-          {result && (
+          {result && rewardCopy && (
             <div
               className={`winding-outcome winding-outcome-${result.tier}`}
               data-testid="winding-outcome"
+              data-tier={result.tier}
             >
-              <strong>
-                {bandLabel} · +{formatMoneyFromCents(rewardCents)} enjoyment
-              </strong>
+              <strong>{rewardCopy.headline}</strong>
+              <p className="muted winding-outcome-copy">{rewardCopy.detail}</p>
               <p className="muted">{cooldownLabel}</p>
               {isOverWound && (
                 <p className="muted winding-outcome-warning">
