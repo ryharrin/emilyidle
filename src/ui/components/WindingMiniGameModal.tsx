@@ -128,7 +128,7 @@ export function WindingMiniGameModal({
     persistHintDismissed();
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const previouslyOpen = prevOpenRef.current;
     if (open && !previouslyOpen) {
       setResult(null);
