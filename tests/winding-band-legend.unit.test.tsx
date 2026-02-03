@@ -13,6 +13,9 @@ const defaultState: UseWindingRunResult = {
   phase: "running",
   progressVelocity: 0.02,
   velocity01: 0.75,
+  progressPercent: 50,
+  tensionPercent: 60,
+  velocityPercent: 75,
   stop: vi.fn(),
 };
 
@@ -31,6 +34,9 @@ describe("winding band legend", () => {
     phase: "running",
     progressVelocity: 0.02,
     velocity01: 0.75,
+    progressPercent: 50,
+    tensionPercent: 60,
+    velocityPercent: 75,
     stop: vi.fn(),
   };
 

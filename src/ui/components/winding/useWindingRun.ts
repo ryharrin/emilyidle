@@ -25,6 +25,9 @@ export type UseWindingRunResult = {
   stop: () => void;
   progressVelocity: number;
   velocity01: number;
+  progressPercent: number;
+  tensionPercent: number;
+  velocityPercent: number;
 };
 
 const ANGLE_BASE_SPEED = 80;
@@ -55,9 +58,15 @@ export function useWindingRun({
   const decelStartRef = useRef<number | null>(null);
   const decelLastTickRef = useRef<number | null>(null);
 
-  const band = getWindingBand(progress01);
   const tension01 = useMemo(() => getWindingTension(progress01), [progress01]);
   const velocity01 = useMemo(() => getWindingVelocity(progress01), [progress01]);
+  const band = useMemo(() => getWindingBand(progress01), [progress01]);
+  const progressPercent = useMemo(() => Math.round(progress01 * 100), [progress01]);
+  const tensionPercent = useMemo(() => Math.round(tension01 * 100), [tension01]);
+  const velocityPercent = useMemo(
+    () => Math.round(Math.min(1, Math.max(0, velocity01)) * 100),
+    [velocity01],
+  );
 
   const cleanupAnimation = useCallback(() => {
     if (runningRaf.current !== null) {
@@ -194,6 +203,9 @@ export function useWindingRun({
     phase,
     progressVelocity,
     velocity01,
+    progressPercent,
+    tensionPercent,
+    velocityPercent,
     stop,
   };
 }
