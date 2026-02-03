@@ -45,7 +45,10 @@ Plans:
   1. Player can play a set-time mini-game on quartz watches using interactive controls.
   2. Player can play a set-date mini-game on watches where date-setting is appropriate.
   3. Player can play a strap-changing mini-game and receives clear visual feedback during the interaction.
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 43-01-PLAN.md — Make the quartz time-setting mini-game more lenient while keeping the tiered rewards and messaging intact
 
 ### Phase 44: Interaction Feedback & Rewards
 
@@ -56,7 +59,10 @@ Plans:
   1. Every interaction mini-game ends in an unambiguous success or failure state with visible feedback.
   2. Player can see the reward result for an interaction (what they got and why), including on failure.
   3. Higher-tier watches and more precise play produce observably higher rewards than lower-tier or sloppy play.
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 44-01-PLAN.md — Align outcome visibility + reward feedback across winding, quartz, and automatic mini-games
 
 ### Phase 45: Per-Watch Stats Surfaces
 
@@ -98,7 +104,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 42. Winding Refresh | v4.0 | 2/2 | Complete | 42-02-SUMMARY.md |
-| 43. New Watch Mini-Games | v4.0 | 0/TBD | Not started | - |
+| 43. New Watch Mini-Games | v4.0 | 1/1 | Complete | 43-01-SUMMARY.md |
 | 44. Interaction Feedback & Rewards | v4.0 | 0/TBD | Not started | - |
 | 45. Per-Watch Stats Surfaces | v4.0 | 0/TBD | Not started | - |
 | 46. Catalog Expansion (Tiered Variety) | v4.0 | 0/TBD | Not started | - |
