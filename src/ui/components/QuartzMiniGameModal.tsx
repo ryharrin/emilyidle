@@ -113,10 +113,10 @@ export function getQuartzLiveMessage({
   if (result) {
     const tierLabel =
       result.tier === "perfect" ? "Perfect" : result.tier === "good" ? "Good" : "Miss";
-    return `${tierLabel} timing • Stopped at ${progressPercent}% near ${formatTime(targetTime.hour, targetTime.minute)}`;
+    return `${tierLabel} timing • Stopped at ${progressPercent}% near ${formatTime(targetTime.hour, targetTime.minute)} • Reward locked`;
   }
 
-  return `Keep the minute hand near ${formatTime(targetTime.hour, targetTime.minute)} • ${progressPercent}% progress`;
+  return `Keep the minute hand near ${formatTime(targetTime.hour, targetTime.minute)} • ${progressPercent}% progress • Tap Set to lock the tier`;
 }
 
 type QuartzRewardCopy = {

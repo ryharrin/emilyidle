@@ -37,10 +37,10 @@ export function getAutomaticLiveMessage({
   if (result) {
     const tierLabel =
       result.tier === "perfect" ? "Perfect" : result.tier === "good" ? "Good" : "Miss";
-    return `${tierLabel} balance locked • ${targetPercent}% stability`;
+    return `${tierLabel} balance locked • ${targetPercent}% stability • Reward reserved`;
   }
 
-  return `Keep the rotor balanced • ${targetPercent}% stability`;
+  return `Keep the rotor balanced • ${targetPercent}% stability • Hold until the outcome resolves`;
 }
 
 type AutomaticRewardCopy = {

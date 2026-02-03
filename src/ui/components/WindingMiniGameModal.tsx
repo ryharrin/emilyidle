@@ -48,13 +48,15 @@ export function getWindingLiveMessage({
   softWarningActive,
 }: WindingLiveMessageArgs): string {
   if (result) {
-    return `Stopped at ${progressPercent}% — ${bandLabel}`;
+    const tierLabel =
+      result.tier === "perfect" ? "Perfect" : result.tier === "good" ? "Good" : "Miss";
+    return `${tierLabel} timing • Stopped at ${progressPercent}% — ${bandLabel} • Reward locked`;
   }
 
   const tensionCopy = softWarningActive
     ? `Tension ${tensionPercent}% • red glow approaching`
     : `Tension ${tensionPercent}%`;
-  return `Keep winding... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel}`;
+  return `Keep winding... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel} • Stop to lock in the tier`;
 }
 
 type WindingRewardCopy = {
