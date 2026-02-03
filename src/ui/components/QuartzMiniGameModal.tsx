@@ -18,7 +18,7 @@ type QuartzMiniGameModalProps = {
   helpAction?: React.ReactNode;
 };
 
-const RUN_DURATION_MS = 6_000;
+const RUN_DURATION_MS = 10_000; // 10 seconds for full game
 const STEP_MS_REDUCED_MOTION = 180;
 
 const CASH_PAYOUT_BY_TIER_CENTS: Record<QuartzOutcomeTier, number> = {
@@ -45,11 +45,28 @@ function getPrefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-// Target is at 12 o'clock, which corresponds to progress 0 (or 1.0, same position)
-// Distance wraps around since progress 0 and 1.0 are the same physical position
-export function getOutcomeTier(progress: number): QuartzOutcomeTier {
-  // Distance from target at 0/1.0 (wraps around)
-  const rawDistance = Math.abs(progress - 0);
+// Generate a random target time
+function generateTargetTime(): { hour: number; minute: number } {
+  const hour = Math.floor(Math.random() * 12) + 1; // 1-12
+  const minute = Math.floor(Math.random() * 60); // 0-59
+  return { hour, minute };
+}
+
+// Convert time to hand position (0-1, where 0 is 12 o'clock)
+export function timeToPosition(hour: number, minute: number): number {
+  // Hour hand position: each hour = 1/12, each minute adds 1/720
+  const hour12 = hour % 12 || 12;
+  return (hour12 / 12 + minute / 720) % 1;
+}
+
+// Format time for display
+function formatTime(hour: number, minute: number): string {
+  return `${hour}:${minute.toString().padStart(2, "0")}`;
+}
+
+export function getOutcomeTier(progress: number, targetPosition: number): QuartzOutcomeTier {
+  // Distance from target (wraps around)
+  const rawDistance = Math.abs(progress - targetPosition);
   const distance = Math.min(rawDistance, 1 - rawDistance);
   if (distance <= PERFECT_DISTANCE_FROM_CENTER) {
     return "perfect";
@@ -60,8 +77,8 @@ export function getOutcomeTier(progress: number): QuartzOutcomeTier {
   return "miss";
 }
 
-export function getPerformance(progress: number): number {
-  const rawDistance = Math.abs(progress - 0);
+export function getPerformance(progress: number, targetPosition: number): number {
+  const rawDistance = Math.abs(progress - targetPosition);
   const distance = Math.min(rawDistance, 1 - rawDistance);
   return clamp01(1 - distance / 0.5);
 }
@@ -76,10 +93,18 @@ export function QuartzMiniGameModal({
 }: QuartzMiniGameModalProps): JSX.Element | null {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<null | QuartzOutcome>(null);
+  const [targetTime, setTargetTime] = useState<{ hour: number; minute: number } | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const rafIdRef = useRef<number | null>(null);
 
   const prefersReducedMotion = useMemo(() => getPrefersReducedMotion(), []);
+
+  // Generate new target time when modal opens
+  useEffect(() => {
+    if (open && !targetTime) {
+      setTargetTime(generateTargetTime());
+    }
+  }, [open, targetTime]);
 
   const resetRun = useCallback(() => {
     startTimeRef.current = null;
@@ -89,6 +114,7 @@ export function QuartzMiniGameModal({
     }
     setProgress(0);
     setResult(null);
+    setTargetTime(null);
   }, []);
 
   useEffect(() => {
@@ -98,6 +124,9 @@ export function QuartzMiniGameModal({
     }
 
     resetRun();
+    // Generate new target time
+    setTargetTime(generateTargetTime());
+
     const stepMs = prefersReducedMotion ? STEP_MS_REDUCED_MOTION : 0;
 
     const tick = (nowMs: number) => {
@@ -131,9 +160,11 @@ export function QuartzMiniGameModal({
     };
   }, [open, prefersReducedMotion, resetRun]);
 
-  if (!open) {
+  if (!open || !targetTime) {
     return null;
   }
+
+  const targetPosition = timeToPosition(targetTime.hour, targetTime.minute);
 
   const handleSet = () => {
     if (result) {
@@ -145,8 +176,8 @@ export function QuartzMiniGameModal({
       rafIdRef.current = null;
     }
 
-    const tier = getOutcomeTier(progress);
-    const outcome: QuartzOutcome = { tier, performance: getPerformance(progress) };
+    const tier = getOutcomeTier(progress, targetPosition);
+    const outcome: QuartzOutcome = { tier, performance: getPerformance(progress, targetPosition) };
     setResult(outcome);
     onComplete(outcome);
   };
@@ -188,6 +219,10 @@ export function QuartzMiniGameModal({
         </header>
 
         <div className="quartz-modal-body">
+          <div className="quartz-target-time" data-testid="quartz-target-time">
+            <strong>Set to: {formatTime(targetTime.hour, targetTime.minute)}</strong>
+          </div>
+
           <div className="quartz-dial" data-testid="quartz-dial" aria-hidden="true">
             <div className="quartz-target" aria-hidden="true" />
             <div className="quartz-anchor" data-testid="quartz-anchor" aria-hidden="true">
@@ -202,8 +237,9 @@ export function QuartzMiniGameModal({
 
           {!result ? (
             <p className="muted">
-              Tap when the hand nears the marker; the wider Good window rewards close hits while
-              perfect still demands the tightest alignment.
+              Tap when the hour hand points to {formatTime(targetTime.hour, targetTime.minute)}. The
+              wider Good window rewards close hits while perfect still demands the tightest
+              alignment.
             </p>
           ) : (
             <div
@@ -213,7 +249,7 @@ export function QuartzMiniGameModal({
               <strong>
                 {title} · Cash +{formatMoneyFromCents(payoutCents)}
               </strong>
-              <p className="muted">Dealers pay for quick, accurate resets.</p>
+              <p className="muted">Target was {formatTime(targetTime.hour, targetTime.minute)}.</p>
             </div>
           )}
 
