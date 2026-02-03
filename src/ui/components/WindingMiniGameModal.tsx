@@ -307,7 +307,11 @@ export function WindingMiniGameModal({
             )}
           </div>
 
-          <div className="winding-band-legend" data-testid="winding-band-legend">
+          <div
+            className="winding-band-legend"
+            data-testid="winding-band-legend"
+            data-active-band={band}
+          >
             <p className="visually-hidden">{legendAnnouncement}</p>
             {BAND_ORDER.map((legendBand) => (
               <span
@@ -321,7 +325,12 @@ export function WindingMiniGameModal({
             ))}
           </div>
 
-          <div className="winding-live" data-testid="winding-live" aria-live="polite">
+          <div
+            id="winding-live"
+            className="winding-live"
+            data-testid="winding-live"
+            aria-live="polite"
+          >
             {liveMessageText}
           </div>
 
@@ -329,14 +338,23 @@ export function WindingMiniGameModal({
             {!result ? (
               <button
                 type="button"
+                className="primary winding-stop-button"
                 data-testid="winding-stop"
+                aria-label="Stop winding run"
+                aria-describedby="winding-live"
                 onClick={handleStop}
                 ref={stopButtonRef}
               >
                 Stop
               </button>
             ) : (
-              <button type="button" data-testid="winding-done" onClick={handleClose}>
+              <button
+                type="button"
+                className="primary winding-done-button"
+                data-testid="winding-done"
+                aria-label="Close winding modal"
+                onClick={handleClose}
+              >
                 Done
               </button>
             )}

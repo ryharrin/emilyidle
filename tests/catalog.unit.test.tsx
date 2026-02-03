@@ -1231,9 +1231,16 @@ describe("wind minigame", () => {
 
     expect(screen.getByTestId("winding-modal")).toBeTruthy();
     expect(screen.queryByTestId("winding-outcome")).toBeNull();
+    const stopButton = screen.getByTestId("winding-stop");
+    expect(stopButton).toHaveTextContent(/stop/i);
+    const liveRegion = screen.getByTestId("winding-live");
+    expect(liveRegion.textContent).toMatch(/Progress \d+%/i);
 
     await user.click(screen.getByTestId("winding-stop"));
     expect(screen.getByTestId("winding-outcome").textContent).toMatch(/enjoyment/i);
+    expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i);
+    const legend = screen.getByTestId("winding-band-legend");
+    expect(legend).toHaveAttribute("data-active-band");
 
     await user.click(screen.getByTestId("winding-done"));
     expect(screen.queryByTestId("winding-modal")).toBeNull();
