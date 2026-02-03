@@ -144,9 +144,7 @@ export function WindingMiniGameModal({
       return;
     }
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-    requestAnimationFrame(() => {
-      stopButtonRef.current?.focus();
-    });
+    stopButtonRef.current?.focus();
   }, [open]);
 
   useEffect(() => {
@@ -213,10 +211,13 @@ export function WindingMiniGameModal({
   const shouldShowHint = showTapHint && !hintDismissed;
   const bandLabel = getWindingBandLabel(band);
   const tensionPercent = Math.round(tension01 * 100);
+  const progressPercent = Math.round(progress01 * 100);
   const velocityPulse = Math.min(1, Math.max(0, velocity01));
+  const isOverWound = band === "over";
+  const legendAnnouncement = "Band legend: Under-wound, Good wind, Perfect tension, Over-wound!";
   const liveMessageText = result
-    ? `Stopped at ${Math.round(progress01 * 100)}% — ${bandLabel}`
-    : `Tension ${tensionPercent}% — ${bandLabel}`;
+    ? `Stopped at ${progressPercent}% — ${bandLabel}`
+    : `Progress ${progressPercent}% • Tension ${tensionPercent}% — ${bandLabel}`;
   const trackStyle = {
     ["--winding-progress" as "--winding-progress"]: progress01,
     ["--winding-velocity" as "--winding-velocity"]: velocityPulse,
@@ -265,11 +266,15 @@ export function WindingMiniGameModal({
             <div className="winding-progress-readout">
               {result ? (
                 <>
-                  <strong>Stopped at {Math.round(progress01 * 100)}%</strong>
+                  <strong>Stopped at {progressPercent}%</strong>
                   <p className="muted">{bandLabel}</p>
                 </>
               ) : (
-                <p className="muted">Tension: {Math.round(progress01 * 100)}%</p>
+                <>
+                  <strong>{progressPercent}%</strong>
+                  <p className="muted">Tension: {tensionPercent}%</p>
+                  <p className="muted">{bandLabel}</p>
+                </>
               )}
             </div>
           </div>
@@ -303,14 +308,16 @@ export function WindingMiniGameModal({
           </div>
 
           <div className="winding-band-legend" data-testid="winding-band-legend">
+            <p className="visually-hidden">{legendAnnouncement}</p>
             {BAND_ORDER.map((legendBand) => (
               <span
                 key={legendBand}
-                className={`winding-band-chip${band === legendBand ? " active" : ""}`}
+                className={`winding-band-chip winding-band-chip-${legendBand}${band === legendBand ? " active" : ""}`}
+                aria-hidden="true"
+                role="presentation"
                 data-testid={`winding-band-${legendBand}`}
-              >
-                {getWindingBandLabel(legendBand)}
-              </span>
+                data-label={getWindingBandLabel(legendBand)}
+              />
             ))}
           </div>
 
@@ -344,10 +351,22 @@ export function WindingMiniGameModal({
                 {bandLabel} · +{formatMoneyFromCents(rewardCents)} enjoyment
               </strong>
               <p className="muted">{cooldownLabel}</p>
+              {isOverWound && (
+                <p className="muted winding-outcome-warning">
+                  Over-wound! Release before 95% to keep tension from spiking.
+                </p>
+              )}
             </div>
           )}
         </div>
 
+        <button
+          type="button"
+          className="visually-hidden"
+          aria-label="Trap focus"
+          tabIndex={0}
+          onFocus={() => stopButtonRef.current?.focus()}
+        />
         <span tabIndex={0} className="winding-focus-sentinel" onFocus={handleBottomSentinel} />
       </div>
     </div>
