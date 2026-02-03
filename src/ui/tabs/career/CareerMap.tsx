@@ -6,7 +6,6 @@ import {
   CAREER_MODALITIES,
   CAREER_OPERATING_STYLES,
   CAREER_STAGES,
-  type CareerStageId,
 } from "../../../game/data/careerStages";
 import {
   chooseCareerExpansionFocus,
@@ -20,6 +19,12 @@ import {
   selectPrimaryCareerTrack,
 } from "../../../game/state";
 import type { GameState } from "../../../game/state";
+import type {
+  CareerExpansionFocusId,
+  CareerModalityId,
+  CareerOperatingStyleId,
+  CareerTrackId,
+} from "../../../game/model/types";
 import { CareerStageChoicePreview } from "../../components/CareerStageChoicePreview";
 import { CareerMapCanvas } from "../../components/careerMap/CareerMapCanvas";
 import type {
@@ -30,15 +35,16 @@ import type {
 
 type CareerMapProps = {
   state: GameState;
-  nowMs: number;
   onPurchase: (nextState: GameState) => void;
 };
 
 type NodeAction =
-  | { type: "track"; trackId: string }
-  | { type: "modality"; choiceId: string }
-  | { type: "operatingStyle"; choiceId: string }
-  | { type: "expansionFocus"; choiceId: string };
+  | { type: "track"; trackId: CareerTrackId }
+  | { type: "modality"; choiceId: CareerModalityId }
+  | { type: "operatingStyle"; choiceId: CareerOperatingStyleId }
+  | { type: "expansionFocus"; choiceId: CareerExpansionFocusId };
+
+type CareerChoicePreviewArgs = Parameters<typeof getCareerChoicePreview>[1];
 
 type CareerChoiceStageId =
   | "licensed-associate"
@@ -46,10 +52,20 @@ type CareerChoiceStageId =
   | "practice-builder"
   | "private-practice-owner";
 
-function layoutCareerMap(
-  state: GameState,
-  nowMs: number,
-): {
+function getPreviewArgs(action: NodeAction): CareerChoicePreviewArgs {
+  switch (action.type) {
+    case "track":
+      return { stageId: "licensed-associate", choiceId: action.trackId };
+    case "modality":
+      return { stageId: "specialist-certification", choiceId: action.choiceId };
+    case "operatingStyle":
+      return { stageId: "practice-builder", choiceId: action.choiceId };
+    case "expansionFocus":
+      return { stageId: "private-practice-owner", choiceId: action.choiceId };
+  }
+}
+
+function layoutCareerMap(state: GameState): {
   layout: CareerMapLayout;
   actions: Map<string, NodeAction>;
   bodies: Map<string, React.ReactNode>;
@@ -190,7 +206,7 @@ function layoutCareerMap(
         nodeId,
         <div className="career-map-choice-preview">
           <CareerStageChoicePreview
-            preview={getCareerChoicePreview(state, { stageId, choiceId: option.id as any })}
+            preview={getCareerChoicePreview(state, getPreviewArgs(option.action))}
           />
         </div>,
       );
@@ -282,11 +298,8 @@ function layoutCareerMap(
   };
 }
 
-export function CareerMap({ state, nowMs, onPurchase }: CareerMapProps) {
-  const { layout, actions, bodies } = React.useMemo(
-    () => layoutCareerMap(state, nowMs),
-    [nowMs, state],
-  );
+export function CareerMap({ state, onPurchase }: CareerMapProps) {
+  const { layout, actions, bodies } = React.useMemo(() => layoutCareerMap(state), [state]);
 
   const handleNodeClick = (nodeId: string) => {
     const action = actions.get(nodeId);
@@ -295,22 +308,22 @@ export function CareerMap({ state, nowMs, onPurchase }: CareerMapProps) {
     }
 
     if (action.type === "track") {
-      onPurchase(selectPrimaryCareerTrack(state, action.trackId as any));
+      onPurchase(selectPrimaryCareerTrack(state, action.trackId));
       return;
     }
 
     if (action.type === "modality") {
-      onPurchase(chooseCareerModality(state, action.choiceId as any));
+      onPurchase(chooseCareerModality(state, action.choiceId));
       return;
     }
 
     if (action.type === "operatingStyle") {
-      onPurchase(chooseCareerOperatingStyle(state, action.choiceId as any));
+      onPurchase(chooseCareerOperatingStyle(state, action.choiceId));
       return;
     }
 
     if (action.type === "expansionFocus") {
-      onPurchase(chooseCareerExpansionFocus(state, action.choiceId as any));
+      onPurchase(chooseCareerExpansionFocus(state, action.choiceId));
     }
   };
 

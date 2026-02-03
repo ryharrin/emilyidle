@@ -1,5 +1,27 @@
 import { expect, test } from "@playwright/test";
 
+type CareerMapViewport = { scale: number };
+
+const parseCareerMapViewport = (raw: string | null): CareerMapViewport | null => {
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (typeof parsed === "object" && parsed !== null) {
+      const candidate = parsed as { scale?: unknown };
+      if (typeof candidate.scale === "number") {
+        return { scale: candidate.scale };
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
 test.describe("career map canvas", () => {
   test("career map shows stage lane in view on fresh save", async ({ page }) => {
     await page.addInitScript(() => {
@@ -67,10 +89,10 @@ test.describe("career map canvas", () => {
     }
 
     await viewport.hover();
-    const before = await page.evaluate(() => {
-      const raw = window.localStorage.getItem("emily-idle:career-map-viewport:v1");
-      return raw ? JSON.parse(raw) : null;
-    });
+    const beforeRaw = await page.evaluate(() =>
+      window.localStorage.getItem("emily-idle:career-map-viewport:v1"),
+    );
+    const before = parseCareerMapViewport(beforeRaw);
     expect(before).not.toBeNull();
     if (!before) {
       return;
@@ -84,17 +106,21 @@ test.describe("career map canvas", () => {
         return false;
       }
       try {
-        const parsed = JSON.parse(raw) as any;
-        return typeof parsed?.scale === "number" && parsed.scale !== beforeScale;
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === "object" && parsed !== null) {
+          const candidate = parsed as { scale?: unknown };
+          return typeof candidate.scale === "number" && candidate.scale !== beforeScale;
+        }
+        return false;
       } catch {
         return false;
       }
     }, before.scale);
 
-    const after = await page.evaluate(() => {
-      const raw = window.localStorage.getItem("emily-idle:career-map-viewport:v1");
-      return raw ? JSON.parse(raw) : null;
-    });
+    const afterRaw = await page.evaluate(() =>
+      window.localStorage.getItem("emily-idle:career-map-viewport:v1"),
+    );
+    const after = parseCareerMapViewport(afterRaw);
     expect(after).not.toBeNull();
     if (!after) {
       return;

@@ -193,7 +193,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   label="Explain career stages"
                 />
               </div>
-              <CareerMap state={state} nowMs={nowMs} onPurchase={onPurchase} />
+              <CareerMap state={state} onPurchase={onPurchase} />
             </>
           ) : (
             <CareerUpgradesView state={state} nowMs={nowMs} onPurchase={onPurchase} />

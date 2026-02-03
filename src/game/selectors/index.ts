@@ -1,5 +1,4 @@
 import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "../catalog";
-import { CAREER_TRACKS } from "../data/career";
 import { MILESTONES } from "../data/milestones";
 import {
   NOSTALGIA_UNLOCK_COSTS,
@@ -149,8 +148,6 @@ const WORKSHOP_UPGRADE_LOOKUP = new Map(WORKSHOP_UPGRADES.map((upgrade) => [upgr
 const MAISON_UPGRADE_LOOKUP = new Map(MAISON_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const MAISON_LINE_LOOKUP = new Map(MAISON_LINES.map((line) => [line.id, line]));
 const CRAFTING_RECIPE_LOOKUP = new Map(CRAFTING_RECIPES.map((recipe) => [recipe.id, recipe]));
-const CAREER_TRACK_LOOKUP = new Map(CAREER_TRACKS.map((track) => [track.id, track]));
-
 export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
   return WATCH_ITEMS;
 }

@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
-const TOURBILLON_MODEL_ID =
-  "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
 
 test("collection shows next unlocks panel for hidden systems", async ({ page }) => {
   const seededState = {

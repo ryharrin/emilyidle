@@ -94,13 +94,6 @@ test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
     const runSessionButton = page.getByTestId("career-action");
     await expect(runSessionButton).toBeVisible();
 
-    // Get initial state
-    const initialLevel = await page
-      .locator("text=Level")
-      .locator("..")
-      .locator(".workshop-value")
-      .textContent();
-
     const canRunSession = await runSessionButton.isEnabled();
     if (canRunSession) {
       await runSessionButton.click();

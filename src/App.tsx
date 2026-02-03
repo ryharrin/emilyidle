@@ -1180,27 +1180,6 @@ export default function App() {
           isActive={activeTab === "collection"}
           state={state}
           onNavigate={navigateTo}
-          catalogSearch={catalogSearch}
-          onCatalogSearchChange={setCatalogSearch}
-          catalogBrand={catalogBrand}
-          onCatalogBrandChange={setCatalogBrand}
-          catalogStyle={catalogStyle}
-          onCatalogStyleChange={setCatalogStyle}
-          catalogSort={catalogSort}
-          onCatalogSortChange={setCatalogSort}
-          catalogEra={catalogEra}
-          onCatalogEraChange={setCatalogEra}
-          catalogType={catalogType}
-          onCatalogTypeChange={setCatalogType}
-          catalogTab={catalogTab}
-          onCatalogTabChange={setCatalogTab}
-          catalogBrands={catalogBrands}
-          filteredCatalogEntries={filteredCatalogEntries}
-          discoveredCatalogEntries={discoveredCatalogEntries}
-          discoveredCatalogIds={discoveredCatalogIds}
-          catalogEntries={catalogEntries}
-          hasOwnedCatalogTiers={hasOwnedCatalogTiers}
-          watchItems={watchItems}
           watchItemLabels={watchItemLabels}
           autoBuyUnlocked={autoBuyUnlocked}
           autoBuyEnabled={autoBuyEnabled}
@@ -1219,7 +1198,6 @@ export default function App() {
           craftingParts={craftingParts}
           renderCraftingRecipes={renderCraftingRecipes}
           renderCraftingBoosts={renderCraftingBoosts}
-          craftingPartsPerWatch={craftingPartsPerWatch}
           activeCoachmarks={activeCoachmarks}
           settings={settings}
           persistSettings={persistSettings}
@@ -1230,7 +1208,6 @@ export default function App() {
           currentEventMultiplier={currentEventMultiplier}
           nowMs={nowMs}
           onPurchase={handlePurchase}
-          onInteract={handleInteract}
         />
 
         <CatalogTab

@@ -8,14 +8,7 @@ import {
   type CareerStageDefinition,
   type CareerStageId,
 } from "../data/careerStages";
-import type {
-  CareerExpansionFocusId,
-  CareerModalityId,
-  CareerOperatingStyleId,
-  CareerTrackId,
-  GameState,
-  TherapistCareerEffectMultipliers,
-} from "../model/types";
+import type { GameState, TherapistCareerEffectMultipliers } from "../model/types";
 import { getTherapistCareerNodeEffectMultipliers } from "./therapistNodeEffects";
 
 export { type CareerStageId };

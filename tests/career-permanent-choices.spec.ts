@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const seededState = {
   currencyCents: 1_000_000,
@@ -47,7 +47,7 @@ const seededState = {
   },
 };
 
-async function seedSave(page: any) {
+async function seedSave(page: Page) {
   await page.addInitScript(
     (args: { state: typeof seededState; lastSimulatedAtMs: number; lastTabId: string }) => {
       if (window.localStorage.getItem("emily-idle:save") !== null) {
@@ -108,10 +108,28 @@ test("career permanent choices show previews and persist across refresh", async 
     if (!saved) {
       return false;
     }
-    const parsed = JSON.parse(saved) as any;
-    const career = parsed?.state?.therapistCareer;
-    const persistedTrack = career?.primaryTrackId ?? career?.activeTrackId;
-    return persistedTrack === "private-practice" && career?.modalityId === "cbt";
+    try {
+      const parsed = JSON.parse(saved);
+      if (typeof parsed !== "object" || parsed === null) {
+        return false;
+      }
+      const state = (
+        parsed as {
+          state?: {
+            therapistCareer?: {
+              primaryTrackId?: string | null;
+              activeTrackId?: string | null;
+              modalityId?: string | null;
+            };
+          };
+        }
+      ).state;
+      const career = state?.therapistCareer;
+      const persistedTrack = career?.primaryTrackId ?? career?.activeTrackId;
+      return persistedTrack === "private-practice" && career?.modalityId === "cbt";
+    } catch {
+      return false;
+    }
   });
 
   await page.reload();

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 type SeededState = {
   currencyCents: number;
@@ -8,7 +8,7 @@ type SeededState = {
   };
 };
 
-async function seedSave(page: any, args: { state: SeededState; lastTabId: string }) {
+async function seedSave(page: Page, args: { state: SeededState; lastTabId: string }) {
   await page.addInitScript(({ state, lastTabId }: { state: SeededState; lastTabId: string }) => {
     if (window.sessionStorage.getItem("settings-clear-save-seeded") === "1") {
       return;

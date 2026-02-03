@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 
 import {
   CAREER_EXPANSION_FOCUSES,
@@ -26,30 +26,6 @@ type CareerStageChoiceBlocksProps = {
   state: GameState;
   onPurchase: (nextState: GameState) => void;
 };
-
-function LockedStageCard({
-  stageId,
-  heading,
-  label,
-}: {
-  stageId: CareerStageId;
-  heading: string;
-  label: string;
-}) {
-  return (
-    <div className="card" data-testid={`career-stage-block-${stageId}`}>
-      <div className="career-track-header">
-        <div>
-          <h4>{heading}</h4>
-          <p className="muted">Permanent choice locked in.</p>
-        </div>
-        <div className="career-track-level" data-testid={`career-choice-locked-${stageId}`}>
-          {label}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function LockedStageTeaser({
   stageId,

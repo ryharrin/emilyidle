@@ -5,17 +5,14 @@ import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPa
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 
-import type { CatalogEntry } from "../../game/catalog";
-import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
+import { formatMoneyFromCents } from "../../game/format";
 import {
   buyMaisonLine,
   canBuyMaisonLine,
-  canWorkshopPrestige,
   getAchievementUnlockProgressDetail,
   getEventStatusLabel,
   getMilestoneUnlockProgressDetail,
   getMilestoneRequirementLabel,
-  getNextDuplicateRewardMultiplier,
   getPrestigeUnlockProgressDetail,
   getUnlockRevealProgressRatio,
   getWatchModelOwnedCount,
@@ -32,7 +29,6 @@ import type {
   MaisonLineDefinition,
   MilestoneDefinition,
   SetBonusDefinition,
-  WatchItemDefinition,
   WatchItemId,
 } from "../../game/state";
 
@@ -67,27 +63,6 @@ type CollectionTabProps = {
   isActive: boolean;
   state: GameState;
   onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
-  catalogSearch: string;
-  onCatalogSearchChange: (next: string) => void;
-  catalogBrand: string;
-  onCatalogBrandChange: (next: string) => void;
-  catalogStyle: "all" | "womens";
-  onCatalogStyleChange: (next: "all" | "womens") => void;
-  catalogSort: "default" | "brand" | "year" | "tier";
-  onCatalogSortChange: (next: "default" | "brand" | "year" | "tier") => void;
-  catalogEra: "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown";
-  onCatalogEraChange: (next: "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown") => void;
-  catalogType: "all" | "gmt" | "chronograph" | "dress" | "diver";
-  onCatalogTypeChange: (next: "all" | "gmt" | "chronograph" | "dress" | "diver") => void;
-  catalogTab: "unowned" | "owned";
-  onCatalogTabChange: (next: "unowned" | "owned") => void;
-  catalogBrands: ReadonlyArray<string>;
-  filteredCatalogEntries: ReadonlyArray<CatalogEntry>;
-  discoveredCatalogEntries: ReadonlyArray<CatalogEntry>;
-  discoveredCatalogIds: ReadonlyArray<string>;
-  catalogEntries: ReadonlyArray<CatalogEntry>;
-  hasOwnedCatalogTiers: boolean;
-  watchItems: ReadonlyArray<WatchItemDefinition>;
   watchItemLabels: Map<WatchItemId, string>;
   autoBuyUnlocked: boolean;
   autoBuyEnabled: boolean;
@@ -106,7 +81,6 @@ type CollectionTabProps = {
   craftingParts: number;
   renderCraftingRecipes: (testId: string) => React.ReactNode;
   renderCraftingBoosts: (testId: string) => React.ReactNode;
-  craftingPartsPerWatch: Record<WatchItemId, number>;
   activeCoachmarks: Coachmark[];
   settings: Settings;
   persistSettings: (nextSettings: Settings) => void;
@@ -117,34 +91,12 @@ type CollectionTabProps = {
   currentEventMultiplier: number;
   nowMs: number;
   onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
-  onInteract: (itemId: WatchItemId) => void;
 };
 
 export function CollectionTab({
   isActive,
   state,
   onNavigate,
-  catalogSearch,
-  onCatalogSearchChange,
-  catalogBrand,
-  onCatalogBrandChange,
-  catalogStyle,
-  onCatalogStyleChange,
-  catalogSort,
-  onCatalogSortChange,
-  catalogEra,
-  onCatalogEraChange,
-  catalogType,
-  onCatalogTypeChange,
-  catalogTab,
-  onCatalogTabChange,
-  catalogBrands,
-  filteredCatalogEntries,
-  discoveredCatalogEntries,
-  discoveredCatalogIds,
-  catalogEntries,
-  hasOwnedCatalogTiers,
-  watchItems: _watchItems,
   watchItemLabels,
   autoBuyUnlocked,
   autoBuyEnabled,
@@ -163,7 +115,6 @@ export function CollectionTab({
   craftingParts,
   renderCraftingRecipes,
   renderCraftingBoosts,
-  craftingPartsPerWatch: _craftingPartsPerWatch,
   activeCoachmarks,
   settings,
   persistSettings,
@@ -174,15 +125,12 @@ export function CollectionTab({
   currentEventMultiplier,
   nowMs,
   onPurchase,
-  onInteract,
 }: CollectionTabProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
   const watchModels = getWatchModels();
   const watchModelById = new Map(watchModels.map((model) => [model.id, model]));
   const wornModel = state.wornWatchId ? (watchModelById.get(state.wornWatchId) ?? null) : null;
   const [wornPickerOpen, setWornPickerOpen] = React.useState(false);
-  const atelierUnlocked =
-    canWorkshopPrestige(state) || state.workshopPrestigeCount > 0 || state.workshopBlueprints > 0;
   const ownedWearableModels = watchModels
     .filter((model) => getWatchModelOwnedCount(state, model.id) > 0)
     .sort((a, b) => a.displayName.localeCompare(b.displayName));

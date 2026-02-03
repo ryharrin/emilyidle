@@ -143,6 +143,14 @@ export function CareerMapCanvas({
     setViewport(clampToView(next));
   }, [clampToView, getViewSize, loadedFromStorage, nodes, setViewport]);
 
+  const contentStyle: React.CSSProperties & { "--career-map-scale": number } = {
+    width,
+    height,
+    transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`,
+    transformOrigin: "0 0",
+    "--career-map-scale": viewport.scale,
+  };
+
   return (
     <div className="career-map" data-testid="career-map">
       <div className="career-map-controls">
@@ -177,16 +185,7 @@ export function CareerMapCanvas({
         onPointerUp={bind.onPointerUp}
         onPointerCancel={bind.onPointerCancel}
       >
-        <div
-          className="career-map-content"
-          style={{
-            width,
-            height,
-            transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`,
-            transformOrigin: "0 0",
-            ["--career-map-scale" as any]: viewport.scale,
-          }}
-        >
+        <div className="career-map-content" style={contentStyle}>
           <svg className="career-map-edges" width={width} height={height} aria-hidden="true">
             {edges.map((edge) => {
               const from = nodeById.get(edge.from);

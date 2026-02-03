@@ -1,10 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 type SeedArgs = {
   lastSimulatedAtMs: number;
 };
 
-async function seedQuartzSave(page: any, args: SeedArgs) {
+async function seedQuartzSave(page: Page, args: SeedArgs) {
   await page.addInitScript(({ lastSimulatedAtMs }: SeedArgs) => {
     (window as unknown as { __EMILY_IDLE_TEST_MODE__?: boolean }).__EMILY_IDLE_TEST_MODE__ = true;
 
@@ -27,7 +27,7 @@ async function seedQuartzSave(page: any, args: SeedArgs) {
   }, args);
 }
 
-async function openQuartzModal(page: any) {
+async function openQuartzModal(page: Page) {
   await page.goto("/");
   await page.getByRole("tab", { name: "Catalog" }).click();
 
@@ -41,7 +41,7 @@ async function openQuartzModal(page: any) {
   await expect(page.getByTestId("quartz-modal")).toBeVisible();
 }
 
-async function expectQuartzAnchorCentered(page: any) {
+async function expectQuartzAnchorCentered(page: Page) {
   const result = await page.evaluate(() => {
     const dial = document.querySelector('[data-testid="quartz-dial"]');
     const anchor = document.querySelector('[data-testid="quartz-anchor"]');

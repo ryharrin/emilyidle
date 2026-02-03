@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const seededState = {
   currencyCents: 1000,
@@ -34,7 +34,7 @@ const seededState = {
   catalogTierUnlocks: [],
 };
 
-async function seedExistingSave(page: any, lastTabId: string = "save") {
+async function seedExistingSave(page: Page, lastTabId: string = "save") {
   await page.addInitScript(
     (args: { state: typeof seededState; lastSimulatedAtMs: number; navigationTab: string }) => {
       window.localStorage.clear();
