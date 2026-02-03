@@ -127,11 +127,11 @@ type QuartzRewardCopy = {
 const QUARTZ_REWARD_INFO: Record<QuartzOutcomeTier, { prefix: string; detail: string }> = {
   miss: {
     prefix: "Miss timing keeps the dial calm",
-    detail: "Misses keep the clock steady and still earn the baseline enjoyment.",
+    detail: "Misses keep the clock steady and still earn the baseline reward.",
   },
   good: {
     prefix: "Good timing rewards steady enjoyment",
-    detail: "Good hits keep the minute hand stable and deliver the mid-tier reward.",
+    detail: "Good hits keep the minute hand stable and deliver the dependable mid-tier reward.",
   },
   perfect: {
     prefix: "Perfect timing pays 2×",
@@ -139,12 +139,18 @@ const QUARTZ_REWARD_INFO: Record<QuartzOutcomeTier, { prefix: string; detail: st
   },
 };
 
+const QUARTZ_TIER_LABELS: Record<QuartzOutcomeTier, string> = {
+  miss: "Miss",
+  good: "Good",
+  perfect: "Perfect",
+};
+
 export function getQuartzRewardCopy(tier: QuartzOutcomeTier): QuartzRewardCopy {
   const rewardCents = QUARTZ_ENJOYMENT_BY_TIER_CENTS[tier];
   const info = QUARTZ_REWARD_INFO[tier];
   return {
     headline: `${info.prefix} · +${formatMoneyFromCents(rewardCents)} enjoyment`,
-    detail: info.detail,
+    detail: `${info.detail} Tier pays ${rewardCents / QUARTZ_ENJOYMENT_BY_TIER_CENTS.miss}× baseline enjoyment.`,
   };
 }
 
@@ -237,6 +243,7 @@ export function QuartzMiniGameModal({
     targetTime,
   });
   const rewardCopy = result ? getQuartzRewardCopy(result.tier) : null;
+  const outcomeState = result ? "resolved" : "running";
 
   const handleSet = () => {
     if (result) {
@@ -281,7 +288,7 @@ export function QuartzMiniGameModal({
           </div>
         </header>
 
-        <div className="quartz-modal-body">
+        <div className="quartz-modal-body" data-outcome-state={outcomeState}>
           <div className="quartz-target-time" data-testid="quartz-target-time">
             <strong>Set to: {formatTime(targetTime.hour, targetTime.minute)}</strong>
           </div>

@@ -66,12 +66,12 @@ type WindingRewardCopy = {
 
 const WINDING_REWARD_INFO: Record<WindingOutcomeTier, { prefix: string; detail: string }> = {
   miss: {
-    prefix: "Miss hits keep the crown calm 1×",
-    detail: "Miss timing stays safe and earns the baseline enjoyment.",
+    prefix: "Miss hits keep the crown calm",
+    detail: "Miss timing stays safe and keeps the needle from rattling the crown.",
   },
   good: {
     prefix: "Good timing keeps torque steady",
-    detail: "Good hits deliver steady enjoyment while the needle stays in the green.",
+    detail: "Good hits hold the progress in the green band for a reliable boost.",
   },
   perfect: {
     prefix: "Perfect timing pays 2×",
@@ -84,7 +84,7 @@ export function getWindingRewardCopy(tier: WindingOutcomeTier): WindingRewardCop
   const info = WINDING_REWARD_INFO[tier];
   return {
     headline: `${info.prefix} · +${formatMoneyFromCents(rewardCents)} enjoyment`,
-    detail: info.detail,
+    detail: `${info.detail} Tier pays ${rewardCents / ENJOYMENT_BY_TIER_CENTS.miss}× baseline enjoyment.`,
   };
 }
 
@@ -288,6 +288,8 @@ export function WindingMiniGameModal({
     tensionPercent,
     softWarningActive,
   });
+  const liveState = result ? "resolved" : "running";
+  const outcomeState = result ? "resolved" : "running";
   const trackStyle = {
     ["--winding-progress" as "--winding-progress"]: progress01,
     ["--winding-velocity" as "--winding-velocity"]: velocityPulse,
@@ -322,7 +324,7 @@ export function WindingMiniGameModal({
           </div>
         </header>
 
-        <div className="winding-modal-body">
+        <div className="winding-modal-body" data-outcome-state={outcomeState}>
           <div className="winding-status-grid">
             <WindingCrown
               angleDeg={crownAngleDeg}

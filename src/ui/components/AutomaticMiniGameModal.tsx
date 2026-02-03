@@ -235,9 +235,11 @@ export function AutomaticMiniGameModal({
   const needlePercent = Math.round(((needle + 1) / 2) * 100);
 
   const liveMessageText = getAutomaticLiveMessage({ result, targetPercent });
+  const liveState = result ? "resolved" : "running";
 
   const reserveGain = result ? Math.round((RESERVE_GAIN_BY_TIER[result.tier] ?? 0) * 100) : 0;
   const rewardCopy = result ? getAutomaticRewardCopy(result.tier, reserveGain) : null;
+  const outcomeState = result ? "resolved" : "running";
 
   return (
     <div
@@ -266,7 +268,7 @@ export function AutomaticMiniGameModal({
           </div>
         </header>
 
-        <div className="automatic-modal-body">
+        <div className="automatic-modal-body" data-outcome-state={outcomeState}>
           <div className="automatic-track" aria-hidden="true">
             <div className="automatic-target" aria-hidden="true" />
             <div
@@ -276,7 +278,13 @@ export function AutomaticMiniGameModal({
             />
           </div>
 
-          <div className="automatic-live" data-testid="automatic-live" aria-live="polite">
+          <div
+            className="automatic-live"
+            data-testid="automatic-live"
+            aria-live="polite"
+            data-live-state={liveState}
+            role="status"
+          >
             {liveMessageText}
           </div>
 
