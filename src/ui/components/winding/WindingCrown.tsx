@@ -1,5 +1,5 @@
 import React from "react";
-import { WindingBand } from "./windingMath";
+import { clamp01, WindingBand } from "./windingMath";
 
 type Props = {
   angleDeg: number;
@@ -20,12 +20,16 @@ export function WindingCrown({
   velocity01,
   progress01,
 }: Props) {
-  const normalizedVelocity = Math.max(0, Math.min(1, velocity01));
+  const normalizedVelocity = clamp01(velocity01);
+  const normalizedProgress = clamp01(progress01);
+  const normalizedTension = clamp01(tension01);
+  const glowIntensity = clamp01(normalizedVelocity + normalizedTension * 0.6);
   const style = {
     ["--winding-angle" as "--winding-angle"]: `${angleDeg}deg`,
-    ["--winding-progress" as "--winding-progress"]: progress01,
-    ["--winding-tension" as "--winding-tension"]: tension01,
+    ["--winding-progress" as "--winding-progress"]: normalizedProgress,
+    ["--winding-tension" as "--winding-tension"]: normalizedTension,
     ["--winding-velocity" as "--winding-velocity"]: normalizedVelocity,
+    ["--winding-glow" as "--winding-glow"]: glowIntensity,
   } as React.CSSProperties;
 
   return (
