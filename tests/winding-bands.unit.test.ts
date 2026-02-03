@@ -7,6 +7,12 @@ import {
   getWindingTension,
   getWindingVelocity,
 } from "../src/ui/components/winding/windingMath";
+import { formatMoneyFromCents } from "../src/game/format";
+import {
+  ENJOYMENT_BY_TIER_CENTS,
+  getWindingLiveMessage,
+  getWindingRewardCopy,
+} from "../src/ui/components/WindingMiniGameModal";
 
 describe("winding band rules", () => {
   it("maps progress to the correct bands", () => {
@@ -58,5 +64,46 @@ describe("winding band rules", () => {
     expect(perfectVelocity).toBeGreaterThan(baseSpeed);
     expect(overVelocity).toBeGreaterThanOrEqual(perfectVelocity);
     expect(getWindingVelocity(1)).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("winding mini-game messaging", () => {
+  it("reports running versus stopped live-region copy", () => {
+    const runningCopy = getWindingLiveMessage({
+      result: null,
+      progressPercent: 40,
+      bandLabel: "Good wind",
+      tensionPercent: 60,
+      softWarningActive: true,
+    });
+
+    expect(runningCopy).toMatch(/Keep winding/i);
+    expect(runningCopy).toMatch(/Tension 60%/i);
+    expect(runningCopy).toMatch(/red glow/i);
+
+    const outcome = { tier: "perfect", performance: 0.98 };
+    const stoppedCopy = getWindingLiveMessage({
+      result: outcome,
+      progressPercent: 92,
+      bandLabel: "Perfect tension",
+      tensionPercent: 95,
+      softWarningActive: false,
+    });
+
+    expect(stoppedCopy).toContain("Stopped at 92%");
+    expect(stoppedCopy).toMatch(/Perfect tension/i);
+  });
+
+  it("builds tier reward copy with the right values", () => {
+    const perfectCopy = getWindingRewardCopy("perfect");
+    const perfectMoney = formatMoneyFromCents(ENJOYMENT_BY_TIER_CENTS.perfect);
+    expect(perfectCopy.headline).toContain(perfectMoney);
+    expect(perfectCopy.headline).toMatch(/Perfect timing pays 2×/i);
+    expect(perfectCopy.detail).toMatch(/double/i);
+
+    const missCopy = getWindingRewardCopy("miss");
+    const missMoney = formatMoneyFromCents(ENJOYMENT_BY_TIER_CENTS.miss);
+    expect(missCopy.headline).toContain(missMoney);
+    expect(missCopy.headline).toMatch(/Miss hits/i);
   });
 });

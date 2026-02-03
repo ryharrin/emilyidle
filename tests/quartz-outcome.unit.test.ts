@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  QUARTZ_ENJOYMENT_BY_TIER_CENTS,
   getOutcomeTier,
   getPerformance,
+  getQuartzLiveMessage,
+  getQuartzRewardCopy,
   timeToPosition,
 } from "../src/ui/components/QuartzMiniGameModal";
+import { formatMoneyFromCents } from "../src/game/format";
 
 describe("Quartz outcome math", () => {
   it("rewards hits near the target position", () => {
@@ -78,5 +82,40 @@ describe("time to position conversion", () => {
 
     // 1:00 = ~0.083 (1/12)
     expect(timeToPosition(1, 0)).toBeCloseTo(0.083, 3);
+  });
+});
+
+describe("quartz messaging helpers", () => {
+  it("describes running versus stopped states", () => {
+    const targetTime = { hour: 3, minute: 15 };
+    const running = getQuartzLiveMessage({
+      result: null,
+      progressPercent: 42,
+      targetTime,
+    });
+
+    expect(running).toContain("Keep the minute hand near");
+    expect(running).toContain("3:15");
+
+    const stopped = getQuartzLiveMessage({
+      result: { tier: "good", performance: 0.7 },
+      progressPercent: 87,
+      targetTime,
+    });
+
+    expect(stopped).toMatch(/Good timing/i);
+    expect(stopped).toMatch(/Stopped at 87%/i);
+  });
+
+  it("returns tier reward copy with precise values", () => {
+    const perfectCopy = getQuartzRewardCopy("perfect");
+    const perfectMoney = formatMoneyFromCents(QUARTZ_ENJOYMENT_BY_TIER_CENTS.perfect);
+    expect(perfectCopy.headline).toContain(perfectMoney);
+    expect(perfectCopy.headline).toMatch(/Perfect timing pays 2×/i);
+
+    const missCopy = getQuartzRewardCopy("miss");
+    const missMoney = formatMoneyFromCents(QUARTZ_ENJOYMENT_BY_TIER_CENTS.miss);
+    expect(missCopy.headline).toContain(missMoney);
+    expect(missCopy.detail).toMatch(/baseline enjoyment/i);
   });
 });
