@@ -196,7 +196,10 @@ export function QuartzMiniGameModal({
           </div>
 
           {!result ? (
-            <p className="muted">Tap when the hand aligns with the marker to set the time.</p>
+            <p className="muted">
+              Tap when the hand nears the marker; the wider Good window rewards close hits while
+              perfect still demands the tightest alignment.
+            </p>
           ) : (
             <div
               className={`winding-outcome winding-outcome-${result.tier}`}
