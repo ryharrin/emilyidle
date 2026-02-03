@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 ## Current Position
 
 Phase: 42 of 6 (v4.0 Phases 42-47)
-Plan: Not started
-Status: Ready to plan Phase 42
-Last activity: 2026-02-02 — Completed quick task 001: Remove Collection Book/Archive Shelf
-Progress: Milestone v4.0 ░░░░░░░░░░ 0%
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-03 — Completed 42-01-PLAN.md
+Progress: Milestone v4.0 █████████░ 99%
 Next Phase: Phase 42 (Winding Refresh)
 
 ## Accumulated Context
@@ -36,8 +36,19 @@ Next Phase: Phase 42 (Winding Refresh)
 - Missing phase verification reports for phases 13 and 18.
 - No dedicated Playwright E2E asserting therapist session deltas (cash/enjoyment) and cooldown UX.
 
+### Decisions Made
+
+| Phase | Decision | Rationale |
+| ----- | -------- | --------- |
+| 42 | Keep telemetry math inside `useWindingRun` and feed CSS via variables | Prevents recomputing identical math in the modal and keeps animation state centralized |
+| 42 | Announce the legend with visually hidden copy and add a hidden focus sentinel | Enriching the legend shifted tab order, so the sentinel keeps focus trapped without exposing extra text nodes |
+
+### Blockers / Concerns Carried Forward
+
+- None.
+
 ## Session Continuity
 
-Last session: 2026-02-02
-Stopped at: Created v4.0 roadmap (Phases 42-47)
+Last session: 2026-02-03T13:24:14Z
+Stopped at: Completed 42-01-PLAN.md
 Resume file: None
