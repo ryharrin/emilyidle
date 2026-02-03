@@ -1,5 +1,10 @@
 export type WindingBand = "under" | "good" | "perfect" | "over";
 
+export const WINDING_GOOD_THRESHOLD = 0.3;
+export const WINDING_PERFECT_THRESHOLD = 0.7;
+export const WINDING_SOFT_PENALTY_THRESHOLD = 0.97;
+export const WINDING_HARD_PENALTY_THRESHOLD = 0.985;
+
 export function clamp01(value: number): number {
   if (!Number.isFinite(value)) {
     return 0;
@@ -7,25 +12,38 @@ export function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
+export type WindingPenaltyFlags = {
+  softPenalty: boolean;
+  strictPenalty: boolean;
+};
+
 export function getWindingBand(progress01: number): WindingBand {
   const clamped = clamp01(progress01);
-  if (clamped > 0.95) {
+  if (clamped >= WINDING_HARD_PENALTY_THRESHOLD) {
     return "over";
   }
-  if (clamped >= 0.7) {
+  if (clamped >= WINDING_PERFECT_THRESHOLD) {
     return "perfect";
   }
-  if (clamped >= 0.3) {
+  if (clamped >= WINDING_GOOD_THRESHOLD) {
     return "good";
   }
   return "under";
 }
 
+export function getWindingPenaltyFlags(progress01: number): WindingPenaltyFlags {
+  const clamped = clamp01(progress01);
+  return {
+    softPenalty: clamped >= WINDING_SOFT_PENALTY_THRESHOLD,
+    strictPenalty: clamped >= WINDING_HARD_PENALTY_THRESHOLD,
+  };
+}
+
 export function getWindingTension(progress01: number): number {
   const clamped = clamp01(progress01);
-  const base = clamp01((clamped - 0.3) / 0.7);
-  if (clamped > 0.95) {
-    return clamp01(base + (clamped - 0.95) * 4);
+  const base = clamp01((clamped - WINDING_GOOD_THRESHOLD) / (1 - WINDING_GOOD_THRESHOLD));
+  if (clamped >= WINDING_HARD_PENALTY_THRESHOLD) {
+    return clamp01(base + (clamped - WINDING_HARD_PENALTY_THRESHOLD) * 4);
   }
   return base;
 }
@@ -36,15 +54,18 @@ export function getWindingTensionPercent(progress01: number): number {
 
 export function getWindingVelocity(progress01: number): number {
   const clamped = clamp01(progress01);
-  if (clamped >= 0.95) {
-    const normalized = (clamped - 0.95) / 0.05;
+  if (clamped >= WINDING_HARD_PENALTY_THRESHOLD) {
+    const normalized =
+      (clamped - WINDING_HARD_PENALTY_THRESHOLD) / (1 - WINDING_HARD_PENALTY_THRESHOLD);
     return clamp01(0.85 + normalized * 0.15);
   }
-  if (clamped >= 0.7) {
-    const normalized = (clamped - 0.7) / 0.25;
+  if (clamped >= WINDING_PERFECT_THRESHOLD) {
+    const normalized =
+      (clamped - WINDING_PERFECT_THRESHOLD) /
+      (WINDING_HARD_PENALTY_THRESHOLD - WINDING_PERFECT_THRESHOLD);
     return clamp01(0.65 + normalized * 0.25);
   }
-  const normalized = clamped / 0.7;
+  const normalized = clamped / WINDING_PERFECT_THRESHOLD;
   return clamp01(0.2 + normalized * 0.45);
 }
 

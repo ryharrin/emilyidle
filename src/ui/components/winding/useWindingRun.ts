@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   clamp01,
   getWindingBand,
+  getWindingPenaltyFlags,
   getWindingTension,
   getWindingVelocity,
   WindingBand,
@@ -28,6 +29,8 @@ export type UseWindingRunResult = {
   progressPercent: number;
   tensionPercent: number;
   velocityPercent: number;
+  softPenalty: boolean;
+  strictPenalty: boolean;
 };
 
 const ANGLE_BASE_SPEED = 80;
@@ -66,6 +69,10 @@ export function useWindingRun({
   const velocityPercent = useMemo(
     () => Math.round(Math.min(1, Math.max(0, velocity01)) * 100),
     [velocity01],
+  );
+  const { softPenalty, strictPenalty } = useMemo(
+    () => getWindingPenaltyFlags(progress01),
+    [progress01],
   );
 
   const cleanupAnimation = useCallback(() => {
@@ -206,6 +213,8 @@ export function useWindingRun({
     progressPercent,
     tensionPercent,
     velocityPercent,
+    softPenalty,
+    strictPenalty,
     stop,
   };
 }
