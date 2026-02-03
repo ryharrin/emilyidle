@@ -508,7 +508,8 @@ button:not(:disabled):active {
 }
 
 .winding-modal-card {
-  width: min(560px, 92vw);
+  width: min(580px, 94vw);
+  max-height: 90vh;
 }
 
 .winding-modal-header {
@@ -524,111 +525,296 @@ button:not(:disabled):active {
 
 .winding-modal-body {
   display: grid;
-  gap: 14px;
+  gap: 12px;
+}
+
+.winding-status-grid {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.winding-progress-readout {
+  display: grid;
+  line-height: 1.2;
 }
 
 .winding-crown {
-  width: 54px;
-  height: 54px;
-  border-radius: 14px;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
   border: 1px solid #343946;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), rgba(15, 17, 21, 0.65));
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25), rgba(15, 17, 21, 0.7));
   box-shadow:
-    0 16px 28px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 20px 40px rgba(0, 0, 0, 0.45),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
   position: relative;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    filter 220ms ease;
+  --winding-angle: 0deg;
+  --winding-progress: 0;
+  --winding-velocity: 0;
+  --winding-tension: 0;
+  transform: rotate(var(--winding-angle));
 }
 
 .winding-crown::after {
   content: "";
   position: absolute;
-  right: -10px;
-  top: 50%;
-  width: 16px;
-  height: 18px;
-  border-radius: 8px;
-  border: 1px solid rgba(232, 198, 147, 0.45);
-  background: rgba(232, 198, 147, 0.12);
-  transform: translateY(-50%);
+  inset: -6px;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  opacity: calc(0.1 + var(--winding-velocity) * 0.35);
+  filter: blur(calc(4px + var(--winding-tension, 0) * 6px));
+  animation: winding-crown-glow calc(3s - var(--winding-velocity, 0.15) * 1.2s) ease-in-out infinite;
+  pointer-events: none;
 }
 
-.winding-crown-running {
-  animation: winding-spin 900ms linear infinite;
-}
-
-@keyframes winding-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.winding-crown-under {
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .winding-crown-good {
-  border-color: rgba(232, 198, 147, 0.55);
+  border-color: rgba(232, 198, 147, 0.85);
 }
 
 .winding-crown-perfect {
-  border-color: rgba(72, 175, 255, 0.75);
+  border-color: rgba(72, 175, 255, 0.85);
+}
+
+.winding-crown-over {
+  border-color: rgba(255, 118, 118, 0.9);
+}
+
+.winding-crown-phase-stopping {
+  opacity: 0.85;
+}
+
+.winding-crown-phase-running {
+  animation: winding-crown-breathe 3s ease-in-out infinite;
+}
+
+.winding-crown-reduced-motion {
+  transform: scale(calc(1 + var(--winding-tension) * 0.15));
+}
+
+@keyframes winding-crown-breathe {
+  0% {
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.45),
+      inset 0 0 calc(12px + var(--winding-tension) * 16px) rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 28px 50px rgba(0, 0, 0, 0.55),
+      inset 0 0 calc(14px + var(--winding-tension) * 20px) rgba(255, 255, 255, 0.35);
+  }
+  100% {
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.45),
+      inset 0 0 calc(12px + var(--winding-tension) * 16px) rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes winding-crown-glow {
+  0% {
+    opacity: calc(0.05 + var(--winding-velocity) * 0.2);
+  }
+  50% {
+    opacity: calc(0.25 + var(--winding-velocity) * 0.25);
+  }
+  100% {
+    opacity: calc(0.05 + var(--winding-velocity) * 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .winding-crown-phase-running,
+  .winding-crown::after,
+  .winding-track::before,
+  .winding-actions button {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 .winding-track {
   position: relative;
-  height: 18px;
+  min-height: 48px;
   border-radius: 999px;
-  background: rgba(15, 17, 21, 0.65);
+  background: rgba(15, 17, 21, 0.9);
   border: 1px solid #2a2f3b;
   overflow: hidden;
   cursor: pointer;
+  touch-action: none;
+  overscroll-behavior: contain;
+  padding: 8px 12px;
+  --winding-progress: 0;
+  --winding-velocity: 0;
 }
 
-.winding-sweetspot {
+.winding-track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      circle at calc(var(--winding-progress) * 100%) 50%,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0) 45%
+    ),
+    linear-gradient(90deg, rgba(72, 175, 255, 0.12), rgba(72, 175, 255, 0.02));
+  opacity: calc(0.05 + var(--winding-velocity) * 0.35 + var(--winding-tension, 0) * 0.15);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity 140ms ease;
+}
+
+.winding-track-band {
   position: absolute;
   top: 0;
-  left: 44%;
-  width: 12%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(232, 198, 147, 0.1),
-    rgba(232, 198, 147, 0.35),
-    rgba(232, 198, 147, 0.1)
-  );
-  border-left: 1px solid rgba(232, 198, 147, 0.35);
-  border-right: 1px solid rgba(232, 198, 147, 0.35);
+  border-radius: 999px;
+  opacity: 0.5;
+}
+
+.winding-track-under {
+  left: 0;
+  width: 30%;
+  background: #1f2733;
+}
+
+.winding-track-good {
+  left: 30%;
+  width: 40%;
+  background: linear-gradient(90deg, rgba(232, 198, 147, 0.2), rgba(232, 198, 147, 0.45));
+}
+
+.winding-track-perfect {
+  left: 70%;
+  width: 25%;
+  background: linear-gradient(90deg, rgba(72, 175, 255, 0.2), rgba(72, 175, 255, 0.6));
+}
+
+.winding-track-over {
+  left: 95%;
+  width: 5%;
+  background: linear-gradient(90deg, rgba(255, 118, 118, 0.4), rgba(255, 118, 118, 0.7));
+}
+
+.winding-track-hint {
+  position: absolute;
+  inset: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #f7f7f7;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.winding-track-hint .secondary.small {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+}
+
+.winding-track-hint button {
+  pointer-events: auto;
+}
+
+.winding-band-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.winding-band-chip {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.78rem;
+  color: #c5c9d3;
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.winding-band-chip.active {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .winding-indicator {
   position: absolute;
   top: 50%;
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.2);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
   transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(0, 0, 0, 0.5);
+}
+
+.winding-live {
+  font-size: 0.88rem;
+  color: #9da3ad;
+  min-height: 20px;
+}
+
+.winding-actions {
+  margin-top: 4px;
+}
+
+.winding-actions button {
+  min-height: 44px;
+  padding: 12px 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .winding-outcome {
   display: grid;
-  gap: 6px;
-  padding: 12px 14px;
+  gap: 4px;
+  padding: 10px 14px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 17, 21, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 17, 21, 0.85);
 }
 
 .winding-outcome-miss {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .winding-outcome-good {
-  border-color: rgba(232, 198, 147, 0.45);
+  border-color: rgba(232, 198, 147, 0.5);
 }
 
 .winding-outcome-perfect {
-  border-color: rgba(72, 175, 255, 0.55);
+  border-color: rgba(72, 175, 255, 0.5);
+}
+
+.winding-focus-sentinel {
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .automatic-modal-card {
