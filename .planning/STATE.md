@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 Phase: 44 of 6 (v4.0 Phases 42-47)
 Plan: execute (44-01) — Completed
 Status: Phase 44 execution complete; ready for the next phase
-Last activity: 2026-02-03 — Completed 44-01-PLAN.md
+Last activity: 2026-02-03 — Completed 44-01-PLAN.md and 44-01-SUMMARY.md
 Progress: Phase 44 plans complete (1/1)
 Next Phase: Phase 45-per-watch-stats-surfaces
 
@@ -50,6 +50,8 @@ Next Phase: Phase 45-per-watch-stats-surfaces
 | 43 | Exported the quartz outcome helpers so regression tests consume the same deterministic math as the modal | Prevents divergent thresholds between UI and tests and lets future plans reuse the helpers |
 | 44 | Align outcome visibility + reward feedback across winding, quartz, and automatic mini-games | Ensures every interaction emits clear tiered messaging tied to precision while keeping reduced-motion/touch contracts intact |
 | 44 | Centralized helper functions now own live-region + reward copy for each modal | Keeps UI and regression tests synchronized with a single source of truth |
+| 44 | Exposed `data-live-state` / `data-outcome-state` attributes across the modals | Lets automation/tests detect running vs resolved states without relying on copy text |
+| 44 | Added tier badges, glows, and multiplier-aware reward copy for Miss/Good/Perfect | Keeps styling, messaging, and econometric math aligned across UI and regressions |
 | 44 | Miss/Good/Perfect tiers explicitly mention their 1×/2× reward math while `data-tier` styling mirrors the earned tier | Reinforces precision and keeps styling consistent across modals |
 
 ### Blockers / Concerns Carried Forward
@@ -58,6 +60,6 @@ Next Phase: Phase 45-per-watch-stats-surfaces
 
 ## Session Continuity
 
-Last session: 2026-02-03T22:08:41Z
-Stopped at: Completed 44-01-PLAN.md
+Last session: 2026-02-03T22:34:49Z
+Stopped at: Completed 44-01-PLAN.md and 44-01-SUMMARY.md
 Resume file: None
