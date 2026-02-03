@@ -12,6 +12,8 @@ import {
   ENJOYMENT_BY_TIER_CENTS,
   getWindingLiveMessage,
   getWindingRewardCopy,
+  WindingOutcome,
+  WindingOutcomeTier,
 } from "../src/ui/components/WindingMiniGameModal";
 
 describe("winding band rules", () => {
@@ -77,13 +79,16 @@ describe("winding mini-game messaging", () => {
       softWarningActive: true,
     });
 
-    expect(runningCopy).toMatch(/Keep winding/i);
+    expect(runningCopy).toMatch(/Keep going/i);
     expect(runningCopy).toMatch(/Tension 60%/i);
     expect(runningCopy).toMatch(/red glow/i);
 
-    const outcome = { tier: "perfect", performance: 0.98 };
+    const finishedOutcome: WindingOutcome = {
+      tier: "perfect" as WindingOutcomeTier,
+      performance: 0.98,
+    };
     const stoppedCopy = getWindingLiveMessage({
-      result: outcome,
+      result: finishedOutcome,
       progressPercent: 92,
       bandLabel: "Perfect tension",
       tensionPercent: 95,
@@ -99,7 +104,7 @@ describe("winding mini-game messaging", () => {
     const perfectMoney = formatMoneyFromCents(ENJOYMENT_BY_TIER_CENTS.perfect);
     expect(perfectCopy.headline).toContain(perfectMoney);
     expect(perfectCopy.headline).toMatch(/Perfect timing pays 2×/i);
-    expect(perfectCopy.detail).toMatch(/double/i);
+    expect(perfectCopy.detail).toMatch(/Tier pays 6×/i);
 
     const missCopy = getWindingRewardCopy("miss");
     const missMoney = formatMoneyFromCents(ENJOYMENT_BY_TIER_CENTS.miss);

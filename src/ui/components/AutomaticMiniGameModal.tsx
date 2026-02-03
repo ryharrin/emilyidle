@@ -93,7 +93,7 @@ function getPrefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function getTier(performance: number): AutomaticOutcomeTier {
+export function getTier(performance: number): AutomaticOutcomeTier {
   if (performance >= 0.75) {
     return "perfect";
   }

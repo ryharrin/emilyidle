@@ -71,7 +71,7 @@ describe("winding band legend", () => {
     expect(goodChip).toHaveClass("active");
 
     const live = screen.getByTestId("winding-live");
-    expect(live).toHaveTextContent(/Keep winding/i);
+    expect(live).toHaveTextContent(/Keep going/i);
     expect(live).toHaveTextContent(/Tension 60%/i);
 
     const stopButton = screen.getByTestId("winding-stop");

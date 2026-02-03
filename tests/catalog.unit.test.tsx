@@ -1234,7 +1234,7 @@ describe("wind minigame", () => {
     const stopButton = screen.getByTestId("winding-stop");
     expect(stopButton).toHaveTextContent(/stop/i);
     const liveRegion = screen.getByTestId("winding-live");
-    expect(liveRegion.textContent).toMatch(/Keep winding/i);
+    expect(liveRegion.textContent).toMatch(/Keep going/i);
     expect(liveRegion.textContent).toMatch(/Tension \d+%/i);
 
     const softHint = screen.getByTestId("winding-soft-hint");

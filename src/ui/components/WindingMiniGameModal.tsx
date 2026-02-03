@@ -56,7 +56,7 @@ export function getWindingLiveMessage({
   const tensionCopy = softWarningActive
     ? `Tension ${tensionPercent}% • red glow approaching`
     : `Tension ${tensionPercent}%`;
-  return `Keep winding... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel} • Stop to lock in the tier`;
+  return `Keep going... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel} • Stop to lock in the tier`;
 }
 
 type WindingRewardCopy = {
@@ -288,7 +288,6 @@ export function WindingMiniGameModal({
     tensionPercent,
     softWarningActive,
   });
-  const liveState = result ? "resolved" : "running";
   const outcomeState = result ? "resolved" : "running";
   const trackStyle = {
     ["--winding-progress" as "--winding-progress"]: progress01,

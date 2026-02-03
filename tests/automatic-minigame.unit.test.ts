@@ -1,6 +1,9 @@
+/// <reference types="vitest/globals" />
+
 import {
   getAutomaticLiveMessage,
   getAutomaticRewardCopy,
+  getTier,
 } from "../src/ui/components/AutomaticMiniGameModal";
 
 describe("automatic mini-game messaging helpers", () => {
@@ -24,5 +27,11 @@ describe("automatic mini-game messaging helpers", () => {
 
     const goodCopy = getAutomaticRewardCopy("good", 10);
     expect(goodCopy.detail).toMatch(/reliable charge/i);
+  });
+
+  it("maps precision to tier buckets", () => {
+    expect(getTier(0.8)).toBe("perfect");
+    expect(getTier(0.5)).toBe("good");
+    expect(getTier(0.1)).toBe("miss");
   });
 });
