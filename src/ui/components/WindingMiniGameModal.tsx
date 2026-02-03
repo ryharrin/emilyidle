@@ -26,12 +26,36 @@ type WindingMiniGameModalProps = {
 
 const RUN_DURATION_MS = 5_600;
 const STEP_MS_REDUCED_MOTION = 180;
-const LIVE_RUNNING_MESSAGE = "Winding...";
-const ENJOYMENT_BY_TIER_CENTS: Record<WindingOutcomeTier, number> = {
+export const ENJOYMENT_BY_TIER_CENTS: Record<WindingOutcomeTier, number> = {
   miss: 25,
   good: 75,
   perfect: 150,
 };
+
+type WindingLiveMessageArgs = {
+  result: WindingOutcome | null;
+  progressPercent: number;
+  bandLabel: string;
+  tensionPercent: number;
+  softWarningActive: boolean;
+};
+
+export function getWindingLiveMessage({
+  result,
+  progressPercent,
+  bandLabel,
+  tensionPercent,
+  softWarningActive,
+}: WindingLiveMessageArgs): string {
+  if (result) {
+    return `Stopped at ${progressPercent}% — ${bandLabel}`;
+  }
+
+  const tensionCopy = softWarningActive
+    ? `Tension ${tensionPercent}% • red glow approaching`
+    : `Tension ${tensionPercent}%`;
+  return `Keep winding... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel}`;
+}
 
 const focusableSelector =
   "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
@@ -226,11 +250,13 @@ export function WindingMiniGameModal({
   const softWarningActive = softPenalty && !strictPenalty;
   const isOverWound = strictPenalty;
   const legendAnnouncement = "Band legend: Under-wound, Good wind, Perfect tension, Over-wound!";
-  const liveMessageText = result
-    ? `Stopped at ${progressPercent}% — ${bandLabel}`
-    : softWarningActive
-      ? `Progress ${progressPercent}% • Tension ${tensionPercent}% — ${bandLabel} (closing in on the red glow)`
-      : `Progress ${progressPercent}% • Tension ${tensionPercent}% — ${bandLabel}`;
+  const liveMessageText = getWindingLiveMessage({
+    result,
+    progressPercent,
+    bandLabel,
+    tensionPercent,
+    softWarningActive,
+  });
   const trackStyle = {
     ["--winding-progress" as "--winding-progress"]: progress01,
     ["--winding-velocity" as "--winding-velocity"]: velocityPulse,

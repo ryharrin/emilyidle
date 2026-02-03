@@ -16,6 +16,8 @@ const defaultState: UseWindingRunResult = {
   progressPercent: 50,
   tensionPercent: 60,
   velocityPercent: 75,
+  softPenalty: false,
+  strictPenalty: false,
   stop: vi.fn(),
 };
 
@@ -37,6 +39,8 @@ describe("winding band legend", () => {
     progressPercent: 50,
     tensionPercent: 60,
     velocityPercent: 75,
+    softPenalty: false,
+    strictPenalty: false,
     stop: vi.fn(),
   };
 
@@ -67,7 +71,8 @@ describe("winding band legend", () => {
     expect(goodChip).toHaveClass("active");
 
     const live = screen.getByTestId("winding-live");
-    expect(live).toHaveTextContent(/Tension 60% — Good wind/i);
+    expect(live).toHaveTextContent(/Keep winding/i);
+    expect(live).toHaveTextContent(/Tension 60%/i);
 
     const stopButton = screen.getByTestId("winding-stop");
     await user.click(stopButton);

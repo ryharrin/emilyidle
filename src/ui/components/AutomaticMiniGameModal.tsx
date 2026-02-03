@@ -19,11 +19,29 @@ const DEFAULT_RUN_DURATION_MS = 10_000;
 const TEST_RUN_DURATION_MS = 1_500;
 const STEP_MS_REDUCED_MOTION = 200;
 
-const RESERVE_GAIN_BY_TIER: Record<AutomaticOutcomeTier, number> = {
+export const RESERVE_GAIN_BY_TIER: Record<AutomaticOutcomeTier, number> = {
   miss: 0.05,
   good: 0.1,
   perfect: 0.2,
 };
+
+type AutomaticLiveMessageArgs = {
+  result: AutomaticOutcome | null;
+  targetPercent: number;
+};
+
+export function getAutomaticLiveMessage({
+  result,
+  targetPercent,
+}: AutomaticLiveMessageArgs): string {
+  if (result) {
+    const tierLabel =
+      result.tier === "perfect" ? "Perfect" : result.tier === "good" ? "Good" : "Miss";
+    return `${tierLabel} balance locked • ${targetPercent}% stability`;
+  }
+
+  return `Keep the rotor balanced • ${targetPercent}% stability`;
+}
 
 function clamp(value: number, min: number, max: number): number {
   if (!Number.isFinite(value)) {
@@ -185,6 +203,8 @@ export function AutomaticMiniGameModal({
   const targetPercent = Math.round(clamp01(inBandMs / runDurationMs) * 100);
   const needlePercent = Math.round(((needle + 1) / 2) * 100);
 
+  const liveMessageText = getAutomaticLiveMessage({ result, targetPercent });
+
   const reserveGain = result ? Math.round((RESERVE_GAIN_BY_TIER[result.tier] ?? 0) * 100) : 0;
   const title = result
     ? result.tier === "perfect"
@@ -229,6 +249,10 @@ export function AutomaticMiniGameModal({
               aria-hidden="true"
               style={{ left: `${needlePercent}%` }}
             />
+          </div>
+
+          <div className="automatic-live" data-testid="automatic-live" aria-live="polite">
+            {liveMessageText}
           </div>
 
           <div className="teaser-progress">

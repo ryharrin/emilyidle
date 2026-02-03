@@ -21,7 +21,7 @@ type QuartzMiniGameModalProps = {
 const RUN_DURATION_MS = 10_000; // 10 seconds for full game
 const STEP_MS_REDUCED_MOTION = 180;
 
-const CASH_PAYOUT_BY_TIER_CENTS: Record<QuartzOutcomeTier, number> = {
+export const QUARTZ_ENJOYMENT_BY_TIER_CENTS: Record<QuartzOutcomeTier, number> = {
   miss: 100,
   good: 250,
   perfect: 500,
@@ -97,6 +97,26 @@ export function getPerformance(progress: number, targetPosition: number): number
   const rawDistance = Math.abs(progress - targetPosition);
   const distance = Math.min(rawDistance, 1 - rawDistance);
   return clamp01(1 - distance / 0.5);
+}
+
+type QuartzLiveMessageArgs = {
+  result: QuartzOutcome | null;
+  progressPercent: number;
+  targetTime: { hour: number; minute: number };
+};
+
+export function getQuartzLiveMessage({
+  result,
+  progressPercent,
+  targetTime,
+}: QuartzLiveMessageArgs): string {
+  if (result) {
+    const tierLabel =
+      result.tier === "perfect" ? "Perfect" : result.tier === "good" ? "Good" : "Miss";
+    return `${tierLabel} timing • Stopped at ${progressPercent}% near ${formatTime(targetTime.hour, targetTime.minute)}`;
+  }
+
+  return `Keep the minute hand near ${formatTime(targetTime.hour, targetTime.minute)} • ${progressPercent}% progress`;
 }
 
 export function QuartzMiniGameModal({
@@ -181,6 +201,12 @@ export function QuartzMiniGameModal({
   }
 
   const targetPosition = timeToPosition(targetTime.hour, targetTime.minute);
+  const progressPercent = Math.round(progress * 100);
+  const liveMessageText = getQuartzLiveMessage({
+    result,
+    progressPercent,
+    targetTime,
+  });
 
   const handleSet = () => {
     if (result) {
@@ -205,7 +231,7 @@ export function QuartzMiniGameModal({
         ? "Good"
         : "Miss"
     : "Set the time";
-  const payoutCents = result ? (CASH_PAYOUT_BY_TIER_CENTS[result.tier] ?? 0) : 0;
+  const enjoymentCents = result ? (QUARTZ_ENJOYMENT_BY_TIER_CENTS[result.tier] ?? 0) : 0;
 
   return (
     <div
@@ -237,6 +263,9 @@ export function QuartzMiniGameModal({
         <div className="quartz-modal-body">
           <div className="quartz-target-time" data-testid="quartz-target-time">
             <strong>Set to: {formatTime(targetTime.hour, targetTime.minute)}</strong>
+          </div>
+          <div className="quartz-live" data-testid="quartz-live" aria-live="polite">
+            {liveMessageText}
           </div>
 
           <div className="quartz-dial" data-testid="quartz-dial" aria-hidden="true">
@@ -325,9 +354,9 @@ export function QuartzMiniGameModal({
 
           {!result ? (
             <p className="muted">
-              Tap when the hour hand points to {formatTime(targetTime.hour, targetTime.minute)}. The
-              wider Good window rewards close hits while perfect still demands the tightest
-              alignment.
+              Quartz watches aren't very enjoyable, but at least this one doesn't have a second
+              hand. Tap when the hour hand lines up with{" "}
+              {formatTime(targetTime.hour, targetTime.minute)}
             </p>
           ) : (
             <div
@@ -335,7 +364,7 @@ export function QuartzMiniGameModal({
               data-testid="quartz-outcome"
             >
               <strong>
-                {title} · Cash +{formatMoneyFromCents(payoutCents)}
+                {title} · Enjoyment +{formatMoneyFromCents(enjoymentCents)}
               </strong>
               <p className="muted">Target was {formatTime(targetTime.hour, targetTime.minute)}.</p>
             </div>

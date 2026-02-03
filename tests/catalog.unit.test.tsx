@@ -1234,7 +1234,8 @@ describe("wind minigame", () => {
     const stopButton = screen.getByTestId("winding-stop");
     expect(stopButton).toHaveTextContent(/stop/i);
     const liveRegion = screen.getByTestId("winding-live");
-    expect(liveRegion.textContent).toMatch(/Progress \d+%/i);
+    expect(liveRegion.textContent).toMatch(/Keep winding/i);
+    expect(liveRegion.textContent).toMatch(/Tension \d+%/i);
 
     const softHint = screen.getByTestId("winding-soft-hint");
     expect(softHint).toHaveTextContent(/red glow/i);
@@ -1306,13 +1307,13 @@ describe("quartz minigame", () => {
     cleanup();
   });
 
-  it("opens the quartz modal and applies a cash reward", async () => {
+  it("opens the quartz modal and applies an enjoyment reward", async () => {
     const user = userEvent.setup();
 
     const beforeRaw = localStorage.getItem("emily-idle:save");
     expect(beforeRaw).toBeTruthy();
     const before = beforeRaw
-      ? (JSON.parse(beforeRaw) as { state: { currencyCents: number } })
+      ? (JSON.parse(beforeRaw) as { state: { enjoymentCents: number } })
       : null;
     if (!before) {
       return;
@@ -1326,19 +1327,19 @@ describe("quartz minigame", () => {
     expect(screen.getByTestId("quartz-modal")).toBeTruthy();
 
     await user.click(screen.getByTestId("quartz-action"));
-    expect(screen.getByTestId("quartz-outcome").textContent).toMatch(/Cash/i);
+    expect(screen.getByTestId("quartz-outcome").textContent).toMatch(/Enjoyment/i);
 
     await user.click(screen.getByTestId("quartz-done"));
     expect(screen.queryByTestId("quartz-modal")).toBeNull();
 
     const afterRaw = localStorage.getItem("emily-idle:save");
     expect(afterRaw).toBeTruthy();
-    const after = afterRaw ? (JSON.parse(afterRaw) as { state: { currencyCents: number } }) : null;
+    const after = afterRaw ? (JSON.parse(afterRaw) as { state: { enjoymentCents: number } }) : null;
     if (!after) {
       return;
     }
 
-    expect(after.state.currencyCents).toBeGreaterThan(before.state.currencyCents);
+    expect(after.state.enjoymentCents).toBeGreaterThan(before.state.enjoymentCents);
   });
 });
 
