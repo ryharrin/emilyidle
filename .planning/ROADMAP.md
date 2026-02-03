@@ -33,7 +33,7 @@ Milestone v4.0 deepens watch interactions with new/expanded mini-games, surfaces
 
 Plans:
 - [x] 42-01-PLAN.md — Implement Phase 42 winding bands + crown/tension animation + a11y/mobile behavior
-- [ ] 42-02-PLAN.md — Add regression tests for band boundaries and re-verify unit/e2e winding flow
+- [x] 42-02-PLAN.md — Add regression tests for band boundaries and re-verify unit/e2e winding flow
 
 ### Phase 43: New Watch Mini-Games
 
@@ -96,7 +96,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 42. Winding Refresh | v4.0 | 1/2 | In progress | 42-01-SUMMARY.md |
+| 42. Winding Refresh | v4.0 | 2/2 | Complete | 42-02-SUMMARY.md |
 | 43. New Watch Mini-Games | v4.0 | 0/TBD | Not started | - |
 | 44. Interaction Feedback & Rewards | v4.0 | 0/TBD | Not started | - |
 | 45. Per-Watch Stats Surfaces | v4.0 | 0/TBD | Not started | - |
