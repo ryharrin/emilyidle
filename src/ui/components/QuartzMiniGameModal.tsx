@@ -30,6 +30,22 @@ const CASH_PAYOUT_BY_TIER_CENTS: Record<QuartzOutcomeTier, number> = {
 const PERFECT_DISTANCE_FROM_CENTER = 0.03;
 const GOOD_DISTANCE_FROM_CENTER = 0.18;
 
+// Static hour marker data (avoid array index as key)
+const HOUR_MARKERS = [
+  { angle: 0, isMajor: true },
+  { angle: 30, isMajor: false },
+  { angle: 60, isMajor: false },
+  { angle: 90, isMajor: true },
+  { angle: 120, isMajor: false },
+  { angle: 150, isMajor: false },
+  { angle: 180, isMajor: true },
+  { angle: 210, isMajor: false },
+  { angle: 240, isMajor: false },
+  { angle: 270, isMajor: true },
+  { angle: 300, isMajor: false },
+  { angle: 330, isMajor: false },
+];
+
 function clamp01(value: number): number {
   if (!Number.isFinite(value)) {
     return 0;
@@ -224,15 +240,87 @@ export function QuartzMiniGameModal({
           </div>
 
           <div className="quartz-dial" data-testid="quartz-dial" aria-hidden="true">
-            <div className="quartz-target" aria-hidden="true" />
+            {/* Hour markers */}
+            {HOUR_MARKERS.map((marker) => (
+              <div
+                key={marker.angle}
+                className="quartz-hour-marker"
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  width: "2px",
+                  height: marker.isMajor ? "12px" : "6px",
+                  background: marker.isMajor
+                    ? "rgba(232, 198, 147, 0.6)"
+                    : "rgba(232, 198, 147, 0.3)",
+                  transform: `translate(-50%, -50%) rotate(${marker.angle}deg) translateY(-70px)`,
+                  transformOrigin: "center",
+                }}
+              />
+            ))}
+
+            {/* Target marker - shows where player needs to stop */}
+            <div
+              className="quartz-target-marker"
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "4px",
+                height: "20px",
+                background: "rgba(72, 175, 255, 0.8)",
+                borderRadius: "2px",
+                transform: `translate(-50%, -50%) rotate(${targetPosition * 360}deg) translateY(-60px)`,
+                transformOrigin: "center",
+                boxShadow: "0 0 8px rgba(72, 175, 255, 0.5)",
+              }}
+            />
+
+            {/* Hour hand - shows current approximate hour position */}
             <div className="quartz-anchor" data-testid="quartz-anchor" aria-hidden="true">
               <div
-                className="quartz-hand"
-                data-testid="quartz-hand"
+                className="quartz-hand quartz-hour-hand"
+                data-testid="quartz-hour-hand"
                 aria-hidden="true"
-                style={{ transform: `rotate(${progress * 360}deg)` }}
+                style={{
+                  transform: `rotate(${(progress * 360) % 360}deg)`,
+                  width: "4px",
+                  height: "45px",
+                  background: "rgba(232, 198, 147, 0.6)",
+                }}
               />
             </div>
+
+            {/* Minute hand - the main hand player controls */}
+            <div className="quartz-anchor" data-testid="quartz-minute-anchor" aria-hidden="true">
+              <div
+                className="quartz-hand quartz-minute-hand"
+                data-testid="quartz-minute-hand"
+                aria-hidden="true"
+                style={{
+                  transform: `rotate(${(progress * 360 * 12) % 360}deg)`,
+                  width: "2px",
+                  height: "65px",
+                  background: "rgba(232, 198, 147, 0.9)",
+                }}
+              />
+            </div>
+
+            {/* Center dot */}
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "8px",
+                height: "8px",
+                background: "rgba(232, 198, 147, 1)",
+                borderRadius: "50%",
+                transform: "translate(-50%, -50%)",
+                zIndex: 10,
+              }}
+            />
           </div>
 
           {!result ? (
