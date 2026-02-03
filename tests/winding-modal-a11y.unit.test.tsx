@@ -97,6 +97,9 @@ describe("winding modal accessibility", () => {
     expect(stopButton).toHaveAttribute("aria-label", "Stop winding run");
     expect(screen.queryByTestId("winding-outcome")).toBeNull();
 
+    const softHint = screen.getByTestId("winding-soft-hint");
+    expect(softHint).toHaveTextContent(/red glow/i);
+
     const legend = screen.getByTestId("winding-band-legend");
     expect(legend).toHaveAttribute("data-active-band");
     const activeBand = legend.getAttribute("data-active-band");

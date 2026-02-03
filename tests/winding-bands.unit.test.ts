@@ -3,6 +3,7 @@ import {
   getOutcomeTierFromBand,
   getWindingBand,
   getWindingBandLabel,
+  getWindingPenaltyFlags,
   getWindingTension,
   getWindingVelocity,
 } from "../src/ui/components/winding/windingMath";
@@ -14,9 +15,16 @@ describe("winding band rules", () => {
     expect(getWindingBand(0.3)).toBe("good");
     expect(getWindingBand(0.69)).toBe("good");
     expect(getWindingBand(0.7)).toBe("perfect");
-    expect(getWindingBand(0.95)).toBe("perfect");
-    expect(getWindingBand(0.951)).toBe("over");
+    expect(getWindingBand(0.969)).toBe("perfect");
+    expect(getWindingBand(0.984)).toBe("perfect");
+    expect(getWindingBand(0.985)).toBe("over");
     expect(getWindingBand(1)).toBe("over");
+  });
+
+  it("flags the soft and hard penalty bands", () => {
+    expect(getWindingPenaltyFlags(0.96)).toEqual({ softPenalty: false, strictPenalty: false });
+    expect(getWindingPenaltyFlags(0.97)).toEqual({ softPenalty: true, strictPenalty: false });
+    expect(getWindingPenaltyFlags(0.985)).toEqual({ softPenalty: true, strictPenalty: true });
   });
 
   it("maps bands to outcome tiers", () => {

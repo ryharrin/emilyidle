@@ -1236,6 +1236,9 @@ describe("wind minigame", () => {
     const liveRegion = screen.getByTestId("winding-live");
     expect(liveRegion.textContent).toMatch(/Progress \d+%/i);
 
+    const softHint = screen.getByTestId("winding-soft-hint");
+    expect(softHint).toHaveTextContent(/red glow/i);
+
     await user.click(screen.getByTestId("winding-stop"));
     expect(screen.getByTestId("winding-outcome").textContent).toMatch(/enjoyment/i);
     expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i);
