@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { clamp01, getWindingBand, getWindingVelocity, WindingBand } from "./windingMath";
+import {
+  clamp01,
+  getWindingBand,
+  getWindingTension,
+  getWindingVelocity,
+  WindingBand,
+} from "./windingMath";
 
 type PhaseState = "running" | "stopping" | "stopped";
 
@@ -27,14 +33,6 @@ const DECEL_DURATION_MS = 420;
 
 const nowMs = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
 
-const calculateTension = (progress01: number): number => {
-  const base = clamp01((progress01 - 0.3) / 0.7);
-  if (progress01 > 0.95) {
-    return clamp01(base + (progress01 - 0.95) * 4);
-  }
-  return base;
-};
-
 export function useWindingRun({
   open,
   runDurationMs,
@@ -58,7 +56,7 @@ export function useWindingRun({
   const decelLastTickRef = useRef<number | null>(null);
 
   const band = getWindingBand(progress01);
-  const tension01 = useMemo(() => calculateTension(progress01), [progress01]);
+  const tension01 = useMemo(() => getWindingTension(progress01), [progress01]);
   const velocity01 = useMemo(() => getWindingVelocity(progress01), [progress01]);
 
   const cleanupAnimation = useCallback(() => {
