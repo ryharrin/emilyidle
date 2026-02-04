@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
@@ -9,6 +9,21 @@ export default defineConfig({
       name: "chromium",
       use: {
         browserName: "chromium",
+      },
+    },
+    // Mobile viewports (Pixel 5 + iPhone 12) cover Chrome and WebKit scroll-snap/sticky behaviors.
+    {
+      name: "chromium-mobile-pixel5",
+      use: {
+        ...devices["Pixel 5"],
+        hasTouch: true,
+      },
+    },
+    {
+      name: "webkit-mobile-iphone12",
+      use: {
+        ...devices["iPhone 12"],
+        hasTouch: true,
       },
     },
   ],
