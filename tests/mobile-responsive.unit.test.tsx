@@ -119,6 +119,11 @@ describe("Mobile responsive layout helpers", () => {
       ? "1fr"
       : "repeat(3, 1fr)";
     expect(grid.style.gridTemplateColumns).toBe("1fr");
+    setViewportWidth(800);
+    grid.style.gridTemplateColumns = window.matchMedia("(max-width: 600px)").matches
+      ? "1fr"
+      : "repeat(3, 1fr)";
+    expect(grid.style.gridTemplateColumns).toBe("repeat(3, 1fr)");
   });
 
   test("Collection summary stacks vertically on narrow widths", () => {
@@ -135,6 +140,11 @@ describe("Mobile responsive layout helpers", () => {
       ? "1fr"
       : "repeat(3, 1fr)";
     expect(summary.style.gridTemplateColumns).toBe("1fr");
+    setViewportWidth(860);
+    summary.style.gridTemplateColumns = window.matchMedia("(max-width: 640px)").matches
+      ? "1fr"
+      : "repeat(3, 1fr)";
+    expect(summary.style.gridTemplateColumns).toBe("repeat(3, 1fr)");
   });
 
   test("Tab visibility toggles based on responsive breakpoints", () => {
@@ -156,6 +166,11 @@ describe("Mobile responsive layout helpers", () => {
     const wide = window.matchMedia("(min-width: 800px)");
     expect(narrow.matches).toBe(true);
     expect(wide.matches).toBe(false);
+    setViewportWidth(820);
+    const narrowAfter = window.matchMedia("(max-width: 500px)");
+    const wideAfter = window.matchMedia("(min-width: 800px)");
+    expect(narrowAfter.matches).toBe(false);
+    expect(wideAfter.matches).toBe(true);
   });
 
   test("TierBadge can render without a label for compact layouts", () => {
