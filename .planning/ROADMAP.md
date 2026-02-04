@@ -4,7 +4,7 @@
 
 Milestone v4.0 deepens watch interactions with new/expanded mini-games, surfaces per-watch stats for clearer decisions, expands catalog variety across progression tiers, and completes a mobile-first UI polish pass.
 
-## 📋 Milestone v4.0: Watch Interactions & Catalog Polish (Planned)
+## 📋 Milestone v4.0: Watch Interactions & Catalog Polish (Shipped)
 
 **Milestone Goal:** Enhanced watch mini-games with visual polish, catalog expansion with more variety, and improved mobile UX.
 
@@ -12,12 +12,11 @@ Milestone v4.0 deepens watch interactions with new/expanded mini-games, surfaces
 
 **Phase Numbering:** Continuous across milestones; v4.0 starts at Phase 42 (v3.2 ended at Phase 41).
 
-- [ ] **Phase 42: Winding Refresh** - Winding feels more interactive and visibly animated.
-- [ ] **Phase 43: New Watch Mini-Games** - Add set-time/date and strap-change interactions.
-- [ ] **Phase 44: Interaction Feedback & Rewards** - Consistent outcomes and tier-scaled rewards across mini-games.
-- [ ] **Phase 45: Per-Watch Stats Surfaces** - Show individual watch enjoyment/cash rates and equipped contribution.
-- [ ] **Phase 46: Catalog Expansion (Tiered Variety)** - Add new watches across low/mid/lux tiers with complete assets.
-- [ ] **Phase 47: Mobile & UI Polish** - Touch-friendly navigation, modals, help search, and stats breakdown polish.
+- [x] **Phase 42: Winding Refresh** - Winding feels more interactive and visibly animated.
+- [x] **Phase 43: New Watch Mini-Games** - Add set-time/date and strap-change interactions.
+- [x] **Phase 44: Interaction Feedback & Rewards** - Consistent outcomes and tier-scaled rewards across mini-games.
+- [x] **Phase 45: Per-Watch Stats Surfaces** - Show individual watch enjoyment/cash rates and equipped contribution.
+- [x] **Phase 46: Catalog Expansion (Tiered Variety)** - Add new watches across low/mid/lux tiers with complete assets and tier-appropriate stats.
 
 ## Phase Details
 
@@ -74,13 +73,11 @@ Plans:
   2. Rates vary meaningfully between watches (players can find differences within and across tiers).
   3. Collection view shows an equipped watch contribution breakdown so players can tell what it adds.
 **Plans**: 3 plans
-**Completed**: 2026-02-04 — Regression coverage locked the surface plus sticky controls.
 
 Plans:
 - [x] 45-01-PLAN.md — Create per-watch stats selectors (rows + equipped contribution) with unit tests
 - [x] 45-02-PLAN.md — Add per-watch stats table UI in Catalog + equipped contribution call-out in Collection
 - [x] 45-03-PLAN.md — Add regression coverage (Vitest + Playwright) for sorting, sticky header, and stability
-
 
 ### Phase 46: Catalog Expansion (Tiered Variety)
 
@@ -94,25 +91,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 46-01-PLAN.md — Expand the watch model data pool with low/mid/lux entries, unique enjoyment/cash rates, and matching catalog metadata
-- [ ] 46-02-PLAN.md — Surface the new tiers in Catalog with grouped discovery lanes, tier badges, and sticky filters for exploration
-- [ ] 46-03-PLAN.md — Build regression coverage that verifies the expanded catalog, per-tier rate summaries, and asset visibility
-
-
-### Phase 47: Mobile & UI Polish
-
-**Goal**: Mobile players can navigate, read, and complete core actions comfortably with touch-friendly UI.
-**Depends on**: Phase 46
-**Requirements**: MOBILE-01, MOBILE-02, MOBILE-03, MOBILE-04, MOBILE-05, MOBILE-06, MOBILE-07, MOBILE-08, MOBILE-09
-**Success Criteria** (what must be TRUE):
-  1. On mobile, tab navigation is horizontally scrollable with snap behavior and remains sticky while scrolling.
-  2. Settings panel fieldsets/legends and checkbox groups look intentionally styled (not default browser controls).
-  3. Collection/Catalog content is grouped into sections with an in-page subnav that moves between sections.
-  4. Help modal supports search and remains usable on mobile via a sticky header and improved chip layout.
-  5. Interaction modals and other primary actions meet a minimum 44px touch target standard and provide clearer mobile feedback.
-**Plans**: TBD
-
-
+- [x] 46-01-PLAN.md — Expand watch model data pool with low/mid/lux entries, unique enjoyment/cash rates, and matching catalog metadata
+- [x] 46-02-PLAN.md — Surface new tiers in Catalog with grouped discovery lanes, tier badges, and sticky filters for exploration
+- [x] 46-03-PLAN.md — Build regression coverage that verifies expanded catalog, per-tier rate summaries, and asset visibility
 
 ## Progress
 
@@ -122,5 +103,5 @@ Plans:
 | 43. New Watch Mini-Games | v4.0 | 1/1 | Complete | 43-01-SUMMARY.md |
 | 44. Interaction Feedback & Rewards | v4.0 | 1/1 | Complete | 44-01-SUMMARY.md |
 | 45. Per-Watch Stats Surfaces | v4.0 | 3/3 | Complete | 45-03-SUMMARY.md |
-| 46. Catalog Expansion (Tiered Variety) | v4.0 | 0/3 | Not started | - |
-| 47. Mobile & UI Polish | v4.0 | 0/TBD | Not started | - |
+| 46. Catalog Expansion (Tiered Variety) | v4.0 | 3/3 | Complete | 46-03-SUMMARY.md |
+
