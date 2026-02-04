@@ -148,6 +148,7 @@ strong {
 }
 
 .page-nav {
+  align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
