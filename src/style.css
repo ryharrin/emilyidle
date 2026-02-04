@@ -156,9 +156,12 @@ strong {
 
 .page-nav-tabs {
   display: flex;
-  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .page-nav-link {
@@ -175,6 +178,9 @@ strong {
     transform 120ms ease,
     box-shadow 120ms ease,
     border-color 120ms ease;
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  min-width: 110px;
 }
 
 [data-theme="light"] .page-nav-link {
