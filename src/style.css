@@ -5,6 +5,7 @@
   --tier-mid: #ffd700;
   --tier-lux: #e74c3c;
   --tier-badge-text-light: #ffffff;
+  --tier-badge-border: rgba(255, 255, 255, 0.25);
   font-family:
     "Sora",
     "Space Grotesk",
@@ -70,9 +71,12 @@ strong {
   text-transform: uppercase;
   font-weight: 600;
   line-height: 1;
-  background: var(--tier-badge-background, var(--tier-starter));
-  color: var(--tier-badge-text, var(--tier-badge-text-light));
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  --tier-badge-background: var(--tier-starter);
+  --tier-badge-text: var(--tier-badge-text-light);
+  --tier-badge-border: var(--tier-badge-border);
+  background: var(--tier-badge-background);
+  color: var(--tier-badge-text);
+  border: 1px solid var(--tier-badge-border);
   white-space: nowrap;
   transition:
     transform 140ms ease,
