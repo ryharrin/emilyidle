@@ -544,6 +544,48 @@ button:not(:disabled):active {
   box-shadow: 0 16px 40px rgba(70, 62, 53, 0.12);
 }
 
+.collection-tier-summary {
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.collection-tier-summary-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.collection-tier-summary-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.collection-tier-summary-card {
+  border: 1px solid #2a2f3b;
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  gap: 4px;
+}
+
+.collection-tier-summary-card .tier-badge {
+  display: inline-flex;
+}
+
+.collection-tier-summary-help {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-theme="light"] .collection-tier-summary-card {
+  border-color: #e2d9ce;
+}
+
 .nostalgia-progress {
   display: grid;
   gap: 10px;

@@ -2,6 +2,7 @@ import React from "react";
 
 import { type PurchaseMeta } from "./CatalogTab";
 import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
+import { TierBadge } from "../components/TierBadge";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 
@@ -17,9 +18,15 @@ import {
   getUnlockRevealProgressRatio,
   getWatchModelOwnedCount,
   getWatchModels,
+  getEquippedWatchContribution,
   setWornWatchId,
   isEventActive,
 } from "../../game/state";
+import {
+  getTierBadgeByCategory,
+  type TierBadgeCategory,
+  type TierBadgeDefinition,
+} from "../../game/tierBadges";
 import type {
   AchievementDefinition,
   CatalogTierBonusDefinition,
@@ -57,6 +64,14 @@ type Coachmark = {
   id: string;
   title: string;
   text: string;
+};
+
+type TierSummary = {
+  category: TierBadgeCategory;
+  badge: TierBadgeDefinition;
+  totalModels: number;
+  ownedCount: number;
+  discoveredCount: number;
 };
 
 type CollectionTabProps = {
@@ -134,6 +149,29 @@ export function CollectionTab({
   const ownedWearableModels = watchModels
     .filter((model) => getWatchModelOwnedCount(state, model.id) > 0)
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
+  const { discoveredCatalogEntries } = state;
+
+  const tierCategories: ReadonlyArray<TierBadgeCategory> = ["starter", "mid", "lux"];
+  const tierSummary = React.useMemo<TierSummary[]>(() => {
+    const discoveredSet = new Set(discoveredCatalogEntries);
+    return tierCategories.map((category) => {
+      const modelsForCategory = watchModels.filter(
+        (model) => model.tierBadge.category === category,
+      );
+      const totalModels = modelsForCategory.length;
+      const ownedCount = modelsForCategory.reduce(
+        (count, model) => count + (getWatchModelOwnedCount(state, model.id) > 0 ? 1 : 0),
+        0,
+      );
+      const discoveredCount = modelsForCategory.filter((model) =>
+        discoveredSet.has(model.id),
+      ).length;
+      const badge = modelsForCategory[0]?.tierBadge ?? getTierBadgeByCategory(category);
+      return { category, badge, totalModels, ownedCount, discoveredCount };
+    });
+  }, [watchModels, discoveredCatalogEntries, state]);
+
+  const equippedContribution = getEquippedWatchContribution(state, nowMs, currentEventMultiplier);
 
   const nextUnlockItems: NextUnlockItem[] = [];
   const collectionListCta = {
@@ -352,6 +390,54 @@ export function CollectionTab({
                     : "Discover references to unlock tier bonuses."}
                 </p>
               </div>
+              <section
+                className="panel collection-tier-summary"
+                data-testid="collection-tier-summary"
+              >
+                <header className="panel-header collection-tier-summary-header">
+                  <div>
+                    <p className="eyebrow">Tier badges</p>
+                    <h3>Catalog variety</h3>
+                    <p className="muted">
+                      Starter, Mid-tier, and Luxury badges show the collection’s entry, progression,
+                      and prestige tiers.
+                    </p>
+                  </div>
+                  <div className="collection-tier-summary-help">
+                    <ExplainButton
+                      sectionId={HELP_SECTION_IDS.tierBadges}
+                      label="Explain tier badges"
+                      className="help-open-button"
+                    />
+                    <span className="muted">Badge help</span>
+                  </div>
+                </header>
+                <div className="collection-tier-summary-grid">
+                  {tierSummary.map((summary) => (
+                    <div
+                      key={summary.category}
+                      className="collection-tier-summary-card"
+                      data-testid={`collection-tier-card-${summary.category}`}
+                    >
+                      <TierBadge
+                        tier={summary.badge.category}
+                        showLabel
+                        label={summary.badge.label}
+                        description={summary.badge.description}
+                        backgroundVar={summary.badge.backgroundVar}
+                        textVar={summary.badge.textVar}
+                      />
+                      <p>
+                        {summary.ownedCount}/{summary.totalModels} owned
+                      </p>
+                      <p className="muted">
+                        {summary.discoveredCount}/{summary.totalModels} discovered
+                      </p>
+                      <p className="muted">{summary.badge.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
             <section className="panel catalog-panel" data-testid="catalog-shop-callout">
               <header className="panel-header">
@@ -456,6 +542,37 @@ export function CollectionTab({
                 </p>
               </section>
             </div>
+            <section className="panel per-watch-contribution" data-testid="per-watch-contribution">
+              <header className="panel-header">
+                <div>
+                  <p className="eyebrow">Contribution</p>
+                  <h3>Equipped watch</h3>
+                  <p className="muted">{wornModel ? wornModel.displayName : "No watch worn"}</p>
+                </div>
+              </header>
+              <div className="per-watch-contribution-body">
+                <div className="per-watch-contribution-metric">
+                  <strong data-testid="per-watch-contribution-enjoyment">
+                    {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
+                  </strong>
+                  <span>
+                    Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
+                  </span>
+                </div>
+                <div className="per-watch-contribution-metric">
+                  <strong data-testid="per-watch-contribution-cash">
+                    {formatMoneyFromCents(equippedContribution.cashDeltaCentsPerSec)} /s
+                  </strong>
+                  <span>{equippedContribution.cashExplanation}</span>
+                </div>
+                <p
+                  className="muted per-watch-contribution-event"
+                  data-testid="per-watch-contribution-event"
+                >
+                  Event multiplier x{equippedContribution.eventMultiplier.toFixed(2)}
+                </p>
+              </div>
+            </section>
           </div>
 
           <aside className="side-panel">
