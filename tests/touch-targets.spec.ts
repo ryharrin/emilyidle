@@ -160,6 +160,13 @@ const defineTouchTargetTests = (
       await page.keyboard.press("Escape");
       await expect(page.getByTestId("help-modal")).toHaveCount(0);
     });
+
+    test("collection CTA buttons keep 44px touch targets", async ({ page }) => {
+      await page.getByRole("tab", { name: "Collection" }).click();
+      const catalogCallout = page.getByTestId("catalog-shop-callout");
+      const openCatalogButton = catalogCallout.getByRole("button", { name: "Open Catalog" });
+      await expectTouchTarget(openCatalogButton, "collection open catalog");
+    });
   });
 };
 
