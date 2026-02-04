@@ -9,9 +9,15 @@ import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
 import { LockIcon } from "../icons/coreIcons";
 import { getCatalogCollectionContext } from "../catalog/collectionContext";
 import { getCatalogUpgradeContext } from "../catalog/upgradeContext";
+import { PerWatchStatsTable } from "../components/PerWatchStatsTable";
+import { TierBadge } from "../components/TierBadge";
 
 import { formatMoneyFromCents } from "../../game/format";
-import { getCatalogEntryTags, getCatalogImageUrl } from "../../game/catalog";
+import {
+  getCatalogEntryTags,
+  getCatalogImageUrl,
+  getWatchModelTierBadge,
+} from "../../game/catalog";
 import type { CatalogEntry } from "../../game/catalog";
 import {
   buyWatchModel,
@@ -20,6 +26,7 @@ import {
   getInteractionCooldownRemainingMs,
   getMilestoneUnlockProgressDetail,
   getNextDuplicateRewardMultiplier,
+  getPerWatchStatsRows,
   getPowerReserveForItem,
   getWatchItems,
   getWatchModelOwnedCount,
@@ -69,6 +76,7 @@ type CatalogTabProps = {
   hasOwnedCatalogTiers: boolean;
   onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
   nowMs?: number;
+  currentEventMultiplier?: number;
   onInteract?: (itemId: WatchItemId) => void;
 };
 
@@ -79,6 +87,7 @@ export type PurchaseMeta = {
 type CatalogPurchasePanelProps = Omit<CatalogTabProps, "isActive"> & {
   showBalance?: boolean;
   nowMs?: number;
+  currentEventMultiplier?: number;
   onInteract?: (itemId: WatchItemId) => void;
   atelierUnlocked?: boolean;
 };
@@ -107,6 +116,7 @@ export function CatalogPurchasePanel({
   catalogEntries,
   hasOwnedCatalogTiers,
   onPurchase,
+  currentEventMultiplier = 1,
   showBalance = false,
   nowMs,
   onInteract,
@@ -154,6 +164,11 @@ export function CatalogPurchasePanel({
     allEntries: catalogEntries,
     signature: filterSignature,
   });
+
+  const perWatchRows = React.useMemo(() => {
+    const effectiveNowMs = typeof nowMs === "number" ? nowMs : Date.now();
+    return getPerWatchStatsRows(state, effectiveNowMs, currentEventMultiplier);
+  }, [state, nowMs, currentEventMultiplier]);
 
   const { ownedCount, maxCapacity, collectionValueCents } = getCatalogCollectionContext(state);
   const upgradeContext = getCatalogUpgradeContext(state);
@@ -452,6 +467,10 @@ export function CatalogPurchasePanel({
         </div>
       </form>
 
+      <section className="panel per-watch-stats-panel" data-testid="per-watch-stats-section">
+        <PerWatchStatsTable rows={perWatchRows} highlightModelId={state.wornWatchId ?? null} />
+      </section>
+
       <section
         id="catalog-unowned"
         role="tabpanel"
@@ -473,6 +492,7 @@ export function CatalogPurchasePanel({
               {stableCatalogEntries.map((entry) => {
                 const discovered = discoveredCatalogIds.includes(entry.id);
                 const tags = getCatalogEntryTags(entry);
+                const tierBadge = getWatchModelTierBadge(entry.id);
                 const tierId = getWatchModelTierId(entry.id);
                 const tierOwned = state.items[tierId] ?? 0;
                 const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
@@ -580,9 +600,21 @@ export function CatalogPurchasePanel({
                     </div>
                     <div className="catalog-content">
                       <div className="catalog-title">
-                        <div>
-                          <p className="catalog-brand">{entry.brand}</p>
-                          <h3>{entry.model}</h3>
+                        <div className="catalog-title-primary">
+                          {tierBadge && (
+                            <TierBadge
+                              tier={tierBadge.category}
+                              showLabel
+                              label={tierBadge.label}
+                              description={tierBadge.description}
+                              backgroundVar={tierBadge.backgroundVar}
+                              textVar={tierBadge.textVar}
+                            />
+                          )}
+                          <div>
+                            <p className="catalog-brand">{entry.brand}</p>
+                            <h3>{entry.model}</h3>
+                          </div>
                         </div>
                         <p className="catalog-year">{entry.year}</p>
                       </div>
@@ -724,6 +756,7 @@ export function CatalogPurchasePanel({
                 {stableCatalogEntries.map((entry) => {
                   const discovered = discoveredCatalogIds.includes(entry.id);
                   const tags = getCatalogEntryTags(entry);
+                  const tierBadge = getWatchModelTierBadge(entry.id);
                   const tierId = getWatchModelTierId(entry.id);
                   const tierOwned = state.items[tierId] ?? 0;
                   const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
@@ -833,9 +866,21 @@ export function CatalogPurchasePanel({
                       </div>
                       <div className="catalog-content">
                         <div className="catalog-title">
-                          <div>
-                            <p className="catalog-brand">{entry.brand}</p>
-                            <h3>{entry.model}</h3>
+                          <div className="catalog-title-primary">
+                            {tierBadge && (
+                              <TierBadge
+                                tier={tierBadge.category}
+                                showLabel
+                                label={tierBadge.label}
+                                description={tierBadge.description}
+                                backgroundVar={tierBadge.backgroundVar}
+                                textVar={tierBadge.textVar}
+                              />
+                            )}
+                            <div>
+                              <p className="catalog-brand">{entry.brand}</p>
+                              <h3>{entry.model}</h3>
+                            </div>
                           </div>
                           <p className="catalog-year">{entry.year}</p>
                         </div>
@@ -1278,6 +1323,7 @@ export function CatalogTabLegacy({
                 {stableCatalogEntries.map((entry) => {
                   const discovered = discoveredCatalogIds.includes(entry.id);
                   const tags = getCatalogEntryTags(entry);
+                  const tierBadge = getWatchModelTierBadge(entry.id);
                   const ownedCount = getWatchModelOwnedCount(state, entry.id);
                   const gate = getWatchModelPurchaseGate(state, entry.id);
                   const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
@@ -1319,9 +1365,21 @@ export function CatalogTabLegacy({
                       </div>
                       <div className="catalog-content">
                         <div className="catalog-title">
-                          <div>
-                            <p className="catalog-brand">{entry.brand}</p>
-                            <h3>{entry.model}</h3>
+                          <div className="catalog-title-primary">
+                            {tierBadge && (
+                              <TierBadge
+                                tier={tierBadge.category}
+                                showLabel
+                                label={tierBadge.label}
+                                description={tierBadge.description}
+                                backgroundVar={tierBadge.backgroundVar}
+                                textVar={tierBadge.textVar}
+                              />
+                            )}
+                            <div>
+                              <p className="catalog-brand">{entry.brand}</p>
+                              <h3>{entry.model}</h3>
+                            </div>
                           </div>
                           <p className="catalog-year">{entry.year}</p>
                         </div>
@@ -1389,6 +1447,7 @@ export function CatalogTabLegacy({
                     {stableCatalogEntries.map((entry) => {
                       const discovered = discoveredCatalogIds.includes(entry.id);
                       const tags = getCatalogEntryTags(entry);
+                      const tierBadge = getWatchModelTierBadge(entry.id);
                       const ownedCount = getWatchModelOwnedCount(state, entry.id);
                       const gate = getWatchModelPurchaseGate(state, entry.id);
                       const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
@@ -1430,9 +1489,21 @@ export function CatalogTabLegacy({
                           </div>
                           <div className="catalog-content">
                             <div className="catalog-title">
-                              <div>
-                                <p className="catalog-brand">{entry.brand}</p>
-                                <h3>{entry.model}</h3>
+                              <div className="catalog-title-primary">
+                                {tierBadge && (
+                                  <TierBadge
+                                    tier={tierBadge.category}
+                                    showLabel
+                                    label={tierBadge.label}
+                                    description={tierBadge.description}
+                                    backgroundVar={tierBadge.backgroundVar}
+                                    textVar={tierBadge.textVar}
+                                  />
+                                )}
+                                <div>
+                                  <p className="catalog-brand">{entry.brand}</p>
+                                  <h3>{entry.model}</h3>
+                                </div>
                               </div>
                               <p className="catalog-year">{entry.year}</p>
                             </div>

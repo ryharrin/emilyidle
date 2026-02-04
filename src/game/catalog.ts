@@ -1,3 +1,6 @@
+import type { CatalogTierId } from "./model/types";
+import { getTierBadgeByCatalogTier, type TierBadgeDefinition } from "./tierBadges";
+
 export type CatalogBrand = "Rolex" | "Jaeger-LeCoultre" | "Audemars Piguet" | "Omega" | "Cartier";
 
 export type CatalogImage = {
@@ -1109,7 +1112,7 @@ const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
 };
 const TIER_TAGS = new Set(["starter", "classic", "chronograph", "tourbillon"]);
 
-function inferCatalogTier(entry: CatalogEntry, tags: string[]): string {
+function inferCatalogTier(entry: CatalogEntry, tags: string[]): CatalogTierId {
   const searchable = `${entry.model} ${entry.description}`.toLowerCase();
   const hasTag = (value: string) => tags.includes(value) || searchable.includes(value);
 
@@ -1145,4 +1148,13 @@ export function getCatalogImageUrl(entry: CatalogEntry): string {
     return `${LOCAL_CATALOG_ROOT}${localPath}`;
   }
   return entry.image.url;
+}
+
+export function getWatchModelTierBadge(modelId: string): TierBadgeDefinition {
+  const entry = CATALOG_ENTRIES.find((candidate) => candidate.id === modelId);
+  if (!entry) {
+    return getTierBadgeByCatalogTier("starter");
+  }
+  const tierId = inferCatalogTier(entry, getCatalogEntryTags(entry));
+  return getTierBadgeByCatalogTier(tierId);
 }
