@@ -45,9 +45,9 @@ Emily Idle is a browser-based idle/incremental game themed around luxury watch c
 - Added lock overlay with greyed-out styling for undiscovered watches plus "Why can't I buy?" contextual explanations.
 - Merged collection capacity and value information directly into the catalog shopping header.
 - Renamed "Vault" to "Collection" consistently across all UI labels, help text, and domain strings.
-- Made upgrade status visible in catalog header and aligned all upgrade copy/previews to reflect enjoyment-only multipliers.
+- Made upgrade status visible in catalog with enjoyment-only copy alignment.
 - Protected existing saves with localStorage key contract tests, save payload guardrails, and selector stability coverage.
-- Verified catalog image loading under /emilyidle base URL with regression tests.
+- Catalog images verified loading correctly under /emilyidle base URL.
 
 ## Current Milestone: v4.0 Watch Interactions & Catalog Polish (In Progress)
 
@@ -70,6 +70,8 @@ Emily Idle is a browser-based idle/incremental game themed around luxury watch c
 
 **Status:** Requirements and roadmap to be defined
 
+**Recent delivery:** Phase 45 shipped per-watch stats selectors, the Catalog table, and Collection’s equipped-watch call-out, all guarded by the new regression coverage for sticky controls and row expansion.
+
 ## Current State
 
 Shipped v3.2 on 2026-02-02:
@@ -82,6 +84,7 @@ Shipped v3.2 on 2026-02-02:
 - Upgrade status visible in catalog with enjoyment-only copy alignment
 - All localStorage keys and UI selectors protected with regression guardrails
 - Catalog images verified loading correctly under /emilyidle base URL
+- Per-watch stats live in Catalog with sticky filters and the Collection call-out, and regression tests keep the sorting/expansion/tiered rate strings stable
 
 ## Known Gaps / Tech Debt
 
@@ -89,6 +92,29 @@ Shipped v3.2 on 2026-02-02:
 - Verification process: missing phase verification reports for phases 13 and 18.
 - Test gap: no dedicated Playwright E2E asserting therapist session deltas (cash/enjoyment) and cooldown UX.
 
+## Requirements Status
+
+### Validated
+- ✓ STATS-01 — Catalog now surfaces each watch’s enjoyment rate per row so comparisons are visible without purchase (Phase 45)
+- ✓ STATS-02 — Per-watch cash rate stays anchored to the therapist career salary and is documented in the row explanation (Phase 45)
+- ✓ STATS-03 — Enjoyment/cash rates vary by watch, with reserve-aware totals and tier-aware entries (Phase 45)
+- ✓ STATS-04 — Collection call-out explains the equipped watch contribution delta driven by selector math (Phase 45)
+- ✓ STATS-05 — Stats are visible before owning the watch and the UI surfaces them directly in Catalog (Phase 45)
+
+### Active
+- [ ] CAT-05 — Ship new low-end watch brands/models (Phase 46)
+- [ ] CAT-06 — Ship new mid-tier watch brands/models (Phase 46)
+- [ ] CAT-07 — Ship luxury/high-end watch brands/models (Phase 46)
+- [ ] CAT-08 — Ensure catalog variety spans affordable to luxury price ranges (Phase 46)
+- [ ] CAT-09 — Tune enjoyment/cash rates for new watches so each tier feels distinct (Phase 46)
+- [ ] CAT-10 — Provide correct catalog imagery and metadata for every new entry (Phase 46)
+
+## Key Decisions
+
+- Cash rows remain anchored to the therapist career rate and now carry an explicit explanation string so the UI/testers know no per-watch cash reallocation happened (Phase 45).
+- The equipped watch contribution is derived by comparing `getEnjoymentRateCentsPerSec` with and without the worn watch to keep the math centralized (Phase 45).
+- Sticky sort/filter controls stay visible while scrolling long per-watch lists, and Collection’s contribution call-out simply explains the selector-driven delta instead of redoing the math (Phase 45).
+
 ---
 
-*Last updated: 2026-02-02 — completed milestone v3.2, starting v4.0*
+*Last updated: 2026-02-04 — Phase 45 complete, preparing Phase 46 planning*

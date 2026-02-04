@@ -74,11 +74,12 @@ Plans:
   2. Rates vary meaningfully between watches (players can find differences within and across tiers).
   3. Collection view shows an equipped watch contribution breakdown so players can tell what it adds.
 **Plans**: 3 plans
+**Completed**: 2026-02-04 — Regression coverage locked the surface plus sticky controls.
 
 Plans:
-- [ ] 45-01-PLAN.md — Create per-watch stats selectors (rows + equipped contribution) with unit tests
-- [ ] 45-02-PLAN.md — Add per-watch stats table UI in Catalog + equipped contribution call-out in Collection
-- [ ] 45-03-PLAN.md — Add regression coverage (Vitest + Playwright) for sorting, sticky header, and stability
+- [x] 45-01-PLAN.md — Create per-watch stats selectors (rows + equipped contribution) with unit tests
+- [x] 45-02-PLAN.md — Add per-watch stats table UI in Catalog + equipped contribution call-out in Collection
+- [x] 45-03-PLAN.md — Add regression coverage (Vitest + Playwright) for sorting, sticky header, and stability
 
 
 ### Phase 46: Catalog Expansion (Tiered Variety)
@@ -90,8 +91,12 @@ Plans:
   1. Player can browse and discover new low-end, mid-tier, and luxury watches in the catalog.
   2. Catalog variety spans affordable to luxury price points (no single-tier monotony).
   3. New watches display correct images and metadata, and their rates feel appropriate for their tier.
-**Plans**: TBD
+**Plans**: 3 plans
 
+Plans:
+- [ ] 46-01-PLAN.md — Expand the watch model data pool with low/mid/lux entries, unique enjoyment/cash rates, and matching catalog metadata
+- [ ] 46-02-PLAN.md — Surface the new tiers in Catalog with grouped discovery lanes, tier badges, and sticky filters for exploration
+- [ ] 46-03-PLAN.md — Build regression coverage that verifies the expanded catalog, per-tier rate summaries, and asset visibility
 
 
 ### Phase 47: Mobile & UI Polish
@@ -116,6 +121,6 @@ Plans:
 | 42. Winding Refresh | v4.0 | 3/3 | Complete | 42-03-SUMMARY.md |
 | 43. New Watch Mini-Games | v4.0 | 1/1 | Complete | 43-01-SUMMARY.md |
 | 44. Interaction Feedback & Rewards | v4.0 | 1/1 | Complete | 44-01-SUMMARY.md |
-| 45. Per-Watch Stats Surfaces | v4.0 | 0/3 | Not started | - |
-| 46. Catalog Expansion (Tiered Variety) | v4.0 | 0/TBD | Not started | - |
+| 45. Per-Watch Stats Surfaces | v4.0 | 3/3 | Complete | 45-03-SUMMARY.md |
+| 46. Catalog Expansion (Tiered Variety) | v4.0 | 0/3 | Not started | - |
 | 47. Mobile & UI Polish | v4.0 | 0/TBD | Not started | - |
