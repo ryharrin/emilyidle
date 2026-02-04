@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-02)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** v4.0 Phase 44 (Interaction Feedback & Rewards)
+**Current focus:** v4.0 Phase 45 (Per-Watch Stats Surfaces)
 
 ## Current Position
 
-Phase: 44 of 6 (v4.0 Phases 42-47)
-Plan: execute (44-01) — Completed
-Status: Phase 44 execution complete; ready for the next phase
-Last activity: 2026-02-03 — Completed 44-01-PLAN.md and 44-01-SUMMARY.md
-Progress: Phase 44 plans complete (1/1)
-Next Phase: Phase 45-per-watch-stats-surfaces
+Phase: 45 of 6 (v4.0 Phases 42-47)
+Plan: execute (45-02) — Completed
+Status: Phase 45 execution in progress; per-watch stats UI + contribution call-out delivered
+Last activity: 2026-02-03 — Completed 45-02-PLAN.md and 45-02-SUMMARY.md
+Progress: Phase 45 plans in progress (2/3)
+Next Phase: Phase 45-per-watch-stats-surfaces (wave 3 pending)
 
 ## Accumulated Context
 
@@ -60,6 +60,6 @@ Next Phase: Phase 45-per-watch-stats-surfaces
 
 ## Session Continuity
 
-Last session: 2026-02-03T22:34:49Z
-Stopped at: Completed 44-01-PLAN.md and 44-01-SUMMARY.md
+Last session: 2026-02-03T19:42:59Z
+Stopped at: Completed 45-02-PLAN.md and 45-02-SUMMARY.md
 Resume file: None
