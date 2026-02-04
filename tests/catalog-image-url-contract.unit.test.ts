@@ -11,9 +11,8 @@ describe("catalog image URL mapping contract", () => {
   it("keeps base-aware local catalog mapping", async () => {
     const text = await readFile(CATALOG_FILE_PATH, "utf8");
 
-    expect(text).toMatch(
-      /const\s+LOCAL_CATALOG_ROOT\s*=\s*`[^`]*import\.meta\.env\.BASE_URL[^`]*catalog\//,
-    );
+    expect(text).toMatch(/const\s+BASE_URL\s*=[\s\S]*?import\.meta\.env\.BASE_URL/);
+    expect(text).toMatch(/const\s+LOCAL_CATALOG_ROOT\s*=\s*`[^`]*\$\{BASE_URL\}[^`]*catalog\//);
     expect(text).toMatch(/const\s+LOCAL_CATALOG_OVERRIDES[^=]*=/);
     expect(text).toMatch(/function\s+getCatalogImageUrl\s*\([\s\S]*?\)\s*\{/);
     expect(text).toMatch(/return\s+`\$\{LOCAL_CATALOG_ROOT\}\$\{localPath\}`/);

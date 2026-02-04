@@ -35,6 +35,7 @@ Next Phase: Phase 47 QA/Validation (mobile regression verification)
 
 - Missing phase verification reports for phases 13 and 18.
 - No dedicated Playwright E2E asserting therapist session deltas (cash/enjoyment) and cooldown UX.
+- Catalog image contract now validates the shared `BASE_URL` constant so `LOCAL_CATALOG_ROOT` stays aligned with `import.meta.env.BASE_URL` when `pnpm test:unit -- tests/mobile-responsive.unit.test.tsx` runs.
 
 ### Decisions Made
 

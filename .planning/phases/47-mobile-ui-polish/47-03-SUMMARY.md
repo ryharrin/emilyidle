@@ -86,7 +86,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
-- `pnpm test:unit -- tests/mobile-responsive.unit.test.tsx` runs the wider suite and fails because `tests/catalog-image-url-contract.unit.test.ts` still expects `LOCAL_CATALOG_ROOT` to be defined with `import.meta.env.BASE_URL`; this predates the current plan and is unrelated to the new coverage.
+- (Resolved) `pnpm test:unit -- tests/mobile-responsive.unit.test.tsx` previously failed because `tests/catalog-image-url-contract.unit.test.ts` expected `LOCAL_CATALOG_ROOT` to inline `import.meta.env.BASE_URL`; the contract now asserts the shared `BASE_URL` constant and that `LOCAL_CATALOG_ROOT` reuses it, so the suite now passes.
 - `pnpm test:e2e` timed out after 120 seconds while multiple existing suites fail (`tests/catalog-image-rendering`, `tests/collection-loop` interactions, help impact, etc.); those regressions were present before this plan.
 
 ## User Setup Required
