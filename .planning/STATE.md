@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** v4.0 Phase 46 (Catalog Expansion (Tiered Variety))
+**Current focus:** v4.0 Phase 47 (Mobile & UI Polish)
 
 ## Current Position
 
-Phase: 46 of 6 (v4.0 Phases 42-47)
-Plan: Not started
-Status: Ready to plan Phase 46 (Catalog Expansion)
-Last activity: 2026-02-04 — Phase 45 complete, transitioned to Phase 46
-Progress: Phase 45 plans complete (3/3)
-Next Phase: Phase 46-catalog-expansion-tiered-variety (ready to plan)
+Phase: 47 of 6 (v4.0 Phases 42-47)
+Plan: 47-01 complete
+Status: Phase 47 (Mobile & UI Polish) underway — TierBadge plan shipped
+Last activity: 2026-02-04 — Completed 47-01 (TierBadge component, metadata, catalog wiring)
+Progress: Phase 46 complete (3/3), Phase 47 plans started (1/3)
+Next Phase: Phase 47-mobile-ui-polish (Plan 47-02 pending)
 
 ## Accumulated Context
 
@@ -58,6 +58,11 @@ Next Phase: Phase 46-catalog-expansion-tiered-variety (ready to plan)
 | 45 | Keep cash rows tied to the therapist career salary and document the explanation string for UI/test consumers | Prevents inventing per-watch cash allocations while the view model honors the career salary anchor |
 | 45 | Derive the equipped watch contribution by comparing `getEnjoymentRateCentsPerSec` with and without the worn watch | Reuses the existing enjoyment math instead of duplicating multipliers so the call-out stays low-friction |
 | 45 | Sticky filter controls stay visible over long stats lists and the Collection call-out reuses selector math for the enjoyment delta | Keeps the new surface navigable on mobile while the call-out simply explains the delta produced by the selectors |
+| 46 | Used CSS Scroll Snap for tab strip (native browser feature, no JS snapping) | Avoids JS snap bugs and keeps implementation lightweight |
+| 46 | Kept sticky tab bar in separate DOM layer above horizontally-transformed carousel | Preserves `position: sticky` semantics and prevents CSS transform conflicts |
+| 46 | Reused existing modal patterns (scroll lock, focus trap, reduced-motion) from WindingMiniGameModal | Standardizes mobile interaction patterns without introducing new modal framework |
+| 47 | Tier badges use CSS variables for color theming to enable easy customization | Allows theme adjustments without touching component code |
+| 47 | TierBadge metadata plus CSS variable theming drive catalog and per-watch badges | Synchronizes tier copy and colors across data + UI so the catalog and stats surfaces share the same cues while remaining configurable |
 
 ### Blockers / Concerns Carried Forward
 
@@ -65,6 +70,6 @@ Next Phase: Phase 46-catalog-expansion-tiered-variety (ready to plan)
 
 ## Session Continuity
 
-Last session: 2026-02-04T01:17:44Z
-Stopped at: Phase 45 complete, ready to plan Phase 46
+Last session: 2026-02-04T02:51:04Z
+Stopped at: Completed Phase 47-01 (TierBadge component, metadata, and catalog wiring)
 Resume file: None
