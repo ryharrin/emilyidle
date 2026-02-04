@@ -78,6 +78,7 @@ test.describe("Help modal interactions", () => {
     await page.keyboard.up("Shift");
 
     expect(focusInside).toBe(true);
+    expect(await isFocusInsideModal(page, "[data-testid='help-modal']")).toBe(true);
 
     await page.keyboard.press("Escape");
     await expect(helpModal).toHaveCount(0);
@@ -95,6 +96,7 @@ test.describe("Help modal interactions", () => {
 
     const search = page.getByTestId("help-search");
     await search.fill("catalog-first");
+    await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
 
     const catalogButton = helpModal
@@ -102,7 +104,7 @@ test.describe("Help modal interactions", () => {
         hasText: /Catalog-first|Catalog shop/i,
       })
       .first();
-    await catalogButton.click();
+    await expect(catalogButton).toBeVisible();
     await expect(page.getByTestId("help-active-section")).toHaveText(/Catalog/i);
 
     const scrollBehavior = await page.evaluate(
@@ -139,6 +141,7 @@ test.describe("Interaction modals", () => {
       await expect(windingModal).toBeVisible();
       expect(await page.evaluate(() => document.body.style.overflow)).toBe("hidden");
       await page.keyboard.press("Tab");
+      expect(await isFocusInsideModal(page, "[data-testid='winding-modal']")).toBe(true);
       await page.keyboard.press("Escape");
       await expect(windingModal).toHaveCount(0);
       expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
