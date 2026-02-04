@@ -1,5 +1,6 @@
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import type { PerWatchStatsRow } from "../../game/selectors/perWatchStats";
+import { TierBadge } from "./TierBadge";
 import { useCallback, useMemo, useState } from "react";
 
 type SortKey = "enjoyment" | "cash";
@@ -94,7 +95,17 @@ export function PerWatchStatsTable({ rows, highlightModelId }: PerWatchStatsTabl
             >
               <summary className="per-watch-row-summary">
                 <div className="per-watch-row-cell per-watch-row-name">
-                  <span className="per-watch-row-title">{row.displayName}</span>
+                  <div className="per-watch-row-name-title">
+                    {row.tierBadge && (
+                      <TierBadge
+                        tier={row.tierBadge.category}
+                        showLabel={false}
+                        label={row.tierBadge.label}
+                        description={row.tierBadge.description}
+                      />
+                    )}
+                    <span className="per-watch-row-title">{row.displayName}</span>
+                  </div>
                   <span className="per-watch-row-subtitle">
                     {row.tierLabel} · {row.movement} · {row.catalogEntryIds.length} entry(s)
                   </span>

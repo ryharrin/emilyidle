@@ -97,6 +97,44 @@ strong {
   display: block;
 }
 
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--tier-badge-background, var(--tier-starter));
+  color: var(--tier-badge-text, var(--tier-badge-text-light));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.tier-badge:hover,
+.tier-badge:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.tier-badge-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.tier-badge-label {
+  display: block;
+}
+
 .hero {
   display: grid;
   gap: 24px;
@@ -2157,6 +2195,12 @@ textarea:focus-visible {
   align-items: flex-start;
 }
 
+.catalog-title-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .catalog-brand {
   text-transform: uppercase;
   letter-spacing: 0.24em;
@@ -3441,4 +3485,9 @@ textarea:focus-visible {
   .catalog-filters {
     grid-template-columns: 1fr;
   }
+}
+.per-watch-row-name-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }

@@ -5,6 +5,7 @@ import {
   type CatalogEntry,
 } from "../catalog";
 import type { CatalogTierId } from "../model/types";
+import { getTierBadgeByCatalogTier, type TierBadgeDefinition } from "../tierBadges";
 
 export type WatchModelDefinition = {
   id: string;
@@ -14,6 +15,7 @@ export type WatchModelDefinition = {
   referenceNumber: number;
   displayName: string;
   catalogEntryIds: ReadonlyArray<string>;
+  tierBadge: TierBadgeDefinition;
 };
 
 const CATALOG_TIER_IDS: ReadonlyArray<CatalogTierId> = [
@@ -50,6 +52,7 @@ export const WATCH_MODELS: ReadonlyArray<WatchModelDefinition> = (() => {
       referenceNumber: nextReferenceNumber,
       displayName,
       catalogEntryIds: [entry.id],
+      tierBadge: getTierBadgeByCatalogTier(tierId),
     };
   });
 })();
