@@ -20,6 +20,26 @@ const swipeTabStrip = async (navTabs: Locator, page: Page) => {
   await page.mouse.up();
 };
 
+const assertHorizontalScrollSnap = async (navTabs: Locator) => {
+  const scrollSnap = await navTabs.evaluate((el) => getComputedStyle(el).scrollSnapType);
+  expect(scrollSnap.toLowerCase()).toContain("x");
+  expect(/mandatory|proximity/i.test(scrollSnap)).toBe(true);
+};
+
+const openHelpModal = async (page: Page) => {
+  const helpButton = page.getByTestId("help-open");
+  await helpButton.scrollIntoViewIfNeeded();
+  await helpButton.click();
+  const helpModal = page.getByTestId("help-modal");
+  await expect(helpModal).toBeVisible();
+  return { helpButton, helpModal };
+};
+
+const closeHelpModal = async (page: Page) => {
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("help-modal")).toHaveCount(0);
+};
+
 MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
   test.describe(`${name} viewport`, () => {
     test.beforeEach(async ({ page }) => {
@@ -56,25 +76,31 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
       await catalogTab.click();
       await expect(catalogTab).toHaveAttribute("aria-selected", "true");
 
-      const helpButton = page.getByTestId("help-open");
-      await helpButton.click();
-      const helpModal = page.getByTestId("help-modal");
-      await expect(helpModal).toBeVisible();
-
+      const { helpButton, helpModal } = await openHelpModal(page);
       const closeButton = helpModal.getByTestId("help-close");
       await closeButton.scrollIntoViewIfNeeded();
       await expect(closeButton).toBeVisible();
-      await page.keyboard.press("Escape");
-      await expect(helpModal).toHaveCount(0);
-      await helpButton.click();
-      const reopenedHelpModal = page.getByTestId("help-modal");
-      await expect(reopenedHelpModal).toBeVisible();
+      await closeHelpModal(page);
+
+      const { helpModal: reopenedHelpModal } = await openHelpModal(page);
       await reopenedHelpModal.locator(".help-section-button").first().focus();
       await page.keyboard.press("Tab");
       await page.keyboard.press("Enter");
       await expect(page.getByTestId("help-active-section")).toBeVisible();
+      await closeHelpModal(page);
+      await expect(helpButton).toBeVisible();
+    });
+
+    test("help modal can be opened from nav with keyboard focus", async ({ page }) => {
+      const helpButton = page.getByTestId("help-open");
+      await helpButton.focus();
+      await page.keyboard.press("Enter");
+      const helpModal = page.getByTestId("help-modal");
+      await expect(helpModal).toBeVisible();
       await page.keyboard.press("Escape");
       await expect(helpModal).toHaveCount(0);
+      await helpButton.focus();
+      await expect(helpButton).toBeFocused();
     });
   });
 });
