@@ -18,6 +18,7 @@ export const HELP_SECTION_IDS = {
   interactions: "interactions",
   nostalgiaUnlocks: "nostalgia-unlocks",
   wornWatchBonus: "worn-watch-bonus",
+  tierBadges: "tier-badges",
 } as const;
 
 export const HELP_SECTIONS: HelpSection[] = [
@@ -73,6 +74,16 @@ export const HELP_SECTIONS: HelpSection[] = [
       "If a card says Need $X more, you are short on cash for that purchase.",
       "If a card mentions enjoyment, you need more enjoyment before it unlocks.",
       "Owned counts update immediately after a purchase to confirm the buy.",
+    ],
+  },
+  {
+    id: HELP_SECTION_IDS.tierBadges,
+    title: "Tier badges",
+    body: [
+      "Starter badges flag entry-level quartz pieces that seed the collection.",
+      "Mid-tier badges highlight mechanical classics and chronographs that drive the main progression.",
+      "Luxury badges mark tourbillons reserved for prestige goals and showcase rewards.",
+      "Hover a badge to read the tooltip copy and match catalog cards, Collection summary, and help text.",
     ],
   },
   {
