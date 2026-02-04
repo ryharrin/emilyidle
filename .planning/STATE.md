@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 ## Current Position
 
 Phase: 45 of 6 (v4.0 Phases 42-47)
-Plan: execute (45-02) — Completed
-Status: Phase 45 execution in progress; per-watch stats UI + contribution call-out delivered
-Last activity: 2026-02-03 — Completed 45-02-PLAN.md and 45-02-SUMMARY.md
-Progress: Phase 45 plans in progress (2/3)
-Next Phase: Phase 45-per-watch-stats-surfaces (wave 3 pending)
+Plan: execute (45-03) — Completed
+Status: Phase 45 execution complete; per-watch stats regression coverage delivered
+Last activity: 2026-02-04 — Completed 45-03-PLAN.md and 45-03-SUMMARY.md
+Progress: Phase 45 plans complete (3/3)
+Next Phase: Phase 45-per-watch-stats-surfaces (execution complete; future wave planning pending)
 
 ## Accumulated Context
 
@@ -53,6 +53,8 @@ Next Phase: Phase 45-per-watch-stats-surfaces (wave 3 pending)
 | 44 | Exposed `data-live-state` / `data-outcome-state` attributes across the modals | Lets automation/tests detect running vs resolved states without relying on copy text |
 | 44 | Added tier badges, glows, and multiplier-aware reward copy for Miss/Good/Perfect | Keeps styling, messaging, and econometric math aligned across UI and regressions |
 | 44 | Miss/Good/Perfect tiers explicitly mention their 1×/2× reward math while `data-tier` styling mirrors the earned tier | Reinforces precision and keeps styling consistent across modals |
+| 45 | Rendered per-watch enjoyment/cash summaries with `formatRateFromCentsPerSec` | Keeps UI strings deterministic for the new regression test while preserving the career cash label semantics |
+| 45 | Kept per-watch sort/filter toggles in-memory instead of persisting them | Avoids touching guardrail localStorage keys so existing schema contracts stay valid |
 
 ### Blockers / Concerns Carried Forward
 
@@ -60,6 +62,6 @@ Next Phase: Phase 45-per-watch-stats-surfaces (wave 3 pending)
 
 ## Session Continuity
 
-Last session: 2026-02-03T19:42:59Z
-Stopped at: Completed 45-02-PLAN.md and 45-02-SUMMARY.md
+Last session: 2026-02-04T01:17:44Z
+Stopped at: Completed 45-03-PLAN.md and 45-03-SUMMARY.md
 Resume file: None
