@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 47 of 6 (v4.0 Phases 42-47)
-Plan: 47-01 complete
-Status: Phase 47 (Mobile & UI Polish) underway — TierBadge plan shipped
-Last activity: 2026-02-04 — Completed 47-01 (TierBadge component, metadata, catalog wiring)
-Progress: Phase 46 complete (3/3), Phase 47 plans started (1/3)
-Next Phase: Phase 47-mobile-ui-polish (Plan 47-02 pending)
+Plan: 47-02 complete
+Status: Phase 47 (Mobile & UI Polish) underway — Catalog/Collection tier badges and help polish shipped
+Last activity: 2026-02-04 — Completed 47-02 (Catalog tier badges, Collection summary, and help copy)
+Progress: Phase 46 complete (3/3), Phase 47 plans complete (2/3)
+Next Phase: Phase 47-mobile-ui-polish (Plan 47-03 pending)
 
 ## Accumulated Context
 
@@ -63,6 +63,8 @@ Next Phase: Phase 47-mobile-ui-polish (Plan 47-02 pending)
 | 46 | Reused existing modal patterns (scroll lock, focus trap, reduced-motion) from WindingMiniGameModal | Standardizes mobile interaction patterns without introducing new modal framework |
 | 47 | Tier badges use CSS variables for color theming to enable easy customization | Allows theme adjustments without touching component code |
 | 47 | TierBadge metadata plus CSS variable theming drive catalog and per-watch badges | Synchronizes tier copy and colors across data + UI so the catalog and stats surfaces share the same cues while remaining configurable |
+| 47 | Catalog cards now source tier badge metadata directly from watch models | Keeps badge colors and tooltip copy consistent across unowned and owned catalog rows without repeating the inference logic |
+| 47 | Collection summary links the tier badges to the help section so Starter, Mid-tier, and Luxury meanings stay explained | Aligns the Collection copy with catalog tooltips while surfacing counts for each variety |
 
 ### Blockers / Concerns Carried Forward
 
@@ -70,6 +72,6 @@ Next Phase: Phase 47-mobile-ui-polish (Plan 47-02 pending)
 
 ## Session Continuity
 
-Last session: 2026-02-04T02:51:04Z
-Stopped at: Completed Phase 47-01 (TierBadge component, metadata, and catalog wiring)
+Last session: 2026-02-04T03:12:28Z
+Stopped at: Completed Phase 47-02 (Catalog tier badges, Collection summary, and help copy)
 Resume file: None
