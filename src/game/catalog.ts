@@ -1150,7 +1150,13 @@ export function getCatalogImageUrl(entry: CatalogEntry): string {
   return entry.image.url;
 }
 
-export function getWatchModelTierBadge(modelId: string): TierBadgeDefinition {
+export function getWatchModelTierBadge(
+  modelId: string,
+  tierBadgeFromModel?: TierBadgeDefinition,
+): TierBadgeDefinition {
+  if (tierBadgeFromModel) {
+    return tierBadgeFromModel;
+  }
   const entry = CATALOG_ENTRIES.find((candidate) => candidate.id === modelId);
   if (!entry) {
     return getTierBadgeByCatalogTier("starter");

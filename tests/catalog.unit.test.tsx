@@ -5,6 +5,7 @@ import { vi } from "vitest";
 
 import App from "../src/App";
 import { createInitialState, getSetBonuses, getWatchModels } from "../src/game/state";
+import { getTierBadgeByCategory, type TierBadgeCategory } from "../src/game/tierBadges";
 
 function getModelIdForTier(tierId: string): string {
   const model = getWatchModels().find((entry) => entry.tierId === tierId);
@@ -1177,6 +1178,34 @@ describe("catalog ownership tabs", () => {
     await waitFor(() => within(unownedGrid).getAllByTestId(/catalog-card/));
 
     expect(unownedGrid.textContent).toContain("Jaeger-LeCoultre");
+  });
+});
+
+describe("catalog tier badges", () => {
+  beforeEach(async () => {
+    cleanup();
+    render(<App />);
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+    await waitFor(() => {
+      expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders tier badges with proper tooltip text", async () => {
+    const catalogGrid = await waitFor(() => screen.getByTestId("catalog-grid"));
+    const badge = catalogGrid.querySelector(".tier-badge");
+    expect(badge).toBeTruthy();
+    const category = badge?.getAttribute("data-tier-badge") as TierBadgeCategory | null;
+    expect(category).toBeTruthy();
+    const expected = getTierBadgeByCategory(category as TierBadgeCategory);
+    expect(badge).toHaveAttribute("title", expected.description);
   });
 });
 

@@ -128,6 +128,10 @@ export function CatalogPurchasePanel({
   const watchModels = getWatchModels();
   const watchItems = getWatchItems();
   const watchItemById = new Map(watchItems.map((item) => [item.id, item]));
+  const watchModelById = React.useMemo(
+    () => new Map(watchModels.map((model) => [model.id, model])),
+    [watchModels],
+  );
   const modelOwnedByTier = new Map<WatchItemId, number>();
   const firstModelByTier = new Map<WatchItemId, string>();
 
@@ -289,6 +293,236 @@ export function CatalogPurchasePanel({
       </details>
     );
   };
+
+  const getTierBadgeDefinition = (entryId: string) => {
+    const watchModel = watchModelById.get(entryId);
+    return getWatchModelTierBadge(entryId, watchModel?.tierBadge);
+  };
+
+  const renderCatalogCard = (entry: CatalogEntry, showFacts: boolean) => {
+    const discovered = discoveredCatalogIds.includes(entry.id);
+    const tags = getCatalogEntryTags(entry);
+    const tierBadge = getTierBadgeDefinition(entry.id);
+    const tierId = getWatchModelTierId(entry.id);
+    const tierOwned = state.items[tierId] ?? 0;
+    const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
+    const fallbackOwner =
+      totalTierOwned === 0 && tierOwned > 0 && firstModelByTier.get(tierId) === entry.id;
+    const modelOwned = getWatchModelOwnedCount(state, entry.id);
+    const ownedCount = fallbackOwner ? tierOwned : modelOwned;
+    const tierItem = watchItemById.get(tierId);
+    if (!tierItem) {
+      throw new Error(`Missing watch tier definition for ${tierId}`);
+    }
+    const unlocked = isItemUnlocked(state, tierId);
+    const unlockMilestoneId = tierItem.unlockMilestoneId;
+    const unlockDetail = unlockMilestoneId
+      ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+      : null;
+    const unlockUsesCents = unlockMilestoneId === "showcase";
+    const unlockCurrentLabel = unlockDetail
+      ? unlockUsesCents
+        ? formatMoneyFromCents(unlockDetail.current)
+        : formatCount(unlockDetail.current)
+      : "0";
+    const unlockThresholdLabel = unlockDetail
+      ? unlockUsesCents
+        ? formatMoneyFromCents(unlockDetail.threshold)
+        : formatCount(unlockDetail.threshold)
+      : "0";
+    const gate = getWatchModelPurchaseGate(state, entry.id);
+    const isActionable = unlocked && gate.ok;
+    const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
+    const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
+    const isHighlighted = purchaseHighlights[entry.id];
+
+    const interactionLabel =
+      tierItem.movement === "manual"
+        ? "Wind crown"
+        : tierItem.movement === "automatic"
+          ? "Charge rotor"
+          : "Set time";
+    const cooldownRemainingMs =
+      typeof nowMs === "number" ? getInteractionCooldownRemainingMs(state, tierId, nowMs) : 0;
+    const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
+    const interactionHint =
+      ownedCount <= 0
+        ? "Own one to interact"
+        : cooldownSeconds > 0
+          ? `Cooldown ${cooldownSeconds}s`
+          : null;
+    const canInteract = interactionHint === null;
+    const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
+
+    const isWorn = state.wornWatchId === entry.id;
+    const canWear = modelOwned > 0 && !isWorn;
+    const canDismantle =
+      atelierUnlocked && modelOwned > 1 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
+    const showDismantle = (craftingPartsPerWatch[tierId] ?? 0) > 0;
+    const powerReservePercent = Math.round(getPowerReserveForItem(state, tierId) * 100);
+    return (
+      <article
+        key={entry.id}
+        className={`catalog-card ${
+          discovered ? "catalog-discovered" : "catalog-locked"
+        } ${isHighlighted ? "purchase-flash" : ""} ${
+          isActionable ? "catalog-actionable" : "catalog-nonactionable"
+        }`}
+        data-testid="catalog-card"
+      >
+        <div className="catalog-media">
+          <img
+            src={getCatalogImageUrl(entry)}
+            alt={`${entry.brand} ${entry.model}`}
+            loading="lazy"
+            onError={(event) => {
+              const target = event.currentTarget;
+              const placeholder =
+                "data:image/svg+xml;utf8," +
+                encodeURIComponent(
+                  `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
+                    `<rect width='100%' height='100%' fill='#131720'/>` +
+                    `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
+                    `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
+                    `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
+                    `</svg>`,
+                );
+
+              if (target.dataset.fallback !== "true") {
+                target.dataset.fallback = "true";
+                target.src = placeholder;
+              }
+            }}
+          />
+          {!discovered && (
+            <span className="catalog-lock-icon" data-testid={`catalog-lock-${entry.id}`}>
+              <LockIcon />
+            </span>
+          )}
+          {!discovered && <span className="catalog-badge">Undiscovered</span>}
+        </div>
+        <div className="catalog-content">
+          <div className="catalog-title">
+            <div className="catalog-title-primary">
+              {tierBadge && (
+                <TierBadge
+                  tier={tierBadge.category}
+                  showLabel
+                  label={tierBadge.label}
+                  description={tierBadge.description}
+                  backgroundVar={tierBadge.backgroundVar}
+                  textVar={tierBadge.textVar}
+                />
+              )}
+              <div>
+                <p className="catalog-brand">{entry.brand}</p>
+                <h3>{entry.model}</h3>
+              </div>
+            </div>
+            <p className="catalog-year">{entry.year}</p>
+          </div>
+          {renderCatalogDetails(entry, tags, showFacts)}
+          {!unlocked && unlockDetail && (
+            <div data-testid={`locked-item-hint-${entry.id}`}>
+              <UnlockHint
+                eyebrow="Locked"
+                title="Unlock requirement"
+                detail={unlockDetail.label}
+                currentLabel={unlockCurrentLabel}
+                thresholdLabel={unlockThresholdLabel}
+                ratio={unlockDetail.ratio}
+              />
+            </div>
+          )}
+          {tierItem.movement === "automatic" && ownedCount > 0 && (
+            <p className="muted">Power reserve: {powerReservePercent}%</p>
+          )}
+          {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
+            <p className="muted">Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts</p>
+          )}
+          <div className="catalog-action-bar">
+            <div className="catalog-action-meta">
+              {isWorn && (
+                <span className="catalog-equipped" data-testid={`watch-equipped-${entry.id}`}>
+                  Equipped
+                </span>
+              )}
+              <span className="catalog-owned">{ownedCount} owned</span>
+              <span className="catalog-price">{formatMoneyFromCents(gate.cashPriceCents)}</span>
+              <span className="catalog-duplicate">Next x{duplicateMultiplier.toFixed(2)}</span>
+            </div>
+            <CatalogPurchaseGate
+              entryId={entry.id}
+              discovered={discovered}
+              unlocked={unlocked}
+              unlockDetail={unlockDetail}
+              unlockCurrentLabel={unlockCurrentLabel}
+              unlockThresholdLabel={unlockThresholdLabel}
+              gate={gate}
+              buyLabel={buyLabel}
+              onBuy={() => handlePurchase(entry.id)}
+            />
+          </div>
+          {(canWear || canShowInteract || (craftingPartsPerWatch[tierId] ?? 0) > 0) && (
+            <div className="card-actions">
+              {canWear && (
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid={`watch-wear-${entry.id}`}
+                  onClick={() => onPurchase(setWornWatchId(state, entry.id))}
+                >
+                  Wear
+                </button>
+              )}
+              {canShowInteract && ownedCount > 0 && (
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={!canInteract}
+                  data-testid={`vault-interact-${tierId}`}
+                  onClick={() => onInteract?.(tierId)}
+                >
+                  {interactionLabel}
+                </button>
+              )}
+              {canShowInteract && (
+                <ExplainButton
+                  sectionId={HELP_SECTION_IDS.interactions}
+                  label="Explain interactions"
+                  className="help-open-button"
+                />
+              )}
+              {showDismantle &&
+                (atelierUnlocked ? (
+                  <button
+                    type="button"
+                    className="secondary"
+                    disabled={!canDismantle}
+                    onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
+                  >
+                    Dismantle
+                  </button>
+                ) : (
+                  <div className="dismantle-locked">
+                    <button type="button" className="secondary" disabled>
+                      Dismantle
+                    </button>
+                    <span className="muted">Unlocks with Atelier reset.</span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      </article>
+    );
+  };
+
+  const renderCatalogGrid = (showFacts: boolean) => (
+    <div className="catalog-grid" data-testid="catalog-grid">
+      {stableCatalogEntries.map((entry) => renderCatalogCard(entry, showFacts))}
+    </div>
+  );
 
   return (
     <>
@@ -488,242 +722,7 @@ export function CatalogPurchasePanel({
               />
             </div>
           ) : (
-            <div className="catalog-grid" data-testid="catalog-grid">
-              {stableCatalogEntries.map((entry) => {
-                const discovered = discoveredCatalogIds.includes(entry.id);
-                const tags = getCatalogEntryTags(entry);
-                const tierBadge = getWatchModelTierBadge(entry.id);
-                const tierId = getWatchModelTierId(entry.id);
-                const tierOwned = state.items[tierId] ?? 0;
-                const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
-                const fallbackOwner =
-                  totalTierOwned === 0 &&
-                  tierOwned > 0 &&
-                  firstModelByTier.get(tierId) === entry.id;
-                const modelOwned = getWatchModelOwnedCount(state, entry.id);
-                const ownedCount = fallbackOwner ? tierOwned : modelOwned;
-                const tierItem = watchItemById.get(tierId);
-                if (!tierItem) {
-                  throw new Error(`Missing watch tier definition for ${tierId}`);
-                }
-                const unlocked = isItemUnlocked(state, tierId);
-                const unlockMilestoneId = tierItem.unlockMilestoneId;
-                const unlockDetail = unlockMilestoneId
-                  ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
-                  : null;
-                const unlockUsesCents = unlockMilestoneId === "showcase";
-                const unlockCurrentLabel = unlockDetail
-                  ? unlockUsesCents
-                    ? formatMoneyFromCents(unlockDetail.current)
-                    : formatCount(unlockDetail.current)
-                  : "0";
-                const unlockThresholdLabel = unlockDetail
-                  ? unlockUsesCents
-                    ? formatMoneyFromCents(unlockDetail.threshold)
-                    : formatCount(unlockDetail.threshold)
-                  : "0";
-                const gate = getWatchModelPurchaseGate(state, entry.id);
-                const isActionable = unlocked && gate.ok;
-                const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
-                const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
-                const isHighlighted = purchaseHighlights[entry.id];
-
-                const interactionLabel =
-                  tierItem.movement === "manual"
-                    ? "Wind crown"
-                    : tierItem.movement === "automatic"
-                      ? "Charge rotor"
-                      : "Set time";
-                const cooldownRemainingMs =
-                  typeof nowMs === "number"
-                    ? getInteractionCooldownRemainingMs(state, tierId, nowMs)
-                    : 0;
-                const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
-                const interactionHint =
-                  ownedCount <= 0
-                    ? "Own one to interact"
-                    : cooldownSeconds > 0
-                      ? `Cooldown ${cooldownSeconds}s`
-                      : null;
-                const canInteract = interactionHint === null;
-                const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
-
-                const isWorn = state.wornWatchId === entry.id;
-                const canWear = modelOwned > 0 && !isWorn;
-                const canDismantle =
-                  atelierUnlocked && modelOwned > 1 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
-                const showDismantle = (craftingPartsPerWatch[tierId] ?? 0) > 0;
-                const powerReservePercent = Math.round(getPowerReserveForItem(state, tierId) * 100);
-                return (
-                  <article
-                    key={entry.id}
-                    className={`catalog-card ${
-                      discovered ? "catalog-discovered" : "catalog-locked"
-                    } ${isHighlighted ? "purchase-flash" : ""} ${
-                      isActionable ? "catalog-actionable" : "catalog-nonactionable"
-                    }`}
-                    data-testid="catalog-card"
-                  >
-                    <div className="catalog-media">
-                      <img
-                        src={getCatalogImageUrl(entry)}
-                        alt={`${entry.brand} ${entry.model}`}
-                        loading="lazy"
-                        onError={(event) => {
-                          const target = event.currentTarget;
-                          const placeholder =
-                            "data:image/svg+xml;utf8," +
-                            encodeURIComponent(
-                              `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                                `<rect width='100%' height='100%' fill='#131720'/>` +
-                                `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                                `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                                `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                                `</svg>`,
-                            );
-
-                          if (target.dataset.fallback !== "true") {
-                            target.dataset.fallback = "true";
-                            target.src = placeholder;
-                          }
-                        }}
-                      />
-                      {!discovered && (
-                        <span
-                          className="catalog-lock-icon"
-                          data-testid={`catalog-lock-${entry.id}`}
-                        >
-                          <LockIcon />
-                        </span>
-                      )}
-                      {!discovered && <span className="catalog-badge">Undiscovered</span>}
-                    </div>
-                    <div className="catalog-content">
-                      <div className="catalog-title">
-                        <div className="catalog-title-primary">
-                          {tierBadge && (
-                            <TierBadge
-                              tier={tierBadge.category}
-                              showLabel
-                              label={tierBadge.label}
-                              description={tierBadge.description}
-                              backgroundVar={tierBadge.backgroundVar}
-                              textVar={tierBadge.textVar}
-                            />
-                          )}
-                          <div>
-                            <p className="catalog-brand">{entry.brand}</p>
-                            <h3>{entry.model}</h3>
-                          </div>
-                        </div>
-                        <p className="catalog-year">{entry.year}</p>
-                      </div>
-                      {renderCatalogDetails(entry, tags, false)}
-                      {!unlocked && unlockDetail && (
-                        <div data-testid={`locked-item-hint-${entry.id}`}>
-                          <UnlockHint
-                            eyebrow="Locked"
-                            title="Unlock requirement"
-                            detail={unlockDetail.label}
-                            currentLabel={unlockCurrentLabel}
-                            thresholdLabel={unlockThresholdLabel}
-                            ratio={unlockDetail.ratio}
-                          />
-                        </div>
-                      )}
-                      {tierItem.movement === "automatic" && ownedCount > 0 && (
-                        <p className="muted">Power reserve: {powerReservePercent}%</p>
-                      )}
-                      {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
-                        <p className="muted">
-                          Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts
-                        </p>
-                      )}
-                      <div className="catalog-action-bar">
-                        <div className="catalog-action-meta">
-                          {isWorn && (
-                            <span
-                              className="catalog-equipped"
-                              data-testid={`watch-equipped-${entry.id}`}
-                            >
-                              Equipped
-                            </span>
-                          )}
-                          <span className="catalog-owned">{ownedCount} owned</span>
-                          <span className="catalog-price">
-                            {formatMoneyFromCents(gate.cashPriceCents)}
-                          </span>
-                          <span className="catalog-duplicate">
-                            Next x{duplicateMultiplier.toFixed(2)}
-                          </span>
-                        </div>
-                        <CatalogPurchaseGate
-                          entryId={entry.id}
-                          discovered={discovered}
-                          unlocked={unlocked}
-                          unlockDetail={unlockDetail}
-                          unlockCurrentLabel={unlockCurrentLabel}
-                          unlockThresholdLabel={unlockThresholdLabel}
-                          gate={gate}
-                          buyLabel={buyLabel}
-                          onBuy={() => handlePurchase(entry.id)}
-                        />
-                      </div>
-                      {(canWear || canShowInteract || (craftingPartsPerWatch[tierId] ?? 0) > 0) && (
-                        <div className="card-actions">
-                          {canWear && (
-                            <button
-                              type="button"
-                              className="secondary"
-                              data-testid={`watch-wear-${entry.id}`}
-                              onClick={() => onPurchase(setWornWatchId(state, entry.id))}
-                            >
-                              Wear
-                            </button>
-                          )}
-                          {canShowInteract && ownedCount > 0 && (
-                            <button
-                              type="button"
-                              className="secondary"
-                              disabled={!canInteract}
-                              data-testid={`vault-interact-${tierId}`}
-                              onClick={() => onInteract?.(tierId)}
-                            >
-                              {interactionLabel}
-                            </button>
-                          )}
-                          {canShowInteract && (
-                            <ExplainButton
-                              sectionId={HELP_SECTION_IDS.interactions}
-                              label="Explain interactions"
-                              className="help-open-button"
-                            />
-                          )}
-                          {showDismantle &&
-                            (atelierUnlocked ? (
-                              <button
-                                type="button"
-                                className="secondary"
-                                disabled={!canDismantle}
-                                onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
-                              >
-                                Dismantle
-                              </button>
-                            ) : (
-                              <div className="dismantle-locked">
-                                <button type="button" className="secondary" disabled>
-                                  Dismantle
-                                </button>
-                                <span className="muted">Unlocks with Atelier reset.</span>
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+            renderCatalogGrid(false)
           ))}
       </section>
       <section
@@ -752,248 +751,7 @@ export function CatalogPurchasePanel({
                 />
               </div>
             ) : (
-              <div className="catalog-grid" data-testid="catalog-grid">
-                {stableCatalogEntries.map((entry) => {
-                  const discovered = discoveredCatalogIds.includes(entry.id);
-                  const tags = getCatalogEntryTags(entry);
-                  const tierBadge = getWatchModelTierBadge(entry.id);
-                  const tierId = getWatchModelTierId(entry.id);
-                  const tierOwned = state.items[tierId] ?? 0;
-                  const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
-                  const fallbackOwner =
-                    totalTierOwned === 0 &&
-                    tierOwned > 0 &&
-                    firstModelByTier.get(tierId) === entry.id;
-                  const modelOwned = getWatchModelOwnedCount(state, entry.id);
-                  const ownedCount = fallbackOwner ? tierOwned : modelOwned;
-                  const tierItem = watchItemById.get(tierId);
-                  if (!tierItem) {
-                    throw new Error(`Missing watch tier definition for ${tierId}`);
-                  }
-                  const unlocked = isItemUnlocked(state, tierId);
-                  const unlockMilestoneId = tierItem.unlockMilestoneId;
-                  const unlockDetail = unlockMilestoneId
-                    ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
-                    : null;
-                  const unlockUsesCents = unlockMilestoneId === "showcase";
-                  const unlockCurrentLabel = unlockDetail
-                    ? unlockUsesCents
-                      ? formatMoneyFromCents(unlockDetail.current)
-                      : formatCount(unlockDetail.current)
-                    : "0";
-                  const unlockThresholdLabel = unlockDetail
-                    ? unlockUsesCents
-                      ? formatMoneyFromCents(unlockDetail.threshold)
-                      : formatCount(unlockDetail.threshold)
-                    : "0";
-                  const gate = getWatchModelPurchaseGate(state, entry.id);
-                  const isActionable = unlocked && gate.ok;
-                  const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
-                  const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
-                  const isHighlighted = purchaseHighlights[entry.id];
-
-                  const interactionLabel =
-                    tierItem.movement === "manual"
-                      ? "Wind crown"
-                      : tierItem.movement === "automatic"
-                        ? "Charge rotor"
-                        : "Set time";
-                  const cooldownRemainingMs =
-                    typeof nowMs === "number"
-                      ? getInteractionCooldownRemainingMs(state, tierId, nowMs)
-                      : 0;
-                  const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
-                  const interactionHint =
-                    ownedCount <= 0
-                      ? "Own one to interact"
-                      : cooldownSeconds > 0
-                        ? `Cooldown ${cooldownSeconds}s`
-                        : null;
-                  const canInteract = interactionHint === null;
-                  const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
-
-                  const isWorn = state.wornWatchId === entry.id;
-                  const canWear = modelOwned > 0 && !isWorn;
-                  const canDismantle =
-                    atelierUnlocked && modelOwned > 1 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
-                  const showDismantle = (craftingPartsPerWatch[tierId] ?? 0) > 0;
-                  const powerReservePercent = Math.round(
-                    getPowerReserveForItem(state, tierId) * 100,
-                  );
-                  return (
-                    <article
-                      key={entry.id}
-                      className={`catalog-card ${
-                        discovered ? "catalog-discovered" : "catalog-locked"
-                      } ${isHighlighted ? "purchase-flash" : ""} ${
-                        isActionable ? "catalog-actionable" : "catalog-nonactionable"
-                      }`}
-                      data-testid="catalog-card"
-                    >
-                      <div className="catalog-media">
-                        <img
-                          src={getCatalogImageUrl(entry)}
-                          alt={`${entry.brand} ${entry.model}`}
-                          loading="lazy"
-                          onError={(event) => {
-                            const target = event.currentTarget;
-                            const placeholder =
-                              "data:image/svg+xml;utf8," +
-                              encodeURIComponent(
-                                `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                                  `<rect width='100%' height='100%' fill='#131720'/>` +
-                                  `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                                  `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                                  `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
-                                  `</svg>`,
-                              );
-
-                            if (target.dataset.fallback !== "true") {
-                              target.dataset.fallback = "true";
-                              target.src = placeholder;
-                            }
-                          }}
-                        />
-                        {!discovered && (
-                          <span
-                            className="catalog-lock-icon"
-                            data-testid={`catalog-lock-${entry.id}`}
-                          >
-                            <LockIcon />
-                          </span>
-                        )}
-                        {!discovered && <span className="catalog-badge">Undiscovered</span>}
-                      </div>
-                      <div className="catalog-content">
-                        <div className="catalog-title">
-                          <div className="catalog-title-primary">
-                            {tierBadge && (
-                              <TierBadge
-                                tier={tierBadge.category}
-                                showLabel
-                                label={tierBadge.label}
-                                description={tierBadge.description}
-                                backgroundVar={tierBadge.backgroundVar}
-                                textVar={tierBadge.textVar}
-                              />
-                            )}
-                            <div>
-                              <p className="catalog-brand">{entry.brand}</p>
-                              <h3>{entry.model}</h3>
-                            </div>
-                          </div>
-                          <p className="catalog-year">{entry.year}</p>
-                        </div>
-                        {renderCatalogDetails(entry, tags, true)}
-                        {!unlocked && unlockDetail && (
-                          <div data-testid={`locked-item-hint-${entry.id}`}>
-                            <UnlockHint
-                              eyebrow="Locked"
-                              title="Unlock requirement"
-                              detail={unlockDetail.label}
-                              currentLabel={unlockCurrentLabel}
-                              thresholdLabel={unlockThresholdLabel}
-                              ratio={unlockDetail.ratio}
-                            />
-                          </div>
-                        )}
-                        {tierItem.movement === "automatic" && ownedCount > 0 && (
-                          <p className="muted">Power reserve: {powerReservePercent}%</p>
-                        )}
-                        {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
-                          <p className="muted">
-                            Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts
-                          </p>
-                        )}
-                        <div className="catalog-action-bar">
-                          <div className="catalog-action-meta">
-                            {isWorn && (
-                              <span
-                                className="catalog-equipped"
-                                data-testid={`watch-equipped-${entry.id}`}
-                              >
-                                Equipped
-                              </span>
-                            )}
-                            <span className="catalog-owned">{ownedCount} owned</span>
-                            <span className="catalog-price">
-                              {formatMoneyFromCents(gate.cashPriceCents)}
-                            </span>
-                            <span className="catalog-duplicate">
-                              Next x{duplicateMultiplier.toFixed(2)}
-                            </span>
-                          </div>
-                          <CatalogPurchaseGate
-                            entryId={entry.id}
-                            discovered={discovered}
-                            unlocked={unlocked}
-                            unlockDetail={unlockDetail}
-                            unlockCurrentLabel={unlockCurrentLabel}
-                            unlockThresholdLabel={unlockThresholdLabel}
-                            gate={gate}
-                            buyLabel={buyLabel}
-                            onBuy={() => handlePurchase(entry.id)}
-                          />
-                        </div>
-                        {(canWear ||
-                          canShowInteract ||
-                          (craftingPartsPerWatch[tierId] ?? 0) > 0) && (
-                          <div className="card-actions">
-                            {canWear && (
-                              <button
-                                type="button"
-                                className="secondary"
-                                data-testid={`watch-wear-${entry.id}`}
-                                onClick={() => onPurchase(setWornWatchId(state, entry.id))}
-                              >
-                                Wear
-                              </button>
-                            )}
-                            {canShowInteract && ownedCount > 0 && (
-                              <button
-                                type="button"
-                                className="secondary"
-                                disabled={!canInteract}
-                                data-testid={`vault-interact-${tierId}`}
-                                onClick={() => onInteract?.(tierId)}
-                              >
-                                {interactionLabel}
-                              </button>
-                            )}
-                            {canShowInteract && (
-                              <ExplainButton
-                                sectionId={HELP_SECTION_IDS.interactions}
-                                label="Explain interactions"
-                                className="help-open-button"
-                              />
-                            )}
-                            {showDismantle &&
-                              (atelierUnlocked ? (
-                                <button
-                                  type="button"
-                                  className="secondary"
-                                  disabled={!canDismantle}
-                                  onClick={() =>
-                                    onPurchase(dismantleWatchModel(state, entry.id, 1))
-                                  }
-                                >
-                                  Dismantle
-                                </button>
-                              ) : (
-                                <div className="dismantle-locked">
-                                  <button type="button" className="secondary" disabled>
-                                    Dismantle
-                                  </button>
-                                  <span className="muted">Unlocks with Atelier reset.</span>
-                                </div>
-                              ))}
-                          </div>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
+              renderCatalogGrid(true)
             )}
           </>
         )}
