@@ -1,6 +1,10 @@
 :root {
   color-scheme: light dark;
   --focus-ring: rgba(72, 175, 255, 0.85);
+  --tier-starter: #a3c5a0;
+  --tier-mid: #ffd700;
+  --tier-lux: #e74c3c;
+  --tier-badge-text-light: #ffffff;
   font-family:
     "Sora",
     "Space Grotesk",
@@ -53,6 +57,44 @@ strong {
   max-width: 1100px;
   margin: 48px auto;
   padding: 0 20px 72px;
+}
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--tier-badge-background, var(--tier-starter));
+  color: var(--tier-badge-text, var(--tier-badge-text-light));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.tier-badge:hover,
+.tier-badge:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.tier-badge-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.tier-badge-label {
+  display: block;
 }
 
 .hero {
