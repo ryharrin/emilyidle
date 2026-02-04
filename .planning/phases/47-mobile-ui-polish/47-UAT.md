@@ -3,22 +3,24 @@ status: testing
 phase: 47-mobile-ui-polish
 source: 47-01-SUMMARY.md, 47-02-SUMMARY.md, 47-03-SUMMARY.md
 started: 2026-02-04T15:00:00Z
-updated: 2026-02-04T15:00:00Z
+updated: 2026-02-04T15:10:00Z
 ---
 
 ## Current Test
 
-number: 1
-name: Catalog Tier Badges
+number: 2
+name: Collection Tier Summary
 expected: |
-  Browse the Catalog tab. Each watch card should display a tier badge (Starter, Mid-tier, or Luxury) with a color-coded dot and label. Hovering over the badge should show a tooltip explaining what the tier means.
+  Visit the Collection tab. You should see a panel showing Starter, Mid-tier, and Luxury badge cards with counts of how many watches you own and have discovered. This panel should include a help button that links to tier badge documentation.
 awaiting: user response
 
 ## Tests
 
 ### 1. Catalog Tier Badges
 expected: Browse the Catalog tab. Each watch card should display a tier badge (Starter, Mid-tier, or Luxury) with a color-coded dot and label. Hovering over the badge should show a tooltip explaining what the tier means.
-result: pending
+result: issue
+reported: "Tier badges are present but visually broken - badges overlap with card content, text alignment is off, spacing is inconsistent, and overall layout looks cramped. The 'Starter', 'Mid-tier', and 'Luxury' badges with their color-coded dots are visible but poorly positioned, making the catalog look 'all wrong' as reported by user."
+severity: major
 
 ### 2. Collection Tier Summary
 expected: Visit the Collection tab. You should see a panel showing Starter, Mid-tier, and Luxury badge cards with counts of how many watches you own and have discovered. This panel should include a help button that links to tier badge documentation.
@@ -52,10 +54,17 @@ result: pending
 
 total: 8
 passed: 0
-issues: 0
-pending: 8
+issues: 1
+pending: 7
 skipped: 0
 
 ## Gaps
 
-[none yet]
+- truth: "Browse the Catalog tab. Each watch card should display a tier badge (Starter, Mid-tier, or Luxury) with a color-coded dot and label. Hovering over the badge should show a tooltip explaining what the tier means."
+  status: failed
+  reason: "Tier badges are present but visually broken - badges overlap with card content, text alignment is off, spacing is inconsistent, and overall layout looks cramped. The 'Starter', 'Mid-tier', and 'Luxury' badges with their color-coded dots are visible but poorly positioned, making the catalog look 'all wrong' as reported by user."
+  severity: major
+  test: 1
+  artifacts: []
+  missing: []
+  debug_session: ""
