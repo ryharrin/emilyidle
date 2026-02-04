@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { HelpSection } from "./helpContent";
 
@@ -50,9 +50,6 @@ type HelpModalProps = {
   onClose: () => void;
 };
 
-const focusableSelector =
-  "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
-
 export function HelpModal({
   open,
   sections,
@@ -64,6 +61,28 @@ export function HelpModal({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const sectionButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  const focusableSelector =
+    "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
+
+  const getFocusableElements = useCallback(() => {
+    const modal = modalRef.current;
+    if (!modal) {
+      return [] as HTMLElement[];
+    }
+    return Array.from(modal.querySelectorAll<HTMLElement>(focusableSelector));
+  }, []);
+
+  const handleTopSentinel = () => {
+    const focusables = getFocusableElements();
+    focusables[focusables.length - 1]?.focus();
+  };
+
+  const handleBottomSentinel = () => {
+    const focusables = getFocusableElements();
+    focusables[0]?.focus();
+  };
 
   const activeSection = useMemo(() => {
     if (sections.length === 0) {
@@ -200,7 +219,13 @@ export function HelpModal({
 
   return (
     <div className="help-modal" data-testid="help-modal" role="dialog" aria-modal="true">
-      <div className="help-modal-card">
+      <div className="help-modal-card" ref={modalRef}>
+        <button
+          type="button"
+          className="help-focus-sentinel visually-hidden"
+          aria-label="Help modal focus guard"
+          onFocus={handleTopSentinel}
+        />
         <header className="help-modal-header">
           <div>
             <p className="eyebrow">Glossary</p>
@@ -265,6 +290,12 @@ export function HelpModal({
             <p className="muted">No help content available yet.</p>
           )}
         </div>
+        <button
+          type="button"
+          className="help-focus-sentinel visually-hidden"
+          aria-label="Help modal focus guard"
+          onFocus={handleBottomSentinel}
+        />
       </div>
     </div>
   );
