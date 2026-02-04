@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import type { HelpSection } from "./helpContent";
 
@@ -50,6 +50,9 @@ type HelpModalProps = {
   onClose: () => void;
 };
 
+const focusableSelector =
+  "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
+
 export function HelpModal({
   open,
   sections,
@@ -57,6 +60,11 @@ export function HelpModal({
   onSelectSectionId,
   onClose,
 }: HelpModalProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const sectionButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
   const activeSection = useMemo(() => {
     if (sections.length === 0) {
       return null;
@@ -64,8 +72,90 @@ export function HelpModal({
     return sections.find((section) => section.id === activeSectionId) ?? sections[0];
   }, [activeSectionId, sections]);
 
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
+  const filteredSections = useMemo(() => {
+    if (!normalizedSearchTerm) {
+      return sections;
+    }
+
+    return sections.filter((section) => {
+      const haystack = `${section.title} ${section.body.join(" ")}`.toLowerCase();
+      return haystack.includes(normalizedSearchTerm);
+    });
+  }, [normalizedSearchTerm, sections]);
+
   useEffect(() => {
     if (!open) {
+      setSearchTerm("");
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (filteredSections.length === 0) {
+      setHighlightedIndex(-1);
+      return;
+    }
+
+    const activeIndex = filteredSections.findIndex((section) => section.id === activeSection?.id);
+    setHighlightedIndex(activeIndex >= 0 ? activeIndex : 0);
+  }, [activeSection, filteredSections]);
+
+  const focusSectionButton = (index: number) => {
+    const targetIndex = Math.min(filteredSections.length - 1, Math.max(0, index));
+    const button = sectionButtonRefs.current[targetIndex];
+    if (button) {
+      button.focus();
+      setHighlightedIndex(targetIndex);
+    }
+  };
+
+  const selectSection = (index: number) => {
+    if (index < 0 || index >= filteredSections.length) {
+      return;
+    }
+    const section = filteredSections[index];
+    setHighlightedIndex(index);
+    onSelectSectionId(section.id);
+    focusSectionButton(index);
+  };
+
+  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (filteredSections.length === 0) {
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusSectionButton(Math.max(0, highlightedIndex));
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusSectionButton(filteredSections.length - 1);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      selectSection(highlightedIndex >= 0 ? highlightedIndex : 0);
+    }
+  };
+
+  const handleSectionKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (filteredSections.length === 0) {
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusSectionButton((index + 1) % filteredSections.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusSectionButton((index - 1 + filteredSections.length) % filteredSections.length);
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      selectSection(index);
+    }
+  };
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
       return;
     }
 
@@ -81,6 +171,13 @@ export function HelpModal({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose, open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    searchInputRef.current?.focus();
+  }, [open]);
 
   useEffect(() => {
     if (!open || typeof document === "undefined") {
@@ -99,6 +196,8 @@ export function HelpModal({
     return null;
   }
 
+  sectionButtonRefs.current = [];
+
   return (
     <div className="help-modal" data-testid="help-modal" role="dialog" aria-modal="true">
       <div className="help-modal-card">
@@ -111,22 +210,47 @@ export function HelpModal({
             Close
           </button>
         </header>
-        <ul className="help-modal-sections">
-          {sections.map((section) => {
-            const isActive = section.id === activeSection?.id;
-            return (
-              <li key={section.id}>
-                <button
-                  type="button"
-                  className={`help-section-button ${isActive ? "help-section-button-active" : ""}`}
-                  onClick={() => onSelectSectionId(section.id)}
-                >
-                  {section.title}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="help-modal-search">
+          <label className="visually-hidden" htmlFor="help-search-input">
+            Search help
+          </label>
+          <input
+            id="help-search-input"
+            ref={searchInputRef}
+            data-testid="help-search"
+            type="search"
+            autoComplete="off"
+            placeholder="Search help"
+            aria-label="Search help"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
+        </div>
+        {filteredSections.length === 0 ? (
+          <p className="help-modal-no-results">No help sections match your search.</p>
+        ) : (
+          <ul className="help-modal-sections">
+            {filteredSections.map((section, index) => {
+              const isActive = section.id === activeSection?.id;
+              return (
+                <li key={section.id}>
+                  <button
+                    type="button"
+                    className={`help-section-button ${isActive ? "help-section-button-active" : ""}`}
+                    onClick={() => selectSection(index)}
+                    onKeyDown={(event) => handleSectionKeyDown(event, index)}
+                    ref={(node) => {
+                      sectionButtonRefs.current[index] = node;
+                    }}
+                  >
+                    {section.title}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
         <div className="help-modal-content">
           {activeSection ? (
             <div className="help-modal-body">
