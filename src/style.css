@@ -1344,6 +1344,7 @@ button:not(:disabled):active {
 
 .help-modal-card {
   width: min(720px, 92vw);
+  min-width: 0;
   max-height: min(720px, 90vh);
   background: #1b1e26;
   border-radius: 18px;
@@ -1401,6 +1402,7 @@ button[data-testid="help-close"] {
   margin: 0;
   padding: 0;
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -1425,6 +1427,7 @@ button[data-testid="help-close"] {
 
 .help-modal-content {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
   padding-right: 6px;
 }
@@ -2304,12 +2307,22 @@ button[data-testid^="vault-interact-"] {
   justify-content: space-between;
   gap: 12px;
   align-items: flex-start;
+  flex-wrap: wrap;
+  row-gap: 8px;
 }
 
 .catalog-title-primary {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.catalog-title-primary .tier-badge {
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .catalog-brand {
