@@ -62,7 +62,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 44-01-PLAN.md — Align outcome visibility + reward feedback across winding, quartz, and automatic mini-games
+- [x] 44-01-PLAN.md — Align outcome visibility + reward feedback across winding, quartz, and automatic mini-games
 
 ### Phase 45: Per-Watch Stats Surfaces
 
@@ -73,7 +73,13 @@ Plans:
   1. Catalog shows each watch's enjoyment rate and cash rate without requiring purchase.
   2. Rates vary meaningfully between watches (players can find differences within and across tiers).
   3. Collection view shows an equipped watch contribution breakdown so players can tell what it adds.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 45-01-PLAN.md — Create per-watch stats selectors (rows + equipped contribution) with unit tests
+- [ ] 45-02-PLAN.md — Add per-watch stats table UI in Catalog + equipped contribution call-out in Collection
+- [ ] 45-03-PLAN.md — Add regression coverage (Vitest + Playwright) for sorting, sticky header, and stability
+
 
 ### Phase 46: Catalog Expansion (Tiered Variety)
 
@@ -85,6 +91,8 @@ Plans:
   2. Catalog variety spans affordable to luxury price points (no single-tier monotony).
   3. New watches display correct images and metadata, and their rates feel appropriate for their tier.
 **Plans**: TBD
+
+
 
 ### Phase 47: Mobile & UI Polish
 
@@ -99,13 +107,15 @@ Plans:
   5. Interaction modals and other primary actions meet a minimum 44px touch target standard and provide clearer mobile feedback.
 **Plans**: TBD
 
+
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 42. Winding Refresh | v4.0 | 2/2 | Complete | 42-02-SUMMARY.md |
+| 42. Winding Refresh | v4.0 | 3/3 | Complete | 42-03-SUMMARY.md |
 | 43. New Watch Mini-Games | v4.0 | 1/1 | Complete | 43-01-SUMMARY.md |
-| 44. Interaction Feedback & Rewards | v4.0 | 0/TBD | Not started | - |
-| 45. Per-Watch Stats Surfaces | v4.0 | 0/TBD | Not started | - |
+| 44. Interaction Feedback & Rewards | v4.0 | 1/1 | Complete | 44-01-SUMMARY.md |
+| 45. Per-Watch Stats Surfaces | v4.0 | 0/3 | Not started | - |
 | 46. Catalog Expansion (Tiered Variety) | v4.0 | 0/TBD | Not started | - |
 | 47. Mobile & UI Polish | v4.0 | 0/TBD | Not started | - |
