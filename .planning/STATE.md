@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 48 of 6 (next milestone planning)
-Plan: Not started
-Status: Project is ready to plan the v4.1 milestone
-Last activity: 2026-02-05 — Completed v4.0 (mobile & UI polish)
-Progress: Phase 47 complete (5/5 plans)
+Plan: 48-01 (SESSION-01 progressive cost + premium indicator)
+Status: Phase 48 underway (1/11 plans complete)
+Last activity: 2026-02-05 — Completed 48-01 (session premium state + UI indicator)
+Progress: Phase 48 in progress (1/11 plans complete)
 Next Phase: Phase 48 (v4.1 planning)
 
 ## Accumulated Context
@@ -65,9 +65,11 @@ Next Phase: Phase 48 (v4.1 planning)
 | 47 | Centralized Playwright mobile projects around Pixel 5 + iPhone 12 | Guarantees Chrome and WebKit mobile runs are both exercised every suite instead of being optional |
 | 47 | Isolated `HelpModal` inside `#app-shell` so the background can be inerted and focus restored cleanly | Enables the WebKit focus trap fix without leaking focus to background elements |
 | 47 | Intercepted Tab/Shift+Tab between the help search input and close button for WebKit accessibility | Keeps iOS Safari keyboard navigation inside the modal without relying on native `aria-modal`
+| 48 | Normalize nowMs + premium window before charging session cost | Guarantees premium resets after 2× cooldown and keeps costs stable for the first session after a break
+| 48 | Surface premium label/note from selectors into the Career UI row | Keeps UI copy/test hooks synchronized with policy math and explains the multiplier
 
 ## Session Continuity
 
-Last session: 2026-02-05T00:15:00Z
-Stopped at: Completed Phase 47-05 (Help modal Tab cycle on WebKit)
-Resume file: None
+Last session: 2026-02-05T16:32:33Z
+Stopped at: Completed Phase 48-01 (SESSION-01 progressive cost + premium indicator)
+Resume file: .planning/phases/48-session-atelier/48-02-PLAN.md
