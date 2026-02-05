@@ -218,13 +218,62 @@ export function HelpModal({
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
+      return;
+    }
+
+    const handleFocusIn = (event: FocusEvent) => {
+      const modal = modalRef.current;
+      if (!modal) {
+        return;
+      }
+      const { target } = event;
+      if (target instanceof Node && modal.contains(target)) {
+        return;
+      }
+      modal.focus();
+    };
+
+    document.addEventListener("focusin", handleFocusIn);
+
+    return () => {
+      document.removeEventListener("focusin", handleFocusIn);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
+      return;
+    }
+
+    const handleFocusOut = () => {
+      const modal = modalRef.current;
+      if (!modal) {
+        return;
+      }
+
+      window.requestAnimationFrame(() => {
+        if (!modal.contains(document.activeElement)) {
+          modal.focus();
+        }
+      });
+    };
+
+    document.addEventListener("focusout", handleFocusOut, true);
+
+    return () => {
+      document.removeEventListener("focusout", handleFocusOut, true);
+    };
+  }, [open]);
+
   useLayoutEffect(() => {
     if (!open || typeof document === "undefined") {
       return;
     }
 
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-    closeButtonRef.current?.focus();
+    modalRef.current?.focus();
   }, [open]);
 
   useEffect(() => {
@@ -260,7 +309,7 @@ export function HelpModal({
 
   return (
     <div className="help-modal" data-testid="help-modal" role="dialog" aria-modal="true">
-      <div className="help-modal-card" ref={modalRef}>
+      <div className="help-modal-card" ref={modalRef} tabIndex={-1}>
         <button
           type="button"
           className="help-focus-sentinel visually-hidden"
