@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { formatMoneyFromCents } from "../../game/format";
 import { getOutcomeTierFromBand, getWindingBandLabel, WindingBand } from "./winding/windingMath";
@@ -56,7 +56,7 @@ export function getWindingLiveMessage({
   const tensionCopy = softWarningActive
     ? `Tension ${tensionPercent}% • red glow approaching`
     : `Tension ${tensionPercent}%`;
-  return `Keep going... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel} • Stop to lock in the tier`;
+  return `Keep dragging... ${progressPercent}% progress • ${tensionCopy} • ${bandLabel} • Release to lock in the tier`;
 }
 
 type WindingRewardCopy = {
@@ -142,6 +142,7 @@ export function WindingMiniGameModal({
     velocity01,
     softPenalty,
     strictPenalty,
+    bind,
   } = useWindingRun({
     open,
     runDurationMs: RUN_DURATION_MS,
@@ -153,7 +154,7 @@ export function WindingMiniGameModal({
   const [hintDismissed, setHintDismissed] = useState(!showTapHint);
   const hintCallbackRef = useRef(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const stopButtonRef = useRef<HTMLButtonElement | null>(null);
+  const surfaceRef = useRef<HTMLDivElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const prevOpenRef = useRef(open);
 
@@ -178,7 +179,7 @@ export function WindingMiniGameModal({
     onClose();
   }, [onClose, persistHintDismissed]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     if (result) {
       return;
     }
@@ -191,7 +192,7 @@ export function WindingMiniGameModal({
     setResult(outcome);
     onComplete(outcome);
     persistHintDismissed();
-  };
+  }, [band, onComplete, persistHintDismissed, progress01, result, stop]);
 
   useLayoutEffect(() => {
     const previouslyOpen = prevOpenRef.current;
@@ -209,7 +210,7 @@ export function WindingMiniGameModal({
       return;
     }
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-    stopButtonRef.current?.focus();
+    surfaceRef.current?.focus();
   }, [open]);
 
   useEffect(() => {
@@ -247,12 +248,30 @@ export function WindingMiniGameModal({
     };
   }, [open]);
 
-  const handleTrackKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      handleStop();
-    }
-  };
+  const handleSurfaceKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleStop();
+      }
+    },
+    [handleStop],
+  );
+
+  const surfaceHandlers = useMemo(
+    () => ({
+      ...bind,
+      onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => {
+        bind.onPointerUp(event);
+        handleStop();
+      },
+      onPointerCancel: (event: React.PointerEvent<HTMLDivElement>) => {
+        bind.onPointerCancel(event);
+        handleStop();
+      },
+    }),
+    [bind, handleStop],
+  );
 
   const getFocusableElements = () => {
     const modal = modalRef.current;
@@ -354,10 +373,8 @@ export function WindingMiniGameModal({
             className="winding-track"
             data-testid="winding-track"
             data-soft-penalty={softWarningActive ? "true" : "false"}
-            role="button"
-            tabIndex={0}
-            onClick={handleStop}
-            onKeyDown={handleTrackKeyDown}
+            data-outcome-state={outcomeState}
+            role="presentation"
             style={trackStyle}
           >
             <div className="winding-track-band winding-track-under" aria-hidden="true" />
@@ -371,12 +388,25 @@ export function WindingMiniGameModal({
             />
             {shouldShowHint && (
               <div className="winding-track-hint" role="status">
-                <p>Tap anywhere on the track to stop once the indicator lands in a band.</p>
+                <p>Drag anywhere on the crown to release once the indicator lands in a band.</p>
                 <button type="button" className="secondary small" onClick={persistHintDismissed}>
                   Got it
                 </button>
               </div>
             )}
+            <div
+              className="winding-surface"
+              data-testid="winding-surface"
+              role="button"
+              tabIndex={0}
+              aria-label="Drag the crown to wind"
+              aria-describedby="winding-live"
+              ref={surfaceRef}
+              onKeyDown={handleSurfaceKeyDown}
+              {...surfaceHandlers}
+            >
+              <span className="winding-surface-copy">Drag the crown to wind</span>
+            </div>
           </div>
 
           <div
@@ -411,23 +441,11 @@ export function WindingMiniGameModal({
             data-testid="winding-soft-hint"
             aria-live="polite"
           >
-            Stop before the red glow at 98.5% to keep tension from spiking.
+            Release before the red glow at 98.5% to keep tension from spiking.
           </p>
 
           <div className="card-actions winding-actions">
-            {!result ? (
-              <button
-                type="button"
-                className="primary winding-stop-button"
-                data-testid="winding-stop"
-                aria-label="Stop winding run"
-                aria-describedby="winding-live"
-                onClick={handleStop}
-                ref={stopButtonRef}
-              >
-                Stop
-              </button>
-            ) : (
+            {result && (
               <button
                 type="button"
                 className="primary winding-done-button"
@@ -463,7 +481,7 @@ export function WindingMiniGameModal({
           className="visually-hidden"
           aria-label="Trap focus"
           tabIndex={0}
-          onFocus={() => stopButtonRef.current?.focus()}
+          onFocus={() => surfaceRef.current?.focus()}
         />
         <span tabIndex={0} className="winding-focus-sentinel" onFocus={handleBottomSentinel} />
       </div>

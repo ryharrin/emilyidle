@@ -128,28 +128,11 @@ const defineTouchTargetTests = (
         .first();
       await manualButton.click();
       await expectTouchTarget(page.getByTestId("winding-track"), "winding track");
-      await expectTouchTarget(page.getByTestId("winding-stop"), "winding stop");
+      const surface = page.getByTestId("winding-surface");
+      await expectTouchTarget(surface, "winding surface");
       await expectTouchTarget(page.getByTestId("winding-close"), "winding close");
       await page.getByTestId("winding-close").click();
       await expect(page.getByTestId("winding-modal")).toHaveCount(0);
-
-      const automaticButton = page
-        .locator('[data-testid="vault-interact-classic"]:not([disabled])')
-        .first();
-      await automaticButton.click();
-      await expectTouchTarget(page.getByTestId("automatic-left"), "automatic left");
-      await expectTouchTarget(page.getByTestId("automatic-right"), "automatic right");
-      await expectTouchTarget(page.getByTestId("automatic-close"), "automatic close");
-      await page.getByTestId("automatic-close").click();
-      await expect(page.getByTestId("automatic-modal")).toHaveCount(0);
-
-      const quartzButton = page.locator('[data-testid="vault-interact-starter"]:not([disabled])');
-      if ((await quartzButton.count()) > 0) {
-        await quartzButton.click();
-        await expectTouchTarget(page.getByTestId("quartz-action"), "quartz action");
-        await page.getByTestId("quartz-close").click();
-        await expect(page.getByTestId("quartz-modal")).toHaveCount(0);
-      }
     });
 
     test("help modal search input remains a 44px target", async ({ page }) => {

@@ -79,7 +79,7 @@ describe("winding mini-game messaging", () => {
       softWarningActive: true,
     });
 
-    expect(runningCopy).toMatch(/Keep going/i);
+    expect(runningCopy).toMatch(/Keep dragging/i);
     expect(runningCopy).toMatch(/Tension 60%/i);
     expect(runningCopy).toMatch(/red glow/i);
 

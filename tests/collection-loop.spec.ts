@@ -411,12 +411,6 @@ test.describe("collection loop", () => {
     );
 
     const imageFilename = "Rolex_GMT-Master_II_ref._126713GRNR.jpg";
-    const imageResponse = page.waitForResponse((response) => {
-      if (!response.url().includes(imageFilename)) {
-        return false;
-      }
-      return response.status() === 200;
-    });
 
     await page.goto("/emilyidle/");
     await page.getByRole("tab", { name: "Catalog" }).click();
@@ -427,6 +421,7 @@ test.describe("collection loop", () => {
     const card = page.getByTestId("catalog-grid").getByTestId("catalog-card").first();
     const image = card.locator("img");
     await expect(image).toHaveCount(1);
+    await image.scrollIntoViewIfNeeded();
 
     const src = await image.getAttribute("src");
     expect(src).not.toBeNull();
@@ -438,7 +433,16 @@ test.describe("collection loop", () => {
     expect(src).toContain(imageFilename);
     expect(src.startsWith("data:image")).toBe(false);
 
-    await imageResponse;
+    await expect
+      .poll(
+        () =>
+          image.evaluate((node) => {
+            const img = node as HTMLImageElement;
+            return img.complete && img.naturalWidth > 0 && !img.src.startsWith("data:image");
+          }),
+        { timeout: 15_000 },
+      )
+      .toBe(true);
   });
 
   test("workshop panel shows gain and reset state", async ({ page }) => {
@@ -726,7 +730,9 @@ test.describe("collection loop", () => {
     await interactButton.click();
 
     await expect(page.getByTestId("winding-modal")).toBeVisible();
-    await page.getByTestId("winding-stop").click();
+    const surface = page.getByTestId("winding-surface");
+    await surface.focus();
+    await page.keyboard.press("Space");
     await expect(page.getByTestId("winding-outcome")).toBeVisible();
     await page.getByTestId("winding-done").click();
     await expect(page.getByTestId("winding-modal")).toHaveCount(0);

@@ -1280,16 +1280,17 @@ describe("wind minigame", () => {
 
     expect(screen.getByTestId("winding-modal")).toBeTruthy();
     expect(screen.queryByTestId("winding-outcome")).toBeNull();
-    const stopButton = screen.getByTestId("winding-stop");
-    expect(stopButton).toHaveTextContent(/stop/i);
+    const surface = screen.getByTestId("winding-surface");
+    expect(surface).toHaveAttribute("aria-label", "Drag the crown to wind");
+    expect(surface).toHaveAttribute("aria-describedby", "winding-live");
     const liveRegion = screen.getByTestId("winding-live");
-    expect(liveRegion.textContent).toMatch(/Keep going/i);
+    expect(liveRegion.textContent).toMatch(/Keep dragging/i);
     expect(liveRegion.textContent).toMatch(/Tension \d+%/i);
 
     const softHint = screen.getByTestId("winding-soft-hint");
     expect(softHint).toHaveTextContent(/red glow/i);
 
-    await user.click(screen.getByTestId("winding-stop"));
+    await user.click(surface);
     expect(screen.getByTestId("winding-outcome").textContent).toMatch(/enjoyment/i);
     expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i);
     const legend = screen.getByTestId("winding-band-legend");

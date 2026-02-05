@@ -65,8 +65,8 @@ describe("winding modal accessibility", () => {
     const user = await setupCatalog();
     await openWindingModal(user);
 
-    const stopButton = await screen.findByTestId("winding-stop");
-    expect(stopButton).toHaveFocus();
+    const surface = await screen.findByTestId("winding-surface");
+    expect(surface).toHaveFocus();
 
     const legend = await screen.findByTestId("winding-band-legend");
     expect(legend).toBeInTheDocument();
@@ -79,7 +79,8 @@ describe("winding modal accessibility", () => {
     await user.tab();
     expect(document.activeElement).not.toBe(document.body);
 
-    await user.click(stopButton);
+    await surface.focus();
+    await user.keyboard("{Enter}");
     await waitFor(() =>
       expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i),
     );
@@ -92,9 +93,9 @@ describe("winding modal accessibility", () => {
     const user = await setupCatalog();
     await openWindingModal(user);
 
-    const stopButton = screen.getByTestId("winding-stop");
-    expect(stopButton).toHaveTextContent(/stop/i);
-    expect(stopButton).toHaveAttribute("aria-label", "Stop winding run");
+    const surface = screen.getByTestId("winding-surface");
+    expect(surface).toHaveAttribute("aria-label", "Drag the crown to wind");
+    expect(surface).toHaveAttribute("aria-describedby", "winding-live");
     expect(screen.queryByTestId("winding-outcome")).toBeNull();
 
     const softHint = screen.getByTestId("winding-soft-hint");
@@ -104,7 +105,7 @@ describe("winding modal accessibility", () => {
     expect(legend).toHaveAttribute("data-active-band");
     const activeBand = legend.getAttribute("data-active-band");
 
-    await user.click(stopButton);
+    await user.click(surface);
 
     await waitFor(() =>
       expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i),

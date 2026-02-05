@@ -5,6 +5,13 @@ import userEvent from "@testing-library/user-event";
 import { WindingMiniGameModal } from "../src/ui/components/WindingMiniGameModal";
 import type { UseWindingRunResult } from "../src/ui/components/winding/useWindingRun";
 
+const baseBind = {
+  onPointerDown: vi.fn(),
+  onPointerMove: vi.fn(),
+  onPointerUp: vi.fn(),
+  onPointerCancel: vi.fn(),
+};
+
 const defaultState: UseWindingRunResult = {
   progress01: 0.5,
   crownAngleDeg: 5,
@@ -19,6 +26,7 @@ const defaultState: UseWindingRunResult = {
   softPenalty: false,
   strictPenalty: false,
   stop: vi.fn(),
+  bind: baseBind,
 };
 
 const mockUseWindingRun = vi.fn<[], UseWindingRunResult>(() => defaultState);
@@ -42,10 +50,15 @@ describe("winding band legend", () => {
     softPenalty: false,
     strictPenalty: false,
     stop: vi.fn(),
+    bind: baseBind,
   };
 
   beforeEach(() => {
-    mockUseWindingRun.mockImplementation(() => ({ ...defaultState, stop: vi.fn() }));
+    mockUseWindingRun.mockImplementation(() => ({
+      ...defaultState,
+      stop: vi.fn(),
+      bind: { ...baseBind },
+    }));
   });
 
   afterEach(() => {
@@ -71,11 +84,11 @@ describe("winding band legend", () => {
     expect(goodChip).toHaveClass("active");
 
     const live = screen.getByTestId("winding-live");
-    expect(live).toHaveTextContent(/Keep going/i);
+    expect(live).toHaveTextContent(/Keep dragging/i);
     expect(live).toHaveTextContent(/Tension 60%/i);
 
-    const stopButton = screen.getByTestId("winding-stop");
-    await user.click(stopButton);
+    const surface = screen.getByTestId("winding-surface");
+    await user.click(surface);
     expect(live).toHaveTextContent(/Stopped at/i);
   });
 });
