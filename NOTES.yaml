@@ -4,11 +4,14 @@
 
 resolved:
   - id: undiscovered-watch-visibility
-    resolution: "Resolved in v3.2 (2026-02-02): undiscovered watches stay visible with greyed-out lock overlays and contextual explanations."
+    resolution: "Resolved in v3.2 (2026-02-02): undiscovered watches stay visible with greyed-out lock overlays, contextual explanations, and no missing entries.
+    decision_source: ".planning/MILESTONES.md v3.2 archive"
   - id: quartz-mini-game-reward
-    resolution: "Reviewed in v4.0 — quartz continues to reward cash while winding rewards enjoyment."
+    resolution: "Quartz stays the exception and continues to reward cash while winding rewards enjoyment (v4.0).
+    decision_source: "NOTES-02-02-26 + v4.0 release"
   - id: focus-trap-webkit
-    resolution: "Phase 47 solved it via inert shell + manual Tab handling in HelpModal for WebKit."
+    resolution: "Implemented throughout Phase 47 with inert background + manual Tab/Shift+Tab handling in HelpModal.
+    decision_source: "NOTES-02-02-26 question resolution"
 
 do_not_implement:
   - id: multiplayer
@@ -31,6 +34,14 @@ do_not_implement:
     reason: "Rejected."
   - id: watch-customization
     reason: "Out of scope."
+
+questions:
+  - id: power-reserve-purpose
+    status: documented
+    note: "Power reserve mechanics are documented; no gameplay change planned."
+  - id: watch-tier-movement-matching
+    status: manual curation preserved
+    note: "Tier assignments remain curated; movement-based auto-assignment deferred."
 
 todo:
   - id: session_cooldown_redesign
