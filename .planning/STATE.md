@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 47 of 6 (v4.0 Phases 42-47)
-Plan: 47-03 complete
-Status: Phase 47 (Mobile & UI Polish) regression coverage done — navigation, touch targets, modals, responsive helpers locked in
-Last activity: 2026-02-04 — Completed 47-03 (Mobile navigation, touch target, modal regression coverage)
-Progress: Phase 46 complete (3/3), Phase 47 plans complete (3/3)
+Plan: 47-04 complete
+Status: Phase 47 (Mobile & UI Polish) help modal focus trap stabilized for WebKit, navigation + modal regression coverage locked in
+Last activity: 2026-02-05 — Completed 47-04 (Help modal WebKit focus trap)
+Progress: Phase 46 complete (3/3), Phase 47 plans complete (4/4)
 Next Phase: Phase 47 QA/Validation (mobile regression verification)
 
 ## Accumulated Context
@@ -68,6 +68,7 @@ Next Phase: Phase 47 QA/Validation (mobile regression verification)
 | 47 | Collection summary links the tier badges to the help section so Starter, Mid-tier, and Luxury meanings stay explained | Aligns the Collection copy with catalog tooltips while surfacing counts for each variety |
 | 47 | Reinforced mobile regression guardrails with helper-based Playwright assertions | Keeps scroll-snap, sticky tabs, and help modal flows uniform across both iPhone 12 and Pixel 5 viewport tests |
 | 47 | Centralized Playwright mobile projects around Pixel 5 + iPhone 12 | Guarantees Chrome and WebKit mobile runs are both exercised every suite instead of being optional |
+| 47 | Isolated the HelpModal within a new `#app-shell` wrapper so the shell can be inerted while the dialog stays focusable and restores the prior focus target on close | Keeps WebKit keyboard navigation consistent and lets the previously focused element regain focus immediately after the modal closes |
 
 ### Blockers / Concerns Carried Forward
 
@@ -75,6 +76,6 @@ Next Phase: Phase 47 QA/Validation (mobile regression verification)
 
 ## Session Continuity
 
-Last session: 2026-02-04T14:02:17Z
-Stopped at: Completed Phase 47-03 (Mobile regression coverage)
+Last session: 2026-02-05T00:01:48Z
+Stopped at: Completed Phase 47-04 (Help modal WebKit focus trap)
 Resume file: None
