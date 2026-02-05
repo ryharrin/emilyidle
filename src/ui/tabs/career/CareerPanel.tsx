@@ -29,8 +29,8 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const [activeView, setActiveView] = React.useState<"stages" | "upgrades">("stages");
   const career = getTherapistCareer(state);
   const nextXpRequired = getTherapistXpRequiredForNextLevel(career.level);
-  const sessionPolicy = getTherapistSessionPolicy(state);
-  const costLabel = getTherapistSessionCostLabel(state);
+  const sessionPolicy = getTherapistSessionPolicy(state, nowMs);
+  const costLabel = getTherapistSessionCostLabel(state, nowMs);
   const canPerform = canPerformTherapistSession(state, nowMs);
   const cooldownSeconds = Math.max(0, Math.ceil((career.nextAvailableAtMs - nowMs) / 1000));
   const trackUnlocked = career.level >= TRACK_CHOICE_UNLOCK_LEVEL;
@@ -52,7 +52,10 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     if (cooldownSeconds > 0) {
       return `Cooldown ${cooldownSeconds}s`;
     }
-    if (!career.freeSessionAvailable && state.enjoymentCents < sessionPolicy.enjoymentCostCents) {
+    if (
+      !career.freeSessionAvailable &&
+      state.enjoymentCents < sessionPolicy.premiumEnjoymentCostCents
+    ) {
       return "Need more enjoyment";
     }
     return "Unavailable";
@@ -120,6 +123,22 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   <p className="workshop-label">Session cost</p>
                   <p className="workshop-value">{costLabel}</p>
                 </div>
+                {sessionPolicy.premiumCount > 0 && (
+                  <div className="career-session-premium" data-testid="career-session-premium">
+                    <div className="career-session-premium-row">
+                      <span className="career-session-premium-label">
+                        {sessionPolicy.premiumLabel || "Session premium"}
+                      </span>
+                      <span className="career-session-premium-value">
+                        +{Math.max(0, Math.round((sessionPolicy.premiumMultiplier - 1) * 100))}%
+                      </span>
+                    </div>
+                    <p className="career-session-premium-note">
+                      {sessionPolicy.premiumNote ||
+                        "Waiting twice the cooldown resets the premium."}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <p className="workshop-label">Session payout</p>
                   <p className="workshop-value">

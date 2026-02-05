@@ -148,11 +148,19 @@ strong {
 }
 
 .page-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #0f1115; /* Match body background */
   align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
+}
+
+[data-theme="light"] .page-nav {
+  background: #f4f0e9; /* Match light theme body */
 }
 
 .page-nav-tabs {
@@ -2308,17 +2316,17 @@ button[data-testid^="vault-interact-"] {
   justify-content: space-between;
   gap: 12px;
   align-items: flex-start;
-  flex-wrap: wrap;
+  flex-wrap: wrap !important;
   row-gap: 8px;
 }
 
 .catalog-title-primary {
   display: flex;
   align-items: flex-start;
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
   gap: 0.6rem;
-  flex-wrap: wrap;
+  flex-wrap: wrap !important;
 }
 
 .catalog-title-primary .tier-badge {
@@ -2674,6 +2682,39 @@ button[data-testid^="vault-interact-"] {
   margin: 0;
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+.career-session-premium {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.career-session-premium-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.career-session-premium-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9da3ad;
+}
+
+.career-session-premium-value {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.career-session-premium-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #b7bdc7;
 }
 
 .workshop-cta {
