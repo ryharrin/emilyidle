@@ -60,3 +60,40 @@ export function getTherapistCashRateCentsPerSec(state: GameState, nowMs: number)
     salaryMultiplier: effects.salaryMultiplier,
   });
 }
+
+export type TherapistSalaryAlertLevel = "none" | "soon" | "urgent";
+
+export type TherapistSalaryExpirationAlert = {
+  level: TherapistSalaryAlertLevel;
+  remainingMs: number;
+};
+
+const SALARY_ALERT_SOON_MS = 2 * 60_000;
+const SALARY_ALERT_URGENT_MS = 30_000;
+
+export function getTherapistSalaryRemainingMs(state: GameState, nowMs: number): number {
+  if (!isTherapistSalaryActive(state, nowMs)) {
+    return 0;
+  }
+
+  return Math.max(0, state.therapistCareer.salaryActiveUntilMs - nowMs);
+}
+
+export function getTherapistSalaryExpirationAlert(
+  state: GameState,
+  nowMs: number,
+): TherapistSalaryExpirationAlert {
+  const remainingMs = getTherapistSalaryRemainingMs(state, nowMs);
+
+  if (remainingMs === 0) {
+    return { level: "none", remainingMs: 0 };
+  }
+  if (remainingMs <= SALARY_ALERT_URGENT_MS) {
+    return { level: "urgent", remainingMs };
+  }
+  if (remainingMs <= SALARY_ALERT_SOON_MS) {
+    return { level: "soon", remainingMs };
+  }
+
+  return { level: "none", remainingMs };
+}
