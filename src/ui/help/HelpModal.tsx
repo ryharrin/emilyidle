@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import type { HelpSection } from "./helpContent";
 
@@ -59,9 +59,10 @@ export function HelpModal({
 }: HelpModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const sectionButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const modalRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const focusableSelector =
     "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
@@ -192,13 +193,6 @@ export function HelpModal({
   }, [onClose, open]);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
-    searchInputRef.current?.focus();
-  }, [open]);
-
-  useEffect(() => {
     if (!open || typeof document === "undefined") {
       return;
     }
@@ -208,6 +202,40 @@ export function HelpModal({
 
     return () => {
       document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  useLayoutEffect(() => {
+    if (!open || typeof document === "undefined") {
+      return;
+    }
+
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    closeButtonRef.current?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") {
+      return;
+    }
+
+    const appRoot =
+      document.getElementById("app-shell") ??
+      document.getElementById("app") ??
+      document.getElementById("root");
+    if (appRoot) {
+      appRoot.setAttribute("inert", "");
+      appRoot.setAttribute("aria-hidden", "true");
+    }
+
+    return () => {
+      if (appRoot) {
+        appRoot.removeAttribute("inert");
+        appRoot.removeAttribute("aria-hidden");
+      }
+      const previousFocus = previouslyFocusedRef.current;
+      previousFocus?.focus();
+      previouslyFocusedRef.current = null;
     };
   }, [open]);
 
@@ -231,7 +259,13 @@ export function HelpModal({
             <p className="eyebrow">Glossary</p>
             <h2>Help</h2>
           </div>
-          <button type="button" className="secondary" data-testid="help-close" onClick={onClose}>
+          <button
+            type="button"
+            className="secondary"
+            data-testid="help-close"
+            onClick={onClose}
+            ref={closeButtonRef}
+          >
             Close
           </button>
         </header>
@@ -241,7 +275,6 @@ export function HelpModal({
           </label>
           <input
             id="help-search-input"
-            ref={searchInputRef}
             data-testid="help-search"
             type="search"
             autoComplete="off"

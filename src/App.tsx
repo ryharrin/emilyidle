@@ -279,6 +279,7 @@ export default function App() {
     kind: "winding" | "automatic" | "quartz";
     itemId: WatchItemId;
   }>(null);
+
   const [saveStatus, setSaveStatus] = useState("");
   const [importText, setImportText] = useState("");
   const [catalogSearch, setCatalogSearch] = useState("");
@@ -324,6 +325,20 @@ export default function App() {
     setSettings(nextSettings);
     setCoachmarksDismissed(nextSettings.coachmarksDismissed);
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
+  };
+
+  const handleDismissWindingTapHint = () => {
+    if (settings.coachmarksDismissed["winding:tap-hint"]) {
+      return;
+    }
+
+    persistSettings({
+      ...settings,
+      coachmarksDismissed: {
+        ...settings.coachmarksDismissed,
+        "winding:tap-hint": true,
+      },
+    });
   };
 
   useEffect(() => {
@@ -1083,368 +1098,372 @@ export default function App() {
 
   return (
     <HelpProvider value={{ openHelpTo }}>
-      <main className="container">
-        <header className="hero">
-          <div>
-            <p className="eyebrow">Collection loop</p>
-            <h1>Emily Idle</h1>
-            <p className="muted">Build your collection, unlock new lines, and stack bonuses.</p>
-            <nav className="page-nav" aria-label="Primary navigation">
-              <div role="tablist" aria-label="Primary navigation" className="page-nav-tabs">
-                {visibleTabs.map((tab) => {
-                  const selected = tab.id === activeTab;
-                  const focusable = tab.id === focusedTab;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      className="page-nav-link"
-                      role="tab"
-                      id={`${tab.id}-tab`}
-                      aria-selected={selected}
-                      aria-controls={tab.id}
-                      tabIndex={focusable ? 0 : -1}
-                      data-testid={tab.id === "nostalgia" ? "nostalgia-tab" : undefined}
-                      onClick={() => activateTab(tab.id, "user")}
-                      onFocus={() => {
-                        if (isTestEnvironment()) {
-                          return;
-                        }
-                        setFocusedTab(tab.id);
-                      }}
-                      onKeyDown={handleTabKeyDown}
-                      ref={(node) => {
-                        if (!node) {
-                          tabRefs.current.delete(tab.id);
-                          return;
-                        }
-                        tabRefs.current.set(tab.id, node);
-                      }}
-                    >
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                type="button"
-                className="page-nav-link help-open-button"
-                aria-label="Open help"
-                data-testid="help-open"
-                onClick={handleOpenHelp}
-              >
-                <HelpIcon size={18} />
-              </button>
-            </nav>
-          </div>
-          <section className="stats" aria-labelledby="vault-stats-title">
-            <h2 id="vault-stats-title" className="visually-hidden">
-              Collection stats
-            </h2>
-            <dl className="stats-grid">
-              <div>
-                <dt className="inline-icon-button">
-                  Collection enjoyment
-                  <ExplainButton
-                    sectionId={HELP_SECTION_IDS.currencies}
-                    label="Explain currencies"
-                  />
-                </dt>
-                <dd id="enjoyment">{stats.enjoyment}</dd>
-              </div>
-              <div>
-                <dt>Enjoyment / sec</dt>
-                <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
-              </div>
-              <div>
-                <dt>Dollars</dt>
-                <dd id="currency">{stats.cash}</dd>
-              </div>
-              <div>
-                <dt>Dollars / sec</dt>
-                <dd id="income">{stats.cashRate}</dd>
-              </div>
-              <div>
-                <dt>Memories</dt>
-                <dd id="collection-value">{stats.sentimentalValue}</dd>
-              </div>
-              <div>
-                <dt>Softcap</dt>
-                <dd id="softcap">{stats.softcap}</dd>
-              </div>
-            </dl>
-          </section>
-        </header>
+      <div id="app-shell">
+        <main className="container">
+          <header className="hero">
+            <div>
+              <p className="eyebrow">Collection loop</p>
+              <h1>Emily Idle</h1>
+              <p className="muted">Build your collection, unlock new lines, and stack bonuses.</p>
+              <nav className="page-nav" aria-label="Primary navigation">
+                <div role="tablist" aria-label="Primary navigation" className="page-nav-tabs">
+                  {visibleTabs.map((tab) => {
+                    const selected = tab.id === activeTab;
+                    const focusable = tab.id === focusedTab;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        className="page-nav-link"
+                        role="tab"
+                        id={`${tab.id}-tab`}
+                        aria-selected={selected}
+                        aria-controls={tab.id}
+                        tabIndex={focusable ? 0 : -1}
+                        data-testid={tab.id === "nostalgia" ? "nostalgia-tab" : undefined}
+                        onClick={() => activateTab(tab.id, "user")}
+                        onFocus={() => {
+                          if (isTestEnvironment()) {
+                            return;
+                          }
+                          setFocusedTab(tab.id);
+                        }}
+                        onKeyDown={handleTabKeyDown}
+                        ref={(node) => {
+                          if (!node) {
+                            tabRefs.current.delete(tab.id);
+                            return;
+                          }
+                          tabRefs.current.set(tab.id, node);
+                        }}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  className="page-nav-link help-open-button"
+                  aria-label="Open help"
+                  data-testid="help-open"
+                  onClick={handleOpenHelp}
+                >
+                  <HelpIcon size={18} />
+                </button>
+              </nav>
+            </div>
+            <section className="stats" aria-labelledby="vault-stats-title">
+              <h2 id="vault-stats-title" className="visually-hidden">
+                Collection stats
+              </h2>
+              <dl className="stats-grid">
+                <div>
+                  <dt className="inline-icon-button">
+                    Collection enjoyment
+                    <ExplainButton
+                      sectionId={HELP_SECTION_IDS.currencies}
+                      label="Explain currencies"
+                    />
+                  </dt>
+                  <dd id="enjoyment">{stats.enjoyment}</dd>
+                </div>
+                <div>
+                  <dt>Enjoyment / sec</dt>
+                  <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
+                </div>
+                <div>
+                  <dt>Dollars</dt>
+                  <dd id="currency">{stats.cash}</dd>
+                </div>
+                <div>
+                  <dt>Dollars / sec</dt>
+                  <dd id="income">{stats.cashRate}</dd>
+                </div>
+                <div>
+                  <dt>Memories</dt>
+                  <dd id="collection-value">{stats.sentimentalValue}</dd>
+                </div>
+                <div>
+                  <dt>Softcap</dt>
+                  <dd id="softcap">{stats.softcap}</dd>
+                </div>
+              </dl>
+            </section>
+          </header>
 
-        <CollectionTab
-          isActive={activeTab === "collection"}
-          state={state}
-          onNavigate={navigateTo}
-          watchItemLabels={watchItemLabels}
-          autoBuyUnlocked={autoBuyUnlocked}
-          autoBuyEnabled={autoBuyEnabled}
-          onToggleAutoBuy={handleToggleAutoBuy}
-          catalogTierUnlocks={catalogTierUnlocks}
-          catalogTierDefinitions={catalogTierDefinitions}
-          catalogTierProgress={catalogTierProgress}
-          catalogTierBonuses={catalogTierBonuses}
-          catalogTierBonusMultiplier={catalogTierBonusMultiplier}
-          archiveCuratorMilestone={archiveCuratorMilestone}
-          archiveCuratorProgress={archiveCuratorProgress}
-          archiveCuratorThreshold={archiveCuratorThreshold}
-          archiveCuratorUnlocked={archiveCuratorUnlocked}
-          showMaisonLines={showMaisonLines}
-          maisonLines={maisonLines}
-          craftingParts={craftingParts}
-          renderCraftingRecipes={renderCraftingRecipes}
-          renderCraftingBoosts={renderCraftingBoosts}
-          activeCoachmarks={activeCoachmarks}
-          settings={settings}
-          persistSettings={persistSettings}
-          milestones={milestones}
-          achievements={achievements}
-          events={events}
-          setBonuses={setBonuses}
-          currentEventMultiplier={currentEventMultiplier}
-          nowMs={nowMs}
-          onPurchase={handlePurchase}
-        />
-
-        <CatalogTab
-          isActive={activeTab === "catalog"}
-          state={state}
-          onNavigate={navigateTo}
-          catalogSearch={catalogSearch}
-          onCatalogSearchChange={setCatalogSearch}
-          catalogBrand={catalogBrand}
-          onCatalogBrandChange={setCatalogBrand}
-          catalogStyle={catalogStyle}
-          onCatalogStyleChange={setCatalogStyle}
-          catalogSort={catalogSort}
-          onCatalogSortChange={setCatalogSort}
-          catalogEra={catalogEra}
-          onCatalogEraChange={setCatalogEra}
-          catalogType={catalogType}
-          onCatalogTypeChange={setCatalogType}
-          catalogTab={catalogTab}
-          onCatalogTabChange={setCatalogTab}
-          catalogBrands={catalogBrands}
-          filteredCatalogEntries={filteredCatalogEntries}
-          discoveredCatalogEntries={discoveredCatalogEntries}
-          discoveredCatalogIds={discoveredCatalogIds}
-          catalogEntries={catalogEntries}
-          hasOwnedCatalogTiers={hasOwnedCatalogTiers}
-          onPurchase={handlePurchase}
-          nowMs={nowMs}
-          onInteract={handleInteract}
-        />
-
-        <CareerTab
-          isActive={activeTab === "career"}
-          state={state}
-          nowMs={nowMs}
-          onNavigate={navigateTo}
-          onPurchase={handlePurchase}
-        />
-
-        <UpgradesTab
-          isActive={activeTab === "upgrades"}
-          state={state}
-          currentEventMultiplier={currentEventMultiplier}
-          upgrades={upgrades}
-          workshopUpgrades={workshopUpgrades}
-          maisonUpgrades={maisonUpgrades}
-          onPurchase={handlePurchase}
-        />
-
-        <WorkshopTab
-          isActive={activeTab === "workshop"}
-          state={state}
-          showWorkshopSection={showWorkshopSection}
-          showWorkshopPanel={showWorkshopPanel}
-          onNavigate={navigateTo}
-          workshopPrestigeGain={workshopPrestigeGain}
-          workshopRevealProgress={workshopRevealProgress}
-          workshopResetArmed={workshopResetArmed}
-          onToggleWorkshopResetArmed={(next) => setWorkshopResetArmed(next)}
-          canPrestigeWorkshop={canPrestigeWorkshop}
-          onPurchase={handlePurchase}
-          workshopUpgrades={workshopUpgrades}
-          craftingParts={craftingParts}
-          watchItems={watchItems}
-          craftingPartsPerWatch={craftingPartsPerWatch}
-          renderCraftingRecipes={renderCraftingRecipes}
-          renderCraftingBoosts={renderCraftingBoosts}
-        />
-
-        <MaisonTab
-          isActive={activeTab === "maison"}
-          state={state}
-          showMaisonSection={showMaisonSection}
-          showMaisonPanel={showMaisonPanel}
-          onNavigate={navigateTo}
-          maisonPrestigeGain={maisonPrestigeGain}
-          maisonReputationGain={maisonReputationGain}
-          maisonRevealProgress={maisonRevealProgress}
-          maisonResetArmed={maisonResetArmed}
-          onToggleMaisonResetArmed={(next) => setMaisonResetArmed(next)}
-          canPrestigeMaison={canPrestigeMaison}
-          onPurchase={handlePurchase}
-          maisonUpgrades={maisonUpgrades}
-        />
-
-        <NostalgiaTab
-          isActive={activeTab === "nostalgia"}
-          state={state}
-          showNostalgiaSection={showNostalgiaSection}
-          showNostalgiaPanel={showNostalgiaPanel}
-          onNavigate={navigateTo}
-          nostalgiaResultsDismissed={nostalgiaResultsDismissed}
-          onDismissResults={() => setNostalgiaResultsDismissed(true)}
-          nostalgiaProgress={nostalgiaProgress}
-          nostalgiaEarned={nostalgiaEarned}
-          nostalgiaPrestigeThreshold={nostalgiaPrestigeThreshold}
-          nostalgiaPrestigeGain={nostalgiaPrestigeGain}
-          canPrestigeNostalgia={canPrestigeNostalgia}
-          nostalgiaUnlockIds={nostalgiaUnlockIds}
-          watchItemsById={watchItemsById}
-          nostalgiaModalOpen={nostalgiaModalOpen}
-          onToggleNostalgiaModal={(open) => setNostalgiaModalOpen(open)}
-          nostalgiaUnlockPending={nostalgiaUnlockPending}
-          pendingNostalgiaUnlock={pendingNostalgiaUnlock}
-          pendingNostalgiaUnlockCost={pendingNostalgiaUnlockCost}
-          onSetNostalgiaUnlockPending={(next) => setNostalgiaUnlockPending(next)}
-          settings={settings}
-          persistSettings={persistSettings}
-          onPurchase={handlePurchase}
-        />
-
-        <StatsTab
-          isActive={activeTab === "stats"}
-          state={state}
-          stats={stats}
-          currentEventMultiplier={currentEventMultiplier}
-          onNavigate={navigateTo}
-        />
-
-        <WindingMiniGameModal
-          open={activeInteraction?.kind === "winding"}
-          itemLabel={
-            activeInteraction?.kind === "winding"
-              ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
-              : ""
-          }
-          rewardRangeLabel={`${formatMoneyFromCents(25)} - ${formatMoneyFromCents(150)} enjoyment`}
-          cooldownLabel={`Cooldown ${Math.floor(INTERACTION_BASE_COOLDOWN_MS / 1000)}s`}
-          helpAction={
-            <ExplainButton
-              sectionId={HELP_SECTION_IDS.interactions}
-              label="Explain interactions"
-              className="help-open-button"
-            />
-          }
-          onComplete={(outcome) => {
-            if (activeInteraction?.kind !== "winding") {
-              return;
-            }
-            handlePurchase(
-              applyWindingReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
-            );
-          }}
-          onClose={() => setActiveInteraction(null)}
-        />
-
-        <AutomaticMiniGameModal
-          open={activeInteraction?.kind === "automatic"}
-          itemLabel={
-            activeInteraction?.kind === "automatic"
-              ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
-              : ""
-          }
-          helpAction={
-            <ExplainButton
-              sectionId={HELP_SECTION_IDS.interactions}
-              label="Explain interactions"
-              className="help-open-button"
-            />
-          }
-          onComplete={(outcome) => {
-            if (activeInteraction?.kind !== "automatic") {
-              return;
-            }
-            handlePurchase(
-              applyAutomaticReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
-            );
-          }}
-          onClose={() => setActiveInteraction(null)}
-        />
-
-        <QuartzMiniGameModal
-          open={activeInteraction?.kind === "quartz"}
-          itemLabel={
-            activeInteraction?.kind === "quartz"
-              ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
-              : ""
-          }
-          rewardRangeLabel={`${formatMoneyFromCents(100)} - ${formatMoneyFromCents(500)}`}
-          helpAction={
-            <ExplainButton
-              sectionId={HELP_SECTION_IDS.interactions}
-              label="Explain interactions"
-              className="help-open-button"
-            />
-          }
-          onComplete={(outcome) => {
-            if (activeInteraction?.kind !== "quartz") {
-              return;
-            }
-            handlePurchase(
-              applyQuartzReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
-            );
-          }}
-          onClose={() => setActiveInteraction(null)}
-        />
-
-        <SaveTab
-          isActive={activeTab === "save"}
-          state={state}
-          watchItems={watchItems}
-          audioSettings={audioSettings}
-          onUpdateAudioSettings={handleUpdateAudioSettings}
-          settings={settings}
-          persistSettings={persistSettings}
-          visibleTabOptions={visibleTabOptions}
-          hiddenTabsSet={hiddenTabsSet}
-          devSettings={devSettings}
-          setDevSettings={setDevSettings}
-          onPurchase={handlePurchase}
-          importText={importText}
-          onImportTextChange={setImportText}
-          onExport={handleExport}
-          onImport={handleImport}
-          saveStatus={saveStatus}
-          onClearSave={handleClearSave}
-        />
-
-        <HelpModal
-          open={helpOpen}
-          sections={helpSections}
-          activeSectionId={helpSectionId}
-          onSelectSectionId={handleSelectHelpSection}
-          onClose={() => setHelpOpen(false)}
-        />
-
-        {prestigeOnboarding && (
-          <PrestigeOnboardingModal
-            event={prestigeOnboarding}
-            onClose={() => setPrestigeOnboarding(null)}
-            onRecommendedAction={(tabId) => {
-              activateTab(tabId, "system");
-              setPrestigeOnboarding(null);
-            }}
+          <CollectionTab
+            isActive={activeTab === "collection"}
+            state={state}
+            onNavigate={navigateTo}
+            watchItemLabels={watchItemLabels}
+            autoBuyUnlocked={autoBuyUnlocked}
+            autoBuyEnabled={autoBuyEnabled}
+            onToggleAutoBuy={handleToggleAutoBuy}
+            catalogTierUnlocks={catalogTierUnlocks}
+            catalogTierDefinitions={catalogTierDefinitions}
+            catalogTierProgress={catalogTierProgress}
+            catalogTierBonuses={catalogTierBonuses}
+            catalogTierBonusMultiplier={catalogTierBonusMultiplier}
+            archiveCuratorMilestone={archiveCuratorMilestone}
+            archiveCuratorProgress={archiveCuratorProgress}
+            archiveCuratorThreshold={archiveCuratorThreshold}
+            archiveCuratorUnlocked={archiveCuratorUnlocked}
+            showMaisonLines={showMaisonLines}
+            maisonLines={maisonLines}
+            craftingParts={craftingParts}
+            renderCraftingRecipes={renderCraftingRecipes}
+            renderCraftingBoosts={renderCraftingBoosts}
+            activeCoachmarks={activeCoachmarks}
+            settings={settings}
+            persistSettings={persistSettings}
+            milestones={milestones}
+            achievements={achievements}
+            events={events}
+            setBonuses={setBonuses}
+            currentEventMultiplier={currentEventMultiplier}
+            nowMs={nowMs}
+            onPurchase={handlePurchase}
           />
-        )}
-      </main>
+
+          <CatalogTab
+            isActive={activeTab === "catalog"}
+            state={state}
+            onNavigate={navigateTo}
+            catalogSearch={catalogSearch}
+            onCatalogSearchChange={setCatalogSearch}
+            catalogBrand={catalogBrand}
+            onCatalogBrandChange={setCatalogBrand}
+            catalogStyle={catalogStyle}
+            onCatalogStyleChange={setCatalogStyle}
+            catalogSort={catalogSort}
+            onCatalogSortChange={setCatalogSort}
+            catalogEra={catalogEra}
+            onCatalogEraChange={setCatalogEra}
+            catalogType={catalogType}
+            onCatalogTypeChange={setCatalogType}
+            catalogTab={catalogTab}
+            onCatalogTabChange={setCatalogTab}
+            catalogBrands={catalogBrands}
+            filteredCatalogEntries={filteredCatalogEntries}
+            discoveredCatalogEntries={discoveredCatalogEntries}
+            discoveredCatalogIds={discoveredCatalogIds}
+            catalogEntries={catalogEntries}
+            hasOwnedCatalogTiers={hasOwnedCatalogTiers}
+            onPurchase={handlePurchase}
+            nowMs={nowMs}
+            currentEventMultiplier={currentEventMultiplier}
+            onInteract={handleInteract}
+          />
+
+          <CareerTab
+            isActive={activeTab === "career"}
+            state={state}
+            nowMs={nowMs}
+            onNavigate={navigateTo}
+            onPurchase={handlePurchase}
+          />
+
+          <UpgradesTab
+            isActive={activeTab === "upgrades"}
+            state={state}
+            currentEventMultiplier={currentEventMultiplier}
+            upgrades={upgrades}
+            workshopUpgrades={workshopUpgrades}
+            maisonUpgrades={maisonUpgrades}
+            onPurchase={handlePurchase}
+          />
+
+          <WorkshopTab
+            isActive={activeTab === "workshop"}
+            state={state}
+            showWorkshopSection={showWorkshopSection}
+            showWorkshopPanel={showWorkshopPanel}
+            onNavigate={navigateTo}
+            workshopPrestigeGain={workshopPrestigeGain}
+            workshopRevealProgress={workshopRevealProgress}
+            workshopResetArmed={workshopResetArmed}
+            onToggleWorkshopResetArmed={(next) => setWorkshopResetArmed(next)}
+            canPrestigeWorkshop={canPrestigeWorkshop}
+            onPurchase={handlePurchase}
+            workshopUpgrades={workshopUpgrades}
+            craftingParts={craftingParts}
+            watchItems={watchItems}
+            craftingPartsPerWatch={craftingPartsPerWatch}
+            renderCraftingRecipes={renderCraftingRecipes}
+            renderCraftingBoosts={renderCraftingBoosts}
+          />
+
+          <MaisonTab
+            isActive={activeTab === "maison"}
+            state={state}
+            showMaisonSection={showMaisonSection}
+            showMaisonPanel={showMaisonPanel}
+            onNavigate={navigateTo}
+            maisonPrestigeGain={maisonPrestigeGain}
+            maisonReputationGain={maisonReputationGain}
+            maisonRevealProgress={maisonRevealProgress}
+            maisonResetArmed={maisonResetArmed}
+            onToggleMaisonResetArmed={(next) => setMaisonResetArmed(next)}
+            canPrestigeMaison={canPrestigeMaison}
+            onPurchase={handlePurchase}
+            maisonUpgrades={maisonUpgrades}
+          />
+
+          <NostalgiaTab
+            isActive={activeTab === "nostalgia"}
+            state={state}
+            showNostalgiaSection={showNostalgiaSection}
+            showNostalgiaPanel={showNostalgiaPanel}
+            onNavigate={navigateTo}
+            nostalgiaResultsDismissed={nostalgiaResultsDismissed}
+            onDismissResults={() => setNostalgiaResultsDismissed(true)}
+            nostalgiaProgress={nostalgiaProgress}
+            nostalgiaEarned={nostalgiaEarned}
+            nostalgiaPrestigeThreshold={nostalgiaPrestigeThreshold}
+            nostalgiaPrestigeGain={nostalgiaPrestigeGain}
+            canPrestigeNostalgia={canPrestigeNostalgia}
+            nostalgiaUnlockIds={nostalgiaUnlockIds}
+            watchItemsById={watchItemsById}
+            nostalgiaModalOpen={nostalgiaModalOpen}
+            onToggleNostalgiaModal={(open) => setNostalgiaModalOpen(open)}
+            nostalgiaUnlockPending={nostalgiaUnlockPending}
+            pendingNostalgiaUnlock={pendingNostalgiaUnlock}
+            pendingNostalgiaUnlockCost={pendingNostalgiaUnlockCost}
+            onSetNostalgiaUnlockPending={(next) => setNostalgiaUnlockPending(next)}
+            settings={settings}
+            persistSettings={persistSettings}
+            onPurchase={handlePurchase}
+          />
+
+          <StatsTab
+            isActive={activeTab === "stats"}
+            state={state}
+            stats={stats}
+            currentEventMultiplier={currentEventMultiplier}
+            onNavigate={navigateTo}
+          />
+
+          <WindingMiniGameModal
+            open={activeInteraction?.kind === "winding"}
+            itemLabel={
+              activeInteraction?.kind === "winding"
+                ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
+                : ""
+            }
+            rewardRangeLabel={`${formatMoneyFromCents(25)} - ${formatMoneyFromCents(150)} enjoyment`}
+            cooldownLabel={`Cooldown ${Math.floor(INTERACTION_BASE_COOLDOWN_MS / 1000)}s`}
+            helpAction={
+              <ExplainButton
+                sectionId={HELP_SECTION_IDS.interactions}
+                label="Explain interactions"
+                className="help-open-button"
+              />
+            }
+            onComplete={(outcome) => {
+              if (activeInteraction?.kind !== "winding") {
+                return;
+              }
+              handlePurchase(
+                applyWindingReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+              );
+            }}
+            showTapHint={!settings.coachmarksDismissed["winding:tap-hint"]}
+            onTapHintDismiss={handleDismissWindingTapHint}
+            onClose={() => setActiveInteraction(null)}
+          />
+
+          <AutomaticMiniGameModal
+            open={activeInteraction?.kind === "automatic"}
+            itemLabel={
+              activeInteraction?.kind === "automatic"
+                ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
+                : ""
+            }
+            helpAction={
+              <ExplainButton
+                sectionId={HELP_SECTION_IDS.interactions}
+                label="Explain interactions"
+                className="help-open-button"
+              />
+            }
+            onComplete={(outcome) => {
+              if (activeInteraction?.kind !== "automatic") {
+                return;
+              }
+              handlePurchase(
+                applyAutomaticReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+              );
+            }}
+            onClose={() => setActiveInteraction(null)}
+          />
+
+          <QuartzMiniGameModal
+            open={activeInteraction?.kind === "quartz"}
+            itemLabel={
+              activeInteraction?.kind === "quartz"
+                ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
+                : ""
+            }
+            rewardRangeLabel={`${formatMoneyFromCents(100)} - ${formatMoneyFromCents(500)}`}
+            helpAction={
+              <ExplainButton
+                sectionId={HELP_SECTION_IDS.interactions}
+                label="Explain interactions"
+                className="help-open-button"
+              />
+            }
+            onComplete={(outcome) => {
+              if (activeInteraction?.kind !== "quartz") {
+                return;
+              }
+              handlePurchase(
+                applyQuartzReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+              );
+            }}
+            onClose={() => setActiveInteraction(null)}
+          />
+
+          <SaveTab
+            isActive={activeTab === "save"}
+            state={state}
+            watchItems={watchItems}
+            audioSettings={audioSettings}
+            onUpdateAudioSettings={handleUpdateAudioSettings}
+            settings={settings}
+            persistSettings={persistSettings}
+            visibleTabOptions={visibleTabOptions}
+            hiddenTabsSet={hiddenTabsSet}
+            devSettings={devSettings}
+            setDevSettings={setDevSettings}
+            onPurchase={handlePurchase}
+            importText={importText}
+            onImportTextChange={setImportText}
+            onExport={handleExport}
+            onImport={handleImport}
+            saveStatus={saveStatus}
+            onClearSave={handleClearSave}
+          />
+
+          {prestigeOnboarding && (
+            <PrestigeOnboardingModal
+              event={prestigeOnboarding}
+              onClose={() => setPrestigeOnboarding(null)}
+              onRecommendedAction={(tabId) => {
+                activateTab(tabId, "system");
+                setPrestigeOnboarding(null);
+              }}
+            />
+          )}
+        </main>
+      </div>
+      <HelpModal
+        open={helpOpen}
+        sections={helpSections}
+        activeSectionId={helpSectionId}
+        onSelectSectionId={handleSelectHelpSection}
+        onClose={() => setHelpOpen(false)}
+      />
     </HelpProvider>
   );
 }
