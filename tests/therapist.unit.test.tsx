@@ -41,7 +41,7 @@ describe("therapist career", () => {
       },
     };
 
-    const policy = getTherapistSessionPolicy(seededState);
+    const policy = getTherapistSessionPolicy(seededState, 0);
 
     expect(policy.supportsSessions).toBe(true);
     expect(policy.cashPayoutCents).toBeGreaterThan(0);
@@ -225,6 +225,64 @@ describe("therapist career", () => {
     expect(actualDelta).toBeGreaterThanOrEqual(expected - 1);
     expect(actualDelta).toBeLessThanOrEqual(expected + 1);
   });
+
+  it("builds a premium when sessions happen back-to-back", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      enjoymentCents: 10_000,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+        activeTrackId: "private-practice" as const,
+        freeSessionAvailable: false,
+      },
+    };
+
+    const firstNow = 1_000;
+    const firstPolicy = getTherapistSessionPolicy(seededState, firstNow);
+    expect(firstPolicy.premiumCount).toBe(0);
+
+    const afterFirst = performTherapistSession(seededState, firstNow);
+    expect(afterFirst.therapistCareer.sessionPremiumCount).toBe(1);
+
+    const secondNow = afterFirst.therapistCareer.nextAvailableAtMs;
+    const secondPolicy = getTherapistSessionPolicy(afterFirst, secondNow);
+    expect(secondPolicy.premiumCount).toBe(1);
+    expect(secondPolicy.premiumEnjoymentCostCents).toBeGreaterThan(secondPolicy.enjoymentCostCents);
+
+    const afterSecond = performTherapistSession(afterFirst, secondNow);
+    expect(afterSecond.therapistCareer.sessionPremiumCount).toBeGreaterThanOrEqual(2);
+    expect(afterFirst.enjoymentCents - afterSecond.enjoymentCents).toBe(
+      secondPolicy.premiumEnjoymentCostCents,
+    );
+  });
+
+  it("resets the premium after waiting beyond the window", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      enjoymentCents: 10_000,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+        activeTrackId: "private-practice" as const,
+        freeSessionAvailable: false,
+      },
+    };
+
+    const firstNow = 1_000;
+    const afterFirst = performTherapistSession(seededState, firstNow);
+    const secondNow = afterFirst.therapistCareer.nextAvailableAtMs;
+    const secondPolicy = getTherapistSessionPolicy(afterFirst, secondNow);
+    const afterSecond = performTherapistSession(afterFirst, secondNow);
+
+    const thirdNow =
+      afterSecond.therapistCareer.lastSessionAtMs + secondPolicy.premiumWindowMs + 10;
+    const thirdPolicy = getTherapistSessionPolicy(afterSecond, thirdNow);
+    expect(thirdPolicy.premiumCount).toBe(0);
+    expect(thirdPolicy.premiumMultiplier).toBe(1);
+  });
 });
 
 describe("therapist persistence", () => {
@@ -292,5 +350,7 @@ describe("therapist persistence", () => {
     expect(decoded.save.state.therapistCareer.pointsAvailable).toBe(0);
     expect(decoded.save.state.therapistCareer.spentNodes).toEqual({});
     expect(decoded.save.state.therapistCareer.freeSessionAvailable).toBe(true);
+    expect(decoded.save.state.therapistCareer.sessionPremiumCount).toBe(0);
+    expect(decoded.save.state.therapistCareer.lastSessionAtMs).toBe(0);
   });
 });

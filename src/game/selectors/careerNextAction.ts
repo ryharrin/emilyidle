@@ -58,7 +58,7 @@ export function getCareerNextActionCue(state: GameState, nowMs: number): CareerN
     }
   }
 
-  const policy = getTherapistSessionPolicy(state);
+  const policy = getTherapistSessionPolicy(state, nowMs);
   if (policy.supportsSessions) {
     if (!isTherapistSalaryActive(state, nowMs)) {
       const canPerform = canPerformTherapistSession(state, nowMs);

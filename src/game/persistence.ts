@@ -191,6 +191,12 @@ function sanitizeState(value: unknown): GameState | null {
             typeof therapistRecord.freeSessionAvailable === "boolean"
               ? therapistRecord.freeSessionAvailable
               : undefined,
+          sessionPremiumCount: isFiniteNumber(therapistRecord.sessionPremiumCount)
+            ? Math.max(0, Math.floor(therapistRecord.sessionPremiumCount))
+            : undefined,
+          lastSessionAtMs: isFiniteNumber(therapistRecord.lastSessionAtMs)
+            ? Math.max(0, Math.floor(therapistRecord.lastSessionAtMs))
+            : undefined,
         }
       : undefined,
     craftingParts: isFiniteNumber(record.craftingParts) ? record.craftingParts : 0,

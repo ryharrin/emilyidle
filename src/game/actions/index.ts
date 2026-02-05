@@ -273,6 +273,8 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
       pointsAvailable: 0,
       spentNodes: {},
       freeSessionAvailable: true,
+      sessionPremiumCount: 0,
+      lastSessionAtMs: 0,
     },
     upgrades: createUpgradeLevels(),
     workshopBlueprints: 0,
@@ -516,12 +518,12 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
   const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
 
   const career = state.therapistCareer;
-  const policy = getTherapistSessionPolicy(state);
+  const policy = getTherapistSessionPolicy(state, clampedNowMs);
   if (!policy.supportsSessions) {
     return state;
   }
   const isFreeSession = career.freeSessionAvailable;
-  const cost = isFreeSession ? 0 : policy.enjoymentCostCents;
+  const cost = isFreeSession ? 0 : policy.premiumEnjoymentCostCents;
   const payout = policy.cashPayoutCents;
 
   let nextLevel = career.level;
@@ -534,6 +536,18 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
 
   const salaryWindowMs = getTherapistSalaryActiveWindowMs(state);
   const salaryActiveUntilMs = Math.max(career.salaryActiveUntilMs, clampedNowMs + salaryWindowMs);
+  const withinPremiumWindow =
+    policy.premiumWindowMs > 0 &&
+    career.lastSessionAtMs > 0 &&
+    clampedNowMs >= career.lastSessionAtMs &&
+    clampedNowMs - career.lastSessionAtMs < policy.premiumWindowMs;
+  const currentPremiumCount = Math.max(0, Math.floor(career.sessionPremiumCount));
+  const nextPremiumCount =
+    policy.premiumWindowMs > 0
+      ? withinPremiumWindow
+        ? Math.min(3, currentPremiumCount + 1)
+        : 1
+      : 0;
 
   return {
     ...state,
@@ -546,6 +560,8 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
       nextAvailableAtMs: clampedNowMs + policy.cooldownMs,
       freeSessionAvailable: isFreeSession ? false : career.freeSessionAvailable,
       salaryActiveUntilMs,
+      sessionPremiumCount: nextPremiumCount,
+      lastSessionAtMs: clampedNowMs,
     },
   };
 }

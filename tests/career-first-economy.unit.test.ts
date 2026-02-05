@@ -81,7 +81,7 @@ describe("career-first economy", () => {
     expect(canPerformTherapistSession(sessionState, nowMs)).toBe(true);
 
     const afterSession = performTherapistSession(sessionState, nowMs);
-    const policy = getTherapistSessionPolicy(sessionState);
+    const policy = getTherapistSessionPolicy(sessionState, nowMs);
 
     expect(afterSession.therapistCareer.freeSessionAvailable).toBe(false);
     expect(afterSession.enjoymentCents).toBe(sessionState.enjoymentCents);

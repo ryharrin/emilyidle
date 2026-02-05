@@ -177,6 +177,8 @@ export type TherapistCareerState = {
   pointsAvailable: number;
   spentNodes: Record<CareerNodeId, boolean>;
   freeSessionAvailable: boolean;
+  sessionPremiumCount: number;
+  lastSessionAtMs: number;
 };
 
 export type CatalogTierBonusDefinition = {
@@ -255,6 +257,8 @@ export type PersistedGameState = {
     pointsAvailable?: number;
     spentNodes?: Record<string, boolean>;
     freeSessionAvailable?: boolean;
+    sessionPremiumCount?: number;
+    lastSessionAtMs?: number;
   };
   items?: Record<string, number>;
   watchModels?: Record<string, number>;

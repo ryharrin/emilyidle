@@ -418,6 +418,8 @@ export function createInitialState(): GameState {
       pointsAvailable: 0,
       spentNodes: {},
       freeSessionAvailable: true,
+      sessionPremiumCount: 0,
+      lastSessionAtMs: 0,
     },
     wornWatchId: null,
     interactionNextAvailableAtMsByItem: {},
@@ -566,6 +568,16 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       therapistRecord && typeof therapistRecord.freeSessionAvailable === "boolean"
         ? therapistRecord.freeSessionAvailable
         : true,
+    sessionPremiumCount:
+      typeof therapistRecord?.sessionPremiumCount === "number" &&
+      Number.isFinite(therapistRecord.sessionPremiumCount)
+        ? Math.max(0, Math.floor(therapistRecord.sessionPremiumCount))
+        : 0,
+    lastSessionAtMs:
+      typeof therapistRecord?.lastSessionAtMs === "number" &&
+      Number.isFinite(therapistRecord.lastSessionAtMs)
+        ? Math.max(0, Math.floor(therapistRecord.lastSessionAtMs))
+        : 0,
   };
 
   if (saved.items) {
