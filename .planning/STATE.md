@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 48 of 6 (next milestone planning)
-Plan: 48-01 (SESSION-01 progressive cost + premium indicator)
-Status: Phase 48 underway (1/11 plans complete)
-Last activity: 2026-02-05 — Completed 48-01 (session premium state + UI indicator)
-Progress: Phase 48 in progress (1/11 plans complete)
+Plan: 48-06 (ATELIER-01 scaled bonuses)
+Status: Phase 48 underway (6/11 plans complete)
+Last activity: 2026-02-05 — Completed 48-05 (WIND-03 spring gauge + glow)
+Progress: Phase 48 in progress (6/11 plans complete)
 Next Phase: Phase 48 (v4.1 planning)
 
 ## Accumulated Context
@@ -67,9 +67,11 @@ Next Phase: Phase 48 (v4.1 planning)
 | 47 | Intercepted Tab/Shift+Tab between the help search input and close button for WebKit accessibility | Keeps iOS Safari keyboard navigation inside the modal without relying on native `aria-modal`
 | 48 | Normalize nowMs + premium window before charging session cost | Guarantees premium resets after 2× cooldown and keeps costs stable for the first session after a break
 | 48 | Surface premium label/note from selectors into the Career UI row | Keeps UI copy/test hooks synchronized with policy math and explains the multiplier
+| 48 | Smooth gauge display with a CSS spring-progress variable while leaving telemetry math untouched | Lets the arc feel responsive without jittering the crown’s real data
+| 48 | Wrap the crown in a tier-aware glow shell so reduced-motion users still see resolved states | Keeps glow styling separate from the crown markup and preserves accessibility overrides
 
 ## Session Continuity
 
-Last session: 2026-02-05T16:32:33Z
-Stopped at: Completed Phase 48-01 (SESSION-01 progressive cost + premium indicator)
-Resume file: .planning/phases/48-session-atelier/48-02-PLAN.md
+Last session: 2026-02-05T21:14:17Z
+Stopped at: Completed Phase 48-05 (WIND-03 spring gauge + glow)
+Resume file: .planning/phases/48-session-atelier/48-06-PLAN.md
