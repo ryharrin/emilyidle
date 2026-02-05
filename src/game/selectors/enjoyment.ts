@@ -54,7 +54,23 @@ export function getEnjoymentCents(state: GameState): number {
   return state.enjoymentCents;
 }
 
-export function getPrestigeLegacyMultiplier(state: GameState): number {
+export type PrestigeLegacyMultiplierComponent = {
+  id: string;
+  label: string;
+  description: string;
+  value: number;
+};
+
+export type PrestigeLegacyMultiplierBreakdown = {
+  multiplier01: number;
+  rawMultiplier: number;
+  capApplied: boolean;
+  components: ReadonlyArray<PrestigeLegacyMultiplierComponent>;
+};
+
+export function getPrestigeLegacyMultiplierBreakdown(
+  state: GameState,
+): PrestigeLegacyMultiplierBreakdown {
   const workshopPrestigeCount = Number.isFinite(state.workshopPrestigeCount)
     ? Math.max(0, Math.floor(state.workshopPrestigeCount))
     : 0;
@@ -62,12 +78,45 @@ export function getPrestigeLegacyMultiplier(state: GameState): number {
     ? Math.max(0, Math.floor(state.maisonHeritage))
     : 0;
 
-  const workshopJump = workshopPrestigeCount >= 1 ? 2.25 : 1;
-  const workshopCompounding = Math.pow(1.05, Math.max(0, workshopPrestigeCount - 1));
-  const atelierLegacy = workshopJump * workshopCompounding;
+  const firstPrestigeBoost = workshopPrestigeCount >= 1 ? 2.3 : 1;
+  const compoundingMultiplier = Math.pow(1.045, Math.max(0, workshopPrestigeCount - 1));
   const maisonLegacy = Math.pow(1.03, maisonHeritage);
 
-  return Math.min(10, atelierLegacy * maisonLegacy);
+  const components: PrestigeLegacyMultiplierComponent[] = [
+    {
+      id: "atelier-first",
+      label: "First Atelier prestige",
+      description: "Jump that fires on the first reset",
+      value: firstPrestigeBoost,
+    },
+    {
+      id: "atelier-compound",
+      label: "Additional Atelier prestiges",
+      description: "Each extra reset stacks a smaller multiplier",
+      value: compoundingMultiplier,
+    },
+    {
+      id: "maison-heritage",
+      label: "Maison heritage",
+      description: "Maison resets amplify the same multiplier",
+      value: maisonLegacy,
+    },
+  ];
+
+  const rawMultiplier = components.reduce((product, component) => product * component.value, 1);
+  const multiplier01 = Math.min(10, rawMultiplier);
+  const capApplied = rawMultiplier > 10;
+
+  return {
+    multiplier01,
+    rawMultiplier,
+    capApplied,
+    components,
+  };
+}
+
+export function getPrestigeLegacyMultiplier(state: GameState): number {
+  return getPrestigeLegacyMultiplierBreakdown(state).multiplier01;
 }
 
 export function getEnjoymentRateCentsPerSec(state: GameState): number {

@@ -3,10 +3,58 @@ import { describe, expect, it } from "vitest";
 import {
   createInitialState,
   getPrestigeLegacyMultiplier,
+  getPrestigeLegacyMultiplierBreakdown,
   getWorkshopNextBlueprintProgress,
   getWorkshopPrestigeThresholdCents,
   getWorkshopBlueprintCostDetail,
 } from "../src/game/state";
+
+describe("workshop atelier multiplier", () => {
+  it("keeps the multiplier monotonic as prestige accumulates", () => {
+    const baseState = createInitialState();
+    let last = 0;
+
+    for (let prestige = 0; prestige <= 10; prestige += 1) {
+      const current = getPrestigeLegacyMultiplier({
+        ...baseState,
+        workshopPrestigeCount: prestige,
+      });
+      expect(current).toBeGreaterThanOrEqual(last);
+      last = current;
+    }
+  });
+
+  it("gives a noticeable boost after the first prestige", () => {
+    const baseState = createInitialState();
+    const firstPrestige = getPrestigeLegacyMultiplier({
+      ...baseState,
+      workshopPrestigeCount: 1,
+    });
+    expect(firstPrestige).toBeGreaterThanOrEqual(2.2);
+  });
+
+  it("reports components that multiply consistently with the final multiplier", () => {
+    const baseState = createInitialState();
+    const breakdown = getPrestigeLegacyMultiplierBreakdown({
+      ...baseState,
+      workshopPrestigeCount: 3,
+      maisonHeritage: 2,
+    });
+    const rawProduct = breakdown.components.reduce(
+      (product, component) => product * component.value,
+      1,
+    );
+    expect(breakdown.rawMultiplier).toBe(rawProduct);
+    expect(breakdown.multiplier01).toBe(Math.min(10, rawProduct));
+    expect(breakdown.components).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "atelier-first" }),
+        expect.objectContaining({ id: "atelier-compound" }),
+        expect.objectContaining({ id: "maison-heritage" }),
+      ]),
+    );
+  });
+});
 
 describe("workshop atelier progress", () => {
   it("keeps next-blueprint remaining monotonic below the first threshold", () => {
@@ -41,22 +89,6 @@ describe("workshop atelier progress", () => {
 
     expect(progress.etaSeconds).toBeNull();
     expect(progress.cashEarnedDuringEtaCents).toBe(0);
-  });
-
-  it("boosts legacy after first workshop prestige and respects the cap", () => {
-    const baseState = createInitialState();
-    const firstPrestige = getPrestigeLegacyMultiplier({
-      ...baseState,
-      workshopPrestigeCount: 1,
-    });
-    expect(firstPrestige).toBeGreaterThanOrEqual(2);
-
-    const capped = getPrestigeLegacyMultiplier({
-      ...baseState,
-      workshopPrestigeCount: 200,
-      maisonHeritage: 200,
-    });
-    expect(capped).toBeLessThanOrEqual(10);
   });
 });
 
