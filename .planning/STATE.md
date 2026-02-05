@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 47 of 6 (v4.0 Phases 42-47)
-Plan: 47-04 complete
-Status: Phase 47 (Mobile & UI Polish) help modal focus trap stabilized for WebKit, navigation + modal regression coverage locked in
-Last activity: 2026-02-05 — Completed 47-04 (Help modal WebKit focus trap)
-Progress: Phase 46 complete (3/3), Phase 47 plans complete (4/4)
+Plan: 47-05 complete
+Status: Phase 47 (Mobile & UI Polish) help modal focus trap stabilized for WebKit with search Tab cycling kept inside the dialog
+Last activity: 2026-02-05 — Completed 47-05 (Help modal Tab cycle on WebKit)
+Progress: Phase 46 complete (3/3), Phase 47 plans complete (5/5)
 Next Phase: Phase 47 QA/Validation (mobile regression verification)
 
 ## Accumulated Context
@@ -69,6 +69,7 @@ Next Phase: Phase 47 QA/Validation (mobile regression verification)
 | 47 | Reinforced mobile regression guardrails with helper-based Playwright assertions | Keeps scroll-snap, sticky tabs, and help modal flows uniform across both iPhone 12 and Pixel 5 viewport tests |
 | 47 | Centralized Playwright mobile projects around Pixel 5 + iPhone 12 | Guarantees Chrome and WebKit mobile runs are both exercised every suite instead of being optional |
 | 47 | Isolated the HelpModal within a new `#app-shell` wrapper so the shell can be inerted while the dialog stays focusable and restores the prior focus target on close | Keeps WebKit keyboard navigation consistent and lets the previously focused element regain focus immediately after the modal closes |
+| 47 | Intercepted Tab/Shift+Tab between the HelpModal search input and close button | Keeps focus cycling inside HelpModal on WebKit without touching the modal shell |
 
 ### Blockers / Concerns Carried Forward
 
@@ -76,6 +77,6 @@ Next Phase: Phase 47 QA/Validation (mobile regression verification)
 
 ## Session Continuity
 
-Last session: 2026-02-05T00:01:48Z
-Stopped at: Completed Phase 47-04 (Help modal WebKit focus trap)
+Last session: 2026-02-05T00:15:00Z
+Stopped at: Completed Phase 47-05 (Help modal Tab cycle on WebKit)
 Resume file: None
