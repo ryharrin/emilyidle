@@ -24,9 +24,11 @@ export function WindingCrown({
   const normalizedProgress = clamp01(progress01);
   const normalizedTension = clamp01(tension01);
   const displayTension = clamp01(
-    normalizedTension * 0.65 + normalizedVelocity * 0.25 + normalizedProgress * 0.1,
+    normalizedTension * 0.55 + normalizedVelocity * 0.2 + normalizedProgress * 0.25,
   );
   const glowIntensity = clamp01(normalizedVelocity + normalizedTension * 0.6);
+  const springGaugeProgress = clamp01(displayTension * 0.6 + normalizedProgress * 0.4);
+  const penaltyIntensity = band === "over" ? 1 : 0;
   const style = {
     ["--winding-angle" as "--winding-angle"]: `${angleDeg}deg`,
     ["--winding-progress" as "--winding-progress"]: normalizedProgress,
@@ -35,6 +37,8 @@ export function WindingCrown({
     ["--winding-glow" as "--winding-glow"]: glowIntensity,
     ["--winding-display-tension" as "--winding-display-tension"]: displayTension,
     ["--winding-gauge-progress" as "--winding-gauge-progress"]: normalizedProgress,
+    ["--winding-spring-progress" as "--winding-spring-progress"]: springGaugeProgress,
+    ["--winding-penalty" as "--winding-penalty"]: penaltyIntensity,
   } as React.CSSProperties;
 
   return (
@@ -47,7 +51,9 @@ export function WindingCrown({
     >
       <svg className="winding-crown-gauge" viewBox="0 0 72 72" role="presentation">
         <circle className="winding-gauge-track" cx="36" cy="36" r="30" fill="none" />
+        <circle className="winding-gauge-spring" cx="36" cy="36" r="30" fill="none" />
         <circle className="winding-gauge-progress" cx="36" cy="36" r="30" fill="none" />
+        <circle className="winding-gauge-penalty" cx="36" cy="36" r="30" fill="none" />
       </svg>
     </div>
   );
