@@ -13,6 +13,8 @@ import {
   getMilestoneRequirementLabel,
   getMilestoneUnlockProgressDetail,
   getUpgradePriceCents,
+  getWorkshopBlueprintCostDetail,
+  getWorkshopPrestigeGain,
   isUpgradeUnlocked,
   shouldShowUnlockTag,
 } from "../../game/state";
@@ -24,8 +26,10 @@ import type {
 } from "../../game/state";
 
 import { UnlockHint } from "../components/UnlockHint";
+import { BlueprintCostDetail } from "../components/BlueprintCostDetail";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
+import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 
 type PurchaseMeta = {
   prestigeTier?: "workshop" | "maison" | "nostalgia";
@@ -125,6 +129,8 @@ export function UpgradesTab({
   onPurchase,
 }: UpgradesTabProps) {
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
+  const blueprintCostDetail = getWorkshopBlueprintCostDetail(state);
+  const blueprintTooltip = buildBlueprintTooltip(state, getWorkshopPrestigeGain(state));
 
   return (
     <section
@@ -238,6 +244,11 @@ export function UpgradesTab({
                 <p className="muted">Spend Blueprints to compound collection efficiency.</p>
               </div>
             </header>
+            <BlueprintCostDetail
+              detail={blueprintCostDetail}
+              tooltipContent={blueprintTooltip}
+              testId="upgrades-blueprint-cost"
+            />
             <div className="card-stack" data-testid="upgrades-workshop-list">
               {workshopUpgrades.map((upgrade) => {
                 const owned = state.workshopUpgrades[upgrade.id] ?? false;

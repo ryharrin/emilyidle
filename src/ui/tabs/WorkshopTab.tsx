@@ -6,11 +6,14 @@ import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { WorkshopCraftingSection } from "./WorkshopCraftingSection";
 import { buildWorkshopPrestigeSummary } from "../prestigeSummary";
+import { BlueprintCostDetail } from "../components/BlueprintCostDetail";
+import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 
 import {
   buyWorkshopUpgrade,
   canBuyWorkshopUpgrade,
   getEnjoymentThresholdLabel,
+  getWorkshopBlueprintCostDetail,
   getWorkshopNextBlueprintProgress,
   getWorkshopPrestigeThresholdCents,
   prestigeWorkshop,
@@ -77,6 +80,8 @@ export function WorkshopTab({
   renderCraftingBoosts,
 }: WorkshopTabProps) {
   const nextBlueprintProgress = getWorkshopNextBlueprintProgress(state, Date.now());
+  const blueprintCostDetail = getWorkshopBlueprintCostDetail(state);
+  const blueprintTooltip = buildBlueprintTooltip(state, workshopPrestigeGain);
   const etaLabel =
     nextBlueprintProgress.etaSeconds === null
       ? "ETA unavailable"
@@ -128,6 +133,11 @@ export function WorkshopTab({
                       </p>
                     </div>
                   </div>
+                  <BlueprintCostDetail
+                    detail={blueprintCostDetail}
+                    tooltipContent={blueprintTooltip}
+                    testId="workshop-blueprint-cost"
+                  />
                   <div className="inline-icon-button">
                     <ExplainButton
                       sectionId={HELP_SECTION_IDS.atelierReset}
