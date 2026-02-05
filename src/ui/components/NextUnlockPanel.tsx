@@ -13,20 +13,22 @@ type NextUnlockPanelProps = {
 export function NextUnlockPanel({ items }: NextUnlockPanelProps): JSX.Element {
   return (
     <section className="panel" data-testid="next-unlocks">
-      <header className="panel-header">
-        <div>
-          <p className="eyebrow">Progress</p>
-          <h3>Next unlocks</h3>
-          <p className="muted">Upcoming goals that unlock new options.</p>
-        </div>
-      </header>
-
-      <div className="card-stack">
-        {items.map(({ id, ...hint }) => (
-          <div key={id} className="card" data-testid={`next-unlock-${id}`}>
-            <UnlockHint {...hint} />
+      <div className="next-unlock-preview" data-testid="next-unlock-preview">
+        <header className="panel-header">
+          <div>
+            <p className="eyebrow">Progress</p>
+            <h3>Next unlocks</h3>
+            <p className="muted">Upcoming goals that unlock new options.</p>
           </div>
-        ))}
+        </header>
+
+        <div className="card-stack">
+          {items.map(({ id, ...hint }) => (
+            <div key={id} className="card" data-testid={`next-unlock-${id}`}>
+              <UnlockHint {...hint} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -598,6 +598,11 @@ export function getMilestoneUnlockProgressDetail(
   };
 }
 
+export function getMilestoneEffectSummary(milestoneId: MilestoneId): string {
+  const milestone = MILESTONE_LOOKUP.get(milestoneId);
+  return milestone?.description ?? "";
+}
+
 export function getAchievementRequirementLabel(achievementId: AchievementId): string {
   const achievement = ACHIEVEMENTS.find((entry) => entry.id === achievementId);
   if (!achievement) {
@@ -653,6 +658,17 @@ export function getAchievementUnlockProgressDetail(
   };
 }
 
+export function getAchievementEffectSummary(achievementId: AchievementId): string {
+  const achievement = ACHIEVEMENTS.find((entry) => entry.id === achievementId);
+  return achievement?.description ?? "";
+}
+
+const PRESTIGE_UNLOCK_EFFECT_SUMMARIES: Record<"workshop" | "maison" | "nostalgia", string> = {
+  workshop: "Prestige the Atelier to earn Blueprints and unlock Workshop bonuses.",
+  maison: "Prestige again for Heritage, Reputation, and Maison perks.",
+  nostalgia: "Prestige for Nostalgia to gain permanent Nostalgia points.",
+};
+
 export function getPrestigeUnlockProgressDetail(
   state: GameState,
   prestigeId: "workshop" | "maison" | "nostalgia",
@@ -674,6 +690,12 @@ export function getPrestigeUnlockProgressDetail(
     threshold,
     ratio,
   };
+}
+
+export function getPrestigeUnlockEffectSummary(
+  prestigeId: "workshop" | "maison" | "nostalgia",
+): string {
+  return PRESTIGE_UNLOCK_EFFECT_SUMMARIES[prestigeId];
 }
 
 export function shouldShowUnlockTag(state: GameState, milestoneId: MilestoneId): boolean {

@@ -14,6 +14,7 @@ export type UnlockHintProps = {
   thresholdLabel: string;
   ratio: number;
   cta?: UnlockHintCta;
+  effectSummary?: string;
 };
 
 export function UnlockHint({
@@ -24,6 +25,7 @@ export function UnlockHint({
   thresholdLabel,
   ratio,
   cta,
+  effectSummary,
 }: UnlockHintProps): JSX.Element {
   const clampedRatio = Math.max(0, Math.min(1, ratio));
   const percent = Math.round(clampedRatio * 100);
@@ -35,6 +37,12 @@ export function UnlockHint({
         <h4>{title}</h4>
         <span>{percent}%</span>
       </div>
+      {effectSummary && (
+        <div className="unlock-hint-effect-row">
+          <span className="unlock-hint-effect-icon" aria-hidden="true"></span>
+          <p className="unlock-hint-effect">{effectSummary}</p>
+        </div>
+      )}
       <p className="muted">{detail}</p>
       <div className="unlock-hint-progress">
         <span>

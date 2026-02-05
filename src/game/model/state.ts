@@ -186,7 +186,7 @@ export const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
   {
     id: "first-drawer",
     name: "First drawer",
-    description: "Hold 12 watches in the collection.",
+    description: "Hold 12 watches to reveal the Stats tab.",
     requirement: { type: "totalItems", threshold: 12 },
   },
   {

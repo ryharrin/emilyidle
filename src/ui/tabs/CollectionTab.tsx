@@ -10,10 +10,13 @@ import { formatMoneyFromCents } from "../../game/format";
 import {
   buyMaisonLine,
   canBuyMaisonLine,
+  getAchievementEffectSummary,
   getAchievementUnlockProgressDetail,
   getEventStatusLabel,
+  getMilestoneEffectSummary,
   getMilestoneUnlockProgressDetail,
   getMilestoneRequirementLabel,
+  getPrestigeUnlockEffectSummary,
   getPrestigeUnlockProgressDetail,
   getUnlockRevealProgressRatio,
   getWatchModelOwnedCount,
@@ -190,6 +193,7 @@ export function CollectionTab({
       currentLabel: formatCount(detail.current),
       thresholdLabel: formatCount(detail.threshold),
       ratio: detail.ratio,
+      effectSummary: getMilestoneEffectSummary("collector-shelf"),
       cta: {
         label: "Buy watches",
         testId: "next-unlock-cta-career",
@@ -209,6 +213,7 @@ export function CollectionTab({
         currentLabel: formatMoneyFromCents(detail.current),
         thresholdLabel: formatMoneyFromCents(detail.threshold),
         ratio: getUnlockRevealProgressRatio(detail.ratio),
+        effectSummary: getMilestoneEffectSummary("showcase"),
         cta: {
           label: "Buy watches",
           testId: "next-unlock-cta-catalog",
@@ -229,6 +234,7 @@ export function CollectionTab({
         currentLabel: formatCount(detail.current),
         thresholdLabel: formatCount(detail.threshold),
         ratio: getUnlockRevealProgressRatio(detail.ratio),
+        effectSummary: getAchievementEffectSummary("first-drawer"),
         cta: {
           label: "Buy watches",
           testId: "next-unlock-cta-stats",
@@ -249,6 +255,7 @@ export function CollectionTab({
         currentLabel: formatMoneyFromCents(detail.current),
         thresholdLabel: formatMoneyFromCents(detail.threshold),
         ratio: getUnlockRevealProgressRatio(detail.ratio),
+        effectSummary: getPrestigeUnlockEffectSummary("workshop"),
         cta: {
           label: "Build collection",
           testId: "next-unlock-cta-workshop",
@@ -269,6 +276,7 @@ export function CollectionTab({
         currentLabel: formatMoneyFromCents(detail.current),
         thresholdLabel: formatMoneyFromCents(detail.threshold),
         ratio: getUnlockRevealProgressRatio(detail.ratio),
+        effectSummary: getPrestigeUnlockEffectSummary("maison"),
         cta: {
           label: "Build collection",
           testId: "next-unlock-cta-maison",
@@ -289,6 +297,7 @@ export function CollectionTab({
         currentLabel: formatMoneyFromCents(detail.current),
         thresholdLabel: formatMoneyFromCents(detail.threshold),
         ratio: getUnlockRevealProgressRatio(detail.ratio),
+        effectSummary: getPrestigeUnlockEffectSummary("nostalgia"),
         cta: {
           label: "Build collection",
           testId: "next-unlock-cta-nostalgia",
