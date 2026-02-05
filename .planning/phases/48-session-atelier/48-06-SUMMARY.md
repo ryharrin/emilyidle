@@ -66,7 +66,7 @@ Each task was committed atomically:
 1. **Task 1: Tune scaling + expose selector breakdown for atelier bonus** - `2da1546` (feat)
 2. **Task 2: Clarify atelier bonus math in Workshop UI (tooltip-first)** - `c60d131` (feat)
 
-**Plan metadata:** pending
+**Plan metadata:** 782f37f (docs: complete ATELIER-01 scaled bonuses plan)
 
 ## Files Created/Modified
 - `src/game/selectors/enjoyment.ts` - Publishes a structured prestige multiplier breakdown with capped multiplier + component details for UI
