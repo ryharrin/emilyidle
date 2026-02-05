@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 48 of 6 (next milestone planning)
-Plan: 48-08 (POWER-01 power reserve clarity)
-Status: Phase 48 underway (7/11 plans complete)
-Last activity: 2026-02-05 — Completed 48-06 (ATELIER-01 scaled bonuses)
-Progress: Phase 48 in progress (7/11 plans complete)
+Plan: 48-09 (SALARY-01 salary expiration alert)
+Status: Phase 48 underway (8/11 plans complete)
+Last activity: 2026-02-05 — Completed 48-08 (POWER-01 power reserve clarity)
+Progress: Phase 48 in progress (8/11 plans complete)
 Next Phase: Phase 48 (v4.1 planning)
 
 ## Accumulated Context
@@ -69,11 +69,13 @@ Next Phase: Phase 48 (v4.1 planning)
 | 48 | Surface premium label/note from selectors into the Career UI row | Keeps UI copy/test hooks synchronized with policy math and explains the multiplier
 | 48 | Keep the prestige multiplier breakdown inside selectors before exposing it to the UI | Ensures the workshop tooltip math always matches the authoritative domain value
 | 48 | Anchor the Atelier bonus tooltip next to the blueprint cost instead of duplicating math elsewhere | Keeps the bonus narrative close to the reset call-to-action without cluttering the panel
+| 48 | Keep power reserve labels and explanations inside selectors so every surface reuses the same writing | Stops every UI surface from rewording reserve math and keeps the explanation deterministic
+| 48 | Inline the tooltip badge next to catalog metadata while keeping the selectors as the source of truth | Keeps the dynamic reserve explanation close to the card without re-implementing the helper
 | 48 | Smooth gauge display with a CSS spring-progress variable while leaving telemetry math untouched | Lets the arc feel responsive without jittering the crown’s real data
 | 48 | Wrap the crown in a tier-aware glow shell so reduced-motion users still see resolved states | Keeps glow styling separate from the crown markup and preserves accessibility overrides
 
 ## Session Continuity
 
-Last session: 2026-02-05T21:26:26Z
-Stopped at: Completed Phase 48-06 (ATELIER-01 scaled bonuses)
-Resume file: .planning/phases/48-session-atelier/48-08-PLAN.md
+Last session: 2026-02-05T21:36:41Z
+Stopped at: Completed Phase 48-08 (POWER-01 power reserve clarity)
+Resume file: .planning/phases/48-session-atelier/48-09-PLAN.md
