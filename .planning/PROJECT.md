@@ -1,5 +1,64 @@
 # Project Overview
 
+## What This Is
+Emily Idle is a browser-based watch-collecting idle/incremental game that blends tactile mini-games, catalog discovery, and portfolio management across Career → Collection → Atelier loops.
+
+## Core Value
+Deliver a satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
+
+## Current Milestone: v4.1 Next Wave
+**Goal:** Redesign sessions and atelier systems, finish the mobile/UX polish, and deepen catalog depth and quality-of-life features.
+**Target features:**
+- Sessions reward strategic choice through progressive costs, visual cooldown cues, and richer winding interactions.
+- Mobile UX receives sticky horizontal tabs, keyboard shortcuts, focus-safe help modals, and accessibility-friendly touch targets.
+- The catalog and Collection gain analytics, comparison tools, and notifications tied to achievements/events.
+- Quality-of-life updates (offline gains, save import/export, undo, favorites, notifications, mini-game practice) and new achievements/events round out the experience.
+
+## Requirements
+### Validated
+- ✓ STATS-01 — Catalog now surfaces each watch’s enjoyment rate per row so comparisons are visible without purchase (v4.0)
+- ✓ STATS-02 — Per-watch cash rate stays anchored to the therapist career salary and is documented in the row explanation (v4.0)
+- ✓ STATS-03 — Enjoyment/cash rates vary by watch, with tier-aware totals (v4.0)
+- ✓ STATS-04 — Collection call-out explains the equipped watch contribution delta (v4.0)
+- ✓ STATS-05 — Stats visible before owning the watch and the UI surfaces them directly in Catalog (v4.0)
+
+### Active
+The v4.1 requirements are grouped into the following clusters:
+- **Sessions & Atelier systems** (SESSION-01 through UPGRADE-01)
+- **Mobile & UX polish** (TAB-01 through CAREER-01)
+- **Catalog & Collection depth** (SETBONUS-01 through VAULT-02)
+- **Quality of Life & Events** (OFFLINE-01 through STREAK-01)
+Each requirement is testable, user-facing, and mapped to a specific phase in the upcoming roadmap.
+
+### Out of Scope
+- Multiplayer, social sharing, watch trading, augmented reality, custom watch design, virtual exhibitions, mentorship, watch clubs, seasonal events, and any feature that depends on multiplayer infrastructure remain explicitly rejected (per NOTES-02-02-26).
+
+## Context
+- v4.0 delivered tier badge theming, per-watch stats, catalog variety, mobile navigation polish, and WebKit-friendly focus handling; we now build atop that foundation.
+- Mobile regression coverage spans Pixel 5 (Chrome) and iPhone 12 (WebKit) viewports.
+- Key blockers carried forward: missing therapist session delta Playwright checks and legacy verification reports for phases 13/18.
+
+## Key Decisions
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Cash rows stay tied to the therapist career rate with explicit explanation strings | Prevents inventing per-watch cash allocations while preserving determinism | ✓ Good |
+| Equipped watch contribution is derived via delta comparisons inside `getEnjoymentRateCentsPerSec` | Centralizes the math instead of duplicating multipliers | ✓ Good |
+| Sticky mobile tabs keep `position: sticky` plus `align-self: start` inside the hero grid | Avoids focus loss while scrolling | ✓ Good |
+| The HelpModal sits inside `#app-shell` so the shell can be inerted and focus restored cleanly | Enables WebKit focus trap fix | ✓ Good |
+| Tab/Shift+Tab between the help search input and Close button is intercepted manually | Keeps iOS Safari keyboard navigation inside the modal | ✓ Good |
+
+## Next Steps
+- `/gsd-plan-phase 48` — Kick off session & atelier work (phase 48)
+- `/gsd-plan-phase 49` — Follow with the mobile & UX polish phase
+- `/gsd-plan-phase 50` — Deliver catalog depth features
+- `/gsd-plan-phase 51` — Ship quality-of-life and events improvements
+
+<details>
+<summary>Archived context (pre-v4.1 milestone)</summary>
+
+```markdown
+# Project Overview
+
 ## Current State
 
 - v4.0 Watch Interactions & Catalog Polish is shipped: tier badges and catalog metadata share a single source of truth, per-watch stats are visible with sticky filters, catalog variety spans low/mid/lux tiers, and mobile navigation and help modal flows are regression guarded (WebKit focus trap + sticky tab bar + tier badge CSS).
@@ -136,6 +195,9 @@ Shipped v3.2 on 2026-02-02:
 ---
 
 *Last updated: 2026-02-04 — Phase 45 complete, preparing Phase 46 planning*
+
+```
+</details>
 
 ```
 </details>
