@@ -66,7 +66,7 @@ Each task was committed atomically:
 1. **Task 1: Add selector helper for salary readout + alert level** - `c8179f0` (feat)
 2. **Task 2: Render salary expiration alert in Career panel** - `a776175` (feat)
 
-**Plan metadata:** pending
+**Plan metadata:** f429550 (docs: complete SALARY-01 salary expiration alert plan)
 
 ## Files Created/Modified
 - `src/game/selectors/therapistSalary.ts` - Reports remaining ms and alert level (soon/urgent) for salary expiration
