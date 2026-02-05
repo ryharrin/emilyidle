@@ -3687,6 +3687,27 @@ button[data-testid^="vault-interact-"] {
   max-width: 320px;
 }
 
+.career-salary-alert {
+  margin: 6px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  border: 1px solid rgba(232, 198, 147, 0.4);
+  background: rgba(232, 198, 147, 0.12);
+  color: #fdfcf8;
+}
+
+.career-salary-alert-soon {
+  border-color: rgba(240, 183, 91, 0.6);
+  background: rgba(240, 183, 91, 0.15);
+}
+
+.career-salary-alert-urgent {
+  border-color: rgba(255, 118, 118, 0.7);
+  background: rgba(255, 118, 118, 0.12);
+}
+
 [data-theme="light"] .career-track-level,
 [data-theme="light"] .career-tree-points {
   background: rgba(255, 255, 255, 0.85);

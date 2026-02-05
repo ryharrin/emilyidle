@@ -8,6 +8,7 @@ import {
   getTherapistSessionCostLabel,
   getTherapistSessionPolicy,
   getTherapistXpRequiredForNextLevel,
+  getTherapistSalaryExpirationAlert,
   performTherapistSession,
 } from "../../../game/state";
 import type { GameState } from "../../../game/state";
@@ -28,6 +29,16 @@ type CareerPanelProps = {
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
+const formatDuration = (ms: number) => {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
+};
+
 export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const [activeView, setActiveView] = React.useState<"stages" | "upgrades">("stages");
   const career = getTherapistCareer(state);
@@ -44,6 +55,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const cooldownProgress =
     sessionPolicy.cooldownMs > 0 ? clamp01(1 - remainingMs / sessionPolicy.cooldownMs) : 1;
   const cooldownLabel = `Cooldown ${Math.max(0, Math.ceil(remainingMs / 1000))}s`;
+  const salaryAlert = getTherapistSalaryExpirationAlert(state, nowMs);
+  const salaryRemainingLabel = formatDuration(salaryAlert.remainingMs);
+  const showSalaryAlert = salaryAlert.level !== "none";
 
   const statusLabel = (() => {
     if (career.careerStartId === null) {
@@ -117,6 +131,23 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                 </div>
                 <div className="career-session-note">{sessionCostNote}</div>
               </div>
+              {showSalaryAlert && (
+                <div
+                  className={`career-salary-alert career-salary-alert-${salaryAlert.level}`}
+                  data-testid="career-salary-expiration"
+                >
+                  <strong>
+                    {salaryAlert.level === "urgent"
+                      ? "Urgent salary expiration"
+                      : "Salary expiring soon"}
+                    :
+                  </strong>{" "}
+                  Salary window ends in {salaryRemainingLabel}.{" "}
+                  {salaryAlert.level === "urgent"
+                    ? "Refresh now to keep your income flowing."
+                    : "Refresh soon to avoid a gap in salary."}
+                </div>
+              )}
               <div className="workshop-reset">
                 <div>
                   <p className="workshop-label">Level</p>
