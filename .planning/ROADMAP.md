@@ -88,7 +88,7 @@
 | 45. Per-Watch Stats Surfaces | v4.0 | 3/3 | Complete | 45-03-SUMMARY.md |
 | 46. Catalog Expansion (Tiered Variety) | v4.0 | 3/3 | Complete | 46-03-SUMMARY.md |
 | 47. Mobile & UI Polish | v4.0 | 5/5 | Complete | 47-UAT.md |
-| 48. Session & Atelier Rework | v4.1 | 0/0 | Not started | - |
+| 48. Session & Atelier Rework | v4.1 | 0/11 | Not started | - |
 | 49. Mobile & UX Polish | v4.1 | 0/0 | Not started | - |
 | 50. Catalog & Collection Depth | v4.1 | 0/0 | Not started | - |
 | 51. Quality of Life & Events | v4.1 | 0/0 | Not started | - |
