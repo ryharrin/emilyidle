@@ -5,6 +5,7 @@ import {
   getPrestigeLegacyMultiplier,
   getWorkshopNextBlueprintProgress,
   getWorkshopPrestigeThresholdCents,
+  getWorkshopBlueprintCostDetail,
 } from "../src/game/state";
 
 describe("workshop atelier progress", () => {
@@ -56,5 +57,25 @@ describe("workshop atelier progress", () => {
       maisonHeritage: 200,
     });
     expect(capped).toBeLessThanOrEqual(10);
+  });
+});
+
+describe("workshop blueprint cost detail", () => {
+  it("keeps the next cost at least the current cost", () => {
+    const detail = getWorkshopBlueprintCostDetail(createInitialState());
+    expect(detail.nextCostCents).toBeGreaterThanOrEqual(detail.currentCostCents);
+  });
+
+  it("reports higher costs when enjoyment climbs", () => {
+    const baseState = createInitialState();
+    const baseDetail = getWorkshopBlueprintCostDetail(baseState);
+    const elevated = {
+      ...baseState,
+      enjoymentCents: baseState.enjoymentCents + 2_000_000,
+    };
+    const higherDetail = getWorkshopBlueprintCostDetail(elevated);
+    expect(higherDetail.currentCostCents).toBeGreaterThanOrEqual(baseDetail.currentCostCents);
+    expect(higherDetail.nextCostCents).toBeGreaterThanOrEqual(baseDetail.nextCostCents);
+    expect(higherDetail.deltaCents).toBeGreaterThanOrEqual(baseDetail.deltaCents);
   });
 });

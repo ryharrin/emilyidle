@@ -74,6 +74,7 @@ export * from "./enjoyment";
 export * from "./incomeMultipliers";
 export * from "./interactions";
 export * from "./watchModels";
+export * from "./perWatchStats";
 export * from "./careerStages";
 export * from "./careerChoicePreview";
 export * from "./careerProgress";
@@ -384,6 +385,41 @@ export function getWorkshopNextBlueprintProgress(
     enjoymentRemainingCents,
     etaSeconds,
     cashEarnedDuringEtaCents,
+  };
+}
+
+export type BlueprintCostDetail = {
+  currentCostCents: number;
+  nextCostCents: number;
+  deltaCents: number;
+  hasNext: boolean;
+};
+
+export function getWorkshopBlueprintCostDetail(state: GameState): BlueprintCostDetail {
+  const enjoyment = getEnjoymentCents(state);
+  const currentBlueprintGain = getWorkshopPrestigeGain(state);
+  const currentBaseGain = Math.max(
+    0,
+    Math.floor((enjoyment / WORKSHOP_PRESTIGE_THRESHOLD_CENTS) ** 0.5),
+  );
+  const nextBlueprintGain = currentBlueprintGain + 1;
+  const maisonBonus = getMaisonLineBlueprintBonus(state);
+  const craftedMultiplier = getCraftedBoostPrestigeMultiplier(state);
+
+  let nextBaseGain = currentBaseGain;
+  while (Math.floor((nextBaseGain + maisonBonus) * craftedMultiplier) < nextBlueprintGain) {
+    nextBaseGain += 1;
+  }
+
+  const currentCostCents = WORKSHOP_PRESTIGE_THRESHOLD_CENTS * currentBaseGain ** 2;
+  const nextCostCents = WORKSHOP_PRESTIGE_THRESHOLD_CENTS * nextBaseGain ** 2;
+  const deltaCents = Math.max(0, nextCostCents - currentCostCents);
+
+  return {
+    currentCostCents,
+    nextCostCents,
+    deltaCents,
+    hasNext: nextBaseGain > currentBaseGain,
   };
 }
 
