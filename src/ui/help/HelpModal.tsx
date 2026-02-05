@@ -63,6 +63,7 @@ export function HelpModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const focusableSelector =
     "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
@@ -154,6 +155,18 @@ export function HelpModal({
     } else if (event.key === "Enter") {
       event.preventDefault();
       selectSection(highlightedIndex >= 0 ? highlightedIndex : 0);
+    } else if (event.key === "Tab" && !event.shiftKey) {
+      if (filteredSections.length > 0) {
+        event.preventDefault();
+        focusSectionButton(0);
+      }
+    }
+  };
+
+  const handleCloseKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === "Tab" && event.shiftKey) {
+      event.preventDefault();
+      searchInputRef.current?.focus();
     }
   };
 
@@ -264,6 +277,7 @@ export function HelpModal({
             className="secondary"
             data-testid="help-close"
             onClick={onClose}
+            onKeyDown={handleCloseKeyDown}
             ref={closeButtonRef}
           >
             Close
@@ -282,6 +296,7 @@ export function HelpModal({
             aria-label="Search help"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
+            ref={searchInputRef}
             onKeyDown={handleSearchKeyDown}
           />
         </div>
