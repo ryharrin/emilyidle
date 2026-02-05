@@ -8,6 +8,7 @@ import {
   AUTOMATIC_WINDING_REASON,
   createInitialState,
   getInteractionMovementGate,
+  getPowerReserveDetail,
   getSetBonuses,
   getWatchModels,
 } from "../src/game/state";
@@ -32,6 +33,61 @@ describe("interaction movement gating", () => {
   it("allows quartz and hand-wind watches", () => {
     expect(getInteractionMovementGate("starter")).toEqual({ available: true });
     expect(getInteractionMovementGate("chronograph")).toEqual({ available: true });
+  });
+});
+
+describe("power reserve detail", () => {
+  it("reports a reserve percent and explanation for automatic watches", () => {
+    const baseState = createInitialState();
+    const detail = getPowerReserveDetail(
+      {
+        ...baseState,
+        powerReserveByItem: {
+          ...baseState.powerReserveByItem,
+          classic: 0.42,
+        },
+      },
+      "classic",
+    );
+
+    expect(detail.reserve01).toBeCloseTo(0.42, 8);
+    expect(detail.reservePercent).toBe(42);
+    expect(detail.label).toBe("Power reserve");
+    expect(detail.explanation).toContain("Automatic");
+  });
+
+  it("clamps reserve values between 0 and 100 percent", () => {
+    const baseState = createInitialState();
+    const high = getPowerReserveDetail(
+      {
+        ...baseState,
+        powerReserveByItem: {
+          ...baseState.powerReserveByItem,
+          classic: 2,
+        },
+      },
+      "classic",
+    );
+    expect(high.reservePercent).toBe(100);
+
+    const low = getPowerReserveDetail(
+      {
+        ...baseState,
+        powerReserveByItem: {
+          ...baseState.powerReserveByItem,
+          classic: -1,
+        },
+      },
+      "classic",
+    );
+    expect(low.reservePercent).toBe(0);
+  });
+
+  it("provides manual-specific explanation when the movement is wrist-driven", () => {
+    const baseState = createInitialState();
+    const detail = getPowerReserveDetail(baseState, "starter");
+
+    expect(detail.explanation).toContain("Manual");
   });
 });
 

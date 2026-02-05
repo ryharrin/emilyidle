@@ -67,3 +67,30 @@ export function getPowerReserveForItem(state: GameState, itemId: WatchItemId): n
 
   return Math.min(1, Math.max(0, raw));
 }
+
+export type PowerReserveDetail = {
+  reserve01: number;
+  reservePercent: number;
+  label: string;
+  explanation: string;
+};
+
+const POWER_RESERVE_LABEL = "Power reserve";
+const AUTOMATIC_RESERVE_EXPLANATION =
+  "Automatic watches store reserve as they run; a fuller reserve boosts enjoyment while you wait.";
+const MANUAL_RESERVE_EXPLANATION = "Manual watches wind via the crown and don’t rely on a reserve.";
+
+export function getPowerReserveDetail(state: GameState, itemId: WatchItemId): PowerReserveDetail {
+  const reserve01 = getPowerReserveForItem(state, itemId);
+  const reservePercent = Math.round(reserve01 * 100);
+  const movement = getWatchMovement(itemId);
+  const explanation =
+    movement === "automatic" ? AUTOMATIC_RESERVE_EXPLANATION : MANUAL_RESERVE_EXPLANATION;
+
+  return {
+    reserve01,
+    reservePercent,
+    label: POWER_RESERVE_LABEL,
+    explanation,
+  };
+}
