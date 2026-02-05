@@ -66,7 +66,7 @@ Each task was committed atomically:
 1. **Task 1: Add selector helper for reserve readout detail** - `75af038` (feat)
 2. **Task 2: Add PowerReserveHint component and wire into Catalog UI** - `4801f06` (feat)
 
-**Plan metadata:** pending
+**Plan metadata:** 32bd1be (docs: complete POWER-01 power reserve clarity plan)
 
 ## Files Created/Modified
 - `src/game/selectors/interactions.ts` - Publishes labels/explanations for the power reserve plus the raw percent so UI and tests share the same view
