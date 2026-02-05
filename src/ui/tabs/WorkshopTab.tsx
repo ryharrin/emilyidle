@@ -7,6 +7,7 @@ import { HELP_SECTION_IDS } from "../help/helpContent";
 import { WorkshopCraftingSection } from "./WorkshopCraftingSection";
 import { buildWorkshopPrestigeSummary } from "../prestigeSummary";
 import { BlueprintCostDetail } from "../components/BlueprintCostDetail";
+import { AnchoredTooltip, type AnchoredTooltipContent } from "../components/AnchoredTooltip";
 import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 
 import {
@@ -16,6 +17,7 @@ import {
   getWorkshopBlueprintCostDetail,
   getWorkshopNextBlueprintProgress,
   getWorkshopPrestigeThresholdCents,
+  getPrestigeLegacyMultiplierBreakdown,
   prestigeWorkshop,
 } from "../../game/state";
 import { formatMoneyFromCents } from "../../game/format";
@@ -82,6 +84,28 @@ export function WorkshopTab({
   const nextBlueprintProgress = getWorkshopNextBlueprintProgress(state, Date.now());
   const blueprintCostDetail = getWorkshopBlueprintCostDetail(state);
   const blueprintTooltip = buildBlueprintTooltip(state, workshopPrestigeGain);
+  const atelierBonus = getPrestigeLegacyMultiplierBreakdown(state);
+  const [bonusTooltipOpen, setBonusTooltipOpen] = React.useState(false);
+  const bonusAnchorRef = React.useRef<HTMLButtonElement | null>(null);
+  const showBonusTooltip = React.useCallback(() => setBonusTooltipOpen(true), []);
+  const hideBonusTooltip = React.useCallback(() => setBonusTooltipOpen(false), []);
+  const bonusLines = React.useMemo(
+    () =>
+      atelierBonus.components.map((component) => {
+        const percent = Math.round((component.value - 1) * 100);
+        const percentLabel = percent >= 0 ? `+${percent}%` : `${percent}%`;
+        return `${component.label}: ${percentLabel}`;
+      }),
+    [atelierBonus],
+  );
+  const bonusTooltipContent = React.useMemo<AnchoredTooltipContent>(
+    () => ({
+      title: `Atelier bonus ×${atelierBonus.multiplier01.toFixed(2)}`,
+      description: bonusLines.join(" · "),
+      meta: atelierBonus.capApplied ? "Capped at 10×" : undefined,
+    }),
+    [atelierBonus, bonusLines],
+  );
   const etaLabel =
     nextBlueprintProgress.etaSeconds === null
       ? "ETA unavailable"
@@ -138,6 +162,29 @@ export function WorkshopTab({
                     tooltipContent={blueprintTooltip}
                     testId="workshop-blueprint-cost"
                   />
+                  <div className="workshop-bonus" data-testid="workshop-bonus">
+                    <span className="workshop-label">Atelier bonus</span>
+                    <button
+                      type="button"
+                      ref={bonusAnchorRef}
+                      className="secondary small workshop-bonus-button"
+                      onMouseEnter={showBonusTooltip}
+                      onMouseLeave={hideBonusTooltip}
+                      onFocus={showBonusTooltip}
+                      onBlur={hideBonusTooltip}
+                      aria-haspopup="true"
+                      aria-expanded={bonusTooltipOpen}
+                    >
+                      ×{atelierBonus.multiplier01.toFixed(2)}
+                    </button>
+                    <AnchoredTooltip
+                      open={bonusTooltipOpen}
+                      anchorEl={bonusAnchorRef.current}
+                      content={bonusTooltipContent}
+                      preferredPlacement="bottom"
+                      testId="workshop-bonus-tooltip"
+                    />
+                  </div>
                   <div className="inline-icon-button">
                     <ExplainButton
                       sectionId={HELP_SECTION_IDS.atelierReset}
