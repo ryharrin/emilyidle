@@ -1,5 +1,23 @@
 # Project Overview
 
+## Current State
+
+- v4.0 Watch Interactions & Catalog Polish is shipped: tier badges and catalog metadata share a single source of truth, per-watch stats are visible with sticky filters, catalog variety spans low/mid/lux tiers, and mobile navigation and help modal flows are regression guarded (WebKit focus trap + sticky tab bar + tier badge CSS).
+- Mobile regression coverage now includes both Pixel 5 (Chrome) and iPhone 12 (WebKit) viewports, ensuring touch targets, modal focus, and keyboard flows remain reliable.
+- Project focus now shifts to planning v4.1: define new goals, gather requirements, and sequence the next set of phases.
+
+## Next Milestone Goals
+
+- Start v4.1 planning: identify the next wave of interactions/catalyst features and their success criteria.
+- Document new requirements (WATCH-07+, CAT-11+, MOBILE-10+) and map them to phases before writing plans.
+- Keep the mobile polish baseline stable while the new milestone ramps up (touch targets, help content, and scheduler tests remain high priority).
+
+<details>
+<summary>Archived project context (pre-v4.1 milestone)</summary>
+
+```markdown
+# Project Overview
+
 Emily Idle is a browser-based idle/incremental game themed around luxury watch collecting. It is built with Vite + React + TypeScript and uses Vitest for unit tests and Playwright for E2E coverage.
 
 ## Goals
@@ -118,3 +136,6 @@ Shipped v3.2 on 2026-02-02:
 ---
 
 *Last updated: 2026-02-04 — Phase 45 complete, preparing Phase 46 planning*
+
+```
+</details>

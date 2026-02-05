@@ -1,99 +1,14 @@
 # Roadmap: Emily Idle
 
-## Overview
+## Completed Milestones
 
-Milestone v4.0 deepens watch interactions with new/expanded mini-games, surfaces per-watch stats for clearer decisions, expands catalog variety across progression tiers, and completes a mobile-first UI polish pass.
+- ✅ **v4.0 Watch Interactions & Catalog Polish** — Phases 42-47 (shipped 2026-02-05)  
+  [Milestone archive](milestones/v4.0-ROADMAP.md)
 
-## 📋 Milestone v4.0: Watch Interactions & Catalog Polish (Shipped)
+## Upcoming Milestone (Planning)
 
-**Milestone Goal:** Enhanced watch mini-games with visual polish, catalog expansion with more variety, and improved mobile UX.
-
-## Phases
-
-**Phase Numbering:** Continuous across milestones; v4.0 starts at Phase 42 (v3.2 ended at Phase 41).
-
-- [x] **Phase 42: Winding Refresh** - Winding feels more interactive and visibly animated.
-- [x] **Phase 43: New Watch Mini-Games** - Add set-time/date and strap-change interactions.
-- [x] **Phase 44: Interaction Feedback & Rewards** - Consistent outcomes and tier-scaled rewards across mini-games.
-- [x] **Phase 45: Per-Watch Stats Surfaces** - Show individual watch enjoyment/cash rates and equipped contribution.
-- [x] **Phase 46: Catalog Expansion (Tiered Variety)** - Add new watches across low/mid/lux tiers with complete assets and tier-appropriate stats.
-
-## Phase Details
-
-### Phase 42: Winding Refresh
-
-**Goal**: Players can wind watches with richer control and a visible winding animation.
-**Depends on**: Phase 41
-**Requirements**: WATCH-01
-**Success Criteria** (what must be TRUE):
-  1. Player can start the winding interaction and sees a winding animation that responds to their input.
-  2. Player controls how much they wind by choosing when to stop (timing/amount), and the UI clearly reflects progress plus perceived pace/tension feedback while winding.
-**Plans**: 3 plans
-
-Plans:
-- [x] 42-01-PLAN.md — Implement Phase 42 winding bands + crown/tension animation + a11y/mobile behavior
-- [x] 42-02-PLAN.md — Add regression tests for band boundaries and re-verify unit/e2e winding flow
-- [x] 42-03-PLAN.md — Relax over-wind penalties, add new warning copy, and guard regression coverage
-
-### Phase 43: New Watch Mini-Games
-
-**Goal**: Players can perform additional watch interactions (time/date/strap) when their watch supports them.
-**Depends on**: Phase 42
-**Requirements**: WATCH-02, WATCH-03, WATCH-04
-**Success Criteria** (what must be TRUE):
-  1. Player can play a set-time mini-game on quartz watches using interactive controls.
-  2. Player can play a set-date mini-game on watches where date-setting is appropriate.
-  3. Player can play a strap-changing mini-game and receives clear visual feedback during the interaction.
-**Plans**: 1 plan
-
-Plans:
-- [x] 43-01-PLAN.md — Make the quartz time-setting mini-game more lenient while keeping the tiered rewards and messaging intact
-
-### Phase 44: Interaction Feedback & Rewards
-
-**Goal**: All mini-games communicate success/failure clearly and reward outcomes scale with watch tier and precision.
-**Depends on**: Phase 43
-**Requirements**: WATCH-05, WATCH-06
-**Success Criteria** (what must be TRUE):
-  1. Every interaction mini-game ends in an unambiguous success or failure state with visible feedback.
-  2. Player can see the reward result for an interaction (what they got and why), including on failure.
-  3. Higher-tier watches and more precise play produce observably higher rewards than lower-tier or sloppy play.
-**Plans**: 1 plan
-
-Plans:
-- [x] 44-01-PLAN.md — Align outcome visibility + reward feedback across winding, quartz, and automatic mini-games
-
-### Phase 45: Per-Watch Stats Surfaces
-
-**Goal**: Players can compare watches by per-watch rates and understand the equipped watch's contribution.
-**Depends on**: Phase 44
-**Requirements**: STATS-01, STATS-02, STATS-03, STATS-04, STATS-05
-**Success Criteria** (what must be TRUE):
-  1. Catalog shows each watch's enjoyment rate and cash rate without requiring purchase.
-  2. Rates vary meaningfully between watches (players can find differences within and across tiers).
-  3. Collection view shows an equipped watch contribution breakdown so players can tell what it adds.
-**Plans**: 3 plans
-
-Plans:
-- [x] 45-01-PLAN.md — Create per-watch stats selectors (rows + equipped contribution) with unit tests
-- [x] 45-02-PLAN.md — Add per-watch stats table UI in Catalog + equipped contribution call-out in Collection
-- [x] 45-03-PLAN.md — Add regression coverage (Vitest + Playwright) for sorting, sticky header, and stability
-
-### Phase 46: Catalog Expansion (Tiered Variety)
-
-**Goal**: Players have a broader catalog across early/mid/late progression with complete assets and tier-appropriate stats.
-**Depends on**: Phase 45
-**Requirements**: CAT-05, CAT-06, CAT-07, CAT-08, CAT-09, CAT-10
-**Success Criteria** (what must be TRUE):
-  1. Player can browse and discover new low-end, mid-tier, and luxury watches in the catalog.
-  2. Catalog variety spans affordable to luxury price points (no single-tier monotony).
-  3. New watches display correct images and metadata, and their rates feel appropriate for their tier.
-**Plans**: 3 plans
-
-Plans:
-- [x] 46-01-PLAN.md — Expand watch model data pool with low/mid/lux entries, unique enjoyment/cash rates, and matching catalog metadata
-- [x] 46-02-PLAN.md — Surface new tiers in Catalog with grouped discovery lanes, tier badges, and sticky filters for exploration
-- [x] 46-03-PLAN.md — Build regression coverage that verifies expanded catalog, per-tier rate summaries, and asset visibility
+- 🚧 **v4.1 Next Wave** — Phase 48+ (goals TBD)
+  - Deepen interactions and polish new catalog helpers; requirements to be defined
 
 ## Progress
 
@@ -104,4 +19,5 @@ Plans:
 | 44. Interaction Feedback & Rewards | v4.0 | 1/1 | Complete | 44-01-SUMMARY.md |
 | 45. Per-Watch Stats Surfaces | v4.0 | 3/3 | Complete | 45-03-SUMMARY.md |
 | 46. Catalog Expansion (Tiered Variety) | v4.0 | 3/3 | Complete | 46-03-SUMMARY.md |
-
+| 47. Mobile & UI Polish | v4.0 | 5/5 | Complete | 47-UAT.md |
+| 48. ??? | v4.1 | 0/0 | Not started | - |

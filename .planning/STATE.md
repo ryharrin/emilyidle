@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-04)
+See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** v4.0 Phase 47 (Mobile & UI Polish)
+**Current focus:** v4.1 planning (watch interaction + catalog polish follow-up)
 
 ## Current Position
 
-Phase: 47 of 6 (v4.0 Phases 42-47)
-Plan: 47-05 complete
-Status: Phase 47 (Mobile & UI Polish) help modal focus trap stabilized for WebKit with search Tab cycling kept inside the dialog
-Last activity: 2026-02-05 — Completed 47-05 (Help modal Tab cycle on WebKit)
-Progress: Phase 46 complete (3/3), Phase 47 plans complete (5/5)
-Next Phase: Phase 47 QA/Validation (mobile regression verification)
+Phase: 48 of 6 (next milestone planning)
+Plan: Not started
+Status: Project is ready to plan the v4.1 milestone
+Last activity: 2026-02-05 — Completed v4.0 (mobile & UI polish)
+Progress: Phase 47 complete (5/5 plans)
+Next Phase: Phase 48 (v4.1 planning)
 
 ## Accumulated Context
 
@@ -45,20 +45,15 @@ Next Phase: Phase 47 QA/Validation (mobile regression verification)
 | 42 | Announce the legend with visually hidden copy and add a hidden focus sentinel | Enriching the legend shifted tab order, so the sentinel keeps focus trapped without exposing extra text nodes |
 | 42 | Normalize hook telemetry output so CSS variables and tests consume the same progress/tension/velocity numbers | Keeps animation math centralized and avoids divergence between UI and tests |
 | 42 | Target the stop control via `data-testid`/aria label instead of role-based queries | Prevents selector collisions with the track (also a button) when locking down automation |
-| 42 | Raise the soft penalty margin and treat 98.5% as the strict over-wind cutoff | Gives players more room before the penalty while keeping the warning bound to the new threshold |
-| 42 | Tie the red glow hint to a data attribute driven by the penalty flag | Keeps CSS and copy aligned without re-running the math twice |
 | 43 | Widened the Good window while keeping Perfect reserved for the tightest hits to reduce starter misses | Broadens the forgiving sweet spot without diluting the prestige of perfect timing |
 | 43 | Exported the quartz outcome helpers so regression tests consume the same deterministic math as the modal | Prevents divergent thresholds between UI and tests and lets future plans reuse the helpers |
 | 44 | Align outcome visibility + reward feedback across winding, quartz, and automatic mini-games | Ensures every interaction mini-game emits clear tiered messaging tied to precision while keeping reduced-motion/touch contracts intact |
 | 44 | Centralized helper functions now own live-region + reward copy for each modal | Keeps UI and regression tests synchronized with a single source of truth |
 | 44 | Exposed `data-live-state` / `data-outcome-state` attributes across the modals | Lets automation/tests detect running vs resolved states without relying on copy text |
 | 44 | Added tier badges, glows, and multiplier-aware reward copy for Miss/Good/Perfect | Keeps styling, messaging, and econometric math aligned across UI and regressions |
-| 44 | Miss/Good/Perfect tiers explicitly mention their 1×/2× reward math while `data-tier` styling mirrors the earned tier | Reinforces precision and keeps styling consistent across modals |
 | 45 | Rendered per-watch enjoyment/cash summaries with `formatRateFromCentsPerSec` | Keeps UI strings deterministic for the new regression test while preserving the career cash label semantics |
 | 45 | Kept per-watch sort/filter toggles in-memory instead of persisting them | Avoids touching guardrail localStorage keys so existing schema contracts stay valid |
 | 45 | Keep cash rows tied to the therapist career salary and document the explanation string for UI/test consumers | Prevents inventing per-watch cash allocations while the view model honors the career salary anchor |
-| 45 | Derive the equipped watch contribution by comparing `getEnjoymentRateCentsPerSec` with and without the worn watch | Reuses the existing enjoyment math instead of duplicating multipliers so the call-out stays low-friction |
-| 45 | Sticky filter controls stay visible over long stats lists and the Collection call-out reuses selector math for the enjoyment delta | Keeps the new surface navigable on mobile while the call-out simply explains the delta produced by the selectors |
 | 46 | Used CSS Scroll Snap for tab strip (native browser feature, no JS snapping) | Avoids JS snap bugs and keeps implementation lightweight |
 | 46 | Kept sticky tab bar in separate DOM layer above horizontally-transformed carousel | Preserves `position: sticky` semantics and prevents CSS transform conflicts |
 | 46 | Reused existing modal patterns (scroll lock, focus trap, reduced-motion) from WindingMiniGameModal | Standardizes mobile interaction patterns without introducing new modal framework |
@@ -68,12 +63,8 @@ Next Phase: Phase 47 QA/Validation (mobile regression verification)
 | 47 | Collection summary links the tier badges to the help section so Starter, Mid-tier, and Luxury meanings stay explained | Aligns the Collection copy with catalog tooltips while surfacing counts for each variety |
 | 47 | Reinforced mobile regression guardrails with helper-based Playwright assertions | Keeps scroll-snap, sticky tabs, and help modal flows uniform across both iPhone 12 and Pixel 5 viewport tests |
 | 47 | Centralized Playwright mobile projects around Pixel 5 + iPhone 12 | Guarantees Chrome and WebKit mobile runs are both exercised every suite instead of being optional |
-| 47 | Isolated the HelpModal within a new `#app-shell` wrapper so the shell can be inerted while the dialog stays focusable and restores the prior focus target on close | Keeps WebKit keyboard navigation consistent and lets the previously focused element regain focus immediately after the modal closes |
-| 47 | Intercepted Tab/Shift+Tab between the HelpModal search input and close button | Keeps focus cycling inside HelpModal on WebKit without touching the modal shell |
-
-### Blockers / Concerns Carried Forward
-
-- None.
+| 47 | Isolated `HelpModal` inside `#app-shell` so the background can be inerted and focus restored cleanly | Enables the WebKit focus trap fix without leaking focus to background elements |
+| 47 | Intercepted Tab/Shift+Tab between the help search input and close button for WebKit accessibility | Keeps iOS Safari keyboard navigation inside the modal without relying on native `aria-modal`
 
 ## Session Continuity
 

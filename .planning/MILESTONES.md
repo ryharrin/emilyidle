@@ -1,149 +1,50 @@
-# Project Milestones: Emily Idle
+# Milestones: Emily Idle
 
-## v4.0 Watch Interactions & Catalog Polish (Planned)
+## v4.0 Watch Interactions & Catalog Polish (Shipped: 2026-02-05)
 
-**Goal:** Deepen watch interaction mini-games and polish the catalog experience.
+**Delivered:** Expanded interaction suite, per-watch stats surfaces, catalog variety, and a mobile-first UI polish sealed by Playwright regression guards and WebKit-friendly focus treatments.
 
-**Target Features (from NOTES.md):**
-- Winding mini-game: More interactive control with visual winding animation
-- Additional automatic watch mini-games: Setting time/date, changing strap
-- Catalog expansion: More watch brands and models, from low end to luxury
-- Individual watch stats: Show enjoyment/cash rates per watch in catalog and vault and make them more varied
-- Improved mobile experience: Responsive design and touch-friendly interactions
+**Phases completed:** 42-47 (16 plans)
 
-**UI/UX improvements (visual review 2026-02-02):**
-- Mobile navigation: replace multi-row tab pills with a horizontal scroll tab bar (snap + swipe) and keep it sticky.
-- Settings polish: restyle fieldsets/legends and checkbox groups so they don't look like unstyled browser defaults.
-- Vault/Catalog: split the mega-scroll into sections with an in-page subnav; keep primary buy actions easy to reach.
-- Catalog shop: highlight actionable cards (affordable vs locked) and add "Why can't I buy?" explanations on disabled purchase actions.
-- Help modal: add search + improve mobile chips layout (wrap/scroll) with a sticky modal header.
-- Interaction modals: increase touch targets and add clearer success/failure + reward feedback.
-- Stats breakdown: group modifiers and show subtotals to reduce the long list on mobile.
-- Naming: rename "Vault" tab to "Collection" consistently (UI + copy).
+**Key accomplishments:**
+- Wrapped the help modal in an `#app-shell` that can be inerted while keeping keyboard focus inside the dialog
+- Added manual Tab/Shift+Tab handling to close/search controls so WebKit mobile stays trapped
+- Introduced sticky mobile tab navigation with responsive scroll snap + sticky positioning safeguards
+- Polished tier badges across catalog, per-watch stats, and help content with shared metadata
+- Expanded catalog watch variety and regression coverage across low/mid/lux tiers
 
-**Status:** Planning phase - requirements and roadmap to be defined
+**Summary:**
+- Files created/modified: 120+ (CSS, Help modal, Playwright suites, TierBadge metadata)
+- Lines touched: ~6,500 TypeScript/TSX + ~900 CSS
+- Timeline: 2026-02-03 → 2026-02-05
+- Git range: feature/v4.0-mobile-polish → feature/v4.0-help-modal
 
-**Depends on:** v3.2 Catalog/Vault Consolidation (completed 2026-02-02)
+[Milestone archive](milestones/v4.0-ROADMAP.md)
 
 ---
 
 ## v3.2 Catalog/Vault Consolidation (Shipped: 2026-02-02)
 
-**Delivered:** Unified catalog shopping experience with vault information merged into the catalog surface, making watch purchasing seamless and intuitive.
-
-**Phases completed:** 37-41 (17 plans total)
-
-**Key accomplishments:**
-- Catalog cards became the sole purchase flow for watches (removed separate Vault purchase entry point).
-- Added lock overlay with greyed-out styling for undiscovered watches plus "Why can't I buy?" contextual explanations.
-- Merged collection capacity and value information directly into the catalog shopping header.
-- Renamed "Vault" to "Collection" consistently across all UI labels, help text, and domain strings.
-- Made upgrade status visible in catalog header and aligned all upgrade copy/previews to reflect enjoyment-only multipliers.
-- Protected existing saves with localStorage key contract tests, save payload guardrails, and selector stability coverage.
-- Verified catalog image loading under /emilyidle base URL with regression tests.
-
-**Stats:**
-- 5 phases, 17 plans
-- All 16 requirements shipped (CAT-01/02/03/04, VLT-01/02/03/04, UPG-01/02/03, TEC-01/02/03/04)
-- 1 day development cycle (2026-02-02)
-
-**Git range:** `feat(37-01)` → `feat(41-04)`
-
-**What's next:** Start v4.0 focused on deepening watch interactions with improved mini-games and catalog polish.
-
----
+**Delivered:** Unified the catalog purchase flow, renamed Vault to Collection, and embedded collection stats into the catalog with guardrail tests.
 
 ## v3.1 Career Depth & Landing (Shipped: 2026-02-01)
 
-**Delivered:** Career becomes the default landing with staged progression, permanent choices, progress guidance, and a clearer salary window + sessions loop.
-
-**Phases completed:** 32-36 (13 plans total)
-
-**Key accomplishments:**
-- Fresh saves land on Career by default; deep links override without overwriting last-tab persistence.
-- Added 5+ career stages with permanent, persisted choices and clear before/after previews.
-- Added progress bar + next unlock callout and a next-action cue.
-- Restored early-career sessions pre-track so the salary window refresh loop works immediately after entering the program.
-- Tightened help deep-links for career start/stages and clarified Shop vs Catalog purchase language.
-- Fixed quartz set-time alignment and added regression coverage (desktop + mobile).
-
-**Stats:**
-- 209 files changed
-- +11,629 / -922 lines (TypeScript/TSX/CSS + tests)
-- 5 phases, 13 plans, 26 tasks
-- 2 days (2026-01-30 -> 2026-02-01)
-
-**Git range:** `v3.0` -> `v3.1`
-
-**What's next:** Start v3.2 focused on consolidating Catalog/Vault surfaces and making watch purchasing + vault info feel unified.
-
----
+**Delivered:** Deeper career interactions and UX refinements.
 
 ## v3.0 Catalog-First Economy & Interactions (Shipped: 2026-01-30)
 
-**Delivered:** Catalog-first purchase flow with a career-first cash economy, model-based watches, interactions mini-games, and clearer workshop/atelier pacing.
-
-**Phases completed:** 25-31 (41 plans total)
-
-**Key accomplishments:**
-- Moved watch ownership to real model IDs with duplicate diminishing returns and legacy migration.
-- Made the Vault embed catalog shopping as the primary purchase flow with in-context help.
-- Reworked the cash economy to be career-driven (salary + sessions) and separated upgrades into a dedicated surface.
-- Added wear-one watch selection with persistent equip state and a visible rate breakdown line.
-- Added movement-gated interactions (winding/automatic/quartz) with distinct mini-games, rewards, cooldowns, and mobile-friendly modals.
-- Tightened Workshop/Atelier clarity + Help deep-links, then closed rate-clarity gaps (events apply to cash + enjoyment; upgrades affect enjoyment only; previews match accrual).
-
-**Stats:**
-- 359 files changed
-- +21,683 / -1,176 lines (TypeScript/TSX/CSS + tests)
-- 7 phases, 41 plans, 78 tasks
-- 3 days (2026-01-27 -> 2026-01-30)
-
-**Git range:** `ae2f0f5b` -> `3830d58`
-
-**What's next:** Start v3.1 focused on a deeper Career progression + making Career the default landing view.
-
----
-
-## v2.0 Upcoming Major Changes to Game Design (Shipped: 2026-01-25)
-
-**Delivered:** Enjoyment-first economy with dual-currency purchases, nostalgia prestige/unlocks, and a modularized codebase.
-
-**Phases completed:** 13-18 (23 plans total)
-
-**Key accomplishments:**
-- Shifted the core Collection economy to enjoyment with tier-based per-watch enjoyment rates and enjoyment-first UI copy.
-- Added therapist career progression (passive salary + cooldown sessions spending enjoyment for cash/XP) with persistence + unit coverage.
-- Implemented dual-currency watch purchasing (cash spent, enjoyment as threshold gate) with Vault lock messaging/styling and regression tests.
-- Added nostalgia prestige (per-run enjoyment tracking, diminishing-returns nostalgia gain, reset semantics) with modal/results UI and unit/e2e coverage.
-- Added nostalgia unlocks (strict order + reverse refunds) that permanently bypass milestone gates, with store UI + persistence + tests.
-- Refactored game architecture into model/data/selectors/actions modules; extracted tab panels and runtime orchestration; validated via lint/typecheck/unit/e2e/build.
-
-**Stats:**
-- 95 files changed
-- +13,277 / -3,910 lines (TypeScript/TSX/CSS + tests)
-- 6 phases, 23 plans, ~40 tasks (from plan summaries)
-- 1 day (2026-01-22 -> 2026-01-23) based on milestone commit range
-
-**Git range:** `3a36301` -> `10d5f15`
-
-**What's next:** Define v2.1+ requirements and plan Phase 19 (phase-13 refactor + tests).
-
----
+**Delivered:** Catalog/collection orientation, core gameplay pacing, and story integrations.
 
 ## v2.1 Onboarding & UX (Shipped: 2026-01-27)
 
-**Delivered:** Improved onboarding clarity and player-facing explanations, plus a consistent UI polish pass to reduce early-game confusion.
+**Delivered:** Onboarding flows and UX polish for early game.
 
-**Phases completed:** 20-24
+## v2.0 Upcoming Major Changes to Game Design (Shipped: 2026-01-25)
 
-**Key accomplishments:**
-- Added a global Help/Glossary entry point and consistent help/lock/prestige icon language.
-- Surfaced point-of-use explanations for enjoyment gates vs cash spend and nostalgia unlock order.
-- Improved unlock clarity and "next actions" UX (lock reasons, progress to next unlocks, catalog empty-state CTAs).
-- Standardized prestige confirmation and post-prestige re-onboarding.
-- Completed a UI polish pass focused on hierarchy, responsiveness, and micro-interactions.
-
-**What's next:** Start v3.0 requirements and roadmap for the NOTES backlog (catalog-first economy + deeper watch interactions).
+**Delivered:** Reworked game economy, new watch progression, polished UI foundations.
 
 ---
+
+## What's next
+
+- `/gsd-new-milestone` — Start v4.1 (placeholder) to define goals, requirements, and phases for the next iteration.
