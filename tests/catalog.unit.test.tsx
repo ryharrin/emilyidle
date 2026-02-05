@@ -4,7 +4,13 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
 import App from "../src/App";
-import { createInitialState, getSetBonuses, getWatchModels } from "../src/game/state";
+import {
+  AUTOMATIC_WINDING_REASON,
+  createInitialState,
+  getInteractionMovementGate,
+  getSetBonuses,
+  getWatchModels,
+} from "../src/game/state";
 import { getTierBadgeByCategory, type TierBadgeCategory } from "../src/game/tierBadges";
 
 function getModelIdForTier(tierId: string): string {
@@ -14,6 +20,20 @@ function getModelIdForTier(tierId: string): string {
   }
   return model.id;
 }
+
+describe("interaction movement gating", () => {
+  it("blocks automatic watches with a reason", () => {
+    expect(getInteractionMovementGate("classic")).toEqual({
+      available: false,
+      reason: AUTOMATIC_WINDING_REASON,
+    });
+  });
+
+  it("allows quartz and hand-wind watches", () => {
+    expect(getInteractionMovementGate("starter")).toEqual({ available: true });
+    expect(getInteractionMovementGate("chronograph")).toEqual({ available: true });
+  });
+});
 
 describe("primary navigation tabs", () => {
   beforeEach(() => {
