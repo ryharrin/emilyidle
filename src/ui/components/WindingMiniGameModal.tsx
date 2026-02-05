@@ -308,6 +308,7 @@ export function WindingMiniGameModal({
     softWarningActive,
   });
   const outcomeState = result ? "resolved" : "running";
+  const crownGlowTier = result ? result.tier : getOutcomeTierFromBand(band);
   const trackStyle = {
     ["--winding-progress" as "--winding-progress"]: progress01,
     ["--winding-velocity" as "--winding-velocity"]: velocityPulse,
@@ -344,15 +345,22 @@ export function WindingMiniGameModal({
 
         <div className="winding-modal-body" data-outcome-state={outcomeState}>
           <div className="winding-status-grid">
-            <WindingCrown
-              angleDeg={crownAngleDeg}
-              tension01={tension01}
-              band={band}
-              phase={phase}
-              prefersReducedMotion={prefersReducedMotion}
-              velocity01={velocity01}
-              progress01={progress01}
-            />
+            <div
+              className="winding-crown-shell"
+              data-outcome-state={outcomeState}
+              data-tier={crownGlowTier}
+              data-overwound={isOverWound ? "true" : "false"}
+            >
+              <WindingCrown
+                angleDeg={crownAngleDeg}
+                tension01={tension01}
+                band={band}
+                phase={phase}
+                prefersReducedMotion={prefersReducedMotion}
+                velocity01={velocity01}
+                progress01={progress01}
+              />
+            </div>
             <div className="winding-progress-readout">
               {result ? (
                 <>

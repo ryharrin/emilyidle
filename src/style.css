@@ -719,6 +719,71 @@ button:not(:disabled):active {
     brightness(calc(1 + var(--winding-velocity, 0) * 0.15));
 }
 
+.winding-crown-shell {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.winding-crown-shell::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease,
+    box-shadow 220ms ease;
+  z-index: 0;
+}
+
+.winding-crown-shell[data-outcome-state="running"]::after {
+  opacity: 0.3;
+  transform: scale(0.94);
+}
+
+.winding-crown-shell[data-outcome-state="resolved"]::after {
+  opacity: 0.9;
+  transform: scale(1);
+}
+
+.winding-crown-shell[data-tier="miss"]::after {
+  box-shadow:
+    0 0 18px rgba(255, 255, 255, 0.35),
+    0 0 30px rgba(255, 255, 255, 0.15);
+}
+
+.winding-crown-shell[data-tier="good"]::after {
+  box-shadow:
+    0 0 26px rgba(232, 198, 147, 0.55),
+    0 0 38px rgba(232, 198, 147, 0.25);
+}
+
+.winding-crown-shell[data-tier="perfect"]::after {
+  box-shadow:
+    0 0 26px rgba(72, 175, 255, 0.6),
+    0 0 44px rgba(72, 175, 255, 0.25);
+}
+
+.winding-crown-shell[data-overwound="true"]::after {
+  box-shadow:
+    0 0 24px rgba(255, 118, 118, 0.9),
+    0 0 48px rgba(255, 118, 118, 0.5);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.winding-crown-shell .winding-crown {
+  position: relative;
+  z-index: 1;
+}
+
 .winding-crown-gauge {
   position: absolute;
   inset: 0;
@@ -858,6 +923,7 @@ button:not(:disabled):active {
   .winding-gauge-progress,
   .winding-gauge-spring,
   .winding-gauge-penalty,
+  .winding-crown-shell::after,
   .winding-track::before,
   .winding-track::after,
   .winding-track,
