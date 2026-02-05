@@ -24,6 +24,7 @@ import {
   dismantleWatchModel,
   getCraftingPartsPerWatch,
   getInteractionCooldownRemainingMs,
+  getInteractionMovementGate,
   getMilestoneUnlockProgressDetail,
   getNextDuplicateRewardMultiplier,
   getPerWatchStatsRows,
@@ -336,6 +337,8 @@ export function CatalogPurchasePanel({
     const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
     const isHighlighted = purchaseHighlights[entry.id];
 
+    const movementGate = getInteractionMovementGate(tierId);
+    const movementReason = ownedCount > 0 ? (movementGate.reason ?? null) : null;
     const interactionLabel =
       tierItem.movement === "manual"
         ? "Wind crown"
@@ -346,12 +349,13 @@ export function CatalogPurchasePanel({
       typeof nowMs === "number" ? getInteractionCooldownRemainingMs(state, tierId, nowMs) : 0;
     const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
     const interactionHint =
-      ownedCount <= 0
+      movementReason ??
+      (ownedCount <= 0
         ? "Own one to interact"
         : cooldownSeconds > 0
           ? `Cooldown ${cooldownSeconds}s`
-          : null;
-    const canInteract = interactionHint === null;
+          : null);
+    const canInteract = movementGate.available && interactionHint === null;
     const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
 
     const isWorn = state.wornWatchId === entry.id;
@@ -485,6 +489,9 @@ export function CatalogPurchasePanel({
                 >
                   {interactionLabel}
                 </button>
+              )}
+              {canShowInteract && ownedCount > 0 && interactionHint && (
+                <span className="muted catalog-interaction-hint">{interactionHint}</span>
               )}
               {canShowInteract && (
                 <ExplainButton
