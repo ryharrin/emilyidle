@@ -1,4 +1,32 @@
-import type { GameState, WatchItemId } from "../model/types";
+import { WATCH_ITEMS } from "../data/items";
+import type { GameState, WatchItemId, WatchMovement } from "../model/types";
+
+const WATCH_ITEM_MOVEMENTS = new Map<WatchItemId, WatchMovement>(
+  WATCH_ITEMS.map((item) => [item.id, item.movement]),
+);
+
+export const AUTOMATIC_WINDING_REASON = "Automatic watches don’t wind by crown drag";
+
+function getWatchMovement(itemId: WatchItemId): WatchMovement {
+  const movement = WATCH_ITEM_MOVEMENTS.get(itemId);
+  if (!movement) {
+    throw new Error(`Unknown watch item: ${itemId}`);
+  }
+  return movement;
+}
+
+export type InteractionMovementGate = {
+  available: boolean;
+  reason?: string;
+};
+
+export function getInteractionMovementGate(itemId: WatchItemId): InteractionMovementGate {
+  if (getWatchMovement(itemId) === "automatic") {
+    return { available: false, reason: AUTOMATIC_WINDING_REASON };
+  }
+
+  return { available: true };
+}
 
 function getOwnedItemCount(state: GameState, itemId: WatchItemId): number {
   const raw = state.items[itemId];
