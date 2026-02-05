@@ -11,6 +11,7 @@ import { getCatalogCollectionContext } from "../catalog/collectionContext";
 import { getCatalogUpgradeContext } from "../catalog/upgradeContext";
 import { PerWatchStatsTable } from "../components/PerWatchStatsTable";
 import { TierBadge } from "../components/TierBadge";
+import { PowerReserveHint } from "../components/PowerReserveHint";
 
 import { formatMoneyFromCents } from "../../game/format";
 import {
@@ -28,7 +29,7 @@ import {
   getMilestoneUnlockProgressDetail,
   getNextDuplicateRewardMultiplier,
   getPerWatchStatsRows,
-  getPowerReserveForItem,
+  getPowerReserveDetail,
   getWatchItems,
   getWatchModelOwnedCount,
   getWatchModelPurchaseGate,
@@ -363,7 +364,7 @@ export function CatalogPurchasePanel({
     const canDismantle =
       atelierUnlocked && modelOwned > 1 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
     const showDismantle = (craftingPartsPerWatch[tierId] ?? 0) > 0;
-    const powerReservePercent = Math.round(getPowerReserveForItem(state, tierId) * 100);
+    const powerReserveDetail = getPowerReserveDetail(state, tierId);
     return (
       <article
         key={entry.id}
@@ -439,7 +440,10 @@ export function CatalogPurchasePanel({
             </div>
           )}
           {tierItem.movement === "automatic" && ownedCount > 0 && (
-            <p className="muted">Power reserve: {powerReservePercent}%</p>
+            <PowerReserveHint
+              detail={powerReserveDetail}
+              testId={`power-reserve-hint-${entry.id}`}
+            />
           )}
           {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
             <p className="muted">Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts</p>
