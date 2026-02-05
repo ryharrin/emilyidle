@@ -176,4 +176,36 @@ test.describe("Interaction modals", () => {
       await expect(quartzModal).toHaveCount(0);
     }
   });
+
+  test("shows the cooldown ring when a session is mid-cooldown", async ({ page }) => {
+    const nowMs = Date.now();
+    const sessionState = buildSeededState();
+    sessionState.enjoymentCents = Math.max(sessionState.enjoymentCents, 200_000);
+    sessionState.therapistCareer = {
+      ...sessionState.therapistCareer,
+      careerStartId: "phd-program" as const,
+      activeTrackId: "private-practice" as const,
+      nextAvailableAtMs: nowMs + 30_000,
+      freeSessionAvailable: false,
+      sessionPremiumCount: 1,
+      lastSessionAtMs: nowMs - 1_000,
+    };
+
+    await page.addInitScript(
+      ({ seededState, nowMs }) => {
+        const payload = {
+          version: 2,
+          savedAt: new Date(nowMs).toISOString(),
+          lastSimulatedAtMs: nowMs,
+          state: seededState,
+        };
+        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+      },
+      { seededState: sessionState, nowMs },
+    );
+
+    await page.goto("/");
+    await page.getByRole("tab", { name: "Career" }).click();
+    await expect(page.getByTestId("career-session-cooldown-ring")).toBeVisible();
+  });
 });

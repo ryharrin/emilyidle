@@ -13,6 +13,7 @@ import {
 import type { GameState } from "../../../game/state";
 import { CareerProgressCard } from "../../components/CareerProgressCard";
 import { CareerNextActionCard } from "../../components/CareerNextActionCard";
+import { CooldownRing } from "../../components/CooldownRing";
 import { CareerStageChoiceSummary } from "../../components/CareerStageChoiceSummary";
 import { ExplainButton } from "../../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../../help/helpContent";
@@ -25,6 +26,8 @@ type CareerPanelProps = {
   onPurchase: (nextState: GameState) => void;
 };
 
+const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+
 export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const [activeView, setActiveView] = React.useState<"stages" | "upgrades">("stages");
   const career = getTherapistCareer(state);
@@ -35,6 +38,12 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const cooldownSeconds = Math.max(0, Math.ceil((career.nextAvailableAtMs - nowMs) / 1000));
   const trackUnlocked = career.level >= TRACK_CHOICE_UNLOCK_LEVEL;
   const activeTrack = CAREER_TRACKS.find((track) => track.id === career.activeTrackId) ?? null;
+  const remainingMs = Math.max(0, career.nextAvailableAtMs - nowMs);
+  const showCooldownRing =
+    sessionPolicy.supportsSessions && remainingMs > 0 && sessionPolicy.cooldownMs > 0;
+  const cooldownProgress =
+    sessionPolicy.cooldownMs > 0 ? clamp01(1 - remainingMs / sessionPolicy.cooldownMs) : 1;
+  const cooldownLabel = `Cooldown ${Math.max(0, Math.ceil(remainingMs / 1000))}s`;
 
   const statusLabel = (() => {
     if (career.careerStartId === null) {
@@ -164,6 +173,14 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                 <span className="muted">Career progression + sessions</span>
               </div>
               <div className="card-actions">
+                {showCooldownRing && (
+                  <div
+                    className="career-session-cooldown"
+                    data-testid="career-session-cooldown-ring"
+                  >
+                    <CooldownRing progress01={cooldownProgress} label={cooldownLabel} />
+                  </div>
+                )}
                 <button
                   type="button"
                   data-testid="career-action"

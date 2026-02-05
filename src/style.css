@@ -453,6 +453,11 @@ strong {
   gap: 8px;
 }
 
+.career-session-cooldown {
+  display: inline-flex;
+  align-items: center;
+}
+
 .card-actions button {
   min-height: 44px;
   min-width: 126px;
