@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PointerEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   clamp01,
   getWindingBand,
@@ -10,11 +10,25 @@ import {
 
 type PhaseState = "running" | "stopping" | "stopped";
 
+type PointerState = {
+  pointerId: number;
+  lastX: number;
+  lastY: number;
+  lastTime: number;
+};
+
 export type UseWindingRunOptions = {
   open: boolean;
   runDurationMs: number;
   prefersReducedMotion: boolean;
   stepMsReducedMotion: number;
+};
+
+export type WindingSurfaceBind = {
+  onPointerDown: PointerEventHandler<HTMLDivElement>;
+  onPointerMove: PointerEventHandler<HTMLDivElement>;
+  onPointerUp: PointerEventHandler<HTMLDivElement>;
+  onPointerCancel: PointerEventHandler<HTMLDivElement>;
 };
 
 export type UseWindingRunResult = {
@@ -31,11 +45,15 @@ export type UseWindingRunResult = {
   velocityPercent: number;
   softPenalty: boolean;
   strictPenalty: boolean;
+  bind: WindingSurfaceBind;
 };
 
 const ANGLE_BASE_SPEED = 80;
 const ANGLE_SPEED_BOOST = 220;
 const DECEL_DURATION_MS = 420;
+const DRAG_DISTANCE_PER_MS = 0.1;
+const MIN_DRAG_DISTANCE = 1;
+const MIN_PROGRESS_STEP = 0.02;
 
 const nowMs = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
 
@@ -51,13 +69,11 @@ export function useWindingRun({
   const [progressVelocity, setProgressVelocity] = useState(0);
 
   const progressRef = useRef(0);
-  const runningRaf = useRef<number | null>(null);
-  const decelRaf = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null);
-  const lastTickRef = useRef<number | null>(null);
+  const pointerStateRef = useRef<PointerState | null>(null);
   const stopRequestedRef = useRef(false);
   const angleRef = useRef(0);
   const lastSpeedRef = useRef(ANGLE_BASE_SPEED);
+  const decelRaf = useRef<number | null>(null);
   const decelStartRef = useRef<number | null>(null);
   const decelLastTickRef = useRef<number | null>(null);
 
@@ -76,10 +92,6 @@ export function useWindingRun({
   );
 
   const cleanupAnimation = useCallback(() => {
-    if (runningRaf.current !== null) {
-      cancelAnimationFrame(runningRaf.current);
-      runningRaf.current = null;
-    }
     if (decelRaf.current !== null) {
       cancelAnimationFrame(decelRaf.current);
       decelRaf.current = null;
@@ -110,80 +122,131 @@ export function useWindingRun({
     decelRaf.current = requestAnimationFrame(tick);
   }, []);
 
-  const runningTick = useCallback(
-    (timestamp: number) => {
-      if (!open || stopRequestedRef.current) {
-        return;
+  const fullDragDistance = useMemo(
+    () => Math.max(runDurationMs * DRAG_DISTANCE_PER_MS, MIN_DRAG_DISTANCE),
+    [runDurationMs],
+  );
+
+  const quantizeProgress = useCallback(
+    (value: number) => {
+      if (!prefersReducedMotion || stepMsReducedMotion <= 0) {
+        return clamp01(value);
       }
-
-      if (startTimeRef.current === null) {
-        startTimeRef.current = timestamp;
-      }
-      if (lastTickRef.current === null) {
-        lastTickRef.current = timestamp;
-      }
-
-      const elapsed = timestamp - startTimeRef.current;
-      const delta = timestamp - lastTickRef.current;
-      lastTickRef.current = timestamp;
-      const rawProgress = clamp01(elapsed / runDurationMs);
-      const steppedProgress = prefersReducedMotion
-        ? Math.min(
-            1,
-            (Math.floor(elapsed / stepMsReducedMotion) * stepMsReducedMotion) / runDurationMs,
-          )
-        : rawProgress;
-
-      const nextProgress = Math.min(1, steppedProgress);
-      const deltaSeconds = Math.max(delta / 1000, 0.001);
-      const deltaProgress = nextProgress - progressRef.current;
-      const velocity = deltaProgress / deltaSeconds;
-      setProgressVelocity(velocity);
-      progressRef.current = nextProgress;
-      setProgress01(nextProgress);
-
-      const speed = ANGLE_BASE_SPEED + ANGLE_SPEED_BOOST * Math.min(1, nextProgress * 1.1);
-      lastSpeedRef.current = speed;
-      angleRef.current = (angleRef.current + (speed * delta) / 1000) % 360;
-      setCrownAngleDeg(angleRef.current);
-
-      if (nextProgress >= 1) {
-        stopRequestedRef.current = true;
-        setPhase("stopping");
-        startDecel(timestamp);
-        return;
-      }
+      const stepFraction = Math.max(
+        MIN_PROGRESS_STEP,
+        (stepMsReducedMotion * DRAG_DISTANCE_PER_MS) / fullDragDistance,
+      );
+      return clamp01(Math.round(value / stepFraction) * stepFraction);
     },
-    [open, runDurationMs, prefersReducedMotion, stepMsReducedMotion, startDecel],
+    [prefersReducedMotion, stepMsReducedMotion, fullDragDistance],
+  );
+
+  const handlePointerDown = useCallback<PointerEventHandler<HTMLDivElement>>(
+    (event) => {
+      if (event.button !== 0 || !open || stopRequestedRef.current) {
+        return;
+      }
+      event.preventDefault();
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      pointerStateRef.current = {
+        pointerId: event.pointerId,
+        lastX: event.clientX,
+        lastY: event.clientY,
+        lastTime: event.timeStamp,
+      };
+    },
+    [open],
+  );
+
+  const handlePointerMove = useCallback<PointerEventHandler<HTMLDivElement>>(
+    (event) => {
+      const state = pointerStateRef.current;
+      if (!state || state.pointerId !== event.pointerId || stopRequestedRef.current || !open) {
+        return;
+      }
+      const dx = event.clientX - state.lastX;
+      const dy = event.clientY - state.lastY;
+      const distance = Math.hypot(dx, dy);
+      const deltaSeconds = Math.max((event.timeStamp - state.lastTime) / 1000, 0.001);
+      if (distance <= 0) {
+        pointerStateRef.current = {
+          ...state,
+          lastX: event.clientX,
+          lastY: event.clientY,
+          lastTime: event.timeStamp,
+        };
+        setProgressVelocity(0);
+        return;
+      }
+
+      const rawProgress = progressRef.current + distance / fullDragDistance;
+      const quantized = quantizeProgress(rawProgress);
+      const nextProgress = Math.min(1, quantized);
+      const deltaProgress = nextProgress - progressRef.current;
+      const velocity = deltaProgress > 0 ? deltaProgress / deltaSeconds : 0;
+      setProgressVelocity(velocity);
+
+      if (deltaProgress > 0) {
+        progressRef.current = nextProgress;
+        setProgress01(nextProgress);
+        const speed = ANGLE_BASE_SPEED + ANGLE_SPEED_BOOST * Math.min(1, nextProgress * 1.1);
+        lastSpeedRef.current = speed;
+        angleRef.current = (angleRef.current + speed * deltaSeconds) % 360;
+        setCrownAngleDeg(angleRef.current);
+      }
+
+      pointerStateRef.current = {
+        pointerId: state.pointerId,
+        lastX: event.clientX,
+        lastY: event.clientY,
+        lastTime: event.timeStamp,
+      };
+    },
+    [fullDragDistance, open, quantizeProgress],
+  );
+
+  const releasePointer = useCallback<PointerEventHandler<HTMLDivElement>>((event) => {
+    const state = pointerStateRef.current;
+    if (!state || state.pointerId !== event.pointerId) {
+      return;
+    }
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    pointerStateRef.current = null;
+  }, []);
+
+  const bind: WindingSurfaceBind = useMemo(
+    () => ({
+      onPointerDown: handlePointerDown,
+      onPointerMove: handlePointerMove,
+      onPointerUp: releasePointer,
+      onPointerCancel: releasePointer,
+    }),
+    [handlePointerDown, handlePointerMove, releasePointer],
   );
 
   useEffect(() => {
     if (!open) {
       cleanupAnimation();
       progressRef.current = 0;
+      pointerStateRef.current = null;
       setProgress01(0);
       setCrownAngleDeg(0);
       setProgressVelocity(0);
       setPhase("stopped");
       stopRequestedRef.current = false;
-      startTimeRef.current = null;
-      lastTickRef.current = null;
+      lastSpeedRef.current = ANGLE_BASE_SPEED;
       return;
     }
 
     stopRequestedRef.current = false;
     progressRef.current = 0;
+    pointerStateRef.current = null;
     setProgress01(0);
     setCrownAngleDeg(0);
+    setProgressVelocity(0);
     setPhase("running");
-    startTimeRef.current = null;
-    lastTickRef.current = null;
-    runningRaf.current = requestAnimationFrame(runningTick);
-
-    return () => {
-      cleanupAnimation();
-    };
-  }, [open, runningTick, cleanupAnimation]);
+    lastSpeedRef.current = ANGLE_BASE_SPEED;
+  }, [cleanupAnimation, open]);
 
   useEffect(() => {
     return () => {
@@ -191,8 +254,8 @@ export function useWindingRun({
     };
   }, [cleanupAnimation]);
 
-  const stop = () => {
-    if (stopRequestedRef.current || phase !== "running") {
+  const stop = useCallback(() => {
+    if (stopRequestedRef.current) {
       return;
     }
     stopRequestedRef.current = true;
@@ -200,7 +263,7 @@ export function useWindingRun({
     cleanupAnimation();
     setProgressVelocity(0);
     startDecel(nowMs());
-  };
+  }, [cleanupAnimation, startDecel]);
 
   return {
     progress01,
@@ -216,5 +279,6 @@ export function useWindingRun({
     softPenalty,
     strictPenalty,
     stop,
+    bind,
   };
 }
