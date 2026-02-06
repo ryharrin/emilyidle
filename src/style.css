@@ -728,6 +728,7 @@ button:not(:disabled):active {
 .floating-delta-anchor {
   position: relative;
   display: inline-flex;
+  z-index: 1;
 }
 
 .floating-delta {

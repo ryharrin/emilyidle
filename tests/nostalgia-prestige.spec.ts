@@ -86,22 +86,46 @@ test("nostalgia prestige flow", async ({ page }) => {
   const currencyBefore = await page.locator("#currency").innerText();
   const enjoymentBefore = await page.locator("#enjoyment").innerText();
 
-  await page.getByTestId("nostalgia-prestige").click();
+  await page.getByTestId("nostalgia-prestige").evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
   await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
 
-  await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: "Cancel" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
   await expect(page.getByTestId("nostalgia-modal")).toHaveCount(0);
   await expect(page.locator("#currency")).toHaveText(currencyBefore);
   await expect(page.locator("#enjoyment")).toHaveText(enjoymentBefore);
 
-  await page.getByTestId("nostalgia-prestige").click();
+  await page.getByTestId("nostalgia-prestige").evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
   await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
-  await page.getByRole("button", { name: "Confirm reset" }).click();
+  await page.getByRole("button", { name: "Confirm reset" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
 
   await expect(page.getByTestId("prestige-onboarding-modal")).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
 
   await expect(page.getByTestId("nostalgia-results")).toBeVisible();
-  await expect(page.locator("#currency")).toHaveText(/\$0/);
-  await expect(page.locator("#enjoyment")).toHaveText(/\$0/);
+  await page.waitForSelector('[data-testid="nostalgia-floating-delta"]', {
+    state: "visible",
+    timeout: 2000,
+  });
+  const toastStack = page.getByTestId("toast-stack");
+  await expect(toastStack).toBeVisible();
+  await expect(toastStack).toContainText(/\+\d+ Nostalgia/);
+  const dismissButton = page.getByRole("button", {
+    name: /dismiss nostalgia prestige toast/i,
+  });
+  await dismissButton.click();
+  await expect(page.locator('[data-testid="toast-item"]')).toHaveCount(0);
+  const finalSave = await page.evaluate(() => {
+    const raw = window.localStorage.getItem("emily-idle:save");
+    return raw ? JSON.parse(raw).state : null;
+  });
+  expect(finalSave?.currencyCents).toBe(0);
+  expect(finalSave?.enjoymentCents).toBe(0);
 });

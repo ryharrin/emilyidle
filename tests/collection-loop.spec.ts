@@ -118,6 +118,10 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.softcap)).toHaveText(/% efficiency/);
     await expect(page.locator("#enjoyment")).toHaveText(/\$/);
     await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
+    await expect(page.locator("#currency .value-ticker")).toBeVisible();
+    await expect(page.locator("#income .value-ticker")).toBeVisible();
+    await expect(page.locator("#enjoyment .value-ticker")).toBeVisible();
+    await expect(page.locator("#enjoyment-rate .value-ticker")).toBeVisible();
     await expect(page.locator(selectors.upgradesCallout)).toBeVisible();
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
