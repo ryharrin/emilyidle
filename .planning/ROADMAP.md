@@ -5,7 +5,7 @@
 - ✅ **v4.0 Watch Interactions & Catalog Polish** — Phases 42-47 (shipped 2026-02-05)  
   [Milestone archive](milestones/v4.0-ROADMAP.md)
 
-## Upcoming Milestone: v4.1 Next Wave (Planning)
+## Active Milestone: v4.1 Next Wave (In Progress)
 
 **Goal:** Redesign session/atelier systems, polish mobile/tab UX, and deepen catalog/quality-of-life features.
 
@@ -67,9 +67,11 @@
 **Goal:** Deliver offline progress, save export, undo actions, favorites, notifications, event/achievement polish, and mini-game enhancements.
 
 **Plans:**
-- OFFLINE-01/SAVE-01/UNDO-01/FAVE-01/NOTIF-01 — Offline gains, save import/export, undo, favorites, notification settings
-- ACHIEVE-01/ACHIEVE-02/EVENT-01 — Achievement toasts, expanded achievement set, event calendar
-- PRACTICE-01/DIFF-01/STREAK-01 — Mini-game practice mode, tiered difficulty, streak bonuses
+- [ ] 51-01-PLAN.md — Offline gains cap + save import/export resilience (`OFFLINE-01`, `SAVE-01`)
+- [ ] 51-02-PLAN.md — Latest-purchase undo + favorites filtering (`UNDO-01`, `FAVE-01`)
+- [ ] 51-03-PLAN.md — Notification preferences + achievement toast gating (`NOTIF-01`, `ACHIEVE-01`)
+- [ ] 51-04-PLAN.md — Achievement category expansion + event calendar (`ACHIEVE-02`, `EVENT-01`)
+- [ ] 51-05-PLAN.md — Mini-game practice, difficulty scaling, and streak bonuses (`PRACTICE-01`, `DIFF-01`, `STREAK-01`)
 
 **Success criteria:**
 1. Returning players see capped offline gains and can import/export saves.
@@ -88,7 +90,7 @@
 | 45. Per-Watch Stats Surfaces | v4.0 | 3/3 | Complete | 45-03-SUMMARY.md |
 | 46. Catalog Expansion (Tiered Variety) | v4.0 | 3/3 | Complete | 46-03-SUMMARY.md |
 | 47. Mobile & UI Polish | v4.0 | 5/5 | Complete | 47-UAT.md |
-| 48. Session & Atelier Rework | v4.1 | 0/11 | Not started | - |
-| 49. Mobile & UX Polish | v4.1 | 0/0 | Not started | - |
-| 50. Catalog & Collection Depth | v4.1 | 0/0 | Not started | - |
-| 51. Quality of Life & Events | v4.1 | 0/0 | Not started | - |
+| 48. Session & Atelier Rework | v4.1 | 11/11 | Complete | 48-11-SUMMARY.md |
+| 49. Mobile & UX Polish | v4.1 | 10/10 | Complete | 49-10-SUMMARY.md |
+| 50. Catalog & Collection Depth | v4.1 | 5/5 | Complete | 50-05-SUMMARY.md |
+| 51. Quality of Life & Events | v4.1 | 0/5 | Planned | - |

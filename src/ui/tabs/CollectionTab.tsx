@@ -195,6 +195,15 @@ export function CollectionTab({
     .filter((model) => getWatchModelOwnedCount(state, model.id) > 0)
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
   const { discoveredCatalogEntries } = state;
+  const [collectionFavoritesOnly, setCollectionFavoritesOnly] = React.useState(false);
+  const favoriteSet = React.useMemo(
+    () => new Set(state.favoriteWatchIds ?? []),
+    [state.favoriteWatchIds],
+  );
+  const favoriteModels = React.useMemo(
+    () => watchModels.filter((model) => favoriteSet.has(model.id)),
+    [favoriteSet, watchModels],
+  );
 
   const tierCategories: ReadonlyArray<TierBadgeCategory> = ["starter", "mid", "lux"];
   const tierSummary = React.useMemo<TierSegmentSummary[]>(() => {
@@ -397,262 +406,317 @@ export function CollectionTab({
       {isActive && (
         <>
           <div className="collection-main">
-            <CollectionSectionNav
-              sections={navigationSections}
-              onCoachmarkDismiss={handleDismissSectionCoachmark}
-            />
-            <CollectionInsightsPanel state={state} />
-            <div id="collection-overview" className="collection-section collection-overview">
-              <h2>Collection</h2>
-              <p className="muted">Build your collection: buy, wear, and interact with watches.</p>
-              <div className="inline-icon-button">
-                <ExplainButton
-                  sectionId={HELP_SECTION_IDS.interactions}
-                  label="Explain interactions"
+            <div className="collection-favorites-filter" data-testid="collection-favorites-toggle">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={collectionFavoritesOnly}
+                  onChange={() => setCollectionFavoritesOnly((value) => !value)}
                 />
-                <span className="muted">Interaction help</span>
-              </div>
-              <NextUnlockPanel items={nextUnlockItems} />
-              <div className="collection-setup" data-testid="collection-setup">
-                <fieldset className="automation-toggle" data-testid="automation-controls">
-                  <legend className="automation-label">Automation controls</legend>
-                  {autoBuyUnlocked ? (
-                    <button
-                      type="button"
-                      className={autoBuyEnabled ? "" : "secondary"}
-                      onClick={onToggleAutoBuy}
-                    >
-                      {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
-                    </button>
-                  ) : (
-                    <p className="muted">Unlock automation with Atelier blueprints.</p>
-                  )}
-                </fieldset>
-                <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
-                  <header className="panel-header">
-                    <div>
-                      <p className="eyebrow">Archive bonuses</p>
-                      <h3>Tier bonuses</h3>
-                      <p className="muted">Unlock archive tiers by discovering references.</p>
-                    </div>
-                    <div className="results-count" data-testid="catalog-tier-count">
-                      {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
-                    </div>
-                  </header>
-                  {archiveCuratorMilestone && (
-                    <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
-                      <p className="muted">
-                        Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold} ·
-                        Unlock Archive guides to boost collection income.
-                      </p>
-                      <p className="catalog-tier-curator-status">
-                        {archiveCuratorUnlocked
-                          ? "Archive guides are available in Upgrades."
-                          : `Next milestone: ${archiveCuratorMilestone.name}.`}
-                      </p>
-                    </div>
-                  )}
-                  <div className="card-stack" data-testid="catalog-tier-list">
-                    {catalogTierDefinitions.map((tier) => {
-                      const unlocked = catalogTierUnlocks.includes(tier.id);
-                      const progress = catalogTierProgress[tier.id];
-                      return (
-                        <div
-                          className={`card catalog-tier-card ${
-                            unlocked ? "catalog-tier-unlocked" : ""
-                          }`}
-                          key={tier.id}
-                          data-testid="catalog-tier-card"
-                        >
-                          <div className="card-header">
-                            <div>
-                              <h4>{tier.name}</h4>
-                              <p>{tier.description}</p>
-                            </div>
-                            <div className="muted">
-                              {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
-                            </div>
-                          </div>
-                          <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
-                    {catalogTierBonuses.length > 0
-                      ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
-                      : "Discover references to unlock tier bonuses."}
-                  </p>
-                </div>
-                <section
-                  id="collection-tier-summary"
-                  className="panel collection-tier-summary collection-section"
-                  data-testid="collection-tier-summary"
-                >
-                  <header className="panel-header collection-tier-summary-header">
-                    <div>
-                      <p className="eyebrow">Tier badges</p>
-                      <h3>Catalog variety</h3>
-                      <p className="muted">
-                        Starter, Mid-tier, and Luxury badges show the collection’s entry,
-                        progression, and prestige tiers.
-                      </p>
-                    </div>
-                    <div className="collection-tier-summary-help">
-                      <ExplainButton
-                        sectionId={HELP_SECTION_IDS.tierBadges}
-                        label="Explain tier badges"
-                        className="help-open-button"
-                      />
-                      <span className="muted">Badge help</span>
-                    </div>
-                  </header>
-                  <CollectionTierSegments segments={tierSummary} />
-                </section>
-              </div>
+                Favorites only
+              </label>
             </div>
-            <section
-              id="collection-catalog-callout"
-              className="panel catalog-panel collection-section"
-              data-testid="catalog-shop-callout"
-            >
-              <header className="panel-header">
-                <div>
-                  <p className="eyebrow">Catalog</p>
-                  <h3>Shop in Catalog</h3>
-                  <p className="muted">
-                    Buy watches directly from catalog cards. The Collection focuses on owned watches
-                    and upgrades once you own them.
-                  </p>
-                </div>
-                <div className="card-actions">
-                  <button type="button" onClick={() => onNavigate("catalog", "catalog-shop")}>
-                    Open Catalog
-                  </button>
-                </div>
-              </header>
-            </section>
-            {showMaisonLines && (
-              <div
-                id="collection-maison-lines"
-                className="panel maison-lines collection-section"
-                data-testid="maison-lines"
+            {collectionFavoritesOnly ? (
+              <section
+                className="panel collection-favorites"
+                data-testid="collection-favorites-panel"
               >
                 <header className="panel-header">
                   <div>
-                    <p className="eyebrow">Maison expansion</p>
-                    <h3>Maison lines</h3>
-                    <p className="muted">Invest Heritage or Reputation to expand your house.</p>
-                  </div>
-                  <div className="results-count" data-testid="maison-lines-count">
-                    {Object.values(state.maisonLines).filter(Boolean).length} / {maisonLines.length}{" "}
-                    active
+                    <p className="eyebrow">Favorites</p>
+                    <h3>Marked watches</h3>
+                    <p className="muted">
+                      Quickly highlight the watches you've tagged as favorites.
+                    </p>
                   </div>
                 </header>
-                <div className="card-stack" data-testid="maison-lines-list">
-                  {maisonLines.map((line) => {
-                    const owned = state.maisonLines[line.id] ?? false;
-                    const canAfford = canBuyMaisonLine(state, line.id);
-                    const costLabel =
-                      line.currency === "heritage"
-                        ? `${line.cost} Heritage`
-                        : `${line.cost} Reputation`;
-                    const effectLabel = (() => {
-                      if (line.incomeMultiplier) {
-                        return `+${Math.round((line.incomeMultiplier - 1) * 100)}% enjoyment`;
-                      }
-                      if (line.collectionBonusMultiplier) {
-                        return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                      }
-                      if (line.workshopBlueprintBonus) {
-                        return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
-                      }
-                      return "Maison line";
-                    })();
-
-                    return (
-                      <div className="card" key={line.id} data-testid="maison-line-card">
-                        <div className="card-header">
-                          <div>
-                            <h4>{line.name}</h4>
-                            <p>{line.description}</p>
-                          </div>
-                          <div className="muted">{owned ? "Active" : costLabel}</div>
-                        </div>
-                        <p>{effectLabel}</p>
-                        <div className="card-actions">
-                          <button
-                            type="button"
-                            className="secondary"
-                            disabled={owned || !canAfford}
-                            onClick={() => onPurchase(buyMaisonLine(state, line.id))}
-                          >
-                            {owned ? "Live" : `Activate (${costLabel})`}
-                          </button>
-                        </div>
+                <div className="card-stack">
+                  {favoriteModels.length === 0 ? (
+                    <p className="muted" data-testid="collection-favorites-empty">
+                      No favorites yet. Mark watches from the catalog to pin them here.
+                    </p>
+                  ) : (
+                    favoriteModels.map((model) => (
+                      <div
+                        className="card collection-favorite-card"
+                        key={model.id}
+                        data-testid={`collection-favorite-${model.id}`}
+                      >
+                        <h4>{model.displayName}</h4>
+                        <p className="muted">
+                          {model.brand} · {model.tierId} ·
+                          {` ${getWatchModelOwnedCount(state, model.id)} owned`}
+                        </p>
                       </div>
-                    );
-                  })}
+                    ))
+                  )}
                 </div>
-              </div>
-            )}
-            <div className="card-stack">
-              <section className="panel" data-testid="worn-watch-summary">
-                <header className="panel-header">
-                  <div>
-                    <p className="eyebrow">Equipment</p>
-                    <h3>Worn watch</h3>
-                    <p className="muted">{wornModel ? wornModel.displayName : "None"}</p>
-                  </div>
-                  <div className="card-actions">
-                    <button
-                      type="button"
-                      className="secondary"
-                      data-testid="worn-watch-change"
-                      onClick={() => setWornPickerOpen(true)}
-                    >
-                      Change
-                    </button>
-                  </div>
-                </header>
-                <p className="muted">
-                  {wornModel
-                    ? "Equipped. Switching replaces the previous worn watch."
-                    : "Wear one owned watch to gain an enjoyment bonus."}
-                </p>
               </section>
-            </div>
-            <section className="panel per-watch-contribution" data-testid="per-watch-contribution">
-              <header className="panel-header">
-                <div>
-                  <p className="eyebrow">Contribution</p>
-                  <h3>Equipped watch</h3>
-                  <p className="muted">{wornModel ? wornModel.displayName : "No watch worn"}</p>
+            ) : (
+              <>
+                <CollectionSectionNav
+                  sections={navigationSections}
+                  onCoachmarkDismiss={handleDismissSectionCoachmark}
+                />
+                <CollectionInsightsPanel state={state} />
+                <div id="collection-overview" className="collection-section collection-overview">
+                  <h2>Collection</h2>
+                  <p className="muted">
+                    Build your collection: buy, wear, and interact with watches.
+                  </p>
+                  <div className="inline-icon-button">
+                    <ExplainButton
+                      sectionId={HELP_SECTION_IDS.interactions}
+                      label="Explain interactions"
+                    />
+                    <span className="muted">Interaction help</span>
+                  </div>
+                  <NextUnlockPanel items={nextUnlockItems} />
+                  <div className="collection-setup" data-testid="collection-setup">
+                    <fieldset className="automation-toggle" data-testid="automation-controls">
+                      <legend className="automation-label">Automation controls</legend>
+                      {autoBuyUnlocked ? (
+                        <button
+                          type="button"
+                          className={autoBuyEnabled ? "" : "secondary"}
+                          onClick={onToggleAutoBuy}
+                        >
+                          {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
+                        </button>
+                      ) : (
+                        <p className="muted">Unlock automation with Atelier blueprints.</p>
+                      )}
+                    </fieldset>
+                    <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
+                      <header className="panel-header">
+                        <div>
+                          <p className="eyebrow">Archive bonuses</p>
+                          <h3>Tier bonuses</h3>
+                          <p className="muted">Unlock archive tiers by discovering references.</p>
+                        </div>
+                        <div className="results-count" data-testid="catalog-tier-count">
+                          {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                        </div>
+                      </header>
+                      {archiveCuratorMilestone && (
+                        <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
+                          <p className="muted">
+                            Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold} ·
+                            Unlock Archive guides to boost collection income.
+                          </p>
+                          <p className="catalog-tier-curator-status">
+                            {archiveCuratorUnlocked
+                              ? "Archive guides are available in Upgrades."
+                              : `Next milestone: ${archiveCuratorMilestone.name}.`}
+                          </p>
+                        </div>
+                      )}
+                      <div className="card-stack" data-testid="catalog-tier-list">
+                        {catalogTierDefinitions.map((tier) => {
+                          const unlocked = catalogTierUnlocks.includes(tier.id);
+                          const progress = catalogTierProgress[tier.id];
+                          return (
+                            <div
+                              className={`card catalog-tier-card ${
+                                unlocked ? "catalog-tier-unlocked" : ""
+                              }`}
+                              key={tier.id}
+                              data-testid="catalog-tier-card"
+                            >
+                              <div className="card-header">
+                                <div>
+                                  <h4>{tier.name}</h4>
+                                  <p>{tier.description}</p>
+                                </div>
+                                <div className="muted">
+                                  {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
+                                </div>
+                              </div>
+                              <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
+                        {catalogTierBonuses.length > 0
+                          ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
+                          : "Discover references to unlock tier bonuses."}
+                      </p>
+                    </div>
+                    <section
+                      id="collection-tier-summary"
+                      className="panel collection-tier-summary collection-section"
+                      data-testid="collection-tier-summary"
+                    >
+                      <header className="panel-header collection-tier-summary-header">
+                        <div>
+                          <p className="eyebrow">Tier badges</p>
+                          <h3>Catalog variety</h3>
+                          <p className="muted">
+                            Starter, Mid-tier, and Luxury badges show the collection’s entry,
+                            progression, and prestige tiers.
+                          </p>
+                        </div>
+                        <div className="collection-tier-summary-help">
+                          <ExplainButton
+                            sectionId={HELP_SECTION_IDS.tierBadges}
+                            label="Explain tier badges"
+                            className="help-open-button"
+                          />
+                          <span className="muted">Badge help</span>
+                        </div>
+                      </header>
+                      <CollectionTierSegments segments={tierSummary} />
+                    </section>
+                  </div>
                 </div>
-              </header>
-              <div className="per-watch-contribution-body">
-                <div className="per-watch-contribution-metric">
-                  <strong data-testid="per-watch-contribution-enjoyment">
-                    {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
-                  </strong>
-                  <span>
-                    Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
-                  </span>
-                </div>
-                <div className="per-watch-contribution-metric">
-                  <strong data-testid="per-watch-contribution-cash">
-                    {formatMoneyFromCents(equippedContribution.cashDeltaCentsPerSec)} /s
-                  </strong>
-                  <span>{equippedContribution.cashExplanation}</span>
-                </div>
-                <p
-                  className="muted per-watch-contribution-event"
-                  data-testid="per-watch-contribution-event"
+                <section
+                  id="collection-catalog-callout"
+                  className="panel catalog-panel collection-section"
+                  data-testid="catalog-shop-callout"
                 >
-                  Event multiplier x{equippedContribution.eventMultiplier.toFixed(2)}
-                </p>
-              </div>
-            </section>
+                  <header className="panel-header">
+                    <div>
+                      <p className="eyebrow">Catalog</p>
+                      <h3>Shop in Catalog</h3>
+                      <p className="muted">
+                        Buy watches directly from catalog cards. The Collection focuses on owned
+                        watches and upgrades once you own them.
+                      </p>
+                    </div>
+                    <div className="card-actions">
+                      <button type="button" onClick={() => onNavigate("catalog", "catalog-shop")}>
+                        Open Catalog
+                      </button>
+                    </div>
+                  </header>
+                </section>
+                {showMaisonLines && (
+                  <div
+                    id="collection-maison-lines"
+                    className="panel maison-lines collection-section"
+                    data-testid="maison-lines"
+                  >
+                    <header className="panel-header">
+                      <div>
+                        <p className="eyebrow">Maison expansion</p>
+                        <h3>Maison lines</h3>
+                        <p className="muted">Invest Heritage or Reputation to expand your house.</p>
+                      </div>
+                      <div className="results-count" data-testid="maison-lines-count">
+                        {Object.values(state.maisonLines).filter(Boolean).length} /{" "}
+                        {maisonLines.length} active
+                      </div>
+                    </header>
+                    <div className="card-stack" data-testid="maison-lines-list">
+                      {maisonLines.map((line) => {
+                        const owned = state.maisonLines[line.id] ?? false;
+                        const canAfford = canBuyMaisonLine(state, line.id);
+                        const costLabel =
+                          line.currency === "heritage"
+                            ? `${line.cost} Heritage`
+                            : `${line.cost} Reputation`;
+                        const effectLabel = (() => {
+                          if (line.incomeMultiplier) {
+                            return `+${Math.round((line.incomeMultiplier - 1) * 100)}% enjoyment`;
+                          }
+                          if (line.collectionBonusMultiplier) {
+                            return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+                          }
+                          if (line.workshopBlueprintBonus) {
+                            return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
+                          }
+                          return "Maison line";
+                        })();
+
+                        return (
+                          <div className="card" key={line.id} data-testid="maison-line-card">
+                            <div className="card-header">
+                              <div>
+                                <h4>{line.name}</h4>
+                                <p>{line.description}</p>
+                              </div>
+                              <div className="muted">{owned ? "Active" : costLabel}</div>
+                            </div>
+                            <p>{effectLabel}</p>
+                            <div className="card-actions">
+                              <button
+                                type="button"
+                                className="secondary"
+                                disabled={owned || !canAfford}
+                                onClick={() => onPurchase(buyMaisonLine(state, line.id))}
+                              >
+                                {owned ? "Live" : `Activate (${costLabel})`}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="card-stack">
+                  <section className="panel" data-testid="worn-watch-summary">
+                    <header className="panel-header">
+                      <div>
+                        <p className="eyebrow">Equipment</p>
+                        <h3>Worn watch</h3>
+                        <p className="muted">{wornModel ? wornModel.displayName : "None"}</p>
+                      </div>
+                      <div className="card-actions">
+                        <button
+                          type="button"
+                          className="secondary"
+                          data-testid="worn-watch-change"
+                          onClick={() => setWornPickerOpen(true)}
+                        >
+                          Change
+                        </button>
+                      </div>
+                    </header>
+                    <p className="muted">
+                      {wornModel
+                        ? "Equipped. Switching replaces the previous worn watch."
+                        : "Wear one owned watch to gain an enjoyment bonus."}
+                    </p>
+                  </section>
+                </div>
+                <section
+                  className="panel per-watch-contribution"
+                  data-testid="per-watch-contribution"
+                >
+                  <header className="panel-header">
+                    <div>
+                      <p className="eyebrow">Contribution</p>
+                      <h3>Equipped watch</h3>
+                      <p className="muted">{wornModel ? wornModel.displayName : "No watch worn"}</p>
+                    </div>
+                  </header>
+                  <div className="per-watch-contribution-body">
+                    <div className="per-watch-contribution-metric">
+                      <strong data-testid="per-watch-contribution-enjoyment">
+                        {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
+                      </strong>
+                      <span>
+                        Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
+                      </span>
+                    </div>
+                    <div className="per-watch-contribution-metric">
+                      <strong data-testid="per-watch-contribution-cash">
+                        {formatMoneyFromCents(equippedContribution.cashDeltaCentsPerSec)} /s
+                      </strong>
+                      <span>{equippedContribution.cashExplanation}</span>
+                    </div>
+                    <p
+                      className="muted per-watch-contribution-event"
+                      data-testid="per-watch-contribution-event"
+                    >
+                      Event multiplier x{equippedContribution.eventMultiplier.toFixed(2)}
+                    </p>
+                  </div>
+                </section>
+              </>
+            )}
           </div>
 
           <aside className="side-panel">

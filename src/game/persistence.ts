@@ -1,4 +1,5 @@
 import type { GameState, PersistedGameState } from "./state";
+import type { WatchPurchaseSnapshot } from "./model/types";
 import { createStateFromSave } from "./state";
 
 const SAVE_KEY = "emily-idle:save";
@@ -204,6 +205,13 @@ function sanitizeState(value: unknown): GameState | null {
       typeof record.craftedBoosts === "object" && record.craftedBoosts !== null
         ? (record.craftedBoosts as Record<string, number>)
         : {},
+    favoriteWatchIds: Array.isArray(record.favoriteWatchIds)
+      ? record.favoriteWatchIds.filter((entry): entry is string => typeof entry === "string")
+      : [],
+    lastPurchase:
+      typeof record.lastPurchase === "object" && record.lastPurchase !== null
+        ? (record.lastPurchase as WatchPurchaseSnapshot)
+        : null,
   };
 
   return createStateFromSave(persisted);

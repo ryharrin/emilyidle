@@ -31,6 +31,7 @@ import type {
   PersistedGameState,
   UpgradeId,
   WatchItemId,
+  WatchPurchaseSnapshot,
   WorkshopUpgradeDefinition,
   WorkshopUpgradeId,
 } from "./types";
@@ -445,6 +446,8 @@ export function createInitialState(): GameState {
       "heritage-springs": 0,
       "artisan-jig": 0,
     },
+    favoriteWatchIds: [],
+    lastPurchase: null,
   };
 }
 
@@ -709,6 +712,36 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     }
   }
 
+  const favoriteWatchIdsRaw = Array.isArray(saved.favoriteWatchIds) ? saved.favoriteWatchIds : [];
+  const favoriteWatchIds = favoriteWatchIdsRaw.filter((entry): entry is string =>
+    validModelIds.has(entry),
+  );
+
+  let lastPurchase: WatchPurchaseSnapshot | null = null;
+  const lastPurchaseRaw = saved.lastPurchase;
+  if (
+    lastPurchaseRaw &&
+    typeof lastPurchaseRaw === "object" &&
+    typeof lastPurchaseRaw.modelId === "string" &&
+    validModelIds.has(lastPurchaseRaw.modelId) &&
+    typeof lastPurchaseRaw.tierId === "string" &&
+    WATCH_ITEMS.some((item) => item.id === lastPurchaseRaw.tierId) &&
+    Number.isFinite(lastPurchaseRaw.costCents) &&
+    Number.isFinite(lastPurchaseRaw.quantity) &&
+    Number.isFinite(lastPurchaseRaw.purchasedAtMs)
+  ) {
+    const quantity = Math.max(0, Math.floor(lastPurchaseRaw.quantity));
+    if (quantity > 0) {
+      lastPurchase = {
+        modelId: lastPurchaseRaw.modelId,
+        tierId: lastPurchaseRaw.tierId as WatchItemId,
+        costCents: Math.max(0, Math.floor(lastPurchaseRaw.costCents)),
+        quantity,
+        purchasedAtMs: Math.max(0, Math.floor(lastPurchaseRaw.purchasedAtMs)),
+      };
+    }
+  }
+
   const unlockedMilestones = Array.isArray(saved.unlockedMilestones)
     ? saved.unlockedMilestones.filter((entry): entry is MilestoneId =>
         ALL_MILESTONE_IDS.includes(entry as MilestoneId),
@@ -815,6 +848,8 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     catalogTierUnlocks,
     craftingParts,
     craftedBoosts,
+    favoriteWatchIds,
+    lastPurchase,
   });
 
   return updateCatalogTierUnlocks(restoredState);

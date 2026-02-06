@@ -33,6 +33,7 @@ import type { CatalogEntry } from "../../game/catalog";
 import type { CatalogTierId } from "../../game/model/types";
 import {
   buyWatchModel,
+  buyWatchModelWithUndo,
   dismantleWatchModel,
   getCraftingPartsPerWatch,
   getInteractionCooldownRemainingMs,
@@ -48,6 +49,7 @@ import {
   getWatchModels,
   isItemUnlocked,
   setWornWatchId,
+  toggleWatchFavorite,
   type GameState,
   type WatchModelPurchaseGate,
   type WatchItemId,
@@ -302,8 +304,13 @@ export function CatalogPurchasePanel({
       ].join("|"),
     [catalogBrand, catalogEra, catalogSearch, catalogSort, catalogStyle, catalogTab, catalogType],
   );
+  const favoriteSet = React.useMemo(
+    () => new Set(state.favoriteWatchIds ?? []),
+    [state.favoriteWatchIds],
+  );
 
   const [filtersOpen, setFiltersOpen] = React.useState<boolean>(() => isTestEnvironment());
+  const [catalogFavoritesOnly, setCatalogFavoritesOnly] = React.useState(false);
   const activeFilterCount = [
     catalogSearch.trim().length > 0,
     catalogBrand !== "All",
@@ -321,8 +328,16 @@ export function CatalogPurchasePanel({
   }, []);
   const filterCountLabel = activeFilterCount > 0 ? `${activeFilterCount} active` : "Show filters";
 
+  const catalogEntriesForView = React.useMemo(
+    () =>
+      catalogFavoritesOnly
+        ? filteredCatalogEntries.filter((entry) => favoriteSet.has(entry.id))
+        : filteredCatalogEntries,
+    [catalogFavoritesOnly, favoriteSet, filteredCatalogEntries],
+  );
+
   const stableCatalogEntries = useStableCatalogEntries({
-    entries: filteredCatalogEntries,
+    entries: catalogEntriesForView,
     allEntries: catalogEntries,
     signature: filterSignature,
   });
@@ -437,12 +452,17 @@ export function CatalogPurchasePanel({
     };
   }, []);
 
+  const effectiveNowMs = React.useMemo(
+    () => (typeof nowMs === "number" ? nowMs : Date.now()),
+    [nowMs],
+  );
+
   const handlePurchase = React.useCallback(
     (entryId: string) => {
-      onPurchase(buyWatchModel(state, entryId));
+      onPurchase(buyWatchModelWithUndo(state, entryId, effectiveNowMs));
       triggerPurchaseHighlight(entryId);
     },
-    [onPurchase, state, triggerPurchaseHighlight],
+    [effectiveNowMs, onPurchase, state, triggerPurchaseHighlight],
   );
 
   const catalogFilterOptions = React.useMemo(
@@ -460,25 +480,22 @@ export function CatalogPurchasePanel({
     () =>
       catalogEntries.filter(
         (entry) =>
+          (!catalogFavoritesOnly || favoriteSet.has(entry.id)) &&
           matchesCatalogFilters(entry, catalogFilterOptions) &&
           getWatchModelOwnedCount(state, entry.id) === 0,
       ),
-    [catalogEntries, catalogFilterOptions, state],
+    [catalogEntries, catalogFilterOptions, state, catalogFavoritesOnly, favoriteSet],
   );
 
   const visibleOwnedEntries = React.useMemo(
     () =>
       catalogEntries.filter(
         (entry) =>
+          (!catalogFavoritesOnly || favoriteSet.has(entry.id)) &&
           matchesCatalogFilters(entry, catalogFilterOptions) &&
           getWatchModelOwnedCount(state, entry.id) > 0,
       ),
-    [catalogEntries, catalogFilterOptions, state],
-  );
-
-  const effectiveNowMs = React.useMemo(
-    () => (typeof nowMs === "number" ? nowMs : Date.now()),
-    [nowMs],
+    [catalogEntries, catalogFilterOptions, state, catalogFavoritesOnly, favoriteSet],
   );
 
   const hasQuickActionForOwnedEntry = React.useCallback(
@@ -644,6 +661,7 @@ export function CatalogPurchasePanel({
     const isHighlighted = purchaseHighlights[entry.id];
     const isCompared = comparedEntries.has(entry.id);
     const isDetailsOpen = detailsSheetTarget?.entryId === entry.id;
+    const isFavorite = favoriteSet.has(entry.id);
 
     const movementGate = getInteractionMovementGate(tierId);
     const movementReason = ownedCount > 0 ? (movementGate.reason ?? null) : null;
@@ -798,6 +816,15 @@ export function CatalogPurchasePanel({
               buyLabel={buyLabel}
               onBuy={() => handlePurchase(entry.id)}
             />
+            <button
+              type="button"
+              className={`catalog-favorite-toggle ${isFavorite ? "catalog-favorite-toggle--active" : ""}`}
+              data-testid={`catalog-favorite-toggle-${entry.id}`}
+              aria-pressed={isFavorite}
+              onClick={() => onPurchase(toggleWatchFavorite(state, entry.id))}
+            >
+              {isFavorite ? "Favorited" : "Favorite"}
+            </button>
             <button
               type="button"
               className={`catalog-compare-toggle ${isCompared ? "catalog-compare-toggle-active" : ""}`}
@@ -1143,6 +1170,21 @@ export function CatalogPurchasePanel({
               <option value="dress">Dress</option>
               <option value="diver">Diver</option>
             </select>
+          </div>
+          <div className="filter-field" data-testid="catalog-favorites-filter">
+            <label className="filter-label" htmlFor="catalog-favorites-only">
+              Favorites
+            </label>
+            <label className="catalog-favorites-toggle" htmlFor="catalog-favorites-only">
+              <input
+                id="catalog-favorites-only"
+                data-testid="catalog-favorites-only"
+                type="checkbox"
+                checked={catalogFavoritesOnly}
+                onChange={() => setCatalogFavoritesOnly((value) => !value)}
+              />
+              Favorites only
+            </label>
           </div>
           <div className="filter-field" data-testid="catalog-owned-tabs">
             <span className="filter-label">View</span>

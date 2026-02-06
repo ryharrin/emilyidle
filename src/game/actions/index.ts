@@ -24,6 +24,7 @@ import type {
   MaisonUpgradeId,
   UpgradeId,
   WatchItemId,
+  WatchPurchaseSnapshot,
   WorkshopUpgradeId,
 } from "../model/types";
 import {
@@ -72,6 +73,7 @@ export {
 
 const THERAPIST_SESSION_XP_GAIN = 8;
 const THERAPIST_PASSIVE_XP_PER_SEC = 3;
+const UNDO_WINDOW_MS = 10_000;
 
 export function applyTherapistPassiveProgress(state: GameState, dtMs: number): GameState {
   if (state.therapistCareer.careerStartId === null) {
@@ -616,6 +618,83 @@ export function buyWatchModel(state: GameState, modelId: string): GameState {
 
   const withDiscovery = discoverCatalogEntries(nextState, [modelId]);
   return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
+}
+
+export function buyWatchModelWithUndo(state: GameState, modelId: string, nowMs: number): GameState {
+  const gate = getWatchModelPurchaseGate(state, modelId);
+  if (!gate.ok) {
+    return state;
+  }
+
+  const nextState = buyWatchModel(state, modelId);
+  if (nextState === state) {
+    return state;
+  }
+
+  const tierId = getWatchModelTierId(modelId);
+  const snapshot: WatchPurchaseSnapshot = {
+    modelId,
+    tierId,
+    costCents: gate.cashPriceCents,
+    quantity: 1,
+    purchasedAtMs: Math.max(0, Math.floor(nowMs)),
+  };
+
+  return {
+    ...nextState,
+    lastPurchase: snapshot,
+  };
+}
+
+export function toggleWatchFavorite(state: GameState, modelId: string): GameState {
+  const current = state.favoriteWatchIds ?? [];
+  const isFavorite = current.includes(modelId);
+  const nextFavorites = isFavorite
+    ? current.filter((entry) => entry !== modelId)
+    : [...current, modelId];
+  if (nextFavorites.length === current.length && isFavorite) {
+    return state;
+  }
+
+  return {
+    ...state,
+    favoriteWatchIds: nextFavorites,
+  };
+}
+
+export function undoLastPurchase(state: GameState, nowMs: number): GameState {
+  const last = state.lastPurchase;
+  if (!last) {
+    return state;
+  }
+
+  if (nowMs - last.purchasedAtMs > UNDO_WINDOW_MS) {
+    return state;
+  }
+
+  if (last.quantity <= 0 || last.costCents <= 0) {
+    return state;
+  }
+
+  const tierOwned = state.items[last.tierId] ?? 0;
+  const modelOwned = state.watchModels[last.modelId] ?? 0;
+  if (tierOwned < last.quantity || modelOwned < last.quantity) {
+    return state;
+  }
+
+  return {
+    ...state,
+    currencyCents: state.currencyCents + last.costCents,
+    items: {
+      ...state.items,
+      [last.tierId]: Math.max(0, tierOwned - last.quantity),
+    },
+    watchModels: {
+      ...state.watchModels,
+      [last.modelId]: Math.max(0, modelOwned - last.quantity),
+    },
+    lastPurchase: null,
+  };
 }
 
 export function dismantleWatchModel(state: GameState, modelId: string, quantity = 1): GameState {

@@ -50,6 +50,14 @@ export type WatchItemDefinition = {
   unlockMilestoneId?: MilestoneId;
 };
 
+export type WatchPurchaseSnapshot = {
+  modelId: string;
+  tierId: WatchItemId;
+  costCents: number;
+  quantity: number;
+  purchasedAtMs: number;
+};
+
 export type UpgradeDefinition = {
   id: UpgradeId;
   name: string;
@@ -229,6 +237,8 @@ export type GameState = {
   catalogTierUnlocks: CatalogTierId[];
   craftingParts: number;
   craftedBoosts: Record<CraftedBoostId, number>;
+  favoriteWatchIds: string[];
+  lastPurchase: WatchPurchaseSnapshot | null;
 };
 
 export type PersistedGameState = {
@@ -280,4 +290,6 @@ export type PersistedGameState = {
   catalogTierUnlocks?: string[];
   craftingParts?: number;
   craftedBoosts?: Record<string, number>;
+  favoriteWatchIds?: string[];
+  lastPurchase?: WatchPurchaseSnapshot | null;
 };
