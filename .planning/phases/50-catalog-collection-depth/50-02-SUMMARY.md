@@ -27,6 +27,7 @@ key-files:
   modified:
     - src/ui/components/CollectionSectionNav.tsx
     - tests/collection-loop.spec.ts
+    - tests/collection.unit.test.tsx
 
 key-decisions:
   - "Record the nav's active segment via `data-active-section` rather than counting on `aria-current` so Playwright sees our intent even when badges append extra text."
@@ -51,19 +52,20 @@ completed: 2026-02-06
 - **Started:** 2026-02-06T12:55:00Z
 - **Completed:** 2026-02-06T14:15:00Z
 - **Tasks:** 3
-- **Files modified:** 2
+- **Files modified:** 3
 
 ## Accomplishments
 
 - Implemented scroll logic that targets the actual scrolling element, exposes `data-active-section`, and suspends the automatic detection loop just long enough for manual nav jumps to win.
 - Updated Playwright nav coverage to click via `evaluate`, assert the new hook, and use regexes that tolerate readiness badges so Starter/Mid/Lux anchors stay protected.
+- Expanded `tests/collection.unit.test.tsx` to cover Starter/Mid/Lux segments, help copy, set bonus progress cards, and analytics summaries so the Collection depth view gains regression coverage without touching Playwright.
 - Re-verified the plan with `pnpm typecheck`, `pnpm test:unit -- tests/collection.unit.test.tsx`, and `pnpm test:e2e -- tests/collection-loop.spec.ts`.
 
 ## Task Commits
 
 1. **Task 1: Build modular Collection depth components** – pre-existing (no new commit).
 2. **Task 2: Wire CollectionTab nav and data-active-section** – `327d248` (fix).
-3. **Task 3: Extend Collection loop coverage** – `1aaa984` (test).
+3. **Task 3: Extend Collection loop coverage** – `1aaa984`, `c4402f3` (test).
 
 **Plan metadata:** this commit (docs: plan complete)
 
@@ -71,6 +73,7 @@ completed: 2026-02-06
 
 - `src/ui/components/CollectionSectionNav.tsx` – scroll via the true scrolling element, pause auto-detection after jumps, expose `data-active-section`, and guard timers.
 - `tests/collection-loop.spec.ts` – expect Starter/Mid/Lux anchors via the nav hook, click through `evaluate`, and loosen the Owned tab selector to handle readiness badges.
+- `tests/collection.unit.test.tsx` – assert tier segments, help copy, set bonus progress ratios, and analytics panels at the unit level so planned depth features stay regression guarded.
 
 ## Decisions Made
 

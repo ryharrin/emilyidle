@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 50 of 6 (Catalog & Collection Depth)
-Plan: 50-02 (Collection depth navigation + analytics insights) — Completed
-Status: Phase 50 in progress (4/5 plans executed)
-Last activity: 2026-02-06 — Completed Phase 50-02 (collection insights + segmented nav coverage)
-Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 in progress (4/5 executed) [███████░░░]
-Next Phase: Phase 50 (Catalog & Collection Depth — plan 50-05 pending)
+Plan: 50-05 (HELP-02) — Completed
+Status: Phase 50 complete (5/5 plans executed)
+Last activity: 2026-02-06 — Completed Phase 50-05 (Tier badge help search + contextual chips) and reran help/explanations e2e suites (mobile Pixel 5 still hits pointer-event timeouts)
+Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████]
+Next Phase: Phase 51 (Quality of Life & Events — planning pending)
 
 ## Accumulated Context
 
@@ -96,6 +96,8 @@ Next Phase: Phase 50 (Catalog & Collection Depth — plan 50-05 pending)
 | 50 | Keep the timeline summary and upcoming choice cards tied directly to the career selectors for progress and choice state | Prevents UI copy from drifting away from the authoritative progression math shared with tests |
 | 50 | Hide the timeline meta on viewports narrower than 620px and gate pointer events so the Career map stays interactive | Keeps Pixel 5 map interactions responsive despite the new overlay cards |
 | 50 | Force Playwright hover/click actions for the Career map zoom controls when overlays still intercept the DOM | Lets the regression validate zoom persistence without uninstallable pointer conflicts |
+| 50 | Keyword metadata + normalized ranking keeps help search deterministic without renaming IDs | Ensures Tier badge keywords steer ordering before falling back to body text matches |
+| 50 | Related chips use section metadata so Tier badge education links to catalog-first/catalog-shopping guidance | Keeps quick links stable while reusing existing IDs and anchors |
 | 49 | Derive Collection anchors via `CollectionSectionNavLink` so nav copy, automation selectors, and scroll targets stay synchronized. | Keeps the new Collection subnav predictable while enabling future guts to reuse the same definition. | ✓ Good |
 | 49 | Persist onboarding dismissals in `settings.coachmarksDismissed` so no additional storage keys are introduced. | Honors existing settings guardrails while letting coachmarks pause for returning players. | ✓ Good |
 | 49 | Derive the new career timeline from `CAREER_STAGES` metadata and selector outputs so UI copy/test anchors stay in sync. | Prevents duplicating progression math while letting the timeline reuse the same progression sources as the career map. | ✓ Good |
@@ -105,6 +107,6 @@ Next Phase: Phase 50 (Catalog & Collection Depth — plan 50-05 pending)
 
 ## Session Continuity
 
-Last session: 2026-02-06T12:56:48Z
-Stopped at: Completed Phase 50-02 (collection depth navigation + analytics coverage)
+Last session: 2026-02-06T13:14:34Z
+Stopped at: Completed Phase 50-05 (Tier badge help search + contextual chips)
 Resume file: None
