@@ -68,3 +68,4 @@
 
 - `/gsd-new-milestone` — Define the post-v4.1 milestone scope and phase map.
 - `/gsd-requirements` — Capture new requirement IDs and acceptance criteria.
+- `/gsd-plan-phase 52` — Execute the Phase 52 UX redesign package (`.planning/phases/52-ux-redesign-spec/`).

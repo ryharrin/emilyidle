@@ -17,6 +17,14 @@ Deliver a satisfying watch-collecting idle loop that saves reliably and stays pl
 ## Current Milestone
 Planning next milestone scope (post-v4.1), with v4.1 kept as the current gameplay baseline.
 
+### Active planning package
+- Phase 52 UX redesign spec is prepared in `.planning/phases/52-ux-redesign-spec/`:
+  - `52-CONTEXT.md`
+  - `52-01-DESIGN.md`
+  - `52-01-PLAN.md`
+  - `52-02-PLAN.md`
+  - `52-03-PLAN.md`
+
 ## Requirements
 ### Validated
 - ✓ STATS-01 — Catalog now surfaces each watch’s enjoyment rate per row so comparisons are visible without purchase (v4.0)
@@ -54,6 +62,7 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 - `/gsd-new-milestone` — Define the next milestone after v4.1
 - `/gsd-requirements` — Capture new requirement IDs and acceptance criteria
 - `/gsd-roadmap` — Sequence next-phase execution order and dependencies
+- `/gsd-plan-phase 52` — Execute hierarchy, density, and progressive disclosure UX redesign rollout
 
 <details>
 <summary>Archived context (pre-v4.1 milestone)</summary>
