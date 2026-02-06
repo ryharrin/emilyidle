@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { formatMoneyFromCents } from "../../game/format";
+import type { InteractionMiniGameMode, WatchItemId } from "../../game/state";
+import {
+  getInteractionDifficultyProfile,
+  getInteractionPerfectStreakBonusMultiplierFromStreak,
+  resolveInteractionOutcomeTier,
+} from "../../game/state";
 import { getOutcomeTierFromBand, getWindingBandLabel, WindingBand } from "./winding/windingMath";
 import { useWindingRun } from "./winding/useWindingRun";
 import { WindingCrown } from "./winding/WindingCrown";
@@ -14,7 +20,11 @@ export type WindingOutcome = {
 
 type WindingMiniGameModalProps = {
   open: boolean;
+  itemId: WatchItemId;
   itemLabel: string;
+  mode: InteractionMiniGameMode;
+  onModeChange: (mode: InteractionMiniGameMode) => void;
+  currentPerfectStreak: number;
   rewardRangeLabel: string;
   cooldownLabel: string;
   onComplete: (outcome: WindingOutcome) => void;
@@ -79,11 +89,15 @@ const WINDING_REWARD_INFO: Record<WindingOutcomeTier, { prefix: string; detail: 
   },
 };
 
-export function getWindingRewardCopy(tier: WindingOutcomeTier): WindingRewardCopy {
-  const rewardCents = ENJOYMENT_BY_TIER_CENTS[tier];
+export function getWindingRewardCopy(
+  tier: WindingOutcomeTier,
+  rewardMultiplier = 1,
+): WindingRewardCopy {
+  const rewardCents = Math.max(0, Math.floor(ENJOYMENT_BY_TIER_CENTS[tier] * rewardMultiplier));
   const info = WINDING_REWARD_INFO[tier];
+  const multiplierSuffix = rewardMultiplier > 1 ? ` (x${rewardMultiplier.toFixed(2)} streak)` : "";
   return {
-    headline: `${info.prefix} · +${formatMoneyFromCents(rewardCents)} enjoyment`,
+    headline: `${info.prefix} · +${formatMoneyFromCents(rewardCents)} enjoyment${multiplierSuffix}`,
     detail: `${info.detail} Tier pays ${rewardCents / ENJOYMENT_BY_TIER_CENTS.miss}× baseline enjoyment.`,
   };
 }
@@ -121,7 +135,11 @@ function computePerformance(progress: number): number {
 
 export function WindingMiniGameModal({
   open,
+  itemId,
   itemLabel,
+  mode,
+  onModeChange,
+  currentPerfectStreak,
   rewardRangeLabel,
   cooldownLabel,
   onComplete,
@@ -157,6 +175,7 @@ export function WindingMiniGameModal({
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const prevOpenRef = useRef(open);
+  const runStartStreakRef = useRef(currentPerfectStreak);
 
   useEffect(() => {
     setHintDismissed(!showTapHint);
@@ -185,25 +204,27 @@ export function WindingMiniGameModal({
     }
 
     stop();
+    const performance = computePerformance(progress01);
     const outcome: WindingOutcome = {
-      tier: getOutcomeTierFromBand(band),
-      performance: computePerformance(progress01),
+      tier: resolveInteractionOutcomeTier(performance, itemId),
+      performance,
     };
     setResult(outcome);
     onComplete(outcome);
     persistHintDismissed();
-  }, [band, onComplete, persistHintDismissed, progress01, result, stop]);
+  }, [itemId, onComplete, persistHintDismissed, progress01, result, stop]);
 
   useLayoutEffect(() => {
     const previouslyOpen = prevOpenRef.current;
     if (open && !previouslyOpen) {
       setResult(null);
+      runStartStreakRef.current = currentPerfectStreak;
     }
     if (!open && previouslyOpen) {
       setResult(null);
     }
     prevOpenRef.current = open;
-  }, [open]);
+  }, [currentPerfectStreak, open]);
 
   useLayoutEffect(() => {
     if (!open || typeof document === "undefined") {
@@ -291,7 +312,13 @@ export function WindingMiniGameModal({
     focusables[0]?.focus();
   };
 
-  const rewardCopy = result ? getWindingRewardCopy(result.tier) : null;
+  const difficultyProfile = useMemo(() => getInteractionDifficultyProfile(itemId), [itemId]);
+  const appliedRewardMultiplier =
+    result && mode === "normal" && result.tier === "perfect"
+      ? getInteractionPerfectStreakBonusMultiplierFromStreak(runStartStreakRef.current)
+      : 1;
+  const rewardCopy =
+    result && mode === "normal" ? getWindingRewardCopy(result.tier, appliedRewardMultiplier) : null;
   const shouldShowHint = showTapHint && !hintDismissed;
   const bandLabel = getWindingBandLabel(band);
   const tensionPercent = Math.round(tension01 * 100);
@@ -329,6 +356,9 @@ export function WindingMiniGameModal({
             <p className="eyebrow">Winding</p>
             <h3>{itemLabel}</h3>
             <p className="muted winding-modal-subtitle">Reward: {rewardRangeLabel}</p>
+            <p className="muted winding-modal-subtitle" data-testid="winding-difficulty">
+              Difficulty: {difficultyProfile.label}
+            </p>
           </div>
           <div className="card-actions">
             {helpAction}
@@ -344,6 +374,20 @@ export function WindingMiniGameModal({
         </header>
 
         <div className="winding-modal-body" data-outcome-state={outcomeState}>
+          <div className="winding-mode-strip" data-testid="winding-mode-strip">
+            <label className="winding-mode-toggle">
+              <input
+                type="checkbox"
+                checked={mode === "practice"}
+                onChange={(event) => onModeChange(event.target.checked ? "practice" : "normal")}
+                data-testid="winding-practice-toggle"
+              />
+              Practice mode (no rewards, no streak bonus)
+            </label>
+            <p className="muted" data-testid="winding-streak-label">
+              Perfect streak: {currentPerfectStreak}
+            </p>
+          </div>
           <div className="winding-status-grid">
             <div
               className="winding-crown-shell"
@@ -467,15 +511,28 @@ export function WindingMiniGameModal({
             )}
           </div>
 
-          {result && rewardCopy && (
+          {result && (
             <div
               className={`winding-outcome winding-outcome-${result.tier}`}
               data-testid="winding-outcome"
               data-tier={result.tier}
             >
-              <strong>{rewardCopy.headline}</strong>
-              <p className="muted winding-outcome-copy">{rewardCopy.detail}</p>
-              <p className="muted">{cooldownLabel}</p>
+              {mode === "practice" ? (
+                <>
+                  <strong>Practice run complete</strong>
+                  <p className="muted winding-outcome-copy">
+                    Rewards and streak bonuses are disabled in practice mode.
+                  </p>
+                </>
+              ) : (
+                rewardCopy && (
+                  <>
+                    <strong>{rewardCopy.headline}</strong>
+                    <p className="muted winding-outcome-copy">{rewardCopy.detail}</p>
+                    <p className="muted">{cooldownLabel}</p>
+                  </>
+                )
+              )}
               {isOverWound && (
                 <p className="muted winding-outcome-warning">
                   Over-wound! Release before 95% to keep tension from spiking.

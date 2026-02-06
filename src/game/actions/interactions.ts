@@ -1,7 +1,12 @@
-import type { GameState, WatchItemId } from "../model/types";
-import { getPowerReserveForItem, isInteractionAvailable } from "../selectors/interactions";
+import type { GameState, InteractionMiniGameMode, WatchItemId } from "../model/types";
+import {
+  getInteractionPerfectStreakBonusMultiplierFromStreak,
+  getPowerReserveForItem,
+  isInteractionAvailable,
+  type InteractionOutcomeTier,
+} from "../selectors/interactions";
 
-export type InteractionOutcome = "miss" | "good" | "perfect";
+export type InteractionOutcome = InteractionOutcomeTier;
 
 export const INTERACTION_BASE_COOLDOWN_MS = 20_000;
 
@@ -22,6 +27,54 @@ const QUARTZ_CASH_PAYOUT_BY_OUTCOME_CENTS: Record<InteractionOutcome, number> = 
   good: 250,
   perfect: 500,
 };
+
+type InteractionRewardOptions = {
+  mode?: InteractionMiniGameMode;
+};
+
+function resolveInteractionMode(options?: InteractionRewardOptions): InteractionMiniGameMode {
+  return options?.mode === "practice" ? "practice" : "normal";
+}
+
+function getPerfectStreakMultiplier(
+  state: GameState,
+  outcome: InteractionOutcome,
+  mode: InteractionMiniGameMode,
+): number {
+  if (mode !== "normal" || outcome !== "perfect") {
+    return 1;
+  }
+
+  return getInteractionPerfectStreakBonusMultiplierFromStreak(state.interactionPerfectStreak);
+}
+
+function applyInteractionTracking(
+  state: GameState,
+  outcome: InteractionOutcome,
+  mode: InteractionMiniGameMode,
+): GameState {
+  if (mode !== "normal") {
+    return state;
+  }
+
+  const interactionRunsTotal = state.interactionRunsTotal + 1;
+  const interactionPerfectRuns =
+    outcome === "perfect" ? state.interactionPerfectRuns + 1 : state.interactionPerfectRuns;
+  const interactionPerfectStreak =
+    outcome === "perfect" ? state.interactionPerfectStreak + 1 : 0;
+  const interactionBestPerfectStreak = Math.max(
+    state.interactionBestPerfectStreak,
+    interactionPerfectStreak,
+  );
+
+  return {
+    ...state,
+    interactionRunsTotal,
+    interactionPerfectRuns,
+    interactionPerfectStreak,
+    interactionBestPerfectStreak,
+  };
+}
 
 export function setInteractionCooldown(
   state: GameState,
@@ -50,16 +103,26 @@ export function applyWindingReward(
   itemId: WatchItemId,
   nowMs: number,
   outcome: InteractionOutcome,
+  options?: InteractionRewardOptions,
 ): GameState {
   if (!isInteractionAvailable(state, itemId, nowMs)) {
     return state;
   }
 
-  const enjoymentGain = WINDING_ENJOYMENT_BY_OUTCOME[outcome] ?? 0;
+  const mode = resolveInteractionMode(options);
+  const streakMultiplier = getPerfectStreakMultiplier(state, outcome, mode);
+  const baseEnjoymentGain = WINDING_ENJOYMENT_BY_OUTCOME[outcome] ?? 0;
+  const enjoymentGain =
+    mode === "normal" ? Math.max(0, Math.floor(baseEnjoymentGain * streakMultiplier)) : 0;
   const withEnjoyment =
     enjoymentGain > 0 ? { ...state, enjoymentCents: state.enjoymentCents + enjoymentGain } : state;
+  const withTracking = applyInteractionTracking(withEnjoyment, outcome, mode);
 
-  return setInteractionCooldown(withEnjoyment, itemId, nowMs + INTERACTION_BASE_COOLDOWN_MS);
+  if (mode === "practice") {
+    return withTracking;
+  }
+
+  return setInteractionCooldown(withTracking, itemId, nowMs + INTERACTION_BASE_COOLDOWN_MS);
 }
 
 export function applyAutomaticReward(
@@ -67,12 +130,16 @@ export function applyAutomaticReward(
   itemId: WatchItemId,
   nowMs: number,
   outcome: InteractionOutcome,
+  options?: InteractionRewardOptions,
 ): GameState {
   if (!isInteractionAvailable(state, itemId, nowMs)) {
     return state;
   }
 
-  const reserveGain = AUTOMATIC_RESERVE_GAIN_BY_OUTCOME[outcome] ?? 0;
+  const mode = resolveInteractionMode(options);
+  const streakMultiplier = getPerfectStreakMultiplier(state, outcome, mode);
+  const baseReserveGain = AUTOMATIC_RESERVE_GAIN_BY_OUTCOME[outcome] ?? 0;
+  const reserveGain = mode === "normal" ? baseReserveGain * streakMultiplier : 0;
   const currentReserve = getPowerReserveForItem(state, itemId);
   const nextReserve = Math.min(1, Math.max(0, currentReserve + reserveGain));
   const withReserve =
@@ -85,8 +152,13 @@ export function applyAutomaticReward(
           },
         }
       : state;
+  const withTracking = applyInteractionTracking(withReserve, outcome, mode);
 
-  return setInteractionCooldown(withReserve, itemId, nowMs + INTERACTION_BASE_COOLDOWN_MS);
+  if (mode === "practice") {
+    return withTracking;
+  }
+
+  return setInteractionCooldown(withTracking, itemId, nowMs + INTERACTION_BASE_COOLDOWN_MS);
 }
 
 export function applyQuartzReward(
@@ -94,14 +166,24 @@ export function applyQuartzReward(
   itemId: WatchItemId,
   nowMs: number,
   outcome: InteractionOutcome,
+  options?: InteractionRewardOptions,
 ): GameState {
   if (!isInteractionAvailable(state, itemId, nowMs)) {
     return state;
   }
 
-  const payoutCents = QUARTZ_CASH_PAYOUT_BY_OUTCOME_CENTS[outcome] ?? 0;
+  const mode = resolveInteractionMode(options);
+  const streakMultiplier = getPerfectStreakMultiplier(state, outcome, mode);
+  const basePayoutCents = QUARTZ_CASH_PAYOUT_BY_OUTCOME_CENTS[outcome] ?? 0;
+  const payoutCents =
+    mode === "normal" ? Math.max(0, Math.floor(basePayoutCents * streakMultiplier)) : 0;
   const withCash =
     payoutCents > 0 ? { ...state, currencyCents: state.currencyCents + payoutCents } : state;
+  const withTracking = applyInteractionTracking(withCash, outcome, mode);
 
-  return setInteractionCooldown(withCash, itemId, nowMs + INTERACTION_BASE_COOLDOWN_MS);
+  if (mode === "practice") {
+    return withTracking;
+  }
+
+  return setInteractionCooldown(withTracking, itemId, nowMs + INTERACTION_BASE_COOLDOWN_MS);
 }

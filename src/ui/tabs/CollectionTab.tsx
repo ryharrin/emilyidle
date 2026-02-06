@@ -65,6 +65,12 @@ type Settings = {
   hiddenTabs: TabId[];
   coachmarksDismissed: Record<string, boolean>;
   confirmNostalgiaUnlocks: boolean;
+  notificationPreferences: {
+    sessionsReady: boolean;
+    prestigeReady: boolean;
+    achievements: boolean;
+    events: boolean;
+  };
 };
 
 type Coachmark = {
@@ -797,10 +803,23 @@ export function CollectionTab({
                     })
                     .map((achievement) => {
                       const unlocked = state.achievementUnlocks.includes(achievement.id);
+                      const progress = getAchievementUnlockProgressDetail(state, achievement.id);
+                      const categoryLabel =
+                        achievement.category === "mini-game"
+                          ? "Mini-game"
+                          : achievement.category === "career"
+                            ? "Career"
+                            : achievement.category === "prestige"
+                              ? "Prestige"
+                              : "Collection";
                       return (
                         <div className="card" key={achievement.id}>
                           <h3>{achievement.name}</h3>
                           <p>{achievement.description}</p>
+                          <p className="muted">{categoryLabel}</p>
+                          <p className="muted">
+                            {progress.current.toLocaleString()} / {progress.threshold.toLocaleString()}
+                          </p>
                           <p className="muted" aria-live="polite">
                             {unlocked ? "Unlocked" : "Locked"}
                           </p>

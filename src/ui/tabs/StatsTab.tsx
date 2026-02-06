@@ -2,8 +2,10 @@ import { formatRateFromCentsPerSec } from "../../game/format";
 import {
   getCashRateBreakdown,
   getEnjoymentRateBreakdown,
+  getEventCalendar,
   getStatModifierGroups,
   type GameState,
+  type EventCalendarEntry,
   type RateBreakdownMultiplierTerm,
   type StatsModifierGroup,
 } from "../../game/state";
@@ -35,6 +37,7 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
   const nowMs = Date.now();
   const enjoymentRateBreakdown = getEnjoymentRateBreakdown(state, currentEventMultiplier);
   const cashRateBreakdown = getCashRateBreakdown(state, nowMs, currentEventMultiplier);
+  const eventCalendar = getEventCalendar(state, nowMs);
   const enjoymentModifierGroups = getStatModifierGroups(
     enjoymentRateBreakdown.baseCentsPerSec,
     enjoymentRateBreakdown.multiplierTerms,
@@ -85,6 +88,48 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
       </ul>
     );
   };
+
+  const renderEventCalendarGroup = (
+    title: string,
+    entries: EventCalendarEntry[],
+    testId: string,
+  ) => (
+    <section className="card stats-event-calendar__group" data-testid={testId}>
+      <header className="stats-event-calendar__group-header">
+        <h4>{title}</h4>
+        <span className="muted">{entries.length}</span>
+      </header>
+      {entries.length === 0 ? (
+        <p className="muted">None</p>
+      ) : (
+        <div className="card-stack">
+          {entries.map((entry) => (
+            <article
+              key={entry.id}
+              className="card stats-event-calendar__entry"
+              data-testid={`event-calendar-${entry.id}`}
+            >
+              <div className="card-header">
+                <div>
+                  <h5>{entry.name}</h5>
+                  <p>{entry.description}</p>
+                </div>
+                <p className="muted">{entry.bonusLabel}</p>
+              </div>
+              <p className="muted" data-testid={`event-calendar-status-${entry.id}`}>
+                {entry.status === "active"
+                  ? `Ends in ${entry.countdownLabel}`
+                  : entry.status === "upcoming"
+                    ? `Starts in ${entry.countdownLabel}`
+                    : "Ready"}
+              </p>
+              <p className="muted">{entry.bonusExplanation}</p>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
 
   return (
     <section id="stats" role="tabpanel" aria-labelledby="stats-tab" hidden={!isActive}>
@@ -150,6 +195,19 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
               balanced.
             </p>
           </article>
+        </section>
+
+        <section className="panel stats-event-calendar-panel" data-testid="stats-event-calendar">
+          <h3>Event calendar</h3>
+          <div className="stats-event-calendar" data-testid="event-calendar">
+            {renderEventCalendarGroup("Active", eventCalendar.active, "event-calendar-active")}
+            {renderEventCalendarGroup(
+              "Upcoming",
+              eventCalendar.upcoming,
+              "event-calendar-upcoming",
+            )}
+            {renderEventCalendarGroup("Ready", eventCalendar.ready, "event-calendar-ready")}
+          </div>
         </section>
 
         <section className="panel stats-journal" data-testid="stats-journal">

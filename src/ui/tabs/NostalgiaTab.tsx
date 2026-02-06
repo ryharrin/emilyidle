@@ -38,6 +38,12 @@ type Settings = {
   hiddenTabs: TabId[];
   coachmarksDismissed: Record<string, boolean>;
   confirmNostalgiaUnlocks: boolean;
+  notificationPreferences: {
+    sessionsReady: boolean;
+    prestigeReady: boolean;
+    achievements: boolean;
+    events: boolean;
+  };
 };
 
 type PurchaseMeta = {

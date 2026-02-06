@@ -1747,14 +1747,14 @@ describe("settings preferences", () => {
     const saveTab = within(tabList).getByRole("tab", { name: /Settings/i });
 
     await user.click(vaultTab);
-    expect(screen.queryByText(/First drawer/i)).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: /First drawer/i })).toBeTruthy();
 
     await user.click(saveTab);
     const hideAchievements = screen.getByTestId("settings-hide-achievements") as HTMLInputElement;
     await user.click(hideAchievements);
 
     await user.click(vaultTab);
-    expect(screen.queryByText(/First drawer/i)).toBeNull();
+    expect(screen.queryByRole("heading", { name: /First drawer/i })).toBeNull();
   });
 
   it("persists hidden tab selections", async () => {

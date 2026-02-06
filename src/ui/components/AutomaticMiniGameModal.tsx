@@ -1,4 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import type { InteractionMiniGameMode, WatchItemId } from "../../game/state";
+import {
+  getInteractionDifficultyProfile,
+  getInteractionPerfectStreakBonusMultiplierFromStreak,
+  resolveInteractionOutcomeTier,
+} from "../../game/state";
 
 export type AutomaticOutcomeTier = "miss" | "good" | "perfect";
 
@@ -9,7 +15,11 @@ export type AutomaticOutcome = {
 
 type AutomaticMiniGameModalProps = {
   open: boolean;
+  itemId: WatchItemId;
   itemLabel: string;
+  mode: InteractionMiniGameMode;
+  onModeChange: (mode: InteractionMiniGameMode) => void;
+  currentPerfectStreak: number;
   onComplete: (outcome: AutomaticOutcome) => void;
   onClose: () => void;
   helpAction?: React.ReactNode;
@@ -93,14 +103,8 @@ function getPrefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function getTier(performance: number): AutomaticOutcomeTier {
-  if (performance >= 0.75) {
-    return "perfect";
-  }
-  if (performance >= 0.45) {
-    return "good";
-  }
-  return "miss";
+export function getTier(performance: number, itemId: WatchItemId): AutomaticOutcomeTier {
+  return resolveInteractionOutcomeTier(performance, itemId);
 }
 
 function getRunDurationMs(): number {
@@ -115,7 +119,11 @@ function getRunDurationMs(): number {
 
 export function AutomaticMiniGameModal({
   open,
+  itemId,
   itemLabel,
+  mode,
+  onModeChange,
+  currentPerfectStreak,
   onComplete,
   onClose,
   helpAction,
@@ -128,6 +136,7 @@ export function AutomaticMiniGameModal({
   const startTimeRef = useRef<number | null>(null);
   const lastElapsedRef = useRef<number | null>(null);
   const rafIdRef = useRef<number | null>(null);
+  const runStartStreakRef = useRef(currentPerfectStreak);
 
   const prefersReducedMotion = useMemo(() => getPrefersReducedMotion(), []);
   const runDurationMs = useMemo(() => getRunDurationMs(), []);
@@ -153,6 +162,7 @@ export function AutomaticMiniGameModal({
     }
 
     resetRun();
+    runStartStreakRef.current = currentPerfectStreak;
     const stepMs = prefersReducedMotion ? STEP_MS_REDUCED_MOTION : 0;
 
     const tick = (nowMs: number) => {
@@ -199,7 +209,7 @@ export function AutomaticMiniGameModal({
         rafIdRef.current = null;
       }
     };
-  }, [open, prefersReducedMotion, runDurationMs]);
+  }, [currentPerfectStreak, open, prefersReducedMotion, runDurationMs]);
 
   useEffect(() => {
     if (!open || result) {
@@ -211,11 +221,11 @@ export function AutomaticMiniGameModal({
     }
 
     const performance = clamp01(inBandMs / runDurationMs);
-    const tier = getTier(performance);
+    const tier = getTier(performance, itemId);
     const outcome: AutomaticOutcome = { performance, tier };
     setResult(outcome);
     onComplete(outcome);
-  }, [elapsedMs, inBandMs, onComplete, open, result, runDurationMs]);
+  }, [elapsedMs, inBandMs, itemId, onComplete, open, result, runDurationMs]);
 
   if (!open) {
     return null;
@@ -238,7 +248,18 @@ export function AutomaticMiniGameModal({
   const liveState = result ? "resolved" : "running";
 
   const reserveGain = result ? Math.round((RESERVE_GAIN_BY_TIER[result.tier] ?? 0) * 100) : 0;
-  const rewardCopy = result ? getAutomaticRewardCopy(result.tier, reserveGain) : null;
+  const difficultyProfile = useMemo(() => getInteractionDifficultyProfile(itemId), [itemId]);
+  const streakMultiplier =
+    result && mode === "normal" && result.tier === "perfect"
+      ? getInteractionPerfectStreakBonusMultiplierFromStreak(runStartStreakRef.current)
+      : 1;
+  const rewardCopy =
+    result && mode === "normal"
+      ? getAutomaticRewardCopy(
+          result.tier,
+          Math.round((RESERVE_GAIN_BY_TIER[result.tier] ?? 0) * 100 * streakMultiplier),
+        )
+      : null;
   const outcomeState = result ? "resolved" : "running";
 
   return (
@@ -254,6 +275,9 @@ export function AutomaticMiniGameModal({
             <p className="eyebrow">Automatic</p>
             <h3>{itemLabel}</h3>
             <p className="muted winding-modal-subtitle">Hold the needle near center for 10s.</p>
+            <p className="muted winding-modal-subtitle" data-testid="automatic-difficulty">
+              Difficulty: {difficultyProfile.label}
+            </p>
           </div>
           <div className="card-actions">
             {helpAction}
@@ -269,6 +293,20 @@ export function AutomaticMiniGameModal({
         </header>
 
         <div className="automatic-modal-body" data-outcome-state={outcomeState}>
+          <div className="winding-mode-strip" data-testid="automatic-mode-strip">
+            <label className="winding-mode-toggle">
+              <input
+                type="checkbox"
+                checked={mode === "practice"}
+                onChange={(event) => onModeChange(event.target.checked ? "practice" : "normal")}
+                data-testid="automatic-practice-toggle"
+              />
+              Practice mode (no rewards, no streak bonus)
+            </label>
+            <p className="muted" data-testid="automatic-streak-label">
+              Perfect streak: {currentPerfectStreak}
+            </p>
+          </div>
           <div className="automatic-track" aria-hidden="true">
             <div className="automatic-target" aria-hidden="true" />
             <div
@@ -310,22 +348,33 @@ export function AutomaticMiniGameModal({
               </button>
             </div>
           ) : (
-            rewardCopy && (
-              <div
-                className={`automatic-outcome automatic-outcome-${result.tier}`}
-                data-testid="automatic-outcome"
-                data-tier={result.tier}
-              >
-                <strong>{rewardCopy.headline}</strong>
-                <p className="muted automatic-outcome-copy">{rewardCopy.detail}</p>
-                <p className="muted">Boosted enjoyment while charged.</p>
-                <div className="card-actions">
-                  <button type="button" data-testid="automatic-done" onClick={onClose}>
-                    Done
-                  </button>
-                </div>
+            <div
+              className={`automatic-outcome automatic-outcome-${result.tier}`}
+              data-testid="automatic-outcome"
+              data-tier={result.tier}
+            >
+              {mode === "practice" ? (
+                <>
+                  <strong>Practice run complete</strong>
+                  <p className="muted automatic-outcome-copy">
+                    Rewards and streak bonuses are disabled in practice mode.
+                  </p>
+                </>
+              ) : (
+                rewardCopy && (
+                  <>
+                    <strong>{rewardCopy.headline}</strong>
+                    <p className="muted automatic-outcome-copy">{rewardCopy.detail}</p>
+                    <p className="muted">Boosted enjoyment while charged.</p>
+                  </>
+                )
+              )}
+              <div className="card-actions">
+                <button type="button" data-testid="automatic-done" onClick={onClose}>
+                  Done
+                </button>
               </div>
-            )
+            </div>
           )}
         </div>
       </div>

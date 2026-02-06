@@ -14,37 +14,35 @@ describe("Quartz outcome math", () => {
     const target = 0; // 12 o'clock position
 
     // Direct hit on target
-    expect(getOutcomeTier(0, target)).toBe("perfect");
-    expect(getOutcomeTier(0.02, target)).toBe("perfect");
-    expect(getOutcomeTier(0.98, target)).toBe("perfect"); // wraps around
+    expect(getOutcomeTier(0, target, "starter")).toBe("perfect");
+    expect(getOutcomeTier(0.02, target, "starter")).toBe("perfect");
+    expect(getOutcomeTier(0.98, target, "starter")).toBe("perfect"); // wraps around
 
-    // Within good window
-    expect(getOutcomeTier(0.15, target)).toBe("good");
-    expect(getOutcomeTier(0.85, target)).toBe("good"); // wraps around
+    // Within good window for starter difficulty.
+    expect(getOutcomeTier(0.15, target, "starter")).toBe("good");
+    expect(getOutcomeTier(0.85, target, "starter")).toBe("good"); // wraps around
 
     // Miss - too far
-    expect(getOutcomeTier(0.5, target)).toBe("miss");
-    expect(getOutcomeTier(0.4, target)).toBe("miss");
+    expect(getOutcomeTier(0.5, target, "starter")).toBe("miss");
+    expect(getOutcomeTier(0.4, target, "starter")).toBe("miss");
   });
 
   it("works with different target positions", () => {
     // Target at 3 o'clock (0.25 = 3/12)
     const target3 = 0.25;
-    expect(getOutcomeTier(0.25, target3)).toBe("perfect");
-    expect(getOutcomeTier(0.27, target3)).toBe("perfect");
-    expect(getOutcomeTier(0.23, target3)).toBe("perfect");
-    // Distance from 0.1 to 0.25 is 0.15, which is within good window (0.18)
-    expect(getOutcomeTier(0.1, target3)).toBe("good");
-    // Distance from 0.05 to 0.25 is 0.20, which is outside good window
-    expect(getOutcomeTier(0.05, target3)).toBe("miss");
+    expect(getOutcomeTier(0.25, target3, "classic")).toBe("perfect");
+    expect(getOutcomeTier(0.27, target3, "classic")).toBe("perfect");
+    expect(getOutcomeTier(0.23, target3, "classic")).toBe("perfect");
+    expect(getOutcomeTier(0.1, target3, "classic")).toBe("good");
+    expect(getOutcomeTier(0.95, target3, "classic")).toBe("miss");
 
     // Target at 6 o'clock (0.5 = 6/12)
     const target6 = 0.5;
-    expect(getOutcomeTier(0.5, target6)).toBe("perfect");
-    expect(getOutcomeTier(0.52, target6)).toBe("perfect");
-    expect(getOutcomeTier(0.48, target6)).toBe("perfect");
+    expect(getOutcomeTier(0.5, target6, "tourbillon")).toBe("perfect");
+    expect(getOutcomeTier(0.52, target6, "tourbillon")).toBe("perfect");
+    expect(getOutcomeTier(0.48, target6, "tourbillon")).toBe("perfect");
     // Distance from 0 to 0.5 is 0.5, which is a miss
-    expect(getOutcomeTier(0, target6)).toBe("miss");
+    expect(getOutcomeTier(0, target6, "tourbillon")).toBe("miss");
   });
 
   it("drops performance from 1 toward 0 as distance from target grows", () => {

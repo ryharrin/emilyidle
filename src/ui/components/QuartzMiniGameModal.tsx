@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { formatMoneyFromCents } from "../../game/format";
+import type { InteractionMiniGameMode, WatchItemId } from "../../game/state";
+import {
+  getInteractionDifficultyProfile,
+  getInteractionPerfectStreakBonusMultiplierFromStreak,
+  resolveInteractionOutcomeTier,
+} from "../../game/state";
 
 export type QuartzOutcomeTier = "miss" | "good" | "perfect";
 
@@ -11,7 +17,11 @@ export type QuartzOutcome = {
 
 type QuartzMiniGameModalProps = {
   open: boolean;
+  itemId: WatchItemId;
   itemLabel: string;
+  mode: InteractionMiniGameMode;
+  onModeChange: (mode: InteractionMiniGameMode) => void;
+  currentPerfectStreak: number;
   rewardRangeLabel: string;
   onComplete: (outcome: QuartzOutcome) => void;
   onClose: () => void;
@@ -26,9 +36,6 @@ export const QUARTZ_ENJOYMENT_BY_TIER_CENTS: Record<QuartzOutcomeTier, number> =
   good: 250,
   perfect: 500,
 };
-
-const PERFECT_DISTANCE_FROM_CENTER = 0.03;
-const GOOD_DISTANCE_FROM_CENTER = 0.18;
 
 // Static hour marker data (avoid array index as key)
 const HOUR_MARKERS = [
@@ -80,17 +87,12 @@ function formatTime(hour: number, minute: number): string {
   return `${hour}:${minute.toString().padStart(2, "0")}`;
 }
 
-export function getOutcomeTier(progress: number, targetPosition: number): QuartzOutcomeTier {
-  // Distance from target (wraps around)
-  const rawDistance = Math.abs(progress - targetPosition);
-  const distance = Math.min(rawDistance, 1 - rawDistance);
-  if (distance <= PERFECT_DISTANCE_FROM_CENTER) {
-    return "perfect";
-  }
-  if (distance <= GOOD_DISTANCE_FROM_CENTER) {
-    return "good";
-  }
-  return "miss";
+export function getOutcomeTier(
+  progress: number,
+  targetPosition: number,
+  itemId: WatchItemId,
+): QuartzOutcomeTier {
+  return resolveInteractionOutcomeTier(getPerformance(progress, targetPosition), itemId);
 }
 
 export function getPerformance(progress: number, targetPosition: number): number {
@@ -145,18 +147,29 @@ const QUARTZ_TIER_LABELS: Record<QuartzOutcomeTier, string> = {
   perfect: "Perfect",
 };
 
-export function getQuartzRewardCopy(tier: QuartzOutcomeTier): QuartzRewardCopy {
-  const rewardCents = QUARTZ_ENJOYMENT_BY_TIER_CENTS[tier];
+export function getQuartzRewardCopy(
+  tier: QuartzOutcomeTier,
+  rewardMultiplier = 1,
+): QuartzRewardCopy {
+  const rewardCents = Math.max(
+    0,
+    Math.floor(QUARTZ_ENJOYMENT_BY_TIER_CENTS[tier] * rewardMultiplier),
+  );
   const info = QUARTZ_REWARD_INFO[tier];
+  const multiplierSuffix = rewardMultiplier > 1 ? ` (x${rewardMultiplier.toFixed(2)} streak)` : "";
   return {
-    headline: `${info.prefix} · +${formatMoneyFromCents(rewardCents)} enjoyment`,
+    headline: `${info.prefix} · +${formatMoneyFromCents(rewardCents)} enjoyment${multiplierSuffix}`,
     detail: `${info.detail} Tier pays ${rewardCents / QUARTZ_ENJOYMENT_BY_TIER_CENTS.miss}× baseline enjoyment.`,
   };
 }
 
 export function QuartzMiniGameModal({
   open,
+  itemId,
   itemLabel,
+  mode,
+  onModeChange,
+  currentPerfectStreak,
   rewardRangeLabel,
   onComplete,
   onClose,
@@ -167,6 +180,7 @@ export function QuartzMiniGameModal({
   const [targetTime, setTargetTime] = useState<{ hour: number; minute: number } | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const rafIdRef = useRef<number | null>(null);
+  const runStartStreakRef = useRef(currentPerfectStreak);
 
   const prefersReducedMotion = useMemo(() => getPrefersReducedMotion(), []);
 
@@ -195,6 +209,7 @@ export function QuartzMiniGameModal({
     }
 
     resetRun();
+    runStartStreakRef.current = currentPerfectStreak;
     // Generate new target time
     setTargetTime(generateTargetTime());
 
@@ -229,7 +244,9 @@ export function QuartzMiniGameModal({
         rafIdRef.current = null;
       }
     };
-  }, [open, prefersReducedMotion, resetRun]);
+  }, [currentPerfectStreak, open, prefersReducedMotion, resetRun]);
+
+  const difficultyProfile = useMemo(() => getInteractionDifficultyProfile(itemId), [itemId]);
 
   if (!open || !targetTime) {
     return null;
@@ -242,7 +259,17 @@ export function QuartzMiniGameModal({
     progressPercent,
     targetTime,
   });
-  const rewardCopy = result ? getQuartzRewardCopy(result.tier) : null;
+  const streakMultiplier =
+    result && mode === "normal" && result.tier === "perfect"
+      ? getInteractionPerfectStreakBonusMultiplierFromStreak(runStartStreakRef.current)
+      : 1;
+  const rewardCopy =
+    result && mode === "normal"
+      ? getQuartzRewardCopy(
+          result.tier,
+          streakMultiplier,
+        )
+      : null;
   const outcomeState = result ? "resolved" : "running";
 
   const handleSet = () => {
@@ -255,7 +282,7 @@ export function QuartzMiniGameModal({
       rafIdRef.current = null;
     }
 
-    const tier = getOutcomeTier(progress, targetPosition);
+    const tier = getOutcomeTier(progress, targetPosition, itemId);
     const outcome: QuartzOutcome = { tier, performance: getPerformance(progress, targetPosition) };
     setResult(outcome);
     onComplete(outcome);
@@ -274,6 +301,9 @@ export function QuartzMiniGameModal({
             <p className="eyebrow">Quartz</p>
             <h3>{itemLabel}</h3>
             <p className="muted winding-modal-subtitle">Reward: {rewardRangeLabel}</p>
+            <p className="muted winding-modal-subtitle" data-testid="quartz-difficulty">
+              Difficulty: {difficultyProfile.label}
+            </p>
           </div>
           <div className="card-actions">
             {helpAction}
@@ -289,6 +319,20 @@ export function QuartzMiniGameModal({
         </header>
 
         <div className="quartz-modal-body" data-outcome-state={outcomeState}>
+          <div className="winding-mode-strip" data-testid="quartz-mode-strip">
+            <label className="winding-mode-toggle">
+              <input
+                type="checkbox"
+                checked={mode === "practice"}
+                onChange={(event) => onModeChange(event.target.checked ? "practice" : "normal")}
+                data-testid="quartz-practice-toggle"
+              />
+              Practice mode (no rewards, no streak bonus)
+            </label>
+            <p className="muted" data-testid="quartz-streak-label">
+              Perfect streak: {currentPerfectStreak}
+            </p>
+          </div>
           <div className="quartz-target-time" data-testid="quartz-target-time">
             <strong>Set to: {formatTime(targetTime.hour, targetTime.minute)}</strong>
           </div>
@@ -392,19 +436,28 @@ export function QuartzMiniGameModal({
               {formatTime(targetTime.hour, targetTime.minute)}
             </p>
           ) : (
-            rewardCopy && (
-              <div
-                className={`quartz-outcome quartz-outcome-${result.tier}`}
-                data-testid="quartz-outcome"
-                data-tier={result.tier}
-              >
-                <strong>{rewardCopy.headline}</strong>
-                <p className="muted quartz-outcome-copy">{rewardCopy.detail}</p>
-                <p className="muted">
-                  Target was {formatTime(targetTime.hour, targetTime.minute)}.
-                </p>
-              </div>
-            )
+            <div
+              className={`quartz-outcome quartz-outcome-${result.tier}`}
+              data-testid="quartz-outcome"
+              data-tier={result.tier}
+            >
+              {mode === "practice" ? (
+                <>
+                  <strong>Practice run complete</strong>
+                  <p className="muted quartz-outcome-copy">
+                    Rewards and streak bonuses are disabled in practice mode.
+                  </p>
+                </>
+              ) : (
+                rewardCopy && (
+                  <>
+                    <strong>{rewardCopy.headline}</strong>
+                    <p className="muted quartz-outcome-copy">{rewardCopy.detail}</p>
+                  </>
+                )
+              )}
+              <p className="muted">Target was {formatTime(targetTime.hour, targetTime.minute)}.</p>
+            </div>
           )}
 
           <div className="card-actions">

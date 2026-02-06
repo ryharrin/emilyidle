@@ -212,6 +212,18 @@ function sanitizeState(value: unknown): GameState | null {
       typeof record.lastPurchase === "object" && record.lastPurchase !== null
         ? (record.lastPurchase as WatchPurchaseSnapshot)
         : null,
+    interactionRunsTotal: isFiniteNumber(record.interactionRunsTotal)
+      ? Math.max(0, Math.floor(record.interactionRunsTotal))
+      : 0,
+    interactionPerfectRuns: isFiniteNumber(record.interactionPerfectRuns)
+      ? Math.max(0, Math.floor(record.interactionPerfectRuns))
+      : 0,
+    interactionPerfectStreak: isFiniteNumber(record.interactionPerfectStreak)
+      ? Math.max(0, Math.floor(record.interactionPerfectStreak))
+      : 0,
+    interactionBestPerfectStreak: isFiniteNumber(record.interactionBestPerfectStreak)
+      ? Math.max(0, Math.floor(record.interactionBestPerfectStreak))
+      : 0,
   };
 
   return createStateFromSave(persisted);

@@ -549,6 +549,26 @@ export function getAchievementProgressRatio(
     return requirement.threshold > 0 ? state.workshopPrestigeCount / requirement.threshold : 0;
   }
 
+  if (requirement.type === "careerLevel") {
+    return requirement.threshold > 0 ? state.therapistCareer.level / requirement.threshold : 0;
+  }
+
+  if (requirement.type === "interactionPerfects") {
+    return requirement.threshold > 0
+      ? state.interactionPerfectRuns / requirement.threshold
+      : 0;
+  }
+
+  if (requirement.type === "perfectStreak") {
+    return requirement.threshold > 0
+      ? state.interactionBestPerfectStreak / requirement.threshold
+      : 0;
+  }
+
+  if (requirement.type === "nostalgiaResets") {
+    return requirement.threshold > 0 ? state.nostalgiaResets / requirement.threshold : 0;
+  }
+
   return requirement.threshold > 0
     ? state.discoveredCatalogEntries.length / requirement.threshold
     : 0;
@@ -624,6 +644,22 @@ export function getAchievementRequirementLabel(achievementId: AchievementId): st
     return `Prestige the Atelier ${requirement.threshold} time${requirement.threshold === 1 ? "" : "s"}`;
   }
 
+  if (requirement.type === "careerLevel") {
+    return `Reach career level ${requirement.threshold}`;
+  }
+
+  if (requirement.type === "interactionPerfects") {
+    return `Land ${requirement.threshold} perfect mini-game outcomes`;
+  }
+
+  if (requirement.type === "perfectStreak") {
+    return `Build a ${requirement.threshold}-perfect streak`;
+  }
+
+  if (requirement.type === "nostalgiaResets") {
+    return `Complete ${requirement.threshold} Nostalgia reset${requirement.threshold === 1 ? "" : "s"}`;
+  }
+
   return `Discover ${requirement.threshold} catalog references`;
 }
 
@@ -647,7 +683,15 @@ export function getAchievementUnlockProgressDetail(
         ? getCollectionValueCents(state)
         : requirement.type === "workshopPrestigeCount"
           ? state.workshopPrestigeCount
-          : state.discoveredCatalogEntries.length;
+          : requirement.type === "careerLevel"
+            ? state.therapistCareer.level
+            : requirement.type === "interactionPerfects"
+              ? state.interactionPerfectRuns
+              : requirement.type === "perfectStreak"
+                ? state.interactionBestPerfectStreak
+                : requirement.type === "nostalgiaResets"
+                  ? state.nostalgiaResets
+                  : state.discoveredCatalogEntries.length;
 
   const current = clampNumber(rawCurrent, 0, threshold);
   const ratio = threshold > 0 ? clampNumber(rawCurrent / threshold, 0, 1) : 0;
@@ -1043,6 +1087,110 @@ export function getEventStatusLabel(state: GameState, eventId: EventId, nowMs: n
   }
 
   return "Ready";
+}
+
+function formatEventCountdownLabel(ms: number): string {
+  const safeMs = Math.max(0, Math.floor(ms));
+  const totalSeconds = Math.ceil(safeMs / 1000);
+  if (totalSeconds < 60) {
+    return `${totalSeconds}s`;
+  }
+
+  const totalMinutes = Math.ceil(totalSeconds / 60);
+  if (totalMinutes < 60) {
+    return `${totalMinutes}m`;
+  }
+
+  const totalHours = Math.ceil(totalMinutes / 60);
+  if (totalHours < 24) {
+    return `${totalHours}h`;
+  }
+
+  const totalDays = Math.ceil(totalHours / 24);
+  return `${totalDays}d`;
+}
+
+export type EventCalendarEntry = {
+  id: EventId;
+  name: string;
+  description: string;
+  status: "active" | "upcoming" | "ready";
+  countdownMs: number;
+  countdownLabel: string;
+  bonusMultiplier: number;
+  bonusLabel: string;
+  bonusExplanation: string;
+};
+
+export type EventCalendarModel = {
+  active: EventCalendarEntry[];
+  upcoming: EventCalendarEntry[];
+  ready: EventCalendarEntry[];
+};
+
+export function getEventCalendar(state: GameState, nowMs: number): EventCalendarModel {
+  const model: EventCalendarModel = {
+    active: [],
+    upcoming: [],
+    ready: [],
+  };
+
+  for (const event of EVENTS) {
+    const eventState = state.eventStates[event.id] ?? { activeUntilMs: 0, nextAvailableAtMs: 0 };
+    const effectiveMultiplier = eventState.incomeMultiplier ?? event.incomeMultiplier;
+
+    if (nowMs < eventState.activeUntilMs) {
+      const countdownMs = Math.max(0, eventState.activeUntilMs - nowMs);
+      model.active.push({
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        status: "active",
+        countdownMs,
+        countdownLabel: formatEventCountdownLabel(countdownMs),
+        bonusMultiplier: effectiveMultiplier,
+        bonusLabel: `Income x${effectiveMultiplier.toFixed(2)}`,
+        bonusExplanation: "Event is live now. Earnings include the active event multiplier.",
+      });
+      continue;
+    }
+
+    if (nowMs < eventState.nextAvailableAtMs) {
+      const countdownMs = Math.max(0, eventState.nextAvailableAtMs - nowMs);
+      model.upcoming.push({
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        status: "upcoming",
+        countdownMs,
+        countdownLabel: formatEventCountdownLabel(countdownMs),
+        bonusMultiplier: effectiveMultiplier,
+        bonusLabel: `Income x${effectiveMultiplier.toFixed(2)}`,
+        bonusExplanation: "Event returns after cooldown. Countdown shows time until it reopens.",
+      });
+      continue;
+    }
+
+    model.ready.push({
+      id: event.id,
+      name: event.name,
+      description: event.description,
+      status: "ready",
+      countdownMs: 0,
+      countdownLabel: "Ready",
+      bonusMultiplier: effectiveMultiplier,
+      bonusLabel: `Income x${effectiveMultiplier.toFixed(2)}`,
+      bonusExplanation: "Event can trigger immediately once its activation condition is met.",
+    });
+  }
+
+  const sortByCountdown = (a: EventCalendarEntry, b: EventCalendarEntry) =>
+    a.countdownMs - b.countdownMs;
+  model.active.sort(sortByCountdown);
+  model.upcoming.sort(sortByCountdown);
+  model.ready.sort((a, b) => a.name.localeCompare(b.name));
+
+  return model;
 }
 
 export function getSoftcapEfficiency(state: GameState): number {

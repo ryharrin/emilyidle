@@ -11,6 +11,7 @@ export type {
   EventState,
   EventTrigger,
   GameState,
+  InteractionMiniGameMode,
   MaisonCurrency,
   MaisonLineDefinition,
   MaisonLineId,

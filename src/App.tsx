@@ -48,6 +48,7 @@ import {
   applyQuartzReward,
   applyWindingReward,
   buyWatchModel,
+  canPerformTherapistSession,
   canMaisonPrestige,
   canWorkshopPrestige,
   canNostalgiaPrestige,
@@ -78,6 +79,7 @@ import {
   getWatchModels,
   getUpgrades,
   getSetBonuses,
+  getInteractionStreakDetail,
   getEvents,
   getMaisonUpgrades,
   getMaisonLines,
@@ -97,12 +99,13 @@ import {
   getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
   getMilestones,
+  isEventActive,
   isItemUnlocked,
   isMaisonRevealReady,
   isWorkshopRevealReady,
 } from "./game/state";
 import { getCatalogEntryTags } from "./game/catalog";
-import type { GameState, WatchItemId } from "./game/state";
+import type { GameState, InteractionMiniGameMode, WatchItemId } from "./game/state";
 import { step } from "./game/sim";
 
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
@@ -118,6 +121,8 @@ type PurchaseMeta = {
   prestigeTier?: PrestigeEvent["tier"];
 };
 
+type InteractionKind = "winding" | "automatic" | "quartz";
+
 type AudioSettings = {
   sfxEnabled: boolean;
   bgmEnabled: boolean;
@@ -126,12 +131,20 @@ type AudioSettings = {
 type ThemeMode = "system" | "light" | "dark";
 const HIDEABLE_TAB_IDS: TabId[] = ["career", "catalog", "workshop", "maison", "stats"];
 
+type NotificationPreferences = {
+  sessionsReady: boolean;
+  prestigeReady: boolean;
+  achievements: boolean;
+  events: boolean;
+};
+
 type Settings = {
   themeMode: ThemeMode;
   hideCompletedAchievements: boolean;
   hiddenTabs: TabId[];
   coachmarksDismissed: Record<string, boolean>;
   confirmNostalgiaUnlocks: boolean;
+  notificationPreferences: NotificationPreferences;
 };
 
 const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
@@ -145,6 +158,12 @@ const DEFAULT_SETTINGS: Settings = {
   hiddenTabs: [],
   coachmarksDismissed: {},
   confirmNostalgiaUnlocks: true,
+  notificationPreferences: {
+    sessionsReady: true,
+    prestigeReady: true,
+    achievements: true,
+    events: true,
+  },
 };
 
 const loadNavigationState = (): NavigationState | null => {
@@ -255,6 +274,28 @@ const loadSettings = (): Settings => {
     }, {});
     const confirmNostalgiaUnlocks =
       typeof parsed.confirmNostalgiaUnlocks === "boolean" ? parsed.confirmNostalgiaUnlocks : true;
+    const notificationPreferencesRaw =
+      parsed.notificationPreferences && typeof parsed.notificationPreferences === "object"
+        ? parsed.notificationPreferences
+        : {};
+    const notificationPreferences: NotificationPreferences = {
+      sessionsReady:
+        typeof notificationPreferencesRaw.sessionsReady === "boolean"
+          ? notificationPreferencesRaw.sessionsReady
+          : DEFAULT_SETTINGS.notificationPreferences.sessionsReady,
+      prestigeReady:
+        typeof notificationPreferencesRaw.prestigeReady === "boolean"
+          ? notificationPreferencesRaw.prestigeReady
+          : DEFAULT_SETTINGS.notificationPreferences.prestigeReady,
+      achievements:
+        typeof notificationPreferencesRaw.achievements === "boolean"
+          ? notificationPreferencesRaw.achievements
+          : DEFAULT_SETTINGS.notificationPreferences.achievements,
+      events:
+        typeof notificationPreferencesRaw.events === "boolean"
+          ? notificationPreferencesRaw.events
+          : DEFAULT_SETTINGS.notificationPreferences.events,
+    };
 
     return {
       themeMode,
@@ -262,6 +303,7 @@ const loadSettings = (): Settings => {
       hiddenTabs,
       coachmarksDismissed,
       confirmNostalgiaUnlocks,
+      notificationPreferences,
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -270,9 +312,16 @@ const loadSettings = (): Settings => {
 
 export default function App() {
   const [activeInteraction, setActiveInteraction] = useState<null | {
-    kind: "winding" | "automatic" | "quartz";
+    kind: InteractionKind;
     itemId: WatchItemId;
   }>(null);
+  const [interactionModes, setInteractionModes] = useState<
+    Record<InteractionKind, InteractionMiniGameMode>
+  >({
+    winding: "normal",
+    automatic: "normal",
+    quartz: "normal",
+  });
 
   const [saveStatus, setSaveStatus] = useState("");
   const [importText, setImportText] = useState("");
@@ -371,6 +420,9 @@ export default function App() {
     },
     [pushToast],
   );
+  const handlePersistError = useCallback((message: string) => {
+    setSaveStatus(message);
+  }, []);
 
   const { state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
     initialState: createInitialState,
@@ -379,10 +431,19 @@ export default function App() {
     clearSave: clearLocalStorageSave,
     persistSave: persistSaveToLocalStorage,
     devSettings,
-    onPersistError: (message) => setSaveStatus(message),
+    onPersistError: handlePersistError,
     onOfflineProgress: handleOfflineProgress,
   });
   const lastNostalgiaToastRef = useRef(state.nostalgiaLastGain);
+  const notificationsInitializedRef = useRef(false);
+  const previousAchievementUnlocksRef = useRef<Set<string>>(new Set());
+  const previousSessionReadyRef = useRef(false);
+  const previousPrestigeReadyRef = useRef({
+    workshop: false,
+    maison: false,
+    nostalgia: false,
+  });
+  const previousEventActiveRef = useRef<Record<string, boolean>>({});
 
   const persistSettings = (nextSettings: Settings) => {
     setSettings(nextSettings);
@@ -627,6 +688,18 @@ export default function App() {
     }
   };
 
+  const handleInteractionModeChange = useCallback(
+    (kind: InteractionKind, mode: InteractionMiniGameMode) => {
+      setInteractionModes((current) => {
+        if (current[kind] === mode) {
+          return current;
+        }
+        return { ...current, [kind]: mode };
+      });
+    },
+    [],
+  );
+
   const handleCraftBoost = (boostId: (typeof craftedBoosts)[number]["id"]) => {
     handlePurchase(craftBoost(state, boostId));
   };
@@ -806,6 +879,10 @@ export default function App() {
   const milestones = useMemo(() => getMilestones(), []);
   const upgrades = useMemo(() => getUpgrades(), []);
   const achievements = useMemo(() => getAchievements(), []);
+  const achievementById = useMemo(
+    () => new Map(achievements.map((achievement) => [achievement.id, achievement])),
+    [achievements],
+  );
   const events = useMemo(() => getEvents(), []);
   const workshopUpgrades = useMemo(() => getWorkshopUpgrades(), []);
   const maisonUpgrades = useMemo(() => getMaisonUpgrades(), []);
@@ -848,6 +925,7 @@ export default function App() {
     () => getEventIncomeMultiplier(state, nowMs),
     [state, nowMs],
   );
+  const interactionStreak = useMemo(() => getInteractionStreakDetail(state), [state]);
   const systemStats = {
     atelierResets: state.workshopPrestigeCount,
     maisonHeritage: state.maisonHeritage,
@@ -895,6 +973,127 @@ export default function App() {
     () => tabs.filter((tab) => combinedTabVisibility[tab.id]),
     [tabs, combinedTabVisibility],
   );
+
+  useEffect(() => {
+    const sessionReady = canPerformTherapistSession(state, nowMs);
+    const prestigeReady = {
+      workshop: canPrestigeWorkshop,
+      maison: canPrestigeMaison,
+      nostalgia: canPrestigeNostalgia,
+    };
+    const achievementUnlocks = new Set(state.achievementUnlocks);
+    const eventActiveMap = events.reduce<Record<string, boolean>>((acc, event) => {
+      acc[event.id] = isEventActive(state, event.id, nowMs);
+      return acc;
+    }, {});
+
+    if (!notificationsInitializedRef.current) {
+      notificationsInitializedRef.current = true;
+      previousAchievementUnlocksRef.current = achievementUnlocks;
+      previousSessionReadyRef.current = sessionReady;
+      previousPrestigeReadyRef.current = prestigeReady;
+      previousEventActiveRef.current = eventActiveMap;
+      return;
+    }
+
+    const preferences = settings.notificationPreferences;
+
+    if (preferences.achievements) {
+      for (const achievementId of achievementUnlocks) {
+        if (previousAchievementUnlocksRef.current.has(achievementId)) {
+          continue;
+        }
+        const achievement = achievementById.get(achievementId);
+        if (!achievement) {
+          continue;
+        }
+
+        pushToast({
+          id: `achievement-${achievement.id}`,
+          title: "Achievement unlocked",
+          message: achievement.name,
+          detail: achievement.description,
+        });
+      }
+    }
+
+    if (preferences.sessionsReady && sessionReady && !previousSessionReadyRef.current) {
+      pushToast({
+        id: `session-ready-${state.therapistCareer.nextAvailableAtMs}`,
+        title: "Session ready",
+        message: "Therapist session is available again.",
+        detail: "Head to Career to run your next session.",
+      });
+    }
+
+    if (preferences.prestigeReady) {
+      if (prestigeReady.workshop && !previousPrestigeReadyRef.current.workshop) {
+        pushToast({
+          id: `prestige-workshop-${state.workshopPrestigeCount}`,
+          title: "Atelier ready",
+          message: "Workshop prestige is now available.",
+          detail: "Visit Workshop to convert enjoyment into blueprints.",
+        });
+      }
+      if (prestigeReady.maison && !previousPrestigeReadyRef.current.maison) {
+        pushToast({
+          id: `prestige-maison-${state.maisonHeritage}-${state.maisonReputation}`,
+          title: "Maison ready",
+          message: "Maison prestige is available.",
+          detail: "Visit Maison to claim Heritage and Reputation.",
+        });
+      }
+      if (prestigeReady.nostalgia && !previousPrestigeReadyRef.current.nostalgia) {
+        pushToast({
+          id: `prestige-nostalgia-${state.nostalgiaResets}-${state.nostalgiaPoints}`,
+          title: "Nostalgia ready",
+          message: "Nostalgia prestige threshold reached.",
+          detail: "Visit Nostalgia when you want to reset for permanent points.",
+        });
+      }
+    }
+
+    if (preferences.events) {
+      for (const event of events) {
+        const wasActive = previousEventActiveRef.current[event.id] ?? false;
+        const isActiveNow = eventActiveMap[event.id] ?? false;
+
+        if (!wasActive && isActiveNow) {
+          pushToast({
+            id: `event-start-${event.id}-${state.eventStates[event.id]?.activeUntilMs ?? nowMs}`,
+            title: "Event started",
+            message: event.name,
+            detail: `Income x${event.incomeMultiplier.toFixed(2)} while active.`,
+          });
+          continue;
+        }
+
+        if (wasActive && !isActiveNow) {
+          pushToast({
+            id: `event-end-${event.id}-${nowMs}`,
+            title: "Event ended",
+            message: event.name,
+            detail: "Event bonus expired.",
+          });
+        }
+      }
+    }
+
+    previousAchievementUnlocksRef.current = achievementUnlocks;
+    previousSessionReadyRef.current = sessionReady;
+    previousPrestigeReadyRef.current = prestigeReady;
+    previousEventActiveRef.current = eventActiveMap;
+  }, [
+    achievementById,
+    canPrestigeMaison,
+    canPrestigeNostalgia,
+    canPrestigeWorkshop,
+    events,
+    nowMs,
+    pushToast,
+    settings.notificationPreferences,
+    state,
+  ]);
 
   const resolveInitialTabSelection = useCallback((): {
     tabId: TabId;
@@ -1528,11 +1727,15 @@ export default function App() {
 
           <WindingMiniGameModal
             open={activeInteraction?.kind === "winding"}
+            itemId={activeInteraction?.kind === "winding" ? activeInteraction.itemId : "chronograph"}
             itemLabel={
               activeInteraction?.kind === "winding"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
                 : ""
             }
+            mode={interactionModes.winding}
+            onModeChange={(mode) => handleInteractionModeChange("winding", mode)}
+            currentPerfectStreak={interactionStreak.currentStreak}
             rewardRangeLabel={`${formatMoneyFromCents(25)} - ${formatMoneyFromCents(150)} enjoyment`}
             cooldownLabel={`Cooldown ${Math.floor(INTERACTION_BASE_COOLDOWN_MS / 1000)}s`}
             helpAction={
@@ -1547,7 +1750,9 @@ export default function App() {
                 return;
               }
               handlePurchase(
-                applyWindingReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+                applyWindingReward(state, activeInteraction.itemId, Date.now(), outcome.tier, {
+                  mode: interactionModes.winding,
+                }),
               );
             }}
             showTapHint={!settings.coachmarksDismissed["winding:tap-hint"]}
@@ -1557,11 +1762,15 @@ export default function App() {
 
           <AutomaticMiniGameModal
             open={activeInteraction?.kind === "automatic"}
+            itemId={activeInteraction?.kind === "automatic" ? activeInteraction.itemId : "classic"}
             itemLabel={
               activeInteraction?.kind === "automatic"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
                 : ""
             }
+            mode={interactionModes.automatic}
+            onModeChange={(mode) => handleInteractionModeChange("automatic", mode)}
+            currentPerfectStreak={interactionStreak.currentStreak}
             helpAction={
               <ExplainButton
                 sectionId={HELP_SECTION_IDS.interactions}
@@ -1574,7 +1783,9 @@ export default function App() {
                 return;
               }
               handlePurchase(
-                applyAutomaticReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+                applyAutomaticReward(state, activeInteraction.itemId, Date.now(), outcome.tier, {
+                  mode: interactionModes.automatic,
+                }),
               );
             }}
             onClose={() => setActiveInteraction(null)}
@@ -1582,11 +1793,15 @@ export default function App() {
 
           <QuartzMiniGameModal
             open={activeInteraction?.kind === "quartz"}
+            itemId={activeInteraction?.kind === "quartz" ? activeInteraction.itemId : "starter"}
             itemLabel={
               activeInteraction?.kind === "quartz"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
                 : ""
             }
+            mode={interactionModes.quartz}
+            onModeChange={(mode) => handleInteractionModeChange("quartz", mode)}
+            currentPerfectStreak={interactionStreak.currentStreak}
             rewardRangeLabel={`${formatMoneyFromCents(100)} - ${formatMoneyFromCents(500)}`}
             helpAction={
               <ExplainButton
@@ -1600,7 +1815,9 @@ export default function App() {
                 return;
               }
               handlePurchase(
-                applyQuartzReward(state, activeInteraction.itemId, Date.now(), outcome.tier),
+                applyQuartzReward(state, activeInteraction.itemId, Date.now(), outcome.tier, {
+                  mode: interactionModes.quartz,
+                }),
               );
             }}
             onClose={() => setActiveInteraction(null)}

@@ -8,6 +8,7 @@ import {
   createInitialState,
   getEnjoymentRateCentsPerSec,
   getInteractionCooldownRemainingMs,
+  getInteractionStreakDetail,
   getPowerReserveForItem,
   getWatchItems,
   isInteractionAvailable,
@@ -157,5 +158,68 @@ describe("interactions", () => {
     expect(getInteractionCooldownRemainingMs(rewarded, "starter", nowMs)).toBe(
       INTERACTION_BASE_COOLDOWN_MS,
     );
+  });
+
+  it("supports practice mode without rewards or cooldown", () => {
+    const baseState = createInitialState();
+    const seededState: GameState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        starter: 1,
+      },
+      currencyCents: 250_000,
+      enjoymentCents: 25_000,
+    };
+
+    const nowMs = 12_000;
+    const practiced = applyQuartzReward(seededState, "starter", nowMs, "perfect", {
+      mode: "practice",
+    });
+
+    expect(practiced.currencyCents).toBe(seededState.currencyCents);
+    expect(getInteractionCooldownRemainingMs(practiced, "starter", nowMs)).toBe(0);
+    expect(getInteractionStreakDetail(practiced).currentStreak).toBe(0);
+  });
+
+  it("applies capped perfect streak bonuses in normal mode and resets on miss", () => {
+    const baseState = createInitialState();
+    const seededState: GameState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        chronograph: 1,
+      },
+    };
+
+    const first = applyWindingReward(seededState, "chronograph", 0, "perfect");
+    expect(first.enjoymentCents).toBe(150);
+    expect(getInteractionStreakDetail(first).currentStreak).toBe(1);
+
+    const second = applyWindingReward(
+      first,
+      "chronograph",
+      INTERACTION_BASE_COOLDOWN_MS,
+      "perfect",
+    );
+    expect(second.enjoymentCents).toBe(315);
+    expect(getInteractionStreakDetail(second).currentStreak).toBe(2);
+
+    const third = applyWindingReward(
+      second,
+      "chronograph",
+      INTERACTION_BASE_COOLDOWN_MS * 2,
+      "miss",
+    );
+    expect(getInteractionStreakDetail(third).currentStreak).toBe(0);
+
+    const afterReset = applyWindingReward(
+      third,
+      "chronograph",
+      INTERACTION_BASE_COOLDOWN_MS * 3,
+      "perfect",
+    );
+    expect(afterReset.enjoymentCents - third.enjoymentCents).toBe(150);
+    expect(getInteractionStreakDetail(afterReset).currentStreak).toBe(1);
   });
 });

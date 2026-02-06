@@ -2,7 +2,7 @@ import { CATALOG_ENTRIES } from "../src/game/catalog";
 import type { GameState } from "../src/game/state";
 import { createInitialState } from "../src/game/state";
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 
@@ -44,7 +44,17 @@ const seedState = async (page: Page) => {
 
 const openCatalogFromCollection = async (page: Page) => {
   await page.getByRole("tab", { name: "Catalog" }).click();
-  await expect(page.getByTestId("catalog-grid")).toBeVisible();
+  const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
+  await expect(catalogPanel.getByTestId("catalog-grid")).toBeVisible();
+  return catalogPanel;
+};
+
+const switchCatalogToOwned = async (catalogPanel: Locator) => {
+  const ownedTab = catalogPanel.getByRole("tab", { name: /^Owned/ }).first();
+  if (!(await ownedTab.isVisible().catch(() => false))) {
+    await catalogPanel.getByRole("button", { name: /Filters/i }).click();
+  }
+  await ownedTab.click();
 };
 
 const isFocusInsideModal = async (page: Page, selector: string) =>
@@ -137,8 +147,9 @@ test.describe("Interaction modals", () => {
   });
 
   test("winding, automatic, and quartz modals lock scroll and trap focus", async ({ page }) => {
-    await openCatalogFromCollection(page);
-    const manualCandidates = page.locator(
+    const catalogPanel = await openCatalogFromCollection(page);
+    await switchCatalogToOwned(catalogPanel);
+    const manualCandidates = catalogPanel.locator(
       '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
     );
     if ((await manualCandidates.count()) > 0) {
@@ -146,6 +157,8 @@ test.describe("Interaction modals", () => {
       await manualButton.click();
       const windingModal = page.getByTestId("winding-modal");
       await expect(windingModal).toBeVisible();
+      await expect(page.getByTestId("winding-practice-toggle")).toBeVisible();
+      await expect(page.getByTestId("winding-difficulty")).toBeVisible();
       expect(await page.evaluate(() => document.body.style.overflow)).toBe("hidden");
       await page.keyboard.press("Tab");
       expect(await isFocusInsideModal(page, "[data-testid='winding-modal']")).toBe(true);
@@ -157,27 +170,45 @@ test.describe("Interaction modals", () => {
       ).toBeUndefined();
     }
 
-    const automaticCandidates = page.locator(
+    const automaticCandidates = catalogPanel.locator(
       '[data-testid="vault-interact-classic"]:not([disabled])',
     );
     if ((await automaticCandidates.count()) > 0) {
-      const automaticButton = automaticCandidates.first();
-      await automaticButton.click();
       const automaticModal = page.getByTestId("automatic-modal");
-      await expect(automaticModal).toBeVisible();
-      await page.keyboard.press("Tab");
-      await page.getByTestId("automatic-close").click();
-      await expect(automaticModal).toHaveCount(0);
-      await page.waitForTimeout(50);
-      expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
+      let opened = false;
+      const automaticCount = await automaticCandidates.count();
+      for (let index = 0; index < automaticCount; index += 1) {
+        const candidate = automaticCandidates.nth(index);
+        if (!(await candidate.isVisible())) {
+          continue;
+        }
+        await candidate.click();
+        if (await automaticModal.isVisible().catch(() => false)) {
+          opened = true;
+          break;
+        }
+      }
+      if (opened) {
+        await expect(page.getByTestId("automatic-practice-toggle")).toBeVisible();
+        await expect(page.getByTestId("automatic-difficulty")).toBeVisible();
+        await page.keyboard.press("Tab");
+        await page.getByTestId("automatic-close").click();
+        await expect(automaticModal).toHaveCount(0);
+        await page.waitForTimeout(50);
+        expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
+      }
     }
 
-    const quartzCandidates = page.locator('[data-testid="vault-interact-starter"]:not([disabled])');
+    const quartzCandidates = catalogPanel.locator(
+      '[data-testid="vault-interact-starter"]:not([disabled])',
+    );
     if ((await quartzCandidates.count()) > 0) {
       const quartzButton = quartzCandidates.first();
       await quartzButton.click();
       const quartzModal = page.getByTestId("quartz-modal");
       await expect(quartzModal).toBeVisible();
+      await expect(page.getByTestId("quartz-practice-toggle")).toBeVisible();
+      await expect(page.getByTestId("quartz-difficulty")).toBeVisible();
       await page.keyboard.press("Tab");
       await page.getByTestId("quartz-close").click();
       await expect(quartzModal).toHaveCount(0);
@@ -185,8 +216,9 @@ test.describe("Interaction modals", () => {
   });
 
   test("dragging the winding surface resolves the run", async ({ page }) => {
-    await openCatalogFromCollection(page);
-    const manualCandidates = page.locator(
+    const catalogPanel = await openCatalogFromCollection(page);
+    await switchCatalogToOwned(catalogPanel);
+    const manualCandidates = catalogPanel.locator(
       '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
     );
     const manualCount = await manualCandidates.count();

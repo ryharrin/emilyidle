@@ -188,49 +188,85 @@ export const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
     id: "first-drawer",
     name: "First drawer",
     description: "Hold 12 watches to reveal the Stats tab.",
+    category: "collection",
     requirement: { type: "totalItems", threshold: 12 },
   },
   {
     id: "six-figure-vault",
     name: "Six-figure collection",
     description: "Reach $120k in Memories.",
+    category: "collection",
     requirement: { type: "collectionValue", thresholdCents: 120_000 },
   },
   {
     id: "workshop-reforged",
     name: "Workshop reforged",
     description: "Prestige the workshop once.",
+    category: "prestige",
     requirement: { type: "workshopPrestigeCount", threshold: 1 },
   },
   {
     id: "workshop-veteran",
     name: "Workshop veteran",
     description: "Prestige the workshop three times.",
+    category: "prestige",
     requirement: { type: "workshopPrestigeCount", threshold: 3 },
   },
   {
     id: "vault-century",
     name: "Collection century",
     description: "Hold 100 watches in the collection.",
+    category: "collection",
     requirement: { type: "totalItems", threshold: 100 },
   },
   {
     id: "million-memories",
     name: "Million memories",
     description: "Reach $1,000,000 in Memories.",
+    category: "collection",
     requirement: { type: "collectionValue", thresholdCents: 100_000_000 },
   },
   {
     id: "workshop-decade",
     name: "Workshop decade",
     description: "Prestige the workshop ten times.",
+    category: "prestige",
     requirement: { type: "workshopPrestigeCount", threshold: 10 },
   },
   {
     id: "catalog-keeper",
     name: "Catalog keeper",
     description: "Discover 20 catalog references.",
+    category: "collection",
     requirement: { type: "catalogDiscovery", threshold: 20 },
+  },
+  {
+    id: "career-clinician",
+    name: "Career clinician",
+    description: "Reach therapist career level 10.",
+    category: "career",
+    requirement: { type: "careerLevel", threshold: 10 },
+  },
+  {
+    id: "session-maestro",
+    name: "Session maestro",
+    description: "Land 10 perfect mini-game outcomes in normal mode.",
+    category: "mini-game",
+    requirement: { type: "interactionPerfects", threshold: 10 },
+  },
+  {
+    id: "perfect-pulse",
+    name: "Perfect pulse",
+    description: "Build a 5-perfect streak in normal mode.",
+    category: "mini-game",
+    requirement: { type: "perfectStreak", threshold: 5 },
+  },
+  {
+    id: "nostalgia-returnee",
+    name: "Nostalgia returnee",
+    description: "Complete two Nostalgia prestiges.",
+    category: "prestige",
+    requirement: { type: "nostalgiaResets", threshold: 2 },
   },
 ];
 
@@ -448,6 +484,10 @@ export function createInitialState(): GameState {
     },
     favoriteWatchIds: [],
     lastPurchase: null,
+    interactionRunsTotal: 0,
+    interactionPerfectRuns: 0,
+    interactionPerfectStreak: 0,
+    interactionBestPerfectStreak: 0,
   };
 }
 
@@ -814,6 +854,22 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       "artisan-jig": 0,
     },
   );
+  const interactionRunsTotal = Number.isFinite(saved.interactionRunsTotal ?? 0)
+    ? Math.max(0, Math.floor(saved.interactionRunsTotal ?? 0))
+    : 0;
+  const interactionPerfectRuns = Number.isFinite(saved.interactionPerfectRuns ?? 0)
+    ? Math.max(0, Math.floor(saved.interactionPerfectRuns ?? 0))
+    : 0;
+  const interactionPerfectStreak = Number.isFinite(saved.interactionPerfectStreak ?? 0)
+    ? Math.max(0, Math.floor(saved.interactionPerfectStreak ?? 0))
+    : 0;
+  const interactionBestPerfectStreakRaw = Number.isFinite(saved.interactionBestPerfectStreak ?? 0)
+    ? Math.max(0, Math.floor(saved.interactionBestPerfectStreak ?? 0))
+    : 0;
+  const interactionBestPerfectStreak = Math.max(
+    interactionPerfectStreak,
+    interactionBestPerfectStreakRaw,
+  );
   const restoredState = applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
     enjoymentCents,
@@ -850,6 +906,10 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     craftedBoosts,
     favoriteWatchIds,
     lastPurchase,
+    interactionRunsTotal,
+    interactionPerfectRuns,
+    interactionPerfectStreak,
+    interactionBestPerfectStreak,
   });
 
   return updateCatalogTierUnlocks(restoredState);

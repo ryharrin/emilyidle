@@ -28,6 +28,12 @@ type Settings = {
   hiddenTabs: TabId[];
   coachmarksDismissed: Record<string, boolean>;
   confirmNostalgiaUnlocks: boolean;
+  notificationPreferences: {
+    sessionsReady: boolean;
+    prestigeReady: boolean;
+    achievements: boolean;
+    events: boolean;
+  };
 };
 
 type DevSettings = {
@@ -205,6 +211,80 @@ export function SaveTab({
                   />
                   Hide completed achievements
                 </label>
+              </div>
+
+              <div className="settings-visibility">
+                <span className="muted settings-visibility-label">Notifications</span>
+                <div className="controls settings-visibility-grid">
+                  <label>
+                    <input
+                      type="checkbox"
+                      data-testid="settings-notify-sessions"
+                      checked={settings.notificationPreferences.sessionsReady}
+                      onChange={(event) =>
+                        persistSettings({
+                          ...settings,
+                          notificationPreferences: {
+                            ...settings.notificationPreferences,
+                            sessionsReady: event.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    Sessions ready
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      data-testid="settings-notify-prestige"
+                      checked={settings.notificationPreferences.prestigeReady}
+                      onChange={(event) =>
+                        persistSettings({
+                          ...settings,
+                          notificationPreferences: {
+                            ...settings.notificationPreferences,
+                            prestigeReady: event.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    Prestige ready
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      data-testid="settings-notify-achievements"
+                      checked={settings.notificationPreferences.achievements}
+                      onChange={(event) =>
+                        persistSettings({
+                          ...settings,
+                          notificationPreferences: {
+                            ...settings.notificationPreferences,
+                            achievements: event.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    Achievement toasts
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      data-testid="settings-notify-events"
+                      checked={settings.notificationPreferences.events}
+                      onChange={(event) =>
+                        persistSettings({
+                          ...settings,
+                          notificationPreferences: {
+                            ...settings.notificationPreferences,
+                            events: event.target.checked,
+                          },
+                        })
+                      }
+                    />
+                    Event updates
+                  </label>
+                </div>
               </div>
 
               <div className="settings-visibility">

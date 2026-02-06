@@ -70,7 +70,11 @@ describe("winding band legend", () => {
     render(
       <WindingMiniGameModal
         open
+        itemId="chronograph"
         itemLabel="Prototype"
+        mode="normal"
+        onModeChange={vi.fn()}
+        currentPerfectStreak={0}
         rewardRangeLabel="Reward"
         cooldownLabel="Cooldown"
         onClose={vi.fn()}

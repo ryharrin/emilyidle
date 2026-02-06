@@ -129,18 +129,27 @@ export type AchievementId =
   | "vault-century"
   | "million-memories"
   | "workshop-decade"
-  | "catalog-keeper";
+  | "catalog-keeper"
+  | "career-clinician"
+  | "session-maestro"
+  | "perfect-pulse"
+  | "nostalgia-returnee";
 
 export type AchievementRequirement =
   | { type: "totalItems"; threshold: number }
   | { type: "collectionValue"; thresholdCents: number }
   | { type: "workshopPrestigeCount"; threshold: number }
-  | { type: "catalogDiscovery"; threshold: number };
+  | { type: "catalogDiscovery"; threshold: number }
+  | { type: "careerLevel"; threshold: number }
+  | { type: "interactionPerfects"; threshold: number }
+  | { type: "perfectStreak"; threshold: number }
+  | { type: "nostalgiaResets"; threshold: number };
 
 export type AchievementDefinition = {
   id: AchievementId;
   name: string;
   description: string;
+  category: "collection" | "prestige" | "career" | "mini-game";
   requirement: AchievementRequirement;
 };
 
@@ -170,6 +179,8 @@ export type EventState = {
   nextAvailableAtMs: number;
   incomeMultiplier?: number;
 };
+
+export type InteractionMiniGameMode = "normal" | "practice";
 
 export type TherapistCareerState = {
   careerStartId: CareerStartId | null;
@@ -239,6 +250,10 @@ export type GameState = {
   craftedBoosts: Record<CraftedBoostId, number>;
   favoriteWatchIds: string[];
   lastPurchase: WatchPurchaseSnapshot | null;
+  interactionRunsTotal: number;
+  interactionPerfectRuns: number;
+  interactionPerfectStreak: number;
+  interactionBestPerfectStreak: number;
 };
 
 export type PersistedGameState = {
@@ -292,4 +307,8 @@ export type PersistedGameState = {
   craftedBoosts?: Record<string, number>;
   favoriteWatchIds?: string[];
   lastPurchase?: WatchPurchaseSnapshot | null;
+  interactionRunsTotal?: number;
+  interactionPerfectRuns?: number;
+  interactionPerfectStreak?: number;
+  interactionBestPerfectStreak?: number;
 };

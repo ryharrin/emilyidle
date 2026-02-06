@@ -5137,3 +5137,55 @@ button[data-testid^="vault-interact-"] {
   align-items: center;
   gap: 0.5rem;
 }
+
+.winding-mode-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.winding-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.catalog-undo-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.catalog-undo-action .muted {
+  margin: 0;
+}
+
+.stats-event-calendar {
+  display: grid;
+  gap: 12px;
+}
+
+.stats-event-calendar__group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-event-calendar__entry h5 {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .catalog-undo-action {
+    align-items: flex-start;
+  }
+}

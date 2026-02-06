@@ -832,6 +832,22 @@ function isAchievementMet(state: GameState, achievement: AchievementDefinition):
     return state.discoveredCatalogEntries.length >= requirement.threshold;
   }
 
+  if (requirement.type === "careerLevel") {
+    return state.therapistCareer.level >= requirement.threshold;
+  }
+
+  if (requirement.type === "interactionPerfects") {
+    return state.interactionPerfectRuns >= requirement.threshold;
+  }
+
+  if (requirement.type === "perfectStreak") {
+    return state.interactionBestPerfectStreak >= requirement.threshold;
+  }
+
+  if (requirement.type === "nostalgiaResets") {
+    return state.nostalgiaResets >= requirement.threshold;
+  }
+
   return state.workshopPrestigeCount >= requirement.threshold;
 }
 

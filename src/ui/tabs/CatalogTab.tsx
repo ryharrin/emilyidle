@@ -50,6 +50,7 @@ import {
   isItemUnlocked,
   setWornWatchId,
   toggleWatchFavorite,
+  undoLastPurchase,
   type GameState,
   type WatchModelPurchaseGate,
   type WatchItemId,
@@ -200,6 +201,7 @@ const CATALOG_LANES: ReadonlyArray<CatalogLaneDefinition> = [
 const CATALOG_VIRTUALIZATION_THRESHOLD = 200;
 const CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT = 420;
 const CATALOG_VIRTUALIZER_OVERSCAN = 6;
+const PURCHASE_UNDO_WINDOW_MS = 10_000;
 
 export type PurchaseMeta = {
   prestigeTier?: "workshop" | "maison" | "nostalgia";
@@ -456,6 +458,16 @@ export function CatalogPurchasePanel({
     () => (typeof nowMs === "number" ? nowMs : Date.now()),
     [nowMs],
   );
+  const undoRemainingMs = React.useMemo(() => {
+    if (!state.lastPurchase) {
+      return 0;
+    }
+    return Math.max(
+      0,
+      PURCHASE_UNDO_WINDOW_MS - Math.max(0, effectiveNowMs - state.lastPurchase.purchasedAtMs),
+    );
+  }, [effectiveNowMs, state.lastPurchase]);
+  const canUndoLastPurchase = state.lastPurchase !== null && undoRemainingMs > 0;
 
   const handlePurchase = React.useCallback(
     (entryId: string) => {
@@ -1039,6 +1051,22 @@ export function CatalogPurchasePanel({
           </div>
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
             {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
+          </div>
+          <div className="catalog-undo-action">
+            <button
+              type="button"
+              className="secondary"
+              data-testid="catalog-undo-purchase"
+              disabled={!canUndoLastPurchase}
+              onClick={() => onPurchase(undoLastPurchase(state, effectiveNowMs))}
+            >
+              Undo last purchase
+            </button>
+            <p className="muted" data-testid="catalog-undo-countdown">
+              {canUndoLastPurchase
+                ? `Available ${Math.ceil(undoRemainingMs / 1000)}s`
+                : "No undo available"}
+            </p>
           </div>
           <div className="catalog-help" data-testid="catalog-help">
             <ExplainButton
