@@ -1,0 +1,213 @@
+.career-timeline {
+  overflow: visible;
+}
+
+.career-stages-pane {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 0;
+}
+
+.career-stages-pane > * {
+  pointer-events: auto !important;
+}
+
+.career-timeline-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.career-timeline-wrapper {
+  display: grid;
+  gap: 0.75rem;
+  pointer-events: none !important;
+}
+
+.career-stage-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none !important;
+}
+
+.career-stage-stack > * {
+  pointer-events: auto !important;
+}
+
+.career-canvas-header {
+  pointer-events: auto;
+}
+
+.career-map-viewport {
+  pointer-events: auto;
+  position: relative !important;
+  z-index: 999 !important;
+}
+
+.career-canvas {
+  pointer-events: none !important;
+}
+
+.career-canvas > * {
+  pointer-events: auto !important;
+}
+
+.career-timeline-current,
+.career-timeline-upcoming {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(232, 198, 147, 0.1), transparent 45%),
+    linear-gradient(180deg, rgba(8, 11, 20, 0.85), rgba(15, 17, 26, 0.95));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+.career-timeline-current__header h3 {
+  margin: 0.1rem 0;
+  font-size: 1.4rem;
+}
+
+.career-timeline-current__body {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.career-timeline-current__level {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.career-timeline-current__progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.career-timeline-current__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(163, 197, 160, 0.9), rgba(233, 196, 106, 0.95));
+  transition: width 0.4s ease;
+}
+
+.career-timeline-current__progress-caption {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.career-timeline-upcoming__header h3 {
+  margin: 0.1rem 0;
+  font-size: 1.3rem;
+}
+
+.career-timeline-upcoming__list {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.career-upcoming-choice {
+  padding: 0.9rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.25);
+}
+
+.career-upcoming-choice__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.career-upcoming-choice__context {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.career-upcoming-choice__status {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tier-starter);
+}
+
+.career-upcoming-choice__level {
+  margin: 0.35rem 0;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.career-upcoming-choice__effects {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.career-upcoming-choice__effects li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.career-upcoming-choice__effect-name {
+  font-weight: 600;
+  color: var(--tier-lux);
+}
+
+.career-upcoming-choice__effect-summary {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.career-upcoming-choice__more {
+  color: rgba(255, 255, 255, 0.45);
+  font-style: italic;
+}
+
+.career-timeline-scroll {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 720px) {
+  .career-timeline-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .career-timeline-current__level {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 620px) {
+  .career-timeline-meta {
+    display: none;
+  }
+  .career-timeline {
+    padding: 0.5rem 0;
+  }
+}
