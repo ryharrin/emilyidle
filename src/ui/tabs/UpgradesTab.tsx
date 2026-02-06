@@ -8,13 +8,17 @@ import {
   canBuyMaisonUpgrade,
   canBuyUpgrade,
   canBuyWorkshopUpgrade,
+  getAutoBuyEnabled,
   getEffectiveCashRateCentsPerSec,
   getEnjoymentRateCentsPerSec,
+  getMaisonCollectionBonusMultiplier,
   getMilestoneRequirementLabel,
   getMilestoneUnlockProgressDetail,
   getUpgradePriceCents,
   getWorkshopBlueprintCostDetail,
   getWorkshopPrestigeGain,
+  getWorkshopSoftcapExponent,
+  getWorkshopSoftcapValue,
   isUpgradeUnlocked,
   shouldShowUnlockTag,
 } from "../../game/state";
@@ -39,6 +43,7 @@ type UpgradesTabProps = {
   isActive: boolean;
   state: GameState;
   currentEventMultiplier: number;
+  nowMs: number;
   upgrades: ReadonlyArray<UpgradeDefinition>;
   workshopUpgrades: ReadonlyArray<WorkshopUpgradeDefinition>;
   maisonUpgrades: ReadonlyArray<MaisonUpgradeDefinition>;
@@ -52,12 +57,19 @@ type RatePreview = {
   afterEnjoyment: number;
 };
 
+type EffectPreviewLine = {
+  key: string;
+  label: string;
+  before: string;
+  after: string;
+};
+
 const buildRatePreview = (
   state: GameState,
   nextState: GameState,
+  nowMs: number,
   eventMultiplier: number,
 ): RatePreview => {
-  const nowMs = Date.now();
   const beforeCash = getEffectiveCashRateCentsPerSec(state, nowMs, eventMultiplier);
   const afterCash = getEffectiveCashRateCentsPerSec(nextState, nowMs, eventMultiplier);
   const beforeEnjoyment = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
@@ -68,6 +80,167 @@ const buildRatePreview = (
 
 const formatDelta = (delta: number) =>
   `${delta >= 0 ? "+" : ""}${formatRateFromCentsPerSec(delta)}`;
+
+const formatMultiplierValue = (value: number) => `${value.toFixed(2)}x`;
+
+const formatExponentValue = (value: number) => value.toFixed(2);
+
+const formatAutomationState = (enabled: boolean) => (enabled ? "Enabled" : "Disabled");
+
+const buildSoftcapValueLine = (
+  state: GameState,
+  nextState: GameState,
+): EffectPreviewLine | null => {
+  const before = getWorkshopSoftcapValue(state);
+  const after = getWorkshopSoftcapValue(nextState);
+  if (before === after) {
+    return null;
+  }
+
+  return {
+    key: "softcap-value",
+    label: "Softcap",
+    before: formatRateFromCentsPerSec(before),
+    after: formatRateFromCentsPerSec(after),
+  };
+};
+
+const buildSoftcapExponentLine = (
+  state: GameState,
+  nextState: GameState,
+): EffectPreviewLine | null => {
+  const before = getWorkshopSoftcapExponent(state);
+  const after = getWorkshopSoftcapExponent(nextState);
+  if (before === after) {
+    return null;
+  }
+
+  return {
+    key: "softcap-exponent",
+    label: "Softcap exponent",
+    before: formatExponentValue(before),
+    after: formatExponentValue(after),
+  };
+};
+
+const buildCollectionBonusLine = (
+  state: GameState,
+  nextState: GameState,
+): EffectPreviewLine | null => {
+  const before = getMaisonCollectionBonusMultiplier(state);
+  const after = getMaisonCollectionBonusMultiplier(nextState);
+  if (before === after) {
+    return null;
+  }
+
+  return {
+    key: "collection-bonus",
+    label: "Collection bonus",
+    before: formatMultiplierValue(before),
+    after: formatMultiplierValue(after),
+  };
+};
+
+const buildAutomationLine = (state: GameState, nextState: GameState): EffectPreviewLine | null => {
+  const before = getAutoBuyEnabled(state);
+  const after = getAutoBuyEnabled(nextState);
+  if (before === after) {
+    return null;
+  }
+
+  return {
+    key: "automation",
+    label: "Automation",
+    before: formatAutomationState(before),
+    after: formatAutomationState(after),
+  };
+};
+
+const buildWorkshopEffectLines = (
+  state: GameState,
+  nextState: GameState,
+  upgrade: WorkshopUpgradeDefinition,
+): EffectPreviewLine[] => {
+  const lines: EffectPreviewLine[] = [];
+
+  if (upgrade.softcapMultiplier) {
+    const softcapLine = buildSoftcapValueLine(state, nextState);
+    if (softcapLine) {
+      lines.push(softcapLine);
+    }
+  }
+
+  if (upgrade.softcapExponentBonus) {
+    const exponentLine = buildSoftcapExponentLine(state, nextState);
+    if (exponentLine) {
+      lines.push(exponentLine);
+    }
+  }
+
+  if (upgrade.unlocks?.autoBuyEnabled) {
+    const automationLine = buildAutomationLine(state, nextState);
+    if (automationLine) {
+      lines.push(automationLine);
+    }
+  }
+
+  return lines;
+};
+
+const buildMaisonEffectLines = (
+  state: GameState,
+  nextState: GameState,
+  upgrade: MaisonUpgradeDefinition,
+): EffectPreviewLine[] => {
+  const lines: EffectPreviewLine[] = [];
+
+  if (upgrade.collectionBonusMultiplier) {
+    const collectionLine = buildCollectionBonusLine(state, nextState);
+    if (collectionLine) {
+      lines.push(collectionLine);
+    }
+  }
+
+  if (upgrade.softcapMultiplier) {
+    const softcapLine = buildSoftcapValueLine(state, nextState);
+    if (softcapLine) {
+      lines.push(softcapLine);
+    }
+  }
+
+  return lines;
+};
+
+const renderEffectLines = (lines: EffectPreviewLine[]) => {
+  if (lines.length === 0) {
+    return null;
+  }
+
+  return (
+    <div data-testid="upgrade-effect-lines" className="upgrade-effect-lines">
+      {lines.map((line) => (
+        <div
+          key={line.key}
+          data-testid={`upgrade-effect-${line.key}`}
+          className="upgrade-effect-line"
+        >
+          <span className="muted">{line.label}</span>
+          <div className="upgrade-effect-values">
+            <span data-testid="upgrade-effect-value-before" className="upgrade-effect-value">
+              {line.before}
+            </span>
+            <span className="upgrade-effect-arrow" aria-hidden="true">
+              →
+            </span>
+            <span data-testid="upgrade-effect-value-after" className="upgrade-effect-value">
+              {line.after}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const renderDeltaChips = (preview: RatePreview) => {
   const cashDelta = preview.afterCash - preview.beforeCash;
@@ -123,6 +296,7 @@ export function UpgradesTab({
   isActive,
   state,
   currentEventMultiplier,
+  nowMs,
   upgrades,
   workshopUpgrades,
   maisonUpgrades,
@@ -185,7 +359,7 @@ export function UpgradesTab({
                     : formatCount(unlockDetail.threshold)
                   : "0";
                 const nextState = buyUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState, currentEventMultiplier);
+                const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
 
                 return (
                   <div className="card upgrade-card" key={upgrade.id} data-testid="upgrade-card">
@@ -269,7 +443,8 @@ export function UpgradesTab({
                   return "Permanent upgrade";
                 })();
                 const nextState = buyWorkshopUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState, currentEventMultiplier);
+                const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
+                const effectLines = buildWorkshopEffectLines(state, nextState, upgrade);
 
                 return (
                   <div
@@ -288,6 +463,7 @@ export function UpgradesTab({
                     </div>
                     <p>{effectLabel}</p>
                     {renderDeltaChips(preview)}
+                    {renderEffectLines(effectLines)}
                     {renderPreviewDetails(preview)}
                     <div className="card-actions">
                       <button
@@ -334,7 +510,8 @@ export function UpgradesTab({
                   return "Permanent upgrade";
                 })();
                 const nextState = buyMaisonUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState, currentEventMultiplier);
+                const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
+                const effectLines = buildMaisonEffectLines(state, nextState, upgrade);
 
                 return (
                   <div
@@ -351,6 +528,7 @@ export function UpgradesTab({
                     </div>
                     <p>{effectLabel}</p>
                     {renderDeltaChips(preview)}
+                    {renderEffectLines(effectLines)}
                     {renderPreviewDetails(preview)}
                     <div className="card-actions">
                       <button

@@ -1268,6 +1268,7 @@ export default function App() {
             isActive={activeTab === "upgrades"}
             state={state}
             currentEventMultiplier={currentEventMultiplier}
+            nowMs={nowMs}
             upgrades={upgrades}
             workshopUpgrades={workshopUpgrades}
             maisonUpgrades={maisonUpgrades}

@@ -4067,6 +4067,36 @@ button[data-testid^="vault-interact-"] {
   background: rgba(15, 17, 21, 0.7);
 }
 
+.upgrade-effect-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #9aa7ba;
+}
+
+.upgrade-effect-line {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.upgrade-effect-values {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #f5f5f6;
+}
+
+.upgrade-effect-value {
+  font-weight: 600;
+}
+
+.upgrade-effect-arrow {
+  color: #6077a4;
+}
+
 .upgrade-preview-details summary {
   cursor: pointer;
 }
