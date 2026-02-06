@@ -11,9 +11,9 @@
 - [x] Update top-level planning docs (`ROADMAP`, `PROJECT`, `STATE`, `MILESTONES`)
 - [x] Move UX artifacts into `.planning/uat-artifacts/52/`
 - [x] Execute `52-01-PLAN.md`
-- [ ] Execute `52-02-PLAN.md`
+- [x] Execute `52-02-PLAN.md`
 - [ ] Execute `52-03-PLAN.md`
-- [ ] Publish remaining phase summaries (`52-02-SUMMARY.md`, `52-03-SUMMARY.md`)
+- [ ] Publish remaining phase summaries (`52-03-SUMMARY.md`)
 
 ## Notes
 

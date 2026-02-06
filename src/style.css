@@ -2644,6 +2644,40 @@ textarea:focus-visible {
   margin-bottom: 20px;
 }
 
+.catalog-quick-actions {
+  display: none;
+}
+
+.catalog-quick-action {
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 198, 147, 0.45);
+  background: rgba(17, 20, 26, 0.92);
+  color: #f4f6fa;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+}
+
+.catalog-quick-action[aria-pressed="true"] {
+  border-color: rgba(232, 198, 147, 0.82);
+  background: rgba(232, 198, 147, 0.18);
+  color: #faecd2;
+}
+
+[data-theme="light"] .catalog-quick-action {
+  border-color: rgba(170, 130, 86, 0.5);
+  background: rgba(255, 255, 255, 0.95);
+  color: #40372c;
+}
+
+[data-theme="light"] .catalog-quick-action[aria-pressed="true"] {
+  border-color: rgba(170, 130, 86, 0.75);
+  background: rgba(210, 176, 133, 0.28);
+  color: #523d24;
+}
+
 .catalog-filters {
   position: sticky;
   top: 12px;
@@ -2672,6 +2706,22 @@ textarea:focus-visible {
   box-shadow:
     0 14px 28px rgba(94, 80, 66, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 720px) {
+  .catalog-quick-actions {
+    position: sticky;
+    top: 12px;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 10px;
+  }
+
+  .catalog-filters {
+    top: 72px;
+  }
 }
 
 .catalog-filter-heading {
@@ -3039,6 +3089,10 @@ button[data-testid^="vault-interact-"] {
   letter-spacing: 0.15em;
   font-size: 0.75rem;
   align-self: center;
+}
+
+.catalog-card-compact .catalog-card-details-button {
+  display: inline-flex;
 }
 
 .catalog-card-details-button[aria-expanded="true"] {
@@ -3480,6 +3534,33 @@ button[data-testid^="vault-interact-"] {
   letter-spacing: 0.01em;
 }
 
+.catalog-grid-density-compact .catalog-card-preview {
+  display: none;
+}
+
+.catalog-grid-density-compact .catalog-media {
+  min-height: 132px;
+}
+
+.catalog-grid-density-compact .catalog-content {
+  padding: 14px;
+  gap: 10px;
+}
+
+.catalog-grid-density-compact .catalog-title {
+  gap: 8px;
+}
+
+.catalog-grid-density-compact .catalog-brand {
+  letter-spacing: 0.18em;
+  margin-bottom: 4px;
+}
+
+.catalog-grid-density-compact .catalog-year {
+  font-size: 0.64rem;
+  padding: 3px 8px;
+}
+
 .catalog-discovered .catalog-content {
   background: linear-gradient(180deg, rgba(232, 198, 147, 0.12), transparent 80%);
 }
@@ -3635,6 +3716,18 @@ button[data-testid^="catalog-buy-"]:disabled {
   margin-top: 2px;
 }
 
+.catalog-grid-density-compact .catalog-action-bar {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.catalog-grid-density-compact .catalog-primary-actions {
+  justify-content: flex-start;
+}
+
+.catalog-grid-density-compact .catalog-secondary-actions {
+  gap: 6px;
+}
+
 .catalog-secondary-action,
 .catalog-favorite-toggle,
 .catalog-compare-toggle {
@@ -3663,6 +3756,36 @@ button[data-testid^="catalog-buy-"]:disabled {
 
 .catalog-secondary-help {
   min-height: 44px;
+}
+
+.catalog-sheet-actions {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  gap: 10px;
+}
+
+.catalog-sheet-actions-title {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #d9be90;
+}
+
+.catalog-sheet-actions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+[data-theme="light"] .catalog-sheet-actions {
+  border-color: rgba(170, 130, 86, 0.25);
+}
+
+[data-theme="light"] .catalog-sheet-actions-title {
+  color: #9a6a2f;
 }
 
 .catalog-gate {
@@ -5005,6 +5128,28 @@ button[data-testid^="catalog-buy-"]:disabled {
   min-height: 44px;
 }
 
+.settings-control {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 17, 21, 0.38);
+}
+
+.settings-control input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.settings-control--stacked {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme="light"] .settings-control {
+  border-color: rgba(170, 130, 86, 0.24);
+  background: rgba(255, 255, 255, 0.82);
+}
+
 .controls select {
   border-radius: 12px;
   border: 1px solid var(--settings-control-border);
@@ -5080,6 +5225,23 @@ button[data-testid^="catalog-buy-"]:disabled {
   padding: 12px 16px;
   border-radius: 12px;
   font: inherit;
+}
+
+@media (max-width: 720px) {
+  .controls {
+    gap: 14px;
+  }
+
+  .controls label,
+  .settings-control {
+    min-height: 48px;
+    padding: 12px 14px;
+  }
+
+  .settings-control input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .muted {

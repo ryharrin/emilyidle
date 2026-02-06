@@ -21,6 +21,28 @@ function getModelIdForTier(tierId: string): string {
   return model.id;
 }
 
+const evaluateMediaQuery = (query: string, width: number) => {
+  const maxMatch = /max-width:\s*(\d+)px/.exec(query);
+  const minMatch = /min-width:\s*(\d+)px/.exec(query);
+  const maxWidth = maxMatch ? Number(maxMatch[1]) : undefined;
+  const minWidth = minMatch ? Number(minMatch[1]) : undefined;
+  const matchesMax = maxWidth === undefined ? true : width <= maxWidth;
+  const matchesMin = minWidth === undefined ? true : width >= minWidth;
+  return matchesMax && matchesMin;
+};
+
+const createMatchMediaMock = (width: number): typeof window.matchMedia =>
+  ((query: string) => ({
+    matches: evaluateMediaQuery(query, width),
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as typeof window.matchMedia;
+
 describe("interaction movement gating", () => {
   it("allows automatic watches for rotor interactions", () => {
     expect(getInteractionMovementGate("classic")).toEqual({ available: true });
@@ -595,6 +617,81 @@ describe("catalog filters", () => {
 
     expect(unownedTab.getAttribute("aria-selected")).toBe("true");
     expect(ownedTab.getAttribute("aria-selected")).toBe("false");
+  });
+
+  it("defaults to compact mobile density and exposes quick action controls", async () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = createMatchMediaMock(390);
+
+    try {
+      cleanup();
+      render(<App />);
+
+      const user = userEvent.setup();
+      const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+      const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+      await user.click(catalogTab);
+
+      const quickActions = await waitFor(() => screen.getByTestId("catalog-quick-actions"));
+      expect(quickActions).toBeInTheDocument();
+      expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-density", "compact");
+      expect(screen.queryByTestId("catalog-details")).toBeNull();
+
+      const quickSort = screen.getByTestId("catalog-quick-sort");
+      const sortSelect = screen.getByTestId("catalog-sort") as HTMLSelectElement;
+      expect(sortSelect.value).toBe("default");
+      await user.click(quickSort);
+      expect(sortSelect.value).toBe("brand");
+
+      const quickDensity = screen.getByTestId("catalog-quick-density");
+      await user.click(quickDensity);
+      await waitFor(() => {
+        expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-density", "expanded");
+      });
+      expect(screen.getAllByTestId("catalog-details").length).toBeGreaterThan(0);
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it("routes low-frequency compact actions through the details sheet", async () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = createMatchMediaMock(390);
+
+    try {
+      cleanup();
+      render(<App />);
+
+      const user = userEvent.setup();
+      const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+      const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+      await user.click(catalogTab);
+
+      const ownershipTabs = screen.getByRole("tablist", { name: /Catalog ownership/i });
+      await user.click(within(ownershipTabs).getByRole("tab", { name: /^Owned/ }));
+
+      const catalogGrid = screen.getByTestId("catalog-grid");
+      const cards = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-card"));
+      const firstCard = cards[0];
+      if (!(firstCard instanceof HTMLElement)) {
+        throw new Error("Expected first catalog card to be an HTMLElement");
+      }
+
+      expect(within(firstCard).queryByRole("button", { name: /Explain interactions/i })).toBeNull();
+      const moreButton = within(firstCard).getByTestId(/catalog-details-button-/);
+      await user.click(moreButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("catalog-details-sheet")).toBeInTheDocument();
+      });
+      expect(screen.getByRole("button", { name: /Explain interactions/i })).toBeInTheDocument();
+      await user.click(screen.getByTestId("catalog-details-sheet-close"));
+      await waitFor(() => {
+        expect(screen.queryByTestId("catalog-details-sheet")).toBeNull();
+      });
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 
   it("renders the catalog collection context pill", () => {

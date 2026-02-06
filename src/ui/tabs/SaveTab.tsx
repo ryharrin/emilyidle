@@ -146,7 +146,7 @@ export function SaveTab({
             <fieldset className="settings-section" data-testid="audio-controls">
               <legend>Audio settings</legend>
               <div className="controls">
-                <label>
+                <label className="settings-control">
                   <input
                     type="checkbox"
                     data-testid="audio-sfx-toggle"
@@ -160,7 +160,7 @@ export function SaveTab({
                   />
                   Enable SFX
                 </label>
-                <label>
+                <label className="settings-control">
                   <input
                     type="checkbox"
                     data-testid="audio-bgm-toggle"
@@ -180,7 +180,7 @@ export function SaveTab({
             <fieldset className="settings-section" data-testid="settings-controls">
               <legend>Preferences</legend>
               <div className="controls">
-                <label>
+                <label className="settings-control settings-control--stacked">
                   Theme mode
                   <select
                     data-testid="settings-theme"
@@ -197,7 +197,7 @@ export function SaveTab({
                     <option value="dark">Dark</option>
                   </select>
                 </label>
-                <label>
+                <label className="settings-control">
                   <input
                     type="checkbox"
                     data-testid="settings-hide-achievements"
@@ -216,7 +216,7 @@ export function SaveTab({
               <div className="settings-visibility">
                 <span className="muted settings-visibility-label">Notifications</span>
                 <div className="controls settings-visibility-grid">
-                  <label>
+                  <label className="settings-control">
                     <input
                       type="checkbox"
                       data-testid="settings-notify-sessions"
@@ -233,7 +233,7 @@ export function SaveTab({
                     />
                     Sessions ready
                   </label>
-                  <label>
+                  <label className="settings-control">
                     <input
                       type="checkbox"
                       data-testid="settings-notify-prestige"
@@ -250,7 +250,7 @@ export function SaveTab({
                     />
                     Prestige ready
                   </label>
-                  <label>
+                  <label className="settings-control">
                     <input
                       type="checkbox"
                       data-testid="settings-notify-achievements"
@@ -267,7 +267,7 @@ export function SaveTab({
                     />
                     Achievement toasts
                   </label>
-                  <label>
+                  <label className="settings-control">
                     <input
                       type="checkbox"
                       data-testid="settings-notify-events"
@@ -291,7 +291,7 @@ export function SaveTab({
                 <span className="muted settings-visibility-label">Visible tabs</span>
                 <div className="controls settings-visibility-grid">
                   {visibleTabOptions.map((tab) => (
-                    <label key={tab.id}>
+                    <label key={tab.id} className="settings-control">
                       <input
                         type="checkbox"
                         data-testid={`tab-visibility-${tab.id}`}
@@ -315,7 +315,7 @@ export function SaveTab({
               {devSettings.enabled && (
                 <div className="controls settings-dev-controls" data-testid="dev-controls">
                   <span className="muted">Dev mode</span>
-                  <label>
+                  <label className="settings-control settings-control--stacked">
                     Speed
                     <select
                       value={String(devSettings.speedMultiplier)}

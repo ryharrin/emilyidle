@@ -202,6 +202,22 @@ const CATALOG_VIRTUALIZATION_THRESHOLD = 200;
 const CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT = 420;
 const CATALOG_VIRTUALIZER_OVERSCAN = 6;
 const PURCHASE_UNDO_WINDOW_MS = 10_000;
+const CATALOG_MOBILE_MEDIA_QUERY = "(max-width: 720px)";
+const CATALOG_SORT_ORDER: readonly CatalogTabProps["catalogSort"][] = [
+  "default",
+  "brand",
+  "year",
+  "tier",
+];
+
+const CATALOG_SORT_LABELS: Record<CatalogTabProps["catalogSort"], string> = {
+  default: "Default",
+  brand: "Brand",
+  year: "Year",
+  tier: "Tier",
+};
+
+type CatalogDensity = "compact" | "expanded";
 
 export type PurchaseMeta = {
   prestigeTier?: "workshop" | "maison" | "nostalgia";
@@ -293,6 +309,46 @@ export function CatalogPurchasePanel({
     detailsTriggerRef.current = null;
   }, []);
 
+  const readMobileViewportMatch = React.useCallback(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return false;
+    }
+    return window.matchMedia(CATALOG_MOBILE_MEDIA_QUERY).matches;
+  }, []);
+  const [isMobileViewport, setIsMobileViewport] = React.useState<boolean>(() =>
+    readMobileViewportMatch(),
+  );
+  const [catalogDensity, setCatalogDensity] = React.useState<CatalogDensity>(() =>
+    readMobileViewportMatch() ? "compact" : "expanded",
+  );
+  const catalogDensityOverriddenRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+    const query = window.matchMedia(CATALOG_MOBILE_MEDIA_QUERY);
+    const handleChange = () => {
+      setIsMobileViewport(query.matches);
+    };
+    handleChange();
+    query.addEventListener("change", handleChange);
+    return () => query.removeEventListener("change", handleChange);
+  }, []);
+
+  React.useEffect(() => {
+    if (catalogDensityOverriddenRef.current) {
+      return;
+    }
+    setCatalogDensity(isMobileViewport ? "compact" : "expanded");
+  }, [isMobileViewport]);
+
+  const isCompactDensity = catalogDensity === "compact";
+  const toggleCatalogDensity = React.useCallback(() => {
+    catalogDensityOverriddenRef.current = true;
+    setCatalogDensity((value) => (value === "compact" ? "expanded" : "compact"));
+  }, []);
+
   const favoriteSet = React.useMemo(
     () => new Set(state.favoriteWatchIds ?? []),
     [state.favoriteWatchIds],
@@ -345,6 +401,15 @@ export function CatalogPurchasePanel({
     setFiltersOpen((value) => !value);
   }, []);
   const filterCountLabel = activeFilterCount > 0 ? `${activeFilterCount} active` : "Show filters";
+  const cycleCatalogSort = React.useCallback(() => {
+    const currentIndex = CATALOG_SORT_ORDER.indexOf(catalogSort);
+    const nextSort =
+      CATALOG_SORT_ORDER[
+        (currentIndex + 1 + CATALOG_SORT_ORDER.length) % CATALOG_SORT_ORDER.length
+      ];
+    onCatalogSortChange(nextSort);
+  }, [catalogSort, onCatalogSortChange]);
+  const quickSortLabel = CATALOG_SORT_LABELS[catalogSort];
 
   const catalogEntriesForView = React.useMemo(
     () =>
@@ -650,6 +715,127 @@ export function CatalogPurchasePanel({
     return getWatchModelTierBadge(entryId, watchModel?.tierBadge);
   };
 
+  const renderCompactSheetActions = (entry: CatalogEntry) => {
+    const tierId = getWatchModelTierId(entry.id);
+    const tierItem = watchItemById.get(tierId);
+    if (!tierItem) {
+      throw new Error(`Missing watch tier definition for ${tierId}`);
+    }
+    const tierOwned = state.items[tierId] ?? 0;
+    const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
+    const fallbackOwner =
+      totalTierOwned === 0 && tierOwned > 0 && firstModelByTier.get(tierId) === entry.id;
+    const modelOwned = getWatchModelOwnedCount(state, entry.id);
+    const ownedCount = fallbackOwner ? tierOwned : modelOwned;
+    const isWorn = state.wornWatchId === entry.id;
+    const canWear = modelOwned > 0 && !isWorn;
+    const hasCraftingParts = (craftingPartsPerWatch[tierId] ?? 0) > 0;
+    const canDismantle = modelOwned > 1 && hasCraftingParts;
+    const showDismantleAction = atelierUnlocked && hasCraftingParts;
+    const movementGate = getInteractionMovementGate(tierId);
+    const movementReason = ownedCount > 0 ? (movementGate.reason ?? null) : null;
+    const interactionLabel =
+      tierItem.movement === "manual"
+        ? "Wind crown"
+        : tierItem.movement === "automatic"
+          ? "Charge rotor"
+          : "Set time";
+    const cooldownRemainingMs =
+      typeof nowMs === "number" ? getInteractionCooldownRemainingMs(state, tierId, nowMs) : 0;
+    const cooldownSeconds = Math.ceil(cooldownRemainingMs / 1_000);
+    const interactionHint =
+      movementReason ??
+      (ownedCount <= 0
+        ? "Own one to interact"
+        : cooldownSeconds > 0
+          ? `Cooldown ${cooldownSeconds}s`
+          : null);
+    const canInteract = movementGate.available && interactionHint === null;
+    const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
+    const gate = getWatchModelPurchaseGate(state, entry.id);
+    const showPrimaryInteract = canShowInteract && ownedCount > 0 && !gate.ok;
+    const showSecondaryInteract = canShowInteract && ownedCount > 0 && !showPrimaryInteract;
+    const isFavorite = favoriteSet.has(entry.id);
+    const isCompared = comparedEntries.has(entry.id);
+
+    return (
+      <div className="catalog-sheet-actions" data-testid={`catalog-sheet-actions-${entry.id}`}>
+        <p className="catalog-sheet-actions-title">Quick actions</p>
+        <div className="catalog-sheet-actions-grid">
+          <button
+            type="button"
+            className={`catalog-favorite-toggle secondary ${isFavorite ? "catalog-favorite-toggle--active" : ""}`}
+            data-testid={`catalog-favorite-toggle-${entry.id}`}
+            aria-pressed={isFavorite}
+            onClick={() => onPurchase(toggleWatchFavorite(state, entry.id))}
+          >
+            {isFavorite ? "Favorited" : "Favorite"}
+          </button>
+          <button
+            type="button"
+            className={`catalog-compare-toggle secondary ${isCompared ? "catalog-compare-toggle-active" : ""}`}
+            data-testid={`catalog-compare-toggle-${entry.id}`}
+            aria-pressed={isCompared}
+            onClick={() => handleCompareToggle(entry.id)}
+          >
+            {isCompared ? "Selected" : "Compare"}
+          </button>
+          {canWear && (
+            <button
+              type="button"
+              className="secondary catalog-secondary-action"
+              data-testid={`watch-wear-${entry.id}`}
+              onClick={() => {
+                onPurchase(setWornWatchId(state, entry.id));
+                closeDetailsSheet();
+              }}
+            >
+              Wear
+            </button>
+          )}
+          {showSecondaryInteract && (
+            <button
+              type="button"
+              className="secondary catalog-secondary-action"
+              disabled={!canInteract}
+              data-testid={`vault-interact-${tierId}`}
+              onClick={() => {
+                onInteract?.(tierId);
+                closeDetailsSheet();
+              }}
+            >
+              {interactionLabel}
+            </button>
+          )}
+          {showDismantleAction && (
+            <button
+              type="button"
+              className="secondary catalog-secondary-action"
+              data-testid={`catalog-dismantle-${entry.id}`}
+              disabled={!canDismantle}
+              onClick={() => {
+                onPurchase(dismantleWatchModel(state, entry.id, 1));
+                closeDetailsSheet();
+              }}
+            >
+              Dismantle
+            </button>
+          )}
+          {canShowInteract && (
+            <ExplainButton
+              sectionId={HELP_SECTION_IDS.interactions}
+              label="Explain interactions"
+              className="help-open-button catalog-secondary-help"
+            />
+          )}
+        </div>
+        {showSecondaryInteract && interactionHint && (
+          <p className="muted catalog-interaction-hint">{interactionHint}</p>
+        )}
+      </div>
+    );
+  };
+
   const renderCatalogCard = (entry: CatalogEntry, showFacts: boolean) => {
     const discovered = discoveredCatalogIds.includes(entry.id);
     const tags = getCatalogEntryTags(entry);
@@ -712,6 +898,7 @@ export function CatalogPurchasePanel({
     const canInteract = movementGate.available && interactionHint === null;
     const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
     const showPrimaryInteract = canShowInteract && ownedCount > 0 && !gate.ok;
+    const showSecondaryInteract = canShowInteract && ownedCount > 0 && !showPrimaryInteract;
 
     const isWorn = state.wornWatchId === entry.id;
     const canWear = modelOwned > 0 && !isWorn;
@@ -719,6 +906,8 @@ export function CatalogPurchasePanel({
     const canDismantle = modelOwned > 1 && hasCraftingParts;
     const showDismantleAction = atelierUnlocked && hasCraftingParts;
     const powerReserveDetail = getPowerReserveDetail(state, tierId);
+    const showInlineSecondaryActions = !isCompactDensity;
+    const showDetailsButton = isCompactDensity || isMobileViewport;
     return (
       <article
         key={entry.id}
@@ -726,7 +915,9 @@ export function CatalogPurchasePanel({
           discovered ? "catalog-discovered" : "catalog-locked"
         } ${isHighlighted ? "purchase-flash" : ""} ${
           isActionable ? "catalog-actionable" : "catalog-nonactionable"
-        } ${isCompared ? "catalog-card-compared" : ""}`}
+        } ${isCompared ? "catalog-card-compared" : ""} ${
+          isCompactDensity ? "catalog-card-compact" : "catalog-card-expanded"
+        }`}
         data-testid="catalog-card"
       >
         {previewStats && (
@@ -801,7 +992,7 @@ export function CatalogPurchasePanel({
             </div>
             <p className="catalog-year">{entry.year}</p>
           </div>
-          {renderCatalogDetails(entry, tags, showFacts)}
+          {!isCompactDensity && renderCatalogDetails(entry, tags, showFacts)}
           {!unlocked && unlockDetail && (
             <div data-testid={`locked-item-hint-${entry.id}`}>
               <UnlockHint
@@ -878,7 +1069,7 @@ export function CatalogPurchasePanel({
             >
               {isCompared ? "Selected" : "Compare"}
             </button>
-            {canWear && (
+            {showInlineSecondaryActions && canWear && (
               <button
                 type="button"
                 className="secondary catalog-secondary-action"
@@ -888,7 +1079,7 @@ export function CatalogPurchasePanel({
                 Wear
               </button>
             )}
-            {canShowInteract && ownedCount > 0 && !showPrimaryInteract && (
+            {showInlineSecondaryActions && showSecondaryInteract && (
               <button
                 type="button"
                 className="secondary catalog-secondary-action"
@@ -899,7 +1090,7 @@ export function CatalogPurchasePanel({
                 {interactionLabel}
               </button>
             )}
-            {showDismantleAction && (
+            {showInlineSecondaryActions && showDismantleAction && (
               <button
                 type="button"
                 className="secondary catalog-secondary-action"
@@ -910,23 +1101,25 @@ export function CatalogPurchasePanel({
                 Dismantle
               </button>
             )}
-            <button
-              type="button"
-              className="catalog-card-details-button catalog-secondary-action"
-              data-testid={`catalog-details-button-${entry.id}`}
-              aria-haspopup="dialog"
-              aria-controls="catalog-details-sheet"
-              aria-expanded={isDetailsOpen}
-              onClick={(event) =>
-                openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
-              }
-            >
-              More
-            </button>
-            {canShowInteract && ownedCount > 0 && interactionHint && (
+            {showDetailsButton && (
+              <button
+                type="button"
+                className="catalog-card-details-button catalog-secondary-action"
+                data-testid={`catalog-details-button-${entry.id}`}
+                aria-haspopup="dialog"
+                aria-controls="catalog-details-sheet"
+                aria-expanded={isDetailsOpen}
+                onClick={(event) =>
+                  openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
+                }
+              >
+                More
+              </button>
+            )}
+            {showInlineSecondaryActions && canShowInteract && ownedCount > 0 && interactionHint && (
               <span className="muted catalog-interaction-hint">{interactionHint}</span>
             )}
-            {canShowInteract && (
+            {showInlineSecondaryActions && canShowInteract && (
               <ExplainButton
                 sectionId={HELP_SECTION_IDS.interactions}
                 label="Explain interactions"
@@ -964,7 +1157,11 @@ export function CatalogPurchasePanel({
     }
 
     return (
-      <div className="catalog-grid catalog-lanes" data-testid="catalog-grid">
+      <div
+        className={`catalog-grid catalog-lanes ${isCompactDensity ? "catalog-grid-density-compact" : "catalog-grid-density-expanded"}`}
+        data-testid="catalog-grid"
+        data-density={catalogDensity}
+      >
         {CATALOG_LANES.map((lane) => {
           const laneEntries = laneMap.get(lane.id) ?? [];
           return (
@@ -1012,17 +1209,23 @@ export function CatalogPurchasePanel({
     : null;
   const detailsSheetTags = activeDetailsEntry ? getCatalogEntryTags(activeDetailsEntry) : [];
   const detailsSheetShowFacts = detailsSheetTarget?.showFacts ?? false;
-  const detailsSheetContent =
-    activeDetailsEntry &&
-    renderCatalogDetailsContent(activeDetailsEntry, detailsSheetTags, detailsSheetShowFacts);
+  const detailsSheetContent = activeDetailsEntry ? (
+    <>
+      {renderCatalogDetailsContent(activeDetailsEntry, detailsSheetTags, detailsSheetShowFacts)}
+      {isCompactDensity && renderCompactSheetActions(activeDetailsEntry)}
+    </>
+  ) : null;
 
   const renderCatalogList = (showFacts: boolean) => {
     if (catalogVirtualizer) {
       const { virtualItems, paddingTop, paddingBottom } = catalogVirtualizer;
       return (
         <div
-          className="catalog-grid catalog-grid-virtualized"
+          className={`catalog-grid catalog-grid-virtualized ${
+            isCompactDensity ? "catalog-grid-density-compact" : "catalog-grid-density-expanded"
+          }`}
           data-testid="catalog-grid"
+          data-density={catalogDensity}
           style={{ paddingTop, paddingBottom }}
         >
           {virtualItems.map((virtualItem) => {
@@ -1036,7 +1239,13 @@ export function CatalogPurchasePanel({
     }
 
     return (
-      <div className="catalog-grid" data-testid="catalog-grid">
+      <div
+        className={`catalog-grid ${
+          isCompactDensity ? "catalog-grid-density-compact" : "catalog-grid-density-expanded"
+        }`}
+        data-testid="catalog-grid"
+        data-density={catalogDensity}
+      >
         {stableCatalogEntries.map((entry) => renderCatalogCard(entry, showFacts))}
       </div>
     );
@@ -1105,6 +1314,41 @@ export function CatalogPurchasePanel({
           </div>
         </div>
       </header>
+      {isMobileViewport && (
+        <div
+          className="catalog-quick-actions"
+          role="toolbar"
+          aria-label="Catalog quick actions"
+          data-testid="catalog-quick-actions"
+        >
+          <button
+            type="button"
+            className="catalog-quick-action"
+            data-testid="catalog-quick-filters"
+            aria-pressed={filtersOpen}
+            onClick={toggleFilters}
+          >
+            Filters · {activeFilterCount > 0 ? `${activeFilterCount} active` : "none"}
+          </button>
+          <button
+            type="button"
+            className="catalog-quick-action"
+            data-testid="catalog-quick-sort"
+            onClick={cycleCatalogSort}
+          >
+            Sort · {quickSortLabel}
+          </button>
+          <button
+            type="button"
+            className="catalog-quick-action"
+            data-testid="catalog-quick-density"
+            aria-pressed={isCompactDensity}
+            onClick={toggleCatalogDensity}
+          >
+            Density · {isCompactDensity ? "Compact" : "Expanded"}
+          </button>
+        </div>
+      )}
       <form
         className="catalog-filters"
         data-testid="catalog-filters"

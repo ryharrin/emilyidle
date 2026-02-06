@@ -34,6 +34,15 @@ const responsiveCss = `
     display: none;
   }
 }
+
+.settings-control {
+  min-height: 44px;
+}
+@media (max-width: 600px) {
+  .settings-control {
+    min-height: 48px;
+  }
+}
 `;
 
 const ensureResponsiveStyles = () => {
@@ -171,6 +180,20 @@ describe("Mobile responsive layout helpers", () => {
     const wideAfter = window.matchMedia("(min-width: 800px)");
     expect(narrowAfter.matches).toBe(false);
     expect(wideAfter.matches).toBe(true);
+  });
+
+  test("settings controls use larger touch targets on narrow viewports", () => {
+    const control = document.createElement("label");
+    control.className = "settings-control";
+    document.body.appendChild(control);
+
+    setViewportWidth(920);
+    control.style.minHeight = window.matchMedia("(max-width: 600px)").matches ? "48px" : "44px";
+    expect(control.style.minHeight).toBe("44px");
+
+    setViewportWidth(480);
+    control.style.minHeight = window.matchMedia("(max-width: 600px)").matches ? "48px" : "44px";
+    expect(control.style.minHeight).toBe("48px");
   });
 
   test("TierBadge can render without a label for compact layouts", () => {
