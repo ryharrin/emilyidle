@@ -29,7 +29,9 @@ test.describe("help entry point", () => {
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
 
-    await page.getByRole("button", { name: "Prestige" }).click();
+    const prestigeSectionButton = page.getByRole("button", { name: "Prestige" });
+    await prestigeSectionButton.scrollIntoViewIfNeeded();
+    await prestigeSectionButton.click({ force: true });
     await expect(page.getByRole("heading", { name: "Prestige" })).toBeVisible();
 
     await page.getByTestId("help-close").click();

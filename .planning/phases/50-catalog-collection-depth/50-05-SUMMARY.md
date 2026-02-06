@@ -31,6 +31,7 @@ key-files:
     - src/ui/help/HelpModal.tsx
     - src/style.css
     - tests/help.spec.ts
+    - tests/explanations.spec.ts
 
 key-decisions:
   - "Keep help section IDs untouched but add keyword/related metadata so navigation selectors and automation stay stable."
@@ -78,7 +79,8 @@ completed: 2026-02-06
 - `src/ui/help/HelpModal.tsx` – consumes the ranking helper, reorders filtered sections, and renders related chips that navigate to related sections.
 - `src/style.css` – styles for the related chips and their focus/hover states.
 - `tests/help-search.unit.test.ts` – verifies Tier/catalog keywords rank the expected sections before falling back to body matches.
-- `tests/help.spec.ts` – ensures Tier keyword search lands on the Tier badges section and the related chips link to catalog guidance.
+- `tests/help.spec.ts` – ensures Tier keyword search lands on the Tier badges section and the related chips link to catalog guidance; mobile-safe click handling now guards the Prestige section selection.
+- `tests/explanations.spec.ts` – uses mobile-safe explain-button clicks for career flows and validates current stats rate line items without relying on removed `<summary>` disclosures.
 
 ## Decisions Made
 
@@ -91,7 +93,7 @@ None – plan executed exactly as written.
 
 ## Issues Encountered
 
-`pnpm test:e2e -- tests/help.spec.ts tests/explanations.spec.ts` still times out on the Chromium-mobile Pixel 5 run for the help entry point and explanations specs (career start/stages/stat rate breakdown) after our rerun; Playwright repeatedly hits 60s click timeouts/blocked pointer events, so the suite currently fails in this environment despite passing on desktop browsers.
+Follow-up verification fix applied on 2026-02-06: hardened mobile help/explain click actions and aligned stats breakdown assertions with current card markup. Re-running `pnpm test:e2e -- tests/help.spec.ts tests/explanations.spec.ts` now passes on all projects (36 passed: chromium, chromium-mobile-pixel5, webkit-mobile-iphone12).
 
 ## User Setup Required
 

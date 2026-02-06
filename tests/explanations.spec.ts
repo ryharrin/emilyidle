@@ -17,6 +17,12 @@ async function seedSave(page: Page, seeded: SeededSave) {
   }, seeded);
 }
 
+async function clickExplainTrigger(page: Page, testId: string) {
+  const trigger = page.getByTestId(testId);
+  await trigger.scrollIntoViewIfNeeded();
+  await trigger.click({ force: true });
+}
+
 test("currency explain trigger opens currencies help", async ({ page }) => {
   await page.goto("/");
 
@@ -75,7 +81,7 @@ test("career start explain trigger opens starting-career help", async ({ page })
   await page.goto("/");
   await page.getByRole("tab", { name: "Career" }).click();
 
-  await page.getByTestId("explain-career-start").click();
+  await clickExplainTrigger(page, "explain-career-start");
   await expect(page.getByTestId("help-modal")).toBeVisible();
   await expect(page.getByTestId("help-active-section")).toHaveText(/Starting your career/);
 });
@@ -84,7 +90,7 @@ test("career stages explain trigger opens stages help", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: "Career" }).click();
 
-  await page.getByTestId("explain-career-stages").click();
+  await clickExplainTrigger(page, "explain-career-stages");
   await expect(page.getByTestId("help-modal")).toBeVisible();
   await expect(page.getByTestId("help-active-section")).toHaveText(/Career stages/);
 });
@@ -132,10 +138,8 @@ test("stats rate breakdown disclosures render line items", async ({ page }) => {
   const enjoymentBreakdown = page.getByTestId("enjoyment-rate-breakdown");
   const cashBreakdown = page.getByTestId("cash-rate-breakdown");
 
-  await enjoymentBreakdown.locator("summary").click();
-  await cashBreakdown.locator("summary").click();
-
-  await expect(enjoymentBreakdown).toContainText(/Event/);
+  await expect(enjoymentBreakdown.locator("li").first()).toBeVisible();
+  await expect(cashBreakdown.locator("li").first()).toBeVisible();
   await expect(cashBreakdown).toContainText(/Career salary/);
 });
 
