@@ -2,10 +2,13 @@ import React from "react";
 
 import { EmptyStateCTA } from "../components/EmptyStateCTA";
 import { UnlockHint } from "../components/UnlockHint";
+import { CatalogCardDetailsSheet } from "../components/catalog/CatalogCardDetailsSheet";
 import { CatalogPurchaseGate } from "../components/catalog/CatalogPurchaseGate";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
+import { useCatalogVirtualizer } from "../hooks/useCatalogVirtualizer";
+import type { CatalogVirtualizerResult } from "../hooks/useCatalogVirtualizer";
 import { LockIcon } from "../icons/coreIcons";
 import { getCatalogCollectionContext } from "../catalog/collectionContext";
 import { getCatalogUpgradeContext } from "../catalog/upgradeContext";
@@ -84,6 +87,7 @@ type CatalogTabProps = {
   nowMs?: number;
   currentEventMultiplier?: number;
   onInteract?: (itemId: WatchItemId) => void;
+  atelierUnlocked?: boolean;
 };
 
 type CatalogLaneId = "low" | "mid" | "lux";
@@ -126,6 +130,10 @@ const CATALOG_LANES: ReadonlyArray<CatalogLaneDefinition> = [
     note: "Premium tags and storytelling reinforce the high tier narrative.",
   },
 ];
+
+const CATALOG_VIRTUALIZATION_THRESHOLD = 200;
+const CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT = 420;
+const CATALOG_VIRTUALIZER_OVERSCAN = 6;
 
 export type PurchaseMeta = {
   prestigeTier?: "workshop" | "maison" | "nostalgia";
@@ -195,6 +203,25 @@ export function CatalogPurchasePanel({
   const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
   const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
   const purchaseHighlightTimeouts = React.useRef<Map<string, number>>(new Map());
+  const [detailsSheetTarget, setDetailsSheetTarget] = React.useState<{
+    entryId: string;
+    showFacts: boolean;
+  } | null>(null);
+  const detailsTriggerRef = React.useRef<HTMLButtonElement | null>(null);
+
+  const openDetailsSheet = React.useCallback(
+    (entryId: string, showFacts: boolean, trigger: HTMLButtonElement | null) => {
+      detailsTriggerRef.current = trigger;
+      setDetailsSheetTarget({ entryId, showFacts });
+    },
+    [],
+  );
+
+  const closeDetailsSheet = React.useCallback(() => {
+    setDetailsSheetTarget(null);
+    detailsTriggerRef.current?.focus();
+    detailsTriggerRef.current = null;
+  }, []);
 
   const filterSignature = React.useMemo(
     () =>
@@ -233,6 +260,11 @@ export function CatalogPurchasePanel({
     allEntries: catalogEntries,
     signature: filterSignature,
   });
+
+  const catalogEntryById = React.useMemo(
+    () => new Map(catalogEntries.map((entry) => [entry.id, entry])),
+    [catalogEntries],
+  );
 
   const perWatchRows = React.useMemo(() => {
     const effectiveNowMs = typeof nowMs === "number" ? nowMs : Date.now();
@@ -323,7 +355,7 @@ export function CatalogPurchasePanel({
     [onPurchase, state, triggerPurchaseHighlight],
   );
 
-  const renderCatalogDetails = (entry: CatalogEntry, tags: string[], showFacts: boolean) => {
+  const renderCatalogDetailsContent = (entry: CatalogEntry, tags: string[], showFacts: boolean) => {
     const sourceLabel = entry.image.sourceUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
     const specs = [
       { label: "Year", value: entry.year },
@@ -341,37 +373,41 @@ export function CatalogPurchasePanel({
     ];
 
     return (
-      <details
-        className="catalog-details"
-        open={expandedCards[entry.id] ?? false}
-        onToggle={(event) => handleDetailsToggle(entry.id, event.currentTarget.open)}
-        data-testid="catalog-details"
-      >
-        <summary>Details</summary>
-        <div className="catalog-details-body">
-          <p className="catalog-description">{entry.description}</p>
-          <ul className="catalog-specs">
-            {specs.map((spec) => (
-              <li key={`${entry.id}-${spec.label}`}>
-                <span className="catalog-spec-label">{spec.label}</span>
-                <span className="catalog-spec-value">{spec.value}</span>
-              </li>
-            ))}
-          </ul>
-          {showFacts && entry.facts && entry.facts.length > 0 && (
-            <div className="catalog-facts">
-              <p className="catalog-facts-title">Collector notes</p>
-              <ul data-testid="catalog-facts">
-                {entry.facts.map((fact) => (
-                  <li key={fact}>{fact}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </details>
+      <div className="catalog-details-body">
+        <p className="catalog-description">{entry.description}</p>
+        <ul className="catalog-specs">
+          {specs.map((spec) => (
+            <li key={`${entry.id}-${spec.label}`}>
+              <span className="catalog-spec-label">{spec.label}</span>
+              <span className="catalog-spec-value">{spec.value}</span>
+            </li>
+          ))}
+        </ul>
+        {showFacts && entry.facts && entry.facts.length > 0 && (
+          <div className="catalog-facts">
+            <p className="catalog-facts-title">Collector notes</p>
+            <ul data-testid="catalog-facts">
+              {entry.facts.map((fact) => (
+                <li key={fact}>{fact}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     );
   };
+
+  const renderCatalogDetails = (entry: CatalogEntry, tags: string[], showFacts: boolean) => (
+    <details
+      className="catalog-details"
+      open={expandedCards[entry.id] ?? false}
+      onToggle={(event) => handleDetailsToggle(entry.id, event.currentTarget.open)}
+      data-testid="catalog-details"
+    >
+      <summary>Details</summary>
+      {renderCatalogDetailsContent(entry, tags, showFacts)}
+    </details>
+  );
 
   const getTierBadgeDefinition = (entryId: string) => {
     const watchModel = watchModelById.get(entryId);
@@ -415,6 +451,7 @@ export function CatalogPurchasePanel({
     const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
     const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
     const isHighlighted = purchaseHighlights[entry.id];
+    const isDetailsOpen = detailsSheetTarget?.entryId === entry.id;
 
     const movementGate = getInteractionMovementGate(tierId);
     const movementReason = ownedCount > 0 ? (movementGate.reason ?? null) : null;
@@ -603,6 +640,19 @@ export function CatalogPurchasePanel({
                   className="help-open-button"
                 />
               )}
+              <button
+                type="button"
+                className="catalog-card-details-button"
+                data-testid={`catalog-details-button-${entry.id}`}
+                aria-haspopup="dialog"
+                aria-controls="catalog-details-sheet"
+                aria-expanded={isDetailsOpen}
+                onClick={(event) =>
+                  openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
+                }
+              >
+                Details
+              </button>
               {showDismantleAction && (
                 <button
                   type="button"
@@ -678,13 +728,51 @@ export function CatalogPurchasePanel({
     );
   };
 
-  const renderCatalogList = (showFacts: boolean) => (
-    <div className="catalog-grid" data-testid="catalog-grid">
-      {stableCatalogEntries.map((entry) => renderCatalogCard(entry, showFacts))}
-    </div>
-  );
+  const showLaneLayout = catalogSort === "tier";
+  const catalogVirtualizer: CatalogVirtualizerResult | null = useCatalogVirtualizer({
+    count: stableCatalogEntries.length,
+    enabled:
+      !showLaneLayout &&
+      !isTestEnvironment() &&
+      stableCatalogEntries.length >= CATALOG_VIRTUALIZATION_THRESHOLD,
+    estimateSize: CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT,
+    overscan: CATALOG_VIRTUALIZER_OVERSCAN,
+  });
 
-  const showLaneLayout = catalogSort === "default" || catalogSort === "tier";
+  const activeDetailsEntry = detailsSheetTarget?.entryId
+    ? (catalogEntryById.get(detailsSheetTarget.entryId) ?? null)
+    : null;
+  const detailsSheetTags = activeDetailsEntry ? getCatalogEntryTags(activeDetailsEntry) : [];
+  const detailsSheetShowFacts = detailsSheetTarget?.showFacts ?? false;
+  const detailsSheetContent =
+    activeDetailsEntry &&
+    renderCatalogDetailsContent(activeDetailsEntry, detailsSheetTags, detailsSheetShowFacts);
+
+  const renderCatalogList = (showFacts: boolean) => {
+    if (catalogVirtualizer) {
+      const { virtualItems, paddingTop, paddingBottom } = catalogVirtualizer;
+      return (
+        <div
+          className="catalog-grid catalog-grid-virtualized"
+          data-testid="catalog-grid"
+          style={{ paddingTop, paddingBottom }}
+        >
+          {virtualItems.map((virtualItem) => {
+            const entry = stableCatalogEntries[virtualItem.index];
+            return (
+              <React.Fragment key={entry.id}>{renderCatalogCard(entry, showFacts)}</React.Fragment>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <div className="catalog-grid" data-testid="catalog-grid">
+        {stableCatalogEntries.map((entry) => renderCatalogCard(entry, showFacts))}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -946,6 +1034,16 @@ export function CatalogPurchasePanel({
           </>
         )}
       </section>
+      {activeDetailsEntry && detailsSheetContent && (
+        <CatalogCardDetailsSheet
+          entry={activeDetailsEntry}
+          tags={detailsSheetTags}
+          show={Boolean(activeDetailsEntry)}
+          onClose={closeDetailsSheet}
+        >
+          {detailsSheetContent}
+        </CatalogCardDetailsSheet>
+      )}
     </>
   );
 }

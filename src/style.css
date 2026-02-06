@@ -2419,6 +2419,10 @@ textarea:focus-visible {
   gap: 20px;
 }
 
+.catalog-grid.catalog-grid-virtualized {
+  position: relative;
+}
+
 .catalog-lanes {
   display: flex;
   flex-direction: column;
@@ -2595,6 +2599,116 @@ button[data-testid^="vault-interact-"] {
     transition: none;
   }
 }
+
+.catalog-card-details-button {
+  display: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f7f7f7;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  align-self: center;
+}
+
+.catalog-card-details-button[aria-expanded="true"] {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 720px) {
+  .catalog-card-details-button {
+    display: inline-flex;
+  }
+}
+
+.catalog-card-details-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(3, 5, 10, 0.65);
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  z-index: 35;
+}
+
+.catalog-card-details-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 22px 22px 0 0;
+  padding: 24px;
+  padding-bottom: 32px;
+  background: linear-gradient(180deg, rgba(18, 20, 26, 0.98), rgba(12, 14, 18, 0.95));
+  box-shadow: 0 -20px 40px rgba(2, 4, 8, 0.8);
+  max-height: 88vh;
+  overflow-y: auto;
+  z-index: 36;
+  animation: catalogCardDetailsSlide 320ms ease;
+}
+
+.catalog-card-details-sheet__header {
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.catalog-card-details-sheet__brand {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.catalog-card-details-sheet__tags {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.catalog-card-details-sheet__close {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.catalog-card-details-sheet__content {
+  margin-top: 20px;
+}
+
+@keyframes catalogCardDetailsSlide {
+  from {
+    transform: translateY(140px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-card-details-sheet {
+    animation: none;
+  }
+}
+
 
 .power-reserve-hint {
   display: inline-flex;
