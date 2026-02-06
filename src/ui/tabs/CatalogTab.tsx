@@ -11,15 +11,18 @@ import { getCatalogCollectionContext } from "../catalog/collectionContext";
 import { getCatalogUpgradeContext } from "../catalog/upgradeContext";
 import { PerWatchStatsTable } from "../components/PerWatchStatsTable";
 import { TierBadge } from "../components/TierBadge";
+import type { TierBadgeCategory } from "../../game/tierBadges";
 import { PowerReserveHint } from "../components/PowerReserveHint";
 
 import { formatMoneyFromCents } from "../../game/format";
 import {
+  CATALOG_TIER_SEQUENCE,
   getCatalogEntryTags,
   getCatalogImageUrl,
   getWatchModelTierBadge,
 } from "../../game/catalog";
 import type { CatalogEntry } from "../../game/catalog";
+import type { CatalogTierId } from "../../game/model/types";
 import {
   buyWatchModel,
   dismantleWatchModel,
@@ -81,6 +84,47 @@ type CatalogTabProps = {
   currentEventMultiplier?: number;
   onInteract?: (itemId: WatchItemId) => void;
 };
+
+type CatalogLaneId = "low" | "mid" | "lux";
+
+type CatalogLaneDefinition = {
+  id: CatalogLaneId;
+  title: string;
+  description: string;
+  badge: TierBadgeCategory;
+  note: string;
+};
+
+const CATALOG_TIER_TO_LANE: Record<CatalogTierId, CatalogLaneId> = {
+  starter: "low",
+  classic: "mid",
+  chronograph: "mid",
+  tourbillon: "lux",
+};
+
+const CATALOG_LANES: ReadonlyArray<CatalogLaneDefinition> = [
+  {
+    id: "low",
+    title: "Starter lane",
+    description: "Low-tier quartz discoveries tuned for consistent enjoyment flow.",
+    badge: "starter",
+    note: "Accessible pricing and gentle pacing keep the lane approachable.",
+  },
+  {
+    id: "mid",
+    title: "Mid-tier lane",
+    description: "Classic automatics and chronographs that mix enjoyment with cash.",
+    badge: "mid",
+    note: "Mechanical craftsmanship with predictable pricing helps comparison.",
+  },
+  {
+    id: "lux",
+    title: "Luxury lane",
+    description: "Tourbillons reserved for prestige, featuring high enjoyment and cachet.",
+    badge: "lux",
+    note: "Premium tags and storytelling reinforce the high tier narrative.",
+  },
+];
 
 export type PurchaseMeta = {
   prestigeTier?: "workshop" | "maison" | "nostalgia";
@@ -529,11 +573,62 @@ export function CatalogPurchasePanel({
     );
   };
 
-  const renderCatalogGrid = (showFacts: boolean) => (
-    <div className="catalog-grid" data-testid="catalog-grid">
-      {stableCatalogEntries.map((entry) => renderCatalogCard(entry, showFacts))}
-    </div>
-  );
+  const renderCatalogLanes = (showFacts: boolean) => {
+    const sortedEntries = [...stableCatalogEntries].sort((a, b) => {
+      const tierA = getWatchModelTierId(a.id);
+      const tierB = getWatchModelTierId(b.id);
+      const orderA = CATALOG_TIER_SEQUENCE.indexOf(tierA);
+      const orderB = CATALOG_TIER_SEQUENCE.indexOf(tierB);
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      return a.model.localeCompare(b.model);
+    });
+
+    const laneMap = new Map<CatalogLaneId, CatalogEntry[]>();
+    for (const lane of CATALOG_LANES) {
+      laneMap.set(lane.id, []);
+    }
+
+    for (const entry of sortedEntries) {
+      const laneId = CATALOG_TIER_TO_LANE[getWatchModelTierId(entry.id)];
+      laneMap.get(laneId)?.push(entry);
+    }
+
+    return (
+      <div className="catalog-lanes">
+        {CATALOG_LANES.map((lane) => {
+          const laneEntries = laneMap.get(lane.id) ?? [];
+          return (
+            <section key={lane.id} className="catalog-lane" data-testid={`catalog-tier-${lane.id}`}>
+              <header
+                className="catalog-lane-header"
+                data-testid={`catalog-tier-header-${lane.id}`}
+              >
+                <TierBadge tier={lane.badge} showLabel label={lane.title} description={lane.note} />
+                <div>
+                  <p className="catalog-lane-title">{lane.title}</p>
+                  <p className="catalog-lane-description">{lane.description}</p>
+                </div>
+                <span className="catalog-lane-note">{lane.note}</span>
+              </header>
+              {laneEntries.length > 0 ? (
+                <div className="catalog-lane-grid">
+                  {laneEntries.map((entry) => renderCatalogCard(entry, showFacts))}
+                </div>
+              ) : (
+                <p className="catalog-lane-empty" data-testid={`catalog-tier-empty-${lane.id}`}>
+                  No catalog entries match these filters.
+                </p>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -733,7 +828,7 @@ export function CatalogPurchasePanel({
               />
             </div>
           ) : (
-            renderCatalogGrid(false)
+            renderCatalogLanes(false)
           ))}
       </section>
       <section
@@ -762,7 +857,7 @@ export function CatalogPurchasePanel({
                 />
               </div>
             ) : (
-              renderCatalogGrid(true)
+              renderCatalogLanes(true)
             )}
           </>
         )}
