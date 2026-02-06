@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-05 (FILTER-01 compact filter toggle + SORT-01 price ascending default + e2e contracts) — Completed
-Status: Phase 49 in progress (5/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-05 (compact filters, price sort, e2e coverage)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (5/10 executed) [█████░░░░░]
+Plan: 49-06 (HOVER-01 + GLOW-01 + VIRTUAL-01 + BOTTOM-01 + DISMANTLE-01) — Completed
+Status: Phase 49 in progress (6/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-06 (catalog previews, virtualization, bottom-sheet details, e2e coverage)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (6/10 executed) [██████░░░░]
 Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
@@ -87,9 +87,11 @@ Next Phase: Phase 49 (v4.1 execution)
 | 49 | Render the Stats tab breakdown panel even when the tab is inactive so relocated anchors like `#softcap` and `stats-event-multiplier` stay in the DOM for automation. | Prevents automated checks from losing the relocated softcap detail when the tab defaults to Collection. | ✓ Good |
 | 49 | Collapse catalog filters into an accessible toggle with an active-count badge | Keeps mobile real estate calm while preserving the DOM ids/data-testids automation and keyboard flows rely upon |
 | 49 | Sort default catalog results by ascending price (brand/model tie-breakers) | Highlights affordable discoveries deterministically and keeps regression expectations matched to the authoritative math |
+| 49 | Virtualize the catalog only once entry counts exceed 200 rows | Keeps the lane/tier layout stable while speeding up long lists that would otherwise bloat the DOM |
+| 49 | Portal the catalog detail sheet through `CatalogCardDetailsSheet` and restore focus to the trigger | Reuses the existing detail markup while keeping keyboard/focus contracts intact |
 
 ## Session Continuity
 
-Last session: 2026-02-06T07:14:31Z
-Stopped at: Completed Phase 49-05 (compact filters, price sort, e2e coverage)
+Last session: 2026-02-06T08:40:11Z
+Stopped at: Completed Phase 49-06 (catalog previews, virtualization, bottom-sheet details, e2e coverage)
 Resume file: None
