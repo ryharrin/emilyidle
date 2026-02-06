@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** post-v4.1 UX redesign planning package (Phase 52) is ready for execution.
+**Current focus:** executing Phase 52 UX redesign rollout (52-01 complete, 52-02 next).
 
 ## Current Position
 
 Phase: 52 of 7 (UX Redesign Spec)
-Plan: 52-01 (Hierarchy foundations) — Planned
-Status: v4.1 execution complete; Phase 52 design + rollout plans authored.
-Last activity: 2026-02-06 — Finalized Phase 52 planning pack (`52-CONTEXT`, `52-RESEARCH`, `52-01-DESIGN`, `52-01`..`52-03`) and moved UX evidence to `.planning/uat-artifacts/52/`.
-Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 planned (0/3) [░░░]
-Next Phase: Execute `52-01-PLAN.md` (action hierarchy + readability foundations).
+Plan: 52-02 (Mobile density pass) — Planned
+Status: v4.1 execution complete; Phase 52 rollout in progress with `52-01` shipped.
+Last activity: 2026-02-06 — Implemented `52-01` hierarchy foundations, completed verification (`typecheck`, targeted unit/e2e), and published `52-01-SUMMARY.md`.
+Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 in progress (1/3) [███░░░░░░░]
+Next Phase: Execute `52-02-PLAN.md` (mobile density pass and tap-target ergonomics).
 
 ## Accumulated Context
 
@@ -113,6 +113,6 @@ Next Phase: Execute `52-01-PLAN.md` (action hierarchy + readability foundations)
 
 ## Session Continuity
 
-Last session: 2026-02-06T17:05:00Z
-Stopped at: Authored Phase 52 UX redesign planning package
+Last session: 2026-02-06T17:26:00Z
+Stopped at: Completed Phase 52-01 implementation and verification
 Resume file: None

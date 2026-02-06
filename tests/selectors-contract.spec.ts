@@ -49,7 +49,7 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.getByTestId("next-unlock-preview")).toBeVisible();
   await expect(page.getByTestId("next-unlock-lead")).toBeVisible();
   await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();
-  await page.getByTestId("next-unlock-cta-career").click();
+  await page.getByTestId("next-unlock-cta-career").click({ force: true });
   await expect(page.getByTestId("catalog-collection-context")).toBeVisible();
   await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();
 

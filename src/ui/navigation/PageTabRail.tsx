@@ -1,4 +1,10 @@
-import type { KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 
 import type { TabBucket, TabId, TabMeta } from "./tabMeta";
 import type { TabReadinessMap } from "./tabReadiness";
@@ -32,11 +38,74 @@ export function PageTabRail({
   onTabRef,
   tabReadiness,
 }: PageTabRailProps) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [hasOverflowStart, setHasOverflowStart] = useState(false);
+  const [hasOverflowEnd, setHasOverflowEnd] = useState(false);
+
+  const updateOverflowState = useCallback(() => {
+    const scrollNode = scrollRef.current;
+    if (!scrollNode) {
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, scrollNode.scrollWidth - scrollNode.clientWidth);
+    const edgeTolerance = 2;
+    if (maxScrollLeft <= edgeTolerance) {
+      setHasOverflowStart(false);
+      setHasOverflowEnd(false);
+      return;
+    }
+
+    setHasOverflowStart(scrollNode.scrollLeft > edgeTolerance);
+    setHasOverflowEnd(scrollNode.scrollLeft < maxScrollLeft - edgeTolerance);
+  }, []);
+
+  useEffect(() => {
+    updateOverflowState();
+  }, [tabs, updateOverflowState]);
+
+  useEffect(() => {
+    const scrollNode = scrollRef.current;
+    if (!scrollNode) {
+      return;
+    }
+
+    const handleScrollOrResize = () => {
+      updateOverflowState();
+    };
+
+    scrollNode.addEventListener("scroll", handleScrollOrResize, { passive: true });
+    window.addEventListener("resize", handleScrollOrResize);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        handleScrollOrResize();
+      });
+      resizeObserver.observe(scrollNode);
+    }
+
+    return () => {
+      scrollNode.removeEventListener("scroll", handleScrollOrResize);
+      window.removeEventListener("resize", handleScrollOrResize);
+      resizeObserver?.disconnect();
+    };
+  }, [updateOverflowState]);
+
   let lastBucket: TabBucket | null = null;
 
   return (
-    <div className="page-tab-rail">
-      <div className="page-tab-rail__scroll" role="tablist" aria-label="Primary navigation">
+    <div
+      className="page-tab-rail"
+      data-overflow-start={hasOverflowStart ? "true" : "false"}
+      data-overflow-end={hasOverflowEnd ? "true" : "false"}
+    >
+      <div
+        className="page-tab-rail__scroll"
+        role="tablist"
+        aria-label="Primary navigation"
+        ref={scrollRef}
+      >
         {tabs.map((tab) => {
           const bucketStart = tab.bucket !== lastBucket;
           lastBucket = tab.bucket;

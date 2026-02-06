@@ -15,7 +15,7 @@ Deliver a satisfying watch-collecting idle loop that saves reliably and stays pl
 - Quality-of-life updates (offline gains, save import/export, undo, favorites, notifications, mini-game practice) and new achievements/events round out the experience.
 
 ## Current Milestone
-Planning next milestone scope (post-v4.1), with v4.1 kept as the current gameplay baseline.
+Executing post-v4.1 Phase 52 UX redesign rollout, with v4.1 kept as the gameplay baseline.
 
 ### Active planning package
 - Phase 52 UX redesign spec is prepared in `.planning/phases/52-ux-redesign-spec/`:
@@ -23,6 +23,7 @@ Planning next milestone scope (post-v4.1), with v4.1 kept as the current gamepla
   - `52-RESEARCH.md`
   - `52-01-DESIGN.md`
   - `52-01-PLAN.md`
+  - `52-01-SUMMARY.md` (completed)
   - `52-02-PLAN.md`
   - `52-03-PLAN.md`
   - `52-TASKLIST.md`

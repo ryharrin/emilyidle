@@ -711,6 +711,7 @@ export function CatalogPurchasePanel({
           : null);
     const canInteract = movementGate.available && interactionHint === null;
     const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
+    const showPrimaryInteract = canShowInteract && ownedCount > 0 && !gate.ok;
 
     const isWorn = state.wornWatchId === entry.id;
     const canWear = modelOwned > 0 && !isWorn;
@@ -833,20 +834,35 @@ export function CatalogPurchasePanel({
               <span className="catalog-price">{formatMoneyFromCents(gate.cashPriceCents)}</span>
               <span className="catalog-duplicate">Next x{duplicateMultiplier.toFixed(2)}</span>
             </div>
-            <CatalogPurchaseGate
-              entryId={entry.id}
-              discovered={discovered}
-              unlocked={unlocked}
-              unlockDetail={unlockDetail}
-              unlockCurrentLabel={unlockCurrentLabel}
-              unlockThresholdLabel={unlockThresholdLabel}
-              gate={gate}
-              buyLabel={buyLabel}
-              onBuy={() => handlePurchase(entry.id)}
-            />
+            <div className="catalog-primary-actions">
+              <CatalogPurchaseGate
+                entryId={entry.id}
+                discovered={discovered}
+                unlocked={unlocked}
+                unlockDetail={unlockDetail}
+                unlockCurrentLabel={unlockCurrentLabel}
+                unlockThresholdLabel={unlockThresholdLabel}
+                gate={gate}
+                buyLabel={buyLabel}
+                onBuy={() => handlePurchase(entry.id)}
+              />
+              {showPrimaryInteract && (
+                <button
+                  type="button"
+                  className="catalog-primary-action"
+                  disabled={!canInteract}
+                  data-testid={`vault-interact-${tierId}`}
+                  onClick={() => onInteract?.(tierId)}
+                >
+                  {interactionLabel}
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="catalog-secondary-actions">
             <button
               type="button"
-              className={`catalog-favorite-toggle ${isFavorite ? "catalog-favorite-toggle--active" : ""}`}
+              className={`catalog-favorite-toggle secondary ${isFavorite ? "catalog-favorite-toggle--active" : ""}`}
               data-testid={`catalog-favorite-toggle-${entry.id}`}
               aria-pressed={isFavorite}
               onClick={() => onPurchase(toggleWatchFavorite(state, entry.id))}
@@ -855,73 +871,69 @@ export function CatalogPurchasePanel({
             </button>
             <button
               type="button"
-              className={`catalog-compare-toggle ${isCompared ? "catalog-compare-toggle-active" : ""}`}
+              className={`catalog-compare-toggle secondary ${isCompared ? "catalog-compare-toggle-active" : ""}`}
               data-testid={`catalog-compare-toggle-${entry.id}`}
               aria-pressed={isCompared}
               onClick={() => handleCompareToggle(entry.id)}
             >
               {isCompared ? "Selected" : "Compare"}
             </button>
-          </div>
-          {(canWear || canShowInteract || hasCraftingParts) && (
-            <div className="card-actions">
-              {canWear && (
-                <button
-                  type="button"
-                  className="secondary"
-                  data-testid={`watch-wear-${entry.id}`}
-                  onClick={() => onPurchase(setWornWatchId(state, entry.id))}
-                >
-                  Wear
-                </button>
-              )}
-              {canShowInteract && ownedCount > 0 && (
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!canInteract}
-                  data-testid={`vault-interact-${tierId}`}
-                  onClick={() => onInteract?.(tierId)}
-                >
-                  {interactionLabel}
-                </button>
-              )}
-              {canShowInteract && ownedCount > 0 && interactionHint && (
-                <span className="muted catalog-interaction-hint">{interactionHint}</span>
-              )}
-              {canShowInteract && (
-                <ExplainButton
-                  sectionId={HELP_SECTION_IDS.interactions}
-                  label="Explain interactions"
-                  className="help-open-button"
-                />
-              )}
+            {canWear && (
               <button
                 type="button"
-                className="catalog-card-details-button"
-                data-testid={`catalog-details-button-${entry.id}`}
-                aria-haspopup="dialog"
-                aria-controls="catalog-details-sheet"
-                aria-expanded={isDetailsOpen}
-                onClick={(event) =>
-                  openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
-                }
+                className="secondary catalog-secondary-action"
+                data-testid={`watch-wear-${entry.id}`}
+                onClick={() => onPurchase(setWornWatchId(state, entry.id))}
               >
-                Details
+                Wear
               </button>
-              {showDismantleAction && (
-                <button
-                  type="button"
-                  className="secondary"
-                  data-testid={`catalog-dismantle-${entry.id}`}
-                  disabled={!canDismantle}
-                  onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
-                >
-                  Dismantle
-                </button>
-              )}
-            </div>
-          )}
+            )}
+            {canShowInteract && ownedCount > 0 && !showPrimaryInteract && (
+              <button
+                type="button"
+                className="secondary catalog-secondary-action"
+                disabled={!canInteract}
+                data-testid={`vault-interact-${tierId}`}
+                onClick={() => onInteract?.(tierId)}
+              >
+                {interactionLabel}
+              </button>
+            )}
+            {showDismantleAction && (
+              <button
+                type="button"
+                className="secondary catalog-secondary-action"
+                data-testid={`catalog-dismantle-${entry.id}`}
+                disabled={!canDismantle}
+                onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
+              >
+                Dismantle
+              </button>
+            )}
+            <button
+              type="button"
+              className="catalog-card-details-button catalog-secondary-action"
+              data-testid={`catalog-details-button-${entry.id}`}
+              aria-haspopup="dialog"
+              aria-controls="catalog-details-sheet"
+              aria-expanded={isDetailsOpen}
+              onClick={(event) =>
+                openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
+              }
+            >
+              More
+            </button>
+            {canShowInteract && ownedCount > 0 && interactionHint && (
+              <span className="muted catalog-interaction-hint">{interactionHint}</span>
+            )}
+            {canShowInteract && (
+              <ExplainButton
+                sectionId={HELP_SECTION_IDS.interactions}
+                label="Explain interactions"
+                className="help-open-button catalog-secondary-help"
+              />
+            )}
+          </div>
         </div>
       </article>
     );

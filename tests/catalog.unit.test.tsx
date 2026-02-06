@@ -1004,6 +1004,25 @@ describe("catalog purchase CTA", () => {
 
     expect(card.classList.contains("catalog-actionable")).toBe(true);
   });
+
+  it("renders primary and secondary catalog card actions with distinct affordances", async () => {
+    const catalogGrid = screen.getByTestId("catalog-grid");
+    const buyButtons = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-buy-/));
+    expect(buyButtons.length).toBeGreaterThan(0);
+
+    const buyButton = buyButtons[0];
+    const card = buyButton.closest('[data-testid="catalog-card"]');
+    if (!(card instanceof HTMLElement)) {
+      throw new Error("Expected a catalog card for action hierarchy assertions");
+    }
+
+    const favoriteToggle = within(card).getByTestId(/catalog-favorite-toggle-/);
+    const compareToggle = within(card).getByTestId(/catalog-compare-toggle-/);
+
+    expect(buyButton.classList.contains("catalog-primary-action")).toBe(true);
+    expect(favoriteToggle.classList.contains("secondary")).toBe(true);
+    expect(compareToggle.classList.contains("secondary")).toBe(true);
+  });
 });
 
 describe("catalog card affordances", () => {
@@ -1526,7 +1545,8 @@ describe("quartz minigame", () => {
     expect(screen.getByTestId("quartz-modal")).toBeTruthy();
 
     await user.click(screen.getByTestId("quartz-action"));
-    expect(screen.getByTestId("quartz-outcome").textContent).toMatch(/Enjoyment/i);
+    const quartzOutcome = await screen.findByTestId("quartz-outcome", {}, { timeout: 5_000 });
+    expect(quartzOutcome.textContent).toMatch(/Enjoyment/i);
 
     await user.click(screen.getByTestId("quartz-done"));
     expect(screen.queryByTestId("quartz-modal")).toBeNull();

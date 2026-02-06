@@ -35,7 +35,12 @@ export function CatalogPurchaseGate({
 }: CatalogPurchaseGateProps): JSX.Element {
   if (unlocked && gate.ok) {
     return (
-      <button type="button" data-testid={`catalog-buy-${entryId}`} onClick={onBuy}>
+      <button
+        type="button"
+        className="catalog-primary-action"
+        data-testid={`catalog-buy-${entryId}`}
+        onClick={onBuy}
+      >
         {buyLabel}
       </button>
     );

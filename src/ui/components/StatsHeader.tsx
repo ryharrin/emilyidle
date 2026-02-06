@@ -38,11 +38,11 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           </div>
           <dl className="stats-grid stats-header__metrics">
             <div>
-              <dt className="inline-icon-button">
+              <dt className="inline-icon-button stats-header__metric-label">
                 <CurrencyIcon className="inline-icon" />
                 Dollars
               </dt>
-              <dd id="currency">
+              <dd id="currency" className="stats-header__metric-value stats-header__metric-value--hero">
                 <ValueTicker
                   value={stats.cash}
                   formatValue={formatMoneyFromCents}
@@ -51,11 +51,11 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
               </dd>
             </div>
             <div>
-              <dt className="inline-icon-button">
+              <dt className="inline-icon-button stats-header__metric-label">
                 <CurrencyIcon className="inline-icon" />
                 Dollars / sec
               </dt>
-              <dd id="income">
+              <dd id="income" className="stats-header__metric-value stats-header__metric-value--hero">
                 <ValueTicker
                   value={stats.cashRate}
                   formatValue={formatRateFromCentsPerSec}
@@ -75,12 +75,12 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           </summary>
           <dl className="stats-grid stats-header__metrics">
             <div>
-              <dt className="inline-icon-button">
+              <dt className="inline-icon-button stats-header__metric-label">
                 <CurrencyIcon className="inline-icon" />
                 Collection enjoyment
                 <ExplainButton sectionId={HELP_SECTION_IDS.currencies} label="Explain currencies" />
               </dt>
-              <dd id="enjoyment">
+              <dd id="enjoyment" className="stats-header__metric-value">
                 <ValueTicker
                   value={stats.enjoyment}
                   formatValue={formatMoneyFromCents}
@@ -89,8 +89,8 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
               </dd>
             </div>
             <div>
-              <dt>Enjoyment / sec</dt>
-              <dd id="enjoyment-rate">
+              <dt className="stats-header__metric-label">Enjoyment / sec</dt>
+              <dd id="enjoyment-rate" className="stats-header__metric-value">
                 <ValueTicker
                   value={stats.enjoymentRate}
                   formatValue={formatRateFromCentsPerSec}
@@ -99,8 +99,8 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
               </dd>
             </div>
             <div>
-              <dt>Memories</dt>
-              <dd id="collection-value">
+              <dt className="stats-header__metric-label">Memories</dt>
+              <dd id="collection-value" className="stats-header__metric-value">
                 <ValueTicker
                   value={stats.sentimentalValue}
                   formatValue={formatMoneyFromCents}
@@ -120,20 +120,29 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           </summary>
           <dl className="stats-grid stats-header__metrics">
             <div>
-              <dt>Atelier resets</dt>
-              <dd>{systemStats.atelierResets}</dd>
+              <dt className="stats-header__metric-label">Atelier resets</dt>
+              <dd className="stats-header__metric-value stats-header__metric-value--system">
+                {systemStats.atelierResets}
+              </dd>
             </div>
             <div>
-              <dt>Maison heritage</dt>
-              <dd>{systemStats.maisonHeritage}</dd>
+              <dt className="stats-header__metric-label">Maison heritage</dt>
+              <dd className="stats-header__metric-value stats-header__metric-value--system">
+                {systemStats.maisonHeritage}
+              </dd>
             </div>
             <div>
-              <dt>Maison reputation</dt>
-              <dd>{systemStats.maisonReputation}</dd>
+              <dt className="stats-header__metric-label">Maison reputation</dt>
+              <dd className="stats-header__metric-value stats-header__metric-value--system">
+                {systemStats.maisonReputation}
+              </dd>
             </div>
             <div>
-              <dt>Event multiplier</dt>
-              <dd data-testid="stats-event-multiplier">
+              <dt className="stats-header__metric-label">Event multiplier</dt>
+              <dd
+                className="stats-header__metric-value stats-header__metric-value--system"
+                data-testid="stats-event-multiplier"
+              >
                 x{systemStats.eventMultiplier.toFixed(2)}
               </dd>
             </div>

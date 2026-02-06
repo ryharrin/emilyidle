@@ -133,7 +133,7 @@ Design intent:
 
 | Component | Rule | File Targets |
 |---|---|---|
-| `PageTabRail` | Stronger active indicator, overflow edge cue, tighter badge hierarchy | `src/ui/components/PageTabRail.tsx`, `src/style.css` |
+| `PageTabRail` | Stronger active indicator, overflow edge cue, tighter badge hierarchy | `src/ui/navigation/PageTabRail.tsx`, `src/ui/navigation/pageTabRail.css` |
 | `CatalogTab` shell | Sticky mobile quick-action row (`Filters`, `Sort`, `Density`) | `src/ui/tabs/CatalogTab.tsx`, `src/style.css` |
 | Catalog cards | Primary action prominence, secondary action demotion, `More` disclosure | `src/ui/tabs/CatalogTab.tsx`, `src/style.css` |
 | Catalog details sheet | Consolidate low-frequency controls and metadata | `src/ui/components/CatalogCardDetailsSheet.tsx`, `src/style.css` |
@@ -164,3 +164,11 @@ Design intent:
 
 - This design spec is implemented through plans `52-01`, `52-02`, and `52-03`.
 - Each rollout plan is additive and test-first, with no gameplay/economy logic changes.
+
+## 7) Acceptance Checklist
+
+- [x] Catalog cards expose one clearly dominant primary action (`Buy` or `Interact`) while `Favorite`/`Compare`/rare actions are visually secondary.
+- [x] Tab rail shows stronger active-state emphasis and edge-overflow discoverability without changing tab role/id contracts.
+- [x] Stats header labels and values have clearer contrast/size hierarchy, with critical values scannable at a glance.
+- [x] Existing `data-testid` anchors remain stable for catalog purchase, comparison, navigation, and stats event multiplier assertions.
+- [x] Verification commands pass: `pnpm typecheck`, `pnpm test:unit -- tests/catalog.unit.test.tsx tests/mobile-responsive.unit.test.tsx`, `pnpm test:e2e -- tests/selectors-contract.spec.ts`.
