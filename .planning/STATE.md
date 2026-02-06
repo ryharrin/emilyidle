@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-06 (HOVER-01 + GLOW-01 + VIRTUAL-01 + BOTTOM-01 + DISMANTLE-01) — Completed
-Status: Phase 49 in progress (6/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-06 (catalog previews, virtualization, bottom-sheet details, e2e coverage)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (6/10 executed) [██████░░░░]
+Plan: 49-07 (HELP-01 + MODAL-01) — Completed
+Status: Phase 49 in progress (7/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-07 (help modal header + modal touch polish)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (7/10 executed) [███████░░░]
 Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
@@ -89,9 +89,11 @@ Next Phase: Phase 49 (v4.1 execution)
 | 49 | Sort default catalog results by ascending price (brand/model tie-breakers) | Highlights affordable discoveries deterministically and keeps regression expectations matched to the authoritative math |
 | 49 | Virtualize the catalog only once entry counts exceed 200 rows | Keeps the lane/tier layout stable while speeding up long lists that would otherwise bloat the DOM |
 | 49 | Portal the catalog detail sheet through `CatalogCardDetailsSheet` and restore focus to the trigger | Reuses the existing detail markup while keeping keyboard/focus contracts intact |
+| 49 | Keep HelpModal search and close within a shared header action strip for mobile | Keeps both controls within 44px targets while preserving keyboard trapping and focus sentinels |
+| 49 | Drive modal motion states through `data-live-state`/`data-outcome-state` pointers and CSS transitions | Lets winding, automatic, and quartz overlays share consistent animation polish while honoring reduced-motion |
 
 ## Session Continuity
 
-Last session: 2026-02-06T08:40:11Z
-Stopped at: Completed Phase 49-06 (catalog previews, virtualization, bottom-sheet details, e2e coverage)
+Last session: 2026-02-06T08:59:07Z
+Stopped at: Completed Phase 49-07 (help modal header + modal touch polish)
 Resume file: None
