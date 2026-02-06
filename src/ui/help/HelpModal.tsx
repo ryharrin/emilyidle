@@ -321,34 +321,36 @@ export function HelpModal({
             <p className="eyebrow">Glossary</p>
             <h2>Help</h2>
           </div>
-          <button
-            type="button"
-            className="secondary"
-            data-testid="help-close"
-            onClick={onClose}
-            onKeyDown={handleCloseKeyDown}
-            ref={closeButtonRef}
-          >
-            Close
-          </button>
+          <div className="help-modal-header-actions">
+            <div className="help-modal-search">
+              <label className="visually-hidden" htmlFor="help-search-input">
+                Search help
+              </label>
+              <input
+                id="help-search-input"
+                data-testid="help-search"
+                type="search"
+                autoComplete="off"
+                placeholder="Search help"
+                aria-label="Search help"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                ref={searchInputRef}
+                onKeyDown={handleSearchKeyDown}
+              />
+            </div>
+            <button
+              type="button"
+              className="secondary"
+              data-testid="help-close"
+              onClick={onClose}
+              onKeyDown={handleCloseKeyDown}
+              ref={closeButtonRef}
+            >
+              Close
+            </button>
+          </div>
         </header>
-        <div className="help-modal-search">
-          <label className="visually-hidden" htmlFor="help-search-input">
-            Search help
-          </label>
-          <input
-            id="help-search-input"
-            data-testid="help-search"
-            type="search"
-            autoComplete="off"
-            placeholder="Search help"
-            aria-label="Search help"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            ref={searchInputRef}
-            onKeyDown={handleSearchKeyDown}
-          />
-        </div>
         {filteredSections.length === 0 ? (
           <p className="help-modal-no-results">No help sections match your search.</p>
         ) : (

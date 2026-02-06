@@ -1639,6 +1639,8 @@ button:not(:disabled):active {
   flex-direction: column;
   gap: 12px;
   box-shadow: 0 18px 36px rgba(6, 8, 12, 0.5);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .help-modal-header {
@@ -1648,10 +1650,25 @@ button:not(:disabled):active {
   align-items: flex-start;
 }
 
+.help-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.help-modal-header-actions button {
+  white-space: nowrap;
+}
+
 .help-modal-search {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1 1 240px;
+  min-width: 0;
 }
 
 .help-modal-search input {
@@ -1663,6 +1680,7 @@ button:not(:disabled):active {
   color: #f5f7ff;
   padding: 10px 16px;
   font-size: 0.85rem;
+  width: 100%;
 }
 
 .help-modal-search input:focus {
@@ -1700,7 +1718,11 @@ button[data-testid="help-close"] {
   font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 6px 12px;
+  padding: 10px 16px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .help-section-button-active {
@@ -2708,7 +2730,6 @@ button[data-testid^="vault-interact-"] {
     animation: none;
   }
 }
-
 
 .power-reserve-hint {
   display: inline-flex;
@@ -4551,13 +4572,32 @@ button[data-testid^="vault-interact-"] {
   }
 
   .help-modal-header {
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .help-modal-header-actions {
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .help-modal-search {
+    width: 100%;
   }
 
   .help-modal-sections {
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    overflow-x: hidden;
     padding-bottom: 4px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .help-modal-sections li {
+    display: flex;
+    flex: 1 1 160px;
   }
 
   .help-modal-content {
@@ -4586,6 +4626,28 @@ button[data-testid^="vault-interact-"] {
 
   .catalog-filters {
     grid-template-columns: 1fr;
+  }
+
+  .help-modal-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .help-modal-header-actions button {
+    width: 100%;
+  }
+
+  .help-modal-search {
+    width: 100%;
+  }
+
+  .help-modal-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .help-section-button {
+    width: 100%;
   }
 }
 .per-watch-row-name-title {
