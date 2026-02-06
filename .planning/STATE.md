@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** Phase 53 reliability + career clarity rollout is complete; preparing next milestone scope.
+**Current focus:** Phase 54 test reliability + CI stability is queued for execution, and Phase 55 UX/gameplay clarity is now packaged as the next sequence.
 
 ## Current Position
 
-Phase: 53 of 8 (Reliability + Career Clarity)
-Plan: 53-06 (Integration + planning sync) — Complete
-Status: v4.1 execution complete; Phase 53 rollout closed (`53-01` through `53-06` complete).
-Last activity: 2026-02-06 — Implemented save v3 migration, added therapist session delta e2e, backfilled Phase 13/18 verification reports, and published `53-06-SUMMARY.md`.
-Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 complete (6/6) [██████████]
-Next Phase: Define and plan the next milestone after reliability/career clarity closure.
+Phase: 54 of 10 (Test Reliability + CI Stability)
+Plan: 54-01 (Selector disambiguation + strict-mode hardening) — Ready
+Status: Phase 54 package authored (`54-01` through `54-07` planned), with Phase 55 (`55-01` through `55-08`) queued next.
+Last activity: 2026-02-06 — Authored Phase 55 context/tasklist/plans from UX/gameplay audit and synced top-level planning docs.
+Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 complete (6/6) [██████████], Phase 54 planned (0/7) [░░░░░░░░░░], Phase 55 planned (0/8) [░░░░░░░░░░]
+Next Phase: Execute Phase 54 plan sequence, then begin Phase 55 with `55-01-PLAN.md`.
 
 ## Accumulated Context
 
@@ -111,9 +111,13 @@ Next Phase: Define and plan the next milestone after reliability/career clarity 
 | 53 | Canonicalize persistence writes to save v3 while preserving v1/v2 decode + legacy key migration | Allows additive persistence evolution without breaking existing player saves |
 | 53 | Keep career summary messaging selector-driven (session delta + salary window + next unlock) | Prevents UI text/math drift and keeps decision cues deterministic |
 | 53 | Force therapist-session e2e to assert persisted save deltas via reload boundaries | Verifies real save side effects instead of only transient UI state |
+| 54 | Prefer unique `data-testid` selectors over ambiguous role/text queries in e2e assertions | Eliminates strict-mode collisions and stabilizes locator intent across responsive variants |
+| 54 | Keep desktop-only expectations scoped to desktop projects in Playwright matrix | Prevents deterministic mobile false-failures from viewport-incompatible assertions |
+| 55 | Treat primary-action visibility as a UX contract: toast/overlay layers cannot obscure core loop controls | Keeps high-frequency actions continuously available and reduces interruption friction |
+| 55 | Use concise taxonomy-driven gating reasons instead of verbose repeated copy | Improves scan speed and actionability while preserving deterministic selector/assertion anchors |
 
 ## Session Continuity
 
-Last session: 2026-02-06T18:15:00Z
-Stopped at: Completed Phase 53 implementation, verification, and planning sync
+Last session: 2026-02-06T23:05:00Z
+Stopped at: Authored Phase 55 UX/gameplay clarity package and synced planning docs
 Resume file: None

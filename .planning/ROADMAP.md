@@ -7,6 +7,11 @@
 - ✅ **v4.1 Next Wave** — Phases 48-51 (shipped 2026-02-06)
 - ✅ **Post-v4.1 Reliability + Career Clarity** — Phase 53 (completed 2026-02-06)
 
+## Planned Milestones
+
+- 🟡 **Post-v4.1 Test Reliability + CI Stability** — Phase 54 (planned 2026-02-06)
+- 🟡 **v4.4 UX Flow + Gameplay Clarity** — Phase 55 (planned 2026-02-06)
+
 ## Milestone v4.1 Next Wave (Shipped)
 
 **Goal:** Redesign session/atelier systems, polish mobile/tab UX, and deepen catalog/quality-of-life features.
@@ -115,6 +120,49 @@
 3. Career first view surfaces short-horizon payout/cost/unlock guidance.
 4. Previously tracked verification-report debt for phases 13/18 is closed.
 
+### Phase 54: Test Reliability + CI Stability (Planned)
+
+**Goal:** Restore reliable, repeatable test execution across unit + e2e by removing deterministic selector/scope/timing failures and codifying CI run policy.
+
+**Plans:**
+- [ ] 54-01-PLAN.md — Selector disambiguation + strict-mode hardening
+- [ ] 54-02-PLAN.md — Desktop/mobile project scoping cleanup
+- [ ] 54-03-PLAN.md — Mobile catalog/interaction helper stabilization
+- [ ] 54-04-PLAN.md — Runtime determinism + tolerant assertions
+- [ ] 54-05-PLAN.md — Catalog media verification hardening
+- [ ] 54-06-PLAN.md — Unit async/act warning cleanup
+- [ ] 54-07-PLAN.md — CI sequencing policy + full regression closeout
+
+**Success criteria:**
+1. No strict-mode selector collisions remain in active e2e suites.
+2. Desktop-only expectations are not executed in mobile projects.
+3. Mobile catalog/interaction tests are deterministic across Chromium + WebKit mobile projects.
+4. Time-sensitive tests rely on deterministic/tolerant invariants rather than brittle exact values.
+5. Unit suite runs without timing-related failures and significantly reduced async warning noise.
+6. CI guidance enforces stable run order and avoids known contention modes.
+
+### Phase 55: UX Flow + Gameplay Clarity (Planned)
+
+**Goal:** Resolve high-impact user-flow friction from the 2026-02-06 UX/gameplay audit by improving action clarity, mobile ergonomics, and interruption safety.
+
+**Plans:**
+- [ ] 55-01-PLAN.md — Toast interruption-safe layout
+- [ ] 55-02-PLAN.md — Career primary action consolidation
+- [ ] 55-03-PLAN.md — Mobile density + sticky now-action rail
+- [ ] 55-04-PLAN.md — Catalog CTA hierarchy simplification
+- [ ] 55-05-PLAN.md — Catalog gating reason taxonomy
+- [ ] 55-06-PLAN.md — Catalog media fallback quality pass
+- [ ] 55-07-PLAN.md — Mobile tab rail clipping/accessibility hardening
+- [ ] 55-08-PLAN.md — First-session feedback strip + flow guardrails
+
+**Success criteria:**
+1. Toasts/notifications never obscure primary CTA areas in desktop or mobile layouts.
+2. Career first viewport provides one canonical primary action without competing equivalent prompts.
+3. Mobile high-frequency loops reduce scroll/tap fatigue through progressive disclosure and sticky action affordances.
+4. Catalog cards present one dominant CTA and concise, actionable gated messaging.
+5. Tab labels remain legible and discoverable across narrow viewports.
+6. Early-game users can understand immediate gains and next threshold from first-session feedback.
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -131,3 +179,5 @@
 | 51. Quality of Life & Events | v4.1 | 5/5 | Complete | 51-05-SUMMARY.md |
 | 52. UX Redesign Spec | next milestone | 3/3 | Complete | 52-03-SUMMARY.md |
 | 53. Reliability + Career Clarity | post-v4.1 | 6/6 | Complete | 53-06-SUMMARY.md |
+| 54. Test Reliability + CI Stability | post-v4.1 | 0/7 | Planned | - |
+| 55. UX Flow + Gameplay Clarity | v4.4 | 0/8 | Planned | - |

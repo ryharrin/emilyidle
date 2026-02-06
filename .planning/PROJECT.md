@@ -14,8 +14,20 @@ Deliver a satisfying watch-collecting idle loop that saves reliably and stays pl
 - The catalog and Collection gain analytics, comparison tools, and notifications tied to achievements/events.
 - Quality-of-life updates (offline gains, save import/export, undo, favorites, notifications, mini-game practice) and new achievements/events round out the experience.
 
-## Current Milestone
-Post-v4.1 Phase 53 reliability + career clarity rollout is complete, with v4.1 gameplay systems kept as baseline.
+## Current Milestones
+Immediate execution focus remains Post-v4.1 Phase 54 test reliability + CI stability hardening, with v4.1 gameplay systems kept as baseline.
+
+### Current planning package (execution now)
+- Phase 54 test reliability + CI stability package is authored in `.planning/phases/54-test-reliability-ci-stability/`:
+  - `54-CONTEXT.md`
+  - `54-01-PLAN.md` .. `54-07-PLAN.md`
+  - `54-TASKLIST.md`
+
+### Next planned package (queued from UX/gameplay audit)
+- Phase 55 UX flow + gameplay clarity package is authored in `.planning/phases/55-ux-flow-gameplay-clarity/`:
+  - `55-CONTEXT.md`
+  - `55-01-PLAN.md` .. `55-08-PLAN.md`
+  - `55-TASKLIST.md`
 
 ### Recently completed planning package
 - Phase 53 reliability + career clarity package is fully executed in `.planning/phases/53-reliability-career-clarity/`:
@@ -58,7 +70,8 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 ## Context
 - v4.0 delivered tier badge theming, per-watch stats, catalog variety, mobile navigation polish, and WebKit-friendly focus handling; we now build atop that foundation.
 - Mobile regression coverage spans Pixel 5 (Chrome) and iPhone 12 (WebKit) viewports.
-- Recently closed blockers: therapist session delta/cooldown Playwright coverage and missing verification artifacts for phases 13/18.
+- Current blockers identified by Phase 54 intake: selector ambiguity in e2e, desktop/mobile scope mismatch, mobile interaction flow flake, and timing-sensitive assertion brittleness.
+- UX/gameplay audit findings for the next package are captured in Phase 55 context (toast interruption safety, mobile density, catalog action hierarchy, and first-session guidance clarity).
 
 ## Key Decisions
 | Decision | Rationale | Outcome |
@@ -70,10 +83,10 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 | Tab/Shift+Tab between the help search input and Close button is intercepted manually | Keeps iOS Safari keyboard navigation inside the modal | ✓ Good |
 
 ## Next Steps
-- `/gsd-new-milestone` — Define the next milestone after v4.1
-- `/gsd-requirements` — Capture new requirement IDs and acceptance criteria
-- `/gsd-roadmap` — Sequence next-phase execution order and dependencies
-- `/gsd-plan-phase` — Author the first execution plan in the next milestone sequence
+- `/gsd-plan-phase` — Execute `54-01` selector disambiguation.
+- `/gsd-plan-phase` — Execute `54-02` desktop/mobile project scoping cleanup.
+- `/gsd-plan-phase` — Execute `54-03` mobile-flow helper stabilization.
+- `/gsd-plan-phase` — Execute `55-01` toast interruption-safe layout after Phase 54 sequencing.
 
 <details>
 <summary>Archived context (pre-v4.1 milestone)</summary>
