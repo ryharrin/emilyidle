@@ -99,3 +99,21 @@ test("career timeline renders stage nodes alongside the map", async ({ page }) =
   await expect(nodes).toHaveCount(6);
   await expect(nodes.first()).toHaveAttribute("data-stage-id", "grad-student");
 });
+
+test("career timeline meta renders current summary and upcoming choices on desktop", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const currentSummary = page.getByTestId("career-timeline-current");
+  const upcomingSummary = page.getByTestId("career-timeline-upcoming");
+  await expect(currentSummary).toBeVisible();
+  await expect(upcomingSummary).toBeVisible();
+});
+
+test("career timeline meta collapses on narrow viewports", async ({ page }) => {
+  await page.setViewportSize({ width: 600, height: 780 });
+  await page.goto("/");
+
+  await expect(page.getByTestId("career-timeline-current")).not.toBeVisible();
+});

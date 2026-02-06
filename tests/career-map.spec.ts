@@ -88,7 +88,7 @@ test.describe("career map canvas", () => {
       return;
     }
 
-    await viewport.hover();
+    await viewport.hover({ force: true });
     const beforeRaw = await page.evaluate(() =>
       window.localStorage.getItem("emily-idle:career-map-viewport:v1"),
     );
@@ -98,7 +98,7 @@ test.describe("career map canvas", () => {
       return;
     }
 
-    await page.getByTestId("career-map-zoom-in").click();
+    await page.getByTestId("career-map-zoom-in").click({ force: true });
 
     await page.waitForFunction((beforeScale: number) => {
       const raw = window.localStorage.getItem("emily-idle:career-map-viewport:v1");

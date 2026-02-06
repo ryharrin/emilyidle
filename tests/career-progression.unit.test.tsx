@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { CareerTimeline } from "../src/ui/components/CareerTimeline";
@@ -74,5 +74,39 @@ describe("career progression", () => {
 
     expect(screen.getByText(/Permanent track: VA hospital/)).toBeInTheDocument();
     expect(screen.getAllByText(/Impact:/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders the current position summary with progress cues", () => {
+    const state = enterPhdProgram(createInitialState(), 0);
+    render(<CareerTimeline state={state} />);
+
+    const summary = screen.getByTestId("career-timeline-current");
+    expect(summary).toBeVisible();
+    expect(within(summary).getByText(/Grad student/)).toBeInTheDocument();
+    expect(within(summary).getByText(/Level \d+/)).toBeInTheDocument();
+    expect(within(summary).getByText(/progress/)).toBeInTheDocument();
+  });
+
+  it("shows upcoming choice cards for pending decisions", () => {
+    const initialState = enterPhdProgram(createInitialState(), 0);
+    const pendingState = {
+      ...initialState,
+      therapistCareer: {
+        ...initialState.therapistCareer,
+        level: 5,
+        primaryTrackId: null,
+        activeTrackId: null,
+        modalityId: null,
+        operatingStyleId: null,
+        expansionFocusId: null,
+      },
+    };
+    render(<CareerTimeline state={pendingState} />);
+
+    const upcoming = screen.getByTestId("career-timeline-upcoming");
+    expect(upcoming).toBeVisible();
+    const trackChoice = within(upcoming).getByTestId("career-upcoming-choice-licensed-associate");
+    expect(trackChoice).toHaveTextContent(/Track/);
+    expect(trackChoice).toHaveTextContent(/level/);
   });
 });
