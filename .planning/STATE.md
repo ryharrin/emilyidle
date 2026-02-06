@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** v4.1 planning (Phase 50 catalog & collection depth verified; Phase 51 planning next)
+**Current focus:** v4.1 execution prep (Phase 51 quality-of-life/events plans ready)
 
 ## Current Position
 
-Phase: 50 of 6 (Catalog & Collection Depth)
-Plan: 50-05 (HELP-02) — Completed
-Status: Phase 50 complete (5/5 plans executed)
-Last activity: 2026-02-06 — Resolved Plan 50-05 verification regressions; `pnpm test:e2e -- tests/help.spec.ts tests/explanations.spec.ts` passes on chromium, chromium-mobile-pixel5, and webkit-mobile-iphone12.
-Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████]
-Next Phase: Phase 51 (Quality of Life & Events — planning pending)
+Phase: 51 of 6 (Quality of Life & Events)
+Plan: 51-01 (Offline & save reliability) — Completed
+Status: Phase 51 execution in progress (Plan 1 done, 4 remaining)
+Last activity: 2026-02-06 — Completed Phase 51-01 (`OFFLINE-01` + `SAVE-01`) and logged the summary/state updates.
+Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 executing (1/5 executed) [█░░░░░]
+Next Phase: Phase 51 execution continues (next plan: `51-02-PLAN.md`)
 
 ## Accumulated Context
 
@@ -105,9 +105,11 @@ Next Phase: Phase 51 (Quality of Life & Events — planning pending)
 | 50 | Pause automatic active-section detection for ~400 ms after programmatic jumps | Prevents the sticky nav from flipping back to `collection-overview` before automation captures the intended anchor |
 | 50 | Relax the Owned tab matcher to `/^Owned/` and click via `evaluate` so viewport restrictions do not block the script | Guards the winding and automatic interaction flows even when readiness badges change the tab copy |
 | 50 | Harden help/explanations e2e interactions with mobile-safe click paths and align stats-rate assertions to card line items | Removes mobile pointer-interception flake and keeps the verification suite aligned with current StatsTab markup |
+| 51 | Keep offline progress on the runtime step path instead of inventing a separate economy flow | Keeps the economy deterministic across live play and subsequent loads |
+| 51 | Route every save import (paste or file) through the persistence decoder before mutating state | Ensures invalid payloads are rejected centrally and no progress is lost |
 
 ## Session Continuity
 
-Last session: 2026-02-06T13:14:34Z
-Stopped at: Completed Phase 50-05 (Tier badge help search + contextual chips)
+Last session: 2026-02-06T14:09:14Z
+Stopped at: Completed Phase 51-01 (Offline/resilient save import)
 Resume file: None
