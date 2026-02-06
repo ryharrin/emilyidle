@@ -4387,6 +4387,56 @@ button[data-testid^="catalog-buy-"]:disabled {
   margin: 0;
 }
 
+.career-economy-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.career-economy-summary-header {
+  display: grid;
+  gap: 4px;
+}
+
+.career-economy-summary-header h4 {
+  margin: 0;
+}
+
+.career-economy-summary-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.career-economy-summary-grid div {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 17, 21, 0.45);
+  padding: 8px 10px;
+  display: grid;
+  gap: 3px;
+}
+
+.career-economy-summary-grid dt {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9da3ad;
+}
+
+.career-economy-summary-grid dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.career-economy-summary-window {
+  margin: 0;
+  font-size: 0.83rem;
+  color: #d7dde8;
+}
+
 .career-deep-details {
   grid-area: deep;
   border-radius: 18px;
@@ -4427,6 +4477,15 @@ button[data-testid^="catalog-buy-"]:disabled {
 [data-theme="light"] .career-deep-details {
   border-color: #d7cfc5;
   background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .career-economy-summary-grid div {
+  border-color: rgba(170, 130, 86, 0.2);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+[data-theme="light"] .career-economy-summary-window {
+  color: #4f473d;
 }
 
 [data-theme="light"] .career-deep-details summary {
@@ -4583,6 +4642,10 @@ button[data-testid^="catalog-buy-"]:disabled {
 }
 
 @media (max-width: 600px) {
+  .career-economy-summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .career-timeline-node {
     width: 200px;
   }

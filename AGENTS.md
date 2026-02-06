@@ -67,7 +67,7 @@ Notes:
   - `src/game/actions/*` (state transitions)
 - Runtime side effects: `src/game/runtime/*` (RAF tick + autosave + lifecycle)
 - Simulation tick: `src/game/sim.ts` (`SIM_TICK_MS = 100`, `step()` advances state)
-- Persistence: `src/game/persistence.ts` (save v2, legacy key support)
+- Persistence: `src/game/persistence.ts` (save v3, legacy v1/v2 acceptance + legacy key support)
 - Catalog + assets: `src/game/catalog.ts` + `public/catalog/`
 - Unit tests: `tests/**/*.unit.test.{ts,tsx}` (Vitest + Testing Library)
 - E2E tests: `tests/**/*.spec.{ts,tsx}` (Playwright)
@@ -96,8 +96,8 @@ Interactions (example of state-transition style):
 
 ## Persistence contracts (save + localStorage)
 
-- Save format is JSON `version: 2` (`src/game/persistence.ts`). Legacy `version: 1` is still
-  accepted and sanitized.
+- Save format is JSON `version: 3` (`src/game/persistence.ts`). Legacy `version: 1` and
+  `version: 2` are still accepted and sanitized.
 - Keys:
   - `emily-idle:save` (current) and `watch-idle:save` (legacy)
   - Also: `emily-idle:settings`, `emily-idle:audio`, `emily-idle:navigation`, `emily-idle:help`,

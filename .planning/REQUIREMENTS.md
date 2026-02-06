@@ -80,6 +80,16 @@
 - [x] DIFF-01: Implement tier-based difficulty scaling in mini-games.
 - [x] STREAK-01: Award streak bonuses for consecutive perfect mini-game plays.
 
+## Completed (v4.2 Reliability + Career Clarity)
+
+- [x] PERSIST-01: Move canonical save encoding to `version: 3` with explicit migration semantics.
+- [x] PERSIST-02: Accept and sanitize legacy `version: 1`/`version: 2` payloads while canonicalizing writes to v3.
+- [x] VERIFY-01: Add dedicated Playwright coverage for therapist session cash/enjoyment deltas and cooldown transitions.
+- [x] VERIFY-02: Backfill missing verification reports for phases 13 and 18.
+- [x] CAREER-CLARITY-01: Add a short-horizon career summary for session payout/cost/cooldown context.
+- [x] CAREER-CLARITY-02: Surface near-term unlock impact messaging from selectors.
+- [x] PACE-01: Expose salary window timing summary in career first view.
+
 ## Out of Scope
 
 - Multiplayer, social sharing, watch trading, AR, custom watch design, virtual exhibitions, mentorship systems, watch clubs, seasonal events, watch customization — remain explicitly rejected (see NOTES-02-02-26).
@@ -147,12 +157,19 @@
 | PRACTICE-01 | Phase 51 | Complete |
 | DIFF-01 | Phase 51 | Complete |
 | STREAK-01 | Phase 51 | Complete |
+| PERSIST-01 | Phase 53 | Complete |
+| PERSIST-02 | Phase 53 | Complete |
+| VERIFY-01 | Phase 53 | Complete |
+| VERIFY-02 | Phase 53 | Complete |
+| CAREER-CLARITY-01 | Phase 53 | Complete |
+| CAREER-CLARITY-02 | Phase 53 | Complete |
+| PACE-01 | Phase 53 | Complete |
 
 **Coverage:**
-- v1 requirements: 52 total
-- Mapped to phases: 52
+- v1 requirements: 59 total
+- Mapped to phases: 59
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-06 after Phase 51 closeout*
+*Last updated: 2026-02-06 after Phase 53 closeout*

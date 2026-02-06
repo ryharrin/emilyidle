@@ -5,6 +5,7 @@
 - ✅ **v4.0 Watch Interactions & Catalog Polish** — Phases 42-47 (shipped 2026-02-05)  
   [Milestone archive](milestones/v4.0-ROADMAP.md)
 - ✅ **v4.1 Next Wave** — Phases 48-51 (shipped 2026-02-06)
+- ✅ **Post-v4.1 Reliability + Career Clarity** — Phase 53 (completed 2026-02-06)
 
 ## Milestone v4.1 Next Wave (Shipped)
 
@@ -96,6 +97,24 @@
 3. Career and Stats first viewport surfaces \"Now/Next\" guidance before deep diagnostics.
 4. Existing gameplay mechanics and persistence contracts remain unchanged.
 
+### Phase 53: Reliability + Career Clarity (Complete)
+
+**Goal:** Deliver persistence reliability upgrades and close verification debt while improving short-horizon career/economy clarity.
+
+**Plans:**
+- [x] 53-01-PLAN.md — Persistence v3 migration pipeline + canonical writes
+- [x] 53-02-PLAN.md — Career session value summary surface
+- [x] 53-03-PLAN.md — Therapist session delta/cooldown e2e coverage
+- [x] 53-04-PLAN.md — Near-term progression messaging pass
+- [x] 53-05-PLAN.md — Backfill verification reports for phases 13 and 18
+- [x] 53-06-PLAN.md — Integration verification + planning sync
+
+**Success criteria:**
+1. Save encoding writes canonical v3 payloads while v1/v2 inputs remain loadable.
+2. Dedicated therapist session e2e verifies cash/enjoyment deltas and cooldown behavior.
+3. Career first view surfaces short-horizon payout/cost/unlock guidance.
+4. Previously tracked verification-report debt for phases 13/18 is closed.
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -111,3 +130,4 @@
 | 50. Catalog & Collection Depth | v4.1 | 5/5 | Complete | 50-05-SUMMARY.md |
 | 51. Quality of Life & Events | v4.1 | 5/5 | Complete | 51-05-SUMMARY.md |
 | 52. UX Redesign Spec | next milestone | 3/3 | Complete | 52-03-SUMMARY.md |
+| 53. Reliability + Career Clarity | post-v4.1 | 6/6 | Complete | 53-06-SUMMARY.md |

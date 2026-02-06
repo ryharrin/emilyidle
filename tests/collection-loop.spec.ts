@@ -73,7 +73,7 @@ test.describe("collection loop", () => {
     if (!raw || !parsed) {
       throw new Error("Expected autosave payload after initial load");
     }
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(3);
     expect(typeof parsed.state.currencyCents).toBe("number");
 
     await page.evaluate(() => {

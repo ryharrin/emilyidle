@@ -14,7 +14,7 @@ effects live under `runtime/`.
 - `runtime/`: RAF tick + autosave + lifecycle persistence.
 - `state.ts`: facade that re-exports model/data/selectors/actions.
 - `sim.ts`: `SIM_TICK_MS = 100`; `step()` clamps dt and applies events/achievements.
-- `persistence.ts`: save v2; localStorage keys `emily-idle:save` and legacy `watch-idle:save`.
+- `persistence.ts`: save v3 (accepts legacy v1/v2); localStorage keys `emily-idle:save` and legacy `watch-idle:save`.
 - `catalog.ts`: catalog entries + licensing; maps Wikimedia URLs to `/catalog/`.
 - `format.ts`: money/rate formatting helpers.
 

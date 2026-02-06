@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** Phase 52 UX redesign rollout is complete; preparing post-v4.1 milestone planning.
+**Current focus:** Phase 53 reliability + career clarity rollout is complete; preparing next milestone scope.
 
 ## Current Position
 
-Phase: 52 of 7 (UX Redesign Spec)
-Plan: 52-03 (Progressive disclosure pass) — Complete
-Status: v4.1 execution complete; Phase 52 rollout closed (`52-01` through `52-03` complete).
-Last activity: 2026-02-06 — Implemented `52-03` progressive disclosure updates (Career/Stats/Help), re-captured UX metrics, and published `52-03-SUMMARY.md`.
-Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████]
-Next Phase: Define and plan the post-v4.1 milestone scope.
+Phase: 53 of 8 (Reliability + Career Clarity)
+Plan: 53-06 (Integration + planning sync) — Complete
+Status: v4.1 execution complete; Phase 53 rollout closed (`53-01` through `53-06` complete).
+Last activity: 2026-02-06 — Implemented save v3 migration, added therapist session delta e2e, backfilled Phase 13/18 verification reports, and published `53-06-SUMMARY.md`.
+Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 complete (6/6) [██████████]
+Next Phase: Define and plan the next milestone after reliability/career clarity closure.
 
 ## Accumulated Context
 
@@ -33,8 +33,6 @@ Next Phase: Define and plan the post-v4.1 milestone scope.
 
 ### Carried Gaps / Tech Debt
 
-- Missing phase verification reports for phases 13 and 18.
-- No dedicated Playwright E2E asserting therapist session deltas (cash/enjoyment) and cooldown UX.
 - Catalog image contract now validates the shared `BASE_URL` constant so `LOCAL_CATALOG_ROOT` stays aligned with `import.meta.env.BASE_URL` when `pnpm test:unit -- tests/mobile-responsive.unit.test.tsx` runs.
 
 ### Decisions Made
@@ -110,9 +108,12 @@ Next Phase: Define and plan the post-v4.1 milestone scope.
 | 51 | Include favorites state in Catalog's stable-entry signature | Prevents favorites-only filters from showing stale results after toggles |
 | 51 | Keep latest-purchase undo bounded to a single validated snapshot | Ensures undo cannot corrupt inventory/currency state or rewind arbitrarily |
 | 51 | Make practice mode reward-free and keep streak bonuses normal-mode only | Preserves economy integrity while allowing skill training loops |
+| 53 | Canonicalize persistence writes to save v3 while preserving v1/v2 decode + legacy key migration | Allows additive persistence evolution without breaking existing player saves |
+| 53 | Keep career summary messaging selector-driven (session delta + salary window + next unlock) | Prevents UI text/math drift and keeps decision cues deterministic |
+| 53 | Force therapist-session e2e to assert persisted save deltas via reload boundaries | Verifies real save side effects instead of only transient UI state |
 
 ## Session Continuity
 
 Last session: 2026-02-06T18:15:00Z
-Stopped at: Completed Phase 52-03 implementation, verification, and metric recapture
+Stopped at: Completed Phase 53 implementation, verification, and planning sync
 Resume file: None

@@ -6,6 +6,9 @@ import {
   canPerformTherapistSession,
   getTherapistCareer,
   getTherapistSessionCostLabel,
+  getTherapistSessionValueDeltaSummary,
+  getTherapistSalaryWindowSummary,
+  getTherapistNearTermUnlockImpact,
   getTherapistSessionPolicy,
   getTherapistXpRequiredForNextLevel,
   getTherapistSalaryExpirationAlert,
@@ -58,6 +61,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     sessionPolicy.cooldownMs > 0 ? clamp01(1 - remainingMs / sessionPolicy.cooldownMs) : 1;
   const cooldownLabel = `Cooldown ${Math.max(0, Math.ceil(remainingMs / 1000))}s`;
   const salaryAlert = getTherapistSalaryExpirationAlert(state, nowMs);
+  const salaryWindowSummary = getTherapistSalaryWindowSummary(state, nowMs);
+  const sessionValueSummary = getTherapistSessionValueDeltaSummary(state, nowMs);
+  const nearTermUnlock = getTherapistNearTermUnlockImpact(state);
   const salaryRemainingLabel = formatDuration(salaryAlert.remainingMs);
   const showSalaryAlert = salaryAlert.level !== "none";
 
@@ -133,6 +139,51 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           </header>
           <div className="card-stack career-stack career-stack-now">
             <CareerNextActionCard state={state} nowMs={nowMs} onPurchase={onPurchase} />
+            <article className="card career-economy-summary" data-testid="career-economy-summary">
+              <header className="career-economy-summary-header">
+                <h4>Session value snapshot</h4>
+                <p className="muted">Short-horizon payout, cost, and unlock timing at a glance.</p>
+              </header>
+              <dl className="career-economy-summary-grid" data-testid="session-delta-breakdown">
+                <div>
+                  <dt>Session cash</dt>
+                  <dd>
+                    +{formatMoneyFromCents(sessionValueSummary.cashPayoutCents)}
+                    {sessionValueSummary.supportsSessions ? "" : " (locked)"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Session enjoyment</dt>
+                  <dd>
+                    {sessionValueSummary.isFreeSession
+                      ? "0 (free)"
+                      : `-${formatMoneyFromCents(sessionValueSummary.enjoymentCostCents)}`}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Cooldown</dt>
+                  <dd>{formatDuration(sessionValueSummary.cooldownMs)}</dd>
+                </div>
+                <div>
+                  <dt>Premium</dt>
+                  <dd>
+                    {sessionValueSummary.premiumCount > 0
+                      ? `x${sessionValueSummary.premiumMultiplier.toFixed(2)}`
+                      : "None"}
+                  </dd>
+                </div>
+              </dl>
+              <p className="career-economy-summary-window" data-testid="salary-window-timer">
+                Salary window{" "}
+                {salaryWindowSummary.isActive
+                  ? `ends in ${formatDuration(salaryWindowSummary.remainingMs)}`
+                  : "is inactive"}{" "}
+                ({formatDuration(salaryWindowSummary.windowMs)} base refresh).
+              </p>
+              <p className="muted">
+                <strong>{nearTermUnlock.title}:</strong> {nearTermUnlock.detail}
+              </p>
+            </article>
             <div className="card career-session">
               <div className="career-session-header">
                 <div>

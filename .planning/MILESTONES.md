@@ -1,5 +1,18 @@
 # Milestones: Emily Idle
 
+## Post-v4.1 Reliability + Career Clarity (Completed: 2026-02-06)
+
+**Delivered:** Completed a six-plan interleaved package covering persistence v3 migration, therapist session delta verification coverage, and career short-horizon guidance improvements.
+
+**Phase completed:** 53 (6 plans)
+
+**Summary anchors:**
+- `.planning/phases/53-reliability-career-clarity/53-06-SUMMARY.md`
+- `.planning/phases/13-enjoyment-economy-foundation/13-VERIFICATION.md`
+- `.planning/phases/18-codebase-refactor/18-VERIFICATION.md`
+
+---
+
 ## Post-v4.1 UX Redesign Package (Completed: 2026-02-06)
 
 **Delivered:** Completed the three-plan Phase 52 UX redesign rollout focused on hierarchy clarity, mobile density reduction, and progressive disclosure across Career/Stats/Help.

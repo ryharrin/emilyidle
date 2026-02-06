@@ -797,7 +797,11 @@ export default function App() {
     resetSimulationClock();
     markSaveDirty();
     persistNow("import", decoded.save.state);
-    setSaveStatus(`Imported save from ${decoded.save.savedAt}.`);
+    const migrationLabel =
+      decoded.migratedFromVersion !== undefined
+        ? ` (migrated from v${decoded.migratedFromVersion})`
+        : "";
+    setSaveStatus(`Imported save from ${decoded.save.savedAt}${migrationLabel}.`);
   };
 
   const handleImport = () => {
@@ -1727,7 +1731,9 @@ export default function App() {
 
           <WindingMiniGameModal
             open={activeInteraction?.kind === "winding"}
-            itemId={activeInteraction?.kind === "winding" ? activeInteraction.itemId : "chronograph"}
+            itemId={
+              activeInteraction?.kind === "winding" ? activeInteraction.itemId : "chronograph"
+            }
             itemLabel={
               activeInteraction?.kind === "winding"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")

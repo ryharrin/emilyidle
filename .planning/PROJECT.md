@@ -15,9 +15,14 @@ Deliver a satisfying watch-collecting idle loop that saves reliably and stays pl
 - Quality-of-life updates (offline gains, save import/export, undo, favorites, notifications, mini-game practice) and new achievements/events round out the experience.
 
 ## Current Milestone
-Post-v4.1 Phase 52 UX redesign rollout is complete, with v4.1 kept as the gameplay baseline.
+Post-v4.1 Phase 53 reliability + career clarity rollout is complete, with v4.1 gameplay systems kept as baseline.
 
 ### Recently completed planning package
+- Phase 53 reliability + career clarity package is fully executed in `.planning/phases/53-reliability-career-clarity/`:
+  - `53-CONTEXT.md`
+  - `53-01-PLAN.md` .. `53-06-PLAN.md`
+  - `53-TASKLIST.md`
+  - `53-06-SUMMARY.md`
 - Phase 52 UX redesign spec is fully executed in `.planning/phases/52-ux-redesign-spec/`:
   - `52-CONTEXT.md`
   - `52-RESEARCH.md`
@@ -53,7 +58,7 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 ## Context
 - v4.0 delivered tier badge theming, per-watch stats, catalog variety, mobile navigation polish, and WebKit-friendly focus handling; we now build atop that foundation.
 - Mobile regression coverage spans Pixel 5 (Chrome) and iPhone 12 (WebKit) viewports.
-- Key blockers carried forward: missing therapist session delta Playwright checks and legacy verification reports for phases 13/18.
+- Recently closed blockers: therapist session delta/cooldown Playwright coverage and missing verification artifacts for phases 13/18.
 
 ## Key Decisions
 | Decision | Rationale | Outcome |
@@ -68,7 +73,7 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 - `/gsd-new-milestone` — Define the next milestone after v4.1
 - `/gsd-requirements` — Capture new requirement IDs and acceptance criteria
 - `/gsd-roadmap` — Sequence next-phase execution order and dependencies
-- `/gsd-plan-phase` — Author the first plan in the next milestone sequence
+- `/gsd-plan-phase` — Author the first execution plan in the next milestone sequence
 
 <details>
 <summary>Archived context (pre-v4.1 milestone)</summary>
@@ -183,8 +188,8 @@ Shipped v3.2 on 2026-02-02:
 ## Known Gaps / Tech Debt
 
 - Planning process: `.planning/REQUIREMENTS.md` was not present during v2.0 (requirement-level traceability is reconstructed).
-- Verification process: missing phase verification reports for phases 13 and 18.
-- Test gap: no dedicated Playwright E2E asserting therapist session deltas (cash/enjoyment) and cooldown UX.
+- Verification process (historical): phase 13/18 verification reports were missing at that time.
+- Test gap (historical): no dedicated Playwright E2E asserted therapist session deltas/cooldown UX at that time.
 
 ## Requirements Status
 

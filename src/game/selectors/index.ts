@@ -81,6 +81,7 @@ export * from "./careerProgress";
 export * from "./careerNextAction";
 export * from "./therapistSessions";
 export * from "./therapistSalary";
+export * from "./therapistEconomySummary";
 export * from "./statsBreakdown";
 export * from "./therapistNodeEffects";
 export * from "./collectionInsights";
@@ -554,9 +555,7 @@ export function getAchievementProgressRatio(
   }
 
   if (requirement.type === "interactionPerfects") {
-    return requirement.threshold > 0
-      ? state.interactionPerfectRuns / requirement.threshold
-      : 0;
+    return requirement.threshold > 0 ? state.interactionPerfectRuns / requirement.threshold : 0;
   }
 
   if (requirement.type === "perfectStreak") {

@@ -8,7 +8,7 @@ import {
 import { type MilestoneId, createInitialState } from "../src/game/state";
 
 describe("persistence compatibility", () => {
-  it("encodeSaveString produces a v2 payload with required fields", () => {
+  it("encodeSaveString produces a v3 payload with required fields", () => {
     const state = createInitialState();
     const lastSimulatedAtMs = 42_000;
     const savedAt = new Date(0);
@@ -16,14 +16,14 @@ describe("persistence compatibility", () => {
     const raw = encodeSaveString(state, lastSimulatedAtMs, savedAt);
     const parsed = JSON.parse(raw) as Record<string, unknown>;
 
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(3);
     expect(parsed.savedAt).toBe(savedAt.toISOString());
     expect(parsed.lastSimulatedAtMs).toBe(lastSimulatedAtMs);
     expect(parsed.state).toBeTruthy();
     expect(typeof parsed.state).toBe("object");
   });
 
-  it("decodeSaveString accepts v1 payloads and normalizes them to v2", () => {
+  it("decodeSaveString accepts v1 payloads and normalizes them to v3", () => {
     const raw = JSON.stringify({
       version: 1,
       savedAt: new Date(0).toISOString(),
@@ -37,10 +37,29 @@ describe("persistence compatibility", () => {
       return;
     }
 
-    expect(decoded.save.version).toBe(2);
+    expect(decoded.save.version).toBe(3);
+    expect(decoded.migratedFromVersion).toBe(1);
   });
 
-  it("loadSaveFromLocalStorage migrates legacy watch-idle:save to emily-idle:save", () => {
+  it("decodeSaveString accepts v2 payloads and normalizes them to v3", () => {
+    const raw = JSON.stringify({
+      version: 2,
+      savedAt: new Date(0).toISOString(),
+      lastSimulatedAtMs: 456,
+      state: { currencyCents: 456 },
+    });
+
+    const decoded = decodeSaveString(raw);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) {
+      return;
+    }
+
+    expect(decoded.save.version).toBe(3);
+    expect(decoded.migratedFromVersion).toBe(2);
+  });
+
+  it("loadSaveFromLocalStorage migrates legacy watch-idle:save to canonical v3 emily-idle:save", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -70,8 +89,13 @@ describe("persistence compatibility", () => {
       return;
     }
 
-    expect(localStorage.getItem("emily-idle:save")).toBe(rawV2);
+    const canonicalRaw = localStorage.getItem("emily-idle:save");
+    expect(canonicalRaw).toBeTruthy();
     expect(localStorage.getItem("watch-idle:save")).toBeNull();
+    if (canonicalRaw) {
+      const canonicalParsed = JSON.parse(canonicalRaw) as { version: number };
+      expect(canonicalParsed.version).toBe(3);
+    }
 
     expect(loaded.save.state.currencyCents).toBe(12_345);
     expect(loaded.save.state.enjoymentCents).toBe(6_789);

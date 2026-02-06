@@ -4,28 +4,44 @@ import { createStateFromSave } from "./state";
 
 const SAVE_KEY = "emily-idle:save";
 const LEGACY_SAVE_KEY = "watch-idle:save";
-const CURRENT_SAVE_VERSION = 2 as const;
+const CURRENT_SAVE_VERSION = 3 as const;
+type LegacySaveVersion = 1 | 2;
+type SupportedSaveVersion = LegacySaveVersion | typeof CURRENT_SAVE_VERSION;
 
-type SaveV2 = {
+type SaveV3 = {
   version: typeof CURRENT_SAVE_VERSION;
   savedAt: string;
   lastSimulatedAtMs: number;
   state: GameState;
 };
 
-export type SaveDecodeResult = { ok: true; save: SaveV2 } | { ok: false; error: string };
+type SaveDecodeSuccess = {
+  ok: true;
+  save: SaveV3;
+  migratedFromVersion?: LegacySaveVersion;
+};
+
+export type SaveDecodeResult = SaveDecodeSuccess | { ok: false; error: string };
 
 export type SaveLoadResult =
-  | { ok: true; save: SaveV2 }
+  | SaveDecodeSuccess
   | { ok: false; empty: true }
   | { ok: false; error: string };
 
 export type SavePersistResult = { ok: true } | { ok: false; error: string };
 
-type SaveParseResult = { ok: true; save: SaveV2 } | { ok: false; error: string };
+type SaveParseResult = SaveDecodeResult;
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function getSafeSavedAtIso(savedAt: string): string {
+  const parsedMs = Date.parse(savedAt);
+  if (Number.isFinite(parsedMs)) {
+    return new Date(parsedMs).toISOString();
+  }
+  return new Date().toISOString();
 }
 
 function sanitizeState(value: unknown): GameState | null {
@@ -234,9 +250,9 @@ export function encodeSaveString(
   lastSimulatedAtMs: number,
   savedAt: Date = new Date(),
 ): string {
-  const save: SaveV2 = {
+  const save: SaveV3 = {
     version: CURRENT_SAVE_VERSION,
-    savedAt: savedAt.toISOString(),
+    savedAt: getSafeSavedAtIso(savedAt.toISOString()),
     lastSimulatedAtMs,
     state,
   };
@@ -263,7 +279,7 @@ function decodeSavePayload(raw: string): SaveParseResult {
   const record = parsed as Record<string, unknown>;
   const version = record.version;
 
-  if (version !== 1 && version !== CURRENT_SAVE_VERSION) {
+  if (version !== 1 && version !== 2 && version !== CURRENT_SAVE_VERSION) {
     return { ok: false, error: `Unsupported save version: ${String(version)}` };
   }
 
@@ -277,27 +293,12 @@ function decodeSavePayload(raw: string): SaveParseResult {
     return { ok: false, error: "Invalid save payload: invalid lastSimulatedAtMs" };
   }
 
-  if (version === 1) {
-    const legacyState = sanitizeState(record.state);
-    if (!legacyState) {
-      return { ok: false, error: "Invalid save payload: invalid state" };
-    }
-
-    return {
-      ok: true,
-      save: {
-        version: CURRENT_SAVE_VERSION,
-        savedAt,
-        lastSimulatedAtMs,
-        state: legacyState,
-      },
-    };
-  }
-
   const state = sanitizeState(record.state);
   if (!state) {
     return { ok: false, error: "Invalid save payload: invalid state" };
   }
+
+  const migratedFromVersion = version === CURRENT_SAVE_VERSION ? undefined : (version as 1 | 2);
 
   return {
     ok: true,
@@ -307,6 +308,7 @@ function decodeSavePayload(raw: string): SaveParseResult {
       lastSimulatedAtMs,
       state,
     },
+    migratedFromVersion,
   };
 }
 
@@ -316,9 +318,13 @@ export function decodeSaveString(raw: string): SaveDecodeResult {
 
 export function loadSaveFromLocalStorage(): SaveLoadResult {
   let raw: string | null;
+  let source: "current" | "legacy" | null = null;
 
   try {
     raw = localStorage.getItem(SAVE_KEY);
+    if (raw !== null) {
+      source = "current";
+    }
   } catch (error) {
     return {
       ok: false,
@@ -329,6 +335,9 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
   if (raw === null) {
     try {
       raw = localStorage.getItem(LEGACY_SAVE_KEY);
+      if (raw !== null) {
+        source = "legacy";
+      }
     } catch (error) {
       return {
         ok: false,
@@ -348,7 +357,16 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
 
   if (raw !== null) {
     try {
-      localStorage.setItem(SAVE_KEY, raw);
+      const shouldRewrite = source === "legacy" || decoded.migratedFromVersion !== undefined;
+      const canonicalRaw = shouldRewrite
+        ? JSON.stringify({
+            version: CURRENT_SAVE_VERSION,
+            savedAt: getSafeSavedAtIso(decoded.save.savedAt),
+            lastSimulatedAtMs: decoded.save.lastSimulatedAtMs,
+            state: decoded.save.state,
+          } satisfies SaveV3)
+        : raw;
+      localStorage.setItem(SAVE_KEY, canonicalRaw);
       localStorage.removeItem(LEGACY_SAVE_KEY);
     } catch (error) {
       return {
