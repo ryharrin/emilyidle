@@ -21,6 +21,7 @@ import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
 import { resolveLandingTab, resolveTabAlias } from "./ui/navigation/landing";
 import { PageTabRail } from "./ui/navigation/PageTabRail";
+import { TabSwitchSkeleton } from "./ui/navigation/TabSwitchSkeleton";
 import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
 
@@ -290,6 +291,26 @@ export default function App() {
   const [prestigeOnboarding, setPrestigeOnboarding] = useState<PrestigeEvent | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [helpSectionId, setHelpSectionId] = useState<string | null>(null);
+  const [isTabSwitching, setIsTabSwitching] = useState(false);
+  const tabSwitchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggerTabSwitch = useCallback(() => {
+    setIsTabSwitching(true);
+    if (tabSwitchTimerRef.current) {
+      clearTimeout(tabSwitchTimerRef.current);
+    }
+    tabSwitchTimerRef.current = setTimeout(() => {
+      setIsTabSwitching(false);
+      tabSwitchTimerRef.current = null;
+    }, 260);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tabSwitchTimerRef.current) {
+        clearTimeout(tabSwitchTimerRef.current);
+      }
+    };
+  }, []);
 
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
@@ -399,16 +420,20 @@ export default function App() {
     focusTabById(nextId);
   };
 
-  const activateTab = useCallback((tabId: TabId, source: TabActivationSource = "system") => {
-    setActiveTab(tabId);
-    setFocusedTab(tabId);
+  const activateTab = useCallback(
+    (tabId: TabId, source: TabActivationSource = "system") => {
+      setActiveTab(tabId);
+      setFocusedTab(tabId);
+      triggerTabSwitch();
 
-    if (source !== "user" || typeof window === "undefined") {
-      return;
-    }
+      if (source !== "user" || typeof window === "undefined") {
+        return;
+      }
 
-    window.localStorage.setItem(NAVIGATION_KEY, JSON.stringify({ lastTabId: tabId }));
-  }, []);
+      window.localStorage.setItem(NAVIGATION_KEY, JSON.stringify({ lastTabId: tabId }));
+    },
+    [triggerTabSwitch],
+  );
 
   const navigateTo = (tabId: TabId, scrollTargetId?: string) => {
     activateTab(tabId, "system");
@@ -783,6 +808,65 @@ export default function App() {
     }
   }, [activeTab, activateTab, combinedTabVisibility]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
+      if (event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+
+      const match = /^Digit([1-8])$/.exec(event.code);
+      if (!match) {
+        return;
+      }
+
+      const target = event.target as Element | null;
+      if (target) {
+        const tag = target.tagName;
+        if (
+          tag === "INPUT" ||
+          tag === "SELECT" ||
+          tag === "TEXTAREA" ||
+          (target as HTMLElement).isContentEditable
+        ) {
+          return;
+        }
+      }
+
+      if (helpOpen || nostalgiaModalOpen || activeInteraction || prestigeOnboarding) {
+        return;
+      }
+
+      const index = Number(match[1]) - 1;
+      const nextTab = visibleTabs[index];
+      if (!nextTab) {
+        return;
+      }
+
+      event.preventDefault();
+      activateTab(nextTab.id, "user");
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => {
+      window.removeEventListener("keydown", handleShortcut);
+    };
+  }, [
+    activateTab,
+    visibleTabs,
+    helpOpen,
+    nostalgiaModalOpen,
+    activeInteraction,
+    prestigeOnboarding,
+  ]);
+
   const visibleTabOptions = useMemo(
     () => tabs.filter((tab) => HIDEABLE_TAB_IDS.includes(tab.id) && tabVisibility[tab.id]),
     [tabs, tabVisibility],
@@ -1112,16 +1196,19 @@ export default function App() {
               <h1>Emily Idle</h1>
               <p className="muted">Build your collection, unlock new lines, and stack bonuses.</p>
               <nav className="page-nav" aria-label="Primary navigation">
-                <PageTabRail
-                  tabs={visibleTabs}
-                  activeTabId={activeTab}
-                  focusedTabId={focusedTab}
-                  onTabClick={(tabId) => activateTab(tabId, "user")}
-                  onTabFocus={handleTabFocus}
-                  onTabKeyDown={handleTabKeyDown}
-                  onTabRef={handleTabRef}
-                  tabReadiness={tabReadiness}
-                />
+                <div className="page-tab-rail__wrapper">
+                  <PageTabRail
+                    tabs={visibleTabs}
+                    activeTabId={activeTab}
+                    focusedTabId={focusedTab}
+                    onTabClick={(tabId) => activateTab(tabId, "user")}
+                    onTabFocus={handleTabFocus}
+                    onTabKeyDown={handleTabKeyDown}
+                    onTabRef={handleTabRef}
+                    tabReadiness={tabReadiness}
+                  />
+                  <TabSwitchSkeleton visible={isTabSwitching} />
+                </div>
                 <button
                   type="button"
                   className="help-open-button"
