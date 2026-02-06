@@ -5014,6 +5014,23 @@ button[data-testid^="vault-interact-"] {
   padding: 10px 12px;
 }
 
+.file-import {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 0.75rem;
+}
+
+.file-import input {
+  border-radius: 12px;
+  border: 1px solid var(--settings-control-border);
+  background: var(--settings-control-bg);
+  color: var(--settings-control-text);
+  font: inherit;
+  padding: 10px 12px;
+  max-width: 32rem;
+}
+
 #save-status {
   min-height: 1.2em;
   font-size: 0.9rem;

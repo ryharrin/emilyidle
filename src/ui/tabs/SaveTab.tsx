@@ -57,6 +57,7 @@ type SaveTabProps = {
   onImportTextChange: (next: string) => void;
   onExport: () => void;
   onImport: () => void;
+  onImportFile: (file: File | null) => void;
   saveStatus: string;
   onClearSave: () => void;
 };
@@ -78,6 +79,7 @@ export function SaveTab({
   onImportTextChange,
   onExport,
   onImport,
+  onImportFile,
   saveStatus,
   onClearSave,
 }: SaveTabProps) {
@@ -315,6 +317,21 @@ export function SaveTab({
                 <button type="button" onClick={onImport}>
                   Import
                 </button>
+              </div>
+              <div className="file-import">
+                <label htmlFor="import-save-file">Import from file</label>
+                <input
+                  id="import-save-file"
+                  type="file"
+                  accept=".json,application/json"
+                  data-testid="import-save-file"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null;
+                    onImportFile(file);
+                    event.target.value = "";
+                  }}
+                />
+                <p className="muted">Use a JSON export from this game.</p>
               </div>
             </fieldset>
           </div>

@@ -706,14 +706,14 @@ export default function App() {
     setSaveStatus("Exported. Copy the text manually.");
   };
 
-  const handleImport = () => {
-    const raw = importText.trim();
-    if (!raw) {
+  const applyImportedSave = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed) {
       setSaveStatus("Paste an exported save string to import.");
       return;
     }
 
-    const decoded = decodeSaveString(raw);
+    const decoded = decodeSaveString(trimmed);
     if (!decoded.ok) {
       console.warn(`Import failed. ${decoded.error}`);
       setSaveStatus(`Import failed: ${decoded.error}`);
@@ -725,6 +725,25 @@ export default function App() {
     markSaveDirty();
     persistNow("import", decoded.save.state);
     setSaveStatus(`Imported save from ${decoded.save.savedAt}.`);
+  };
+
+  const handleImport = () => {
+    applyImportedSave(importText);
+  };
+
+  const handleImportFile = async (file: File | null) => {
+    if (!file) {
+      setSaveStatus("Select a file to import.");
+      return;
+    }
+
+    try {
+      const raw = await file.text();
+      applyImportedSave(raw);
+    } catch (error) {
+      console.error("Failed to read save file", error);
+      setSaveStatus("Unable to read the selected file. Please try again.");
+    }
   };
 
   const handleClearSave = () => {
@@ -1604,6 +1623,7 @@ export default function App() {
             onImportTextChange={setImportText}
             onExport={handleExport}
             onImport={handleImport}
+            onImportFile={handleImportFile}
             saveStatus={saveStatus}
             onClearSave={handleClearSave}
           />
