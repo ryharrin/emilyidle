@@ -1,5 +1,7 @@
 import React from "react";
 
+import { createPortal } from "react-dom";
+
 type ConfirmModalProps = {
   open: boolean;
   title: string;
@@ -29,7 +31,7 @@ export function ConfirmModal({
     return null;
   }
 
-  return (
+  return createPortal(
     <div className="nostalgia-modal confirm-modal" role="dialog" aria-modal="true">
       <div className="nostalgia-modal-card confirm-modal-card">
         <h3>{title}</h3>
@@ -48,6 +50,7 @@ export function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

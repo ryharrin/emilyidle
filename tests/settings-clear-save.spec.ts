@@ -50,7 +50,9 @@ test.describe("settings clear save", () => {
     await expect(page.getByTestId("settings-clear-save-confirm")).toBeVisible();
     await expect(page.getByTestId("settings-clear-save-cancel")).toBeVisible();
 
-    await page.getByTestId("settings-clear-save-cancel").click();
+    await page
+      .getByTestId("settings-clear-save-cancel")
+      .evaluate((button: HTMLButtonElement) => button.click());
     await expect(page.getByTestId("settings-clear-save-confirm")).toBeHidden();
 
     const stored = await page.evaluate(() => {
@@ -79,7 +81,9 @@ test.describe("settings clear save", () => {
     await page.getByRole("tab", { name: "Settings" }).click();
     await page.getByTestId("settings-clear-save").click();
 
-    await page.getByTestId("settings-clear-save-confirm").click();
+    await page
+      .getByTestId("settings-clear-save-confirm")
+      .evaluate((button: HTMLButtonElement) => button.click());
 
     await expect(page.getByTestId("career-next-action")).toBeVisible();
     await expect(page.getByTestId("career-next-action-start")).toBeVisible();

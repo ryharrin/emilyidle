@@ -6,6 +6,12 @@
   --tier-lux: #e74c3c;
   --tier-badge-text-light: #ffffff;
   --tier-badge-border: rgba(255, 255, 255, 0.25);
+  --settings-section-bg: rgba(15, 17, 21, 0.72);
+  --settings-section-border: rgba(255, 255, 255, 0.18);
+  --settings-legend-color: rgba(255, 255, 255, 0.8);
+  --settings-control-bg: rgba(15, 17, 21, 0.92);
+  --settings-control-border: rgba(255, 255, 255, 0.3);
+  --settings-control-text: #f5f5f6;
   font-family:
     "Sora",
     "Space Grotesk",
@@ -24,6 +30,12 @@
 [data-theme="light"] {
   color-scheme: light;
   --focus-ring: rgba(164, 128, 86, 0.85);
+  --settings-section-bg: rgba(255, 255, 255, 0.94);
+  --settings-section-border: rgba(33, 26, 18, 0.16);
+  --settings-legend-color: #4b4033;
+  --settings-control-bg: rgba(244, 240, 233, 0.92);
+  --settings-control-border: #d7cfc5;
+  --settings-control-text: #1f1b17;
 }
 
 * {
@@ -579,7 +591,7 @@ button:not(:disabled):active {
   display: grid;
   place-items: center;
   padding: 24px;
-  z-index: 20;
+  z-index: 1000;
 }
 
 .nostalgia-modal-card {
@@ -593,6 +605,7 @@ button:not(:disabled):active {
   display: grid;
   gap: 12px;
   box-shadow: 0 18px 36px rgba(6, 8, 12, 0.5);
+  z-index: 1001;
 }
 
 .winding-modal-card {
@@ -3943,9 +3956,9 @@ button[data-testid^="vault-interact-"] {
 
 .controls select {
   border-radius: 12px;
-  border: 1px solid #343946;
-  background: #0f1115;
-  color: #f5f5f6;
+  border: 1px solid var(--settings-control-border);
+  background: var(--settings-control-bg);
+  color: var(--settings-control-text);
   padding: 10px 12px;
   font: inherit;
   max-width: 18rem;
@@ -3959,20 +3972,21 @@ button[data-testid^="vault-interact-"] {
 }
 
 .settings-section {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--settings-section-border);
   border-radius: 18px;
-  background: rgba(15, 17, 21, 0.72);
+  background: var(--settings-section-bg);
   padding: 16px 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  color: var(--settings-control-text);
 }
 
 .settings-section legend {
   font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--settings-legend-color);
   margin-left: -6px;
   padding: 0 10px;
 }
@@ -3992,16 +4006,29 @@ button[data-testid^="vault-interact-"] {
 .settings-visibility-label {
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: var(--settings-control-text);
 }
 
 .control-row {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  align-items: stretch;
 }
 
 .control-row--end {
   justify-content: flex-end;
+}
+
+.control-row button {
+  flex: 1 1 140px;
+}
+
+.settings-section button {
+  min-height: 44px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font: inherit;
 }
 
 .muted {
@@ -4106,9 +4133,9 @@ button[data-testid^="vault-interact-"] {
   resize: vertical;
   font: inherit;
   border-radius: 12px;
-  border: 1px solid #343946;
-  background: #0f1115;
-  color: #f5f5f6;
+  border: 1px solid var(--settings-control-border);
+  background: var(--settings-control-bg);
+  color: var(--settings-control-text);
   padding: 10px 12px;
 }
 
