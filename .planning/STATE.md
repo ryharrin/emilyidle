@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-02 (tab readiness badges + shortcuts) — Planned
-Status: Phase 49 in progress (1/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-01 (TAB-01 grouped tab rail)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (1/10 executed)
+Plan: 49-02 (tab readiness badges + shortcuts) — Completed
+Status: Phase 49 in progress (2/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-02 (TAB-01 readiness, KEY-01 shortcuts, SKELETON-01/FOCUS-01 feedback)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (2/10 executed) [██░░░░░░░░░]
 Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
@@ -79,9 +79,11 @@ Next Phase: Phase 49 (v4.1 execution)
 | 48 | Keep the catalog lanes wrapped in the `catalog-grid` anchor before splitting into lanes | Preserves regression selectors while allowing visual lane groupings for Starter/Mid/Lux tiers.
 | 49 | Keep tab metadata inside `tabMeta.ts` so bucket/group data can evolve without renaming stable IDs. | Lets buckets be surfaced without touching legacy selectors or anchor names. | ✓ Good |
 | 49 | PageTabRail owns the tablist DOM so App can keep ref/focus wiring concentrated on state transitions. | Future mobile polish can reuse the component while preserving accessible semantics. | ✓ Good |
+| 49 | Render brand/year sort results as a dedicated list instead of re-bucketing into lanes when non-default order is requested. | Keeps alphabetical/year ordering deterministic for automation without altering the lane copy guards. | ✓ Good |
+| 49 | When focus leaves the help button via Tab, cycle back to the collection tab so the skeleton + navrail focus story stays intact. | Keeps keyboard navigation anchored inside the primary nav and lets the new contract test resolve reliably. | ✓ Good |
 
 ## Session Continuity
 
-Last session: 2026-02-06T04:59:25Z
-Stopped at: Completed Phase 49-01 (TAB-01 grouped tab rail)
+Last session: 2026-02-06T05:48:04Z
+Stopped at: Completed Phase 49-02 (TAB-01 readiness badges + KEY-01 shortcuts + SKELETON-01/FOCUS-01 focus guard)
 Resume file: None
