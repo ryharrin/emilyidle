@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 48 of 6 (next milestone planning)
-Plan: 48-10 (UNLOCK-01 next unlock preview)
-Status: Phase 48 underway (9/11 plans complete)
-Last activity: 2026-02-05 — Completed 48-09 (SALARY-01 salary expiration alert)
-Progress: Phase 48 in progress (9/11 plans complete)
+Plan: 48-11 (UNLOCK-02 next unlock reveal)
+Status: Phase 48 underway (10/11 plans complete)
+Last activity: 2026-02-06 — Completed 48-10 (UNLOCK-01 next unlock preview)
+Progress: Phase 48 in progress (10/11 plans complete)
 Next Phase: Phase 48 (v4.1 planning)
 
 ## Accumulated Context
@@ -75,9 +75,11 @@ Next Phase: Phase 48 (v4.1 planning)
 | 48 | Render the salary alert as a muted banner inside the sessions card for context-sensitive warnings | Lets players see the remaining time where session information already lives without extra rows
 | 48 | Smooth gauge display with a CSS spring-progress variable while leaving telemetry math untouched | Lets the arc feel responsive without jittering the crown’s real data
 | 48 | Wrap the crown in a tier-aware glow shell so reduced-motion users still see resolved states | Keeps glow styling separate from the crown markup and preserves accessibility overrides
+| 48 | Surface the next-unlock effect summary via selector math in the featured preview row | Prevents the UI from drifting from authoritative requirement values while still highlighting the effect.
+| 48 | Keep the catalog lanes wrapped in the `catalog-grid` anchor before splitting into lanes | Preserves regression selectors while allowing visual lane groupings for Starter/Mid/Lux tiers.
 
 ## Session Continuity
 
-Last session: 2026-02-05T21:44:58Z
-Stopped at: Completed Phase 48-09 (SALARY-01 salary expiration alert)
-Resume file: .planning/phases/48-session-atelier/48-10-PLAN.md
+Last session: 2026-02-06T03:40:33Z
+Stopped at: Completed Phase 48-10 (UNLOCK-01 next unlock preview)
+Resume file: .planning/phases/48-session-atelier/48-11-PLAN.md
