@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-04 (STATS-01 grouped header, BREAK-01 breakdown subtotals, SOFTCAP-01 relocation) — Completed
-Status: Phase 49 in progress (4/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-04 (stats header + breakdown polish)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (4/10 executed) [████░░░░░░]
+Plan: 49-05 (FILTER-01 compact filter toggle + SORT-01 price ascending default + e2e contracts) — Completed
+Status: Phase 49 in progress (5/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-05 (compact filters, price sort, e2e coverage)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (5/10 executed) [█████░░░░░]
 Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
@@ -85,9 +85,11 @@ Next Phase: Phase 49 (v4.1 execution)
 | 49 | Group settings controls into explicit fieldsets (Save, Audio, Preferences, Import) with clear legends and spacing. | Clarifies hierarchy while preserving existing DOM ids/data-testids for automation. | ✓ Good |
 | 49 | Group hero stats into primary, progression, and system buckets via the new `StatsHeader` so the hero panel stays scannable while keeping stable ids/data-testids. | Keeps the metrics contract consistent for regressions while exposing the grouped context. | ✓ Good |
 | 49 | Render the Stats tab breakdown panel even when the tab is inactive so relocated anchors like `#softcap` and `stats-event-multiplier` stay in the DOM for automation. | Prevents automated checks from losing the relocated softcap detail when the tab defaults to Collection. | ✓ Good |
+| 49 | Collapse catalog filters into an accessible toggle with an active-count badge | Keeps mobile real estate calm while preserving the DOM ids/data-testids automation and keyboard flows rely upon |
+| 49 | Sort default catalog results by ascending price (brand/model tie-breakers) | Highlights affordable discoveries deterministically and keeps regression expectations matched to the authoritative math |
 
 ## Session Continuity
 
-Last session: 2026-02-06T06:40:27Z
-Stopped at: Completed Phase 49-04 (stats header + breakdown polish)
+Last session: 2026-02-06T07:14:31Z
+Stopped at: Completed Phase 49-05 (compact filters, price sort, e2e coverage)
 Resume file: None
