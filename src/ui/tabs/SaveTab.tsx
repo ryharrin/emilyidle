@@ -102,205 +102,221 @@ export function SaveTab({
               </p>
             </div>
           </header>
-          <div className="controls">
-            <button type="button" className="secondary" onClick={onExport}>
-              Export
-            </button>
-            <button
-              type="button"
-              className="danger"
-              data-testid="settings-clear-save"
-              onClick={() => setConfirmClearOpen(true)}
-            >
-              Clear save
-            </button>
-          </div>
+          <div className="settings-shell">
+            <fieldset className="settings-section settings-section--save">
+              <legend>Save data</legend>
+              <div className="control-row">
+                <button type="button" className="secondary" onClick={onExport}>
+                  Export
+                </button>
+                <button
+                  type="button"
+                  className="danger"
+                  data-testid="settings-clear-save"
+                  onClick={() => setConfirmClearOpen(true)}
+                >
+                  Clear save
+                </button>
+              </div>
+            </fieldset>
 
-          <ConfirmModal
-            open={confirmClearOpen}
-            title="Clear local save?"
-            description="This clears the local save on this device and reloads the page. Export first if you want a backup."
-            confirmLabel="Clear save"
-            confirmClassName="danger"
-            confirmTestId="settings-clear-save-confirm"
-            cancelTestId="settings-clear-save-cancel"
-            onCancel={() => setConfirmClearOpen(false)}
-            onConfirm={() => {
-              setConfirmClearOpen(false);
-              onClearSave();
-            }}
-          />
+            <ConfirmModal
+              open={confirmClearOpen}
+              title="Clear local save?"
+              description="This clears the local save on this device and reloads the page. Export first if you want a backup."
+              confirmLabel="Clear save"
+              confirmClassName="danger"
+              confirmTestId="settings-clear-save-confirm"
+              cancelTestId="settings-clear-save-cancel"
+              onCancel={() => setConfirmClearOpen(false)}
+              onConfirm={() => {
+                setConfirmClearOpen(false);
+                onClearSave();
+              }}
+            />
 
-          <fieldset className="controls" data-testid="audio-controls">
-            <legend>Audio settings</legend>
-            <label>
-              <input
-                type="checkbox"
-                data-testid="audio-sfx-toggle"
-                checked={audioSettings.sfxEnabled}
-                onChange={(event) =>
-                  onUpdateAudioSettings({
-                    ...audioSettings,
-                    sfxEnabled: event.target.checked,
-                  })
-                }
-              />
-              Enable SFX
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                data-testid="audio-bgm-toggle"
-                checked={audioSettings.bgmEnabled}
-                onChange={(event) =>
-                  onUpdateAudioSettings({
-                    ...audioSettings,
-                    bgmEnabled: event.target.checked,
-                  })
-                }
-              />
-              Enable BGM
-            </label>
-          </fieldset>
-
-          <fieldset className="controls" data-testid="settings-controls">
-            <legend>Preferences</legend>
-            <label>
-              Theme mode
-              <select
-                data-testid="settings-theme"
-                value={settings.themeMode}
-                onChange={(event) =>
-                  persistSettings({
-                    ...settings,
-                    themeMode: event.target.value as ThemeMode,
-                  })
-                }
-              >
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                data-testid="settings-hide-achievements"
-                checked={settings.hideCompletedAchievements}
-                onChange={(event) =>
-                  persistSettings({
-                    ...settings,
-                    hideCompletedAchievements: event.target.checked,
-                  })
-                }
-              />
-              Hide completed achievements
-            </label>
-            <div className="controls">
-              <span className="muted">Visible tabs</span>
-              {visibleTabOptions.map((tab) => (
-                <label key={tab.id}>
+            <fieldset className="settings-section" data-testid="audio-controls">
+              <legend>Audio settings</legend>
+              <div className="controls">
+                <label>
                   <input
                     type="checkbox"
-                    data-testid={`tab-visibility-${tab.id}`}
-                    checked={!hiddenTabsSet.has(tab.id)}
-                    onChange={(event) => {
-                      const nextHiddenTabs = event.target.checked
-                        ? settings.hiddenTabs.filter((hiddenTab) => hiddenTab !== tab.id)
-                        : Array.from(new Set([...settings.hiddenTabs, tab.id]));
+                    data-testid="audio-sfx-toggle"
+                    checked={audioSettings.sfxEnabled}
+                    onChange={(event) =>
+                      onUpdateAudioSettings({
+                        ...audioSettings,
+                        sfxEnabled: event.target.checked,
+                      })
+                    }
+                  />
+                  Enable SFX
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    data-testid="audio-bgm-toggle"
+                    checked={audioSettings.bgmEnabled}
+                    onChange={(event) =>
+                      onUpdateAudioSettings({
+                        ...audioSettings,
+                        bgmEnabled: event.target.checked,
+                      })
+                    }
+                  />
+                  Enable BGM
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="settings-section" data-testid="settings-controls">
+              <legend>Preferences</legend>
+              <div className="controls">
+                <label>
+                  Theme mode
+                  <select
+                    data-testid="settings-theme"
+                    value={settings.themeMode}
+                    onChange={(event) =>
                       persistSettings({
                         ...settings,
-                        hiddenTabs: nextHiddenTabs,
-                      });
-                    }}
-                  />
-                  {tab.label}
-                </label>
-              ))}
-            </div>
-            {devSettings.enabled && (
-              <div className="controls" data-testid="dev-controls">
-                <span className="muted">Dev mode</span>
-                <label>
-                  Speed
-                  <select
-                    value={String(devSettings.speedMultiplier)}
-                    onChange={(event) => {
-                      const value = Number(event.target.value);
-                      setDevSettings((current) => ({
-                        ...current,
-                        speedMultiplier: Number.isFinite(value) ? value : 1,
-                      }));
-                    }}
-                  >
-                    <option value="1">1x</option>
-                    <option value="2">2x</option>
-                    <option value="4">4x</option>
-                  </select>
-                </label>
-                <div className="card-actions">
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() =>
-                      onPurchase({
-                        ...state,
-                        currencyCents: state.currencyCents + 500_000,
+                        themeMode: event.target.value as ThemeMode,
                       })
                     }
                   >
-                    Grant $500k
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() => {
-                      const boostedItems = watchItems.reduce<Record<string, number>>(
-                        (acc, item) => {
-                          acc[item.id] = Math.max(state.items[item.id] ?? 0, 10);
-                          return acc;
-                        },
-                        {},
-                      );
-                      onPurchase({
-                        ...state,
-                        items: {
-                          ...state.items,
-                          ...boostedItems,
-                        },
-                        unlockedMilestones: getMilestones().map((milestone) => milestone.id),
-                      });
-                    }}
-                  >
-                    Unlock watches
-                  </button>
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() => {
-                      onPurchase(createInitialState());
-                    }}
-                  >
-                    Reset save
-                  </button>
+                    <option value="system">System</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    data-testid="settings-hide-achievements"
+                    checked={settings.hideCompletedAchievements}
+                    onChange={(event) =>
+                      persistSettings({
+                        ...settings,
+                        hideCompletedAchievements: event.target.checked,
+                      })
+                    }
+                  />
+                  Hide completed achievements
+                </label>
+              </div>
+
+              <div className="settings-visibility">
+                <span className="muted settings-visibility-label">Visible tabs</span>
+                <div className="controls settings-visibility-grid">
+                  {visibleTabOptions.map((tab) => (
+                    <label key={tab.id}>
+                      <input
+                        type="checkbox"
+                        data-testid={`tab-visibility-${tab.id}`}
+                        checked={!hiddenTabsSet.has(tab.id)}
+                        onChange={(event) => {
+                          const nextHiddenTabs = event.target.checked
+                            ? settings.hiddenTabs.filter((hiddenTab) => hiddenTab !== tab.id)
+                            : Array.from(new Set([...settings.hiddenTabs, tab.id]));
+                          persistSettings({
+                            ...settings,
+                            hiddenTabs: nextHiddenTabs,
+                          });
+                        }}
+                      />
+                      {tab.label}
+                    </label>
+                  ))}
                 </div>
               </div>
-            )}
-          </fieldset>
 
-          <div className="controls">
-            <label htmlFor="import-save-text">Import data</label>
-            <textarea
-              id="import-save-text"
-              rows={3}
-              placeholder="Paste exported data here"
-              aria-describedby="save-status"
-              value={importText}
-              onChange={(event) => onImportTextChange(event.target.value)}
-            ></textarea>
-            <button type="button" onClick={onImport}>
-              Import
-            </button>
+              {devSettings.enabled && (
+                <div className="controls settings-dev-controls" data-testid="dev-controls">
+                  <span className="muted">Dev mode</span>
+                  <label>
+                    Speed
+                    <select
+                      value={String(devSettings.speedMultiplier)}
+                      onChange={(event) => {
+                        const value = Number(event.target.value);
+                        setDevSettings((current) => ({
+                          ...current,
+                          speedMultiplier: Number.isFinite(value) ? value : 1,
+                        }));
+                      }}
+                    >
+                      <option value="1">1x</option>
+                      <option value="2">2x</option>
+                      <option value="4">4x</option>
+                    </select>
+                  </label>
+                  <div className="card-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() =>
+                        onPurchase({
+                          ...state,
+                          currencyCents: state.currencyCents + 500_000,
+                        })
+                      }
+                    >
+                      Grant $500k
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        const boostedItems = watchItems.reduce<Record<string, number>>(
+                          (acc, item) => {
+                            acc[item.id] = Math.max(state.items[item.id] ?? 0, 10);
+                            return acc;
+                          },
+                          {},
+                        );
+                        onPurchase({
+                          ...state,
+                          items: {
+                            ...state.items,
+                            ...boostedItems,
+                          },
+                          unlockedMilestones: getMilestones().map((milestone) => milestone.id),
+                        });
+                      }}
+                    >
+                      Unlock watches
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        onPurchase(createInitialState());
+                      }}
+                    >
+                      Reset save
+                    </button>
+                  </div>
+                </div>
+              )}
+            </fieldset>
+
+            <fieldset className="settings-section settings-section--import">
+              <legend>Import data</legend>
+              <label htmlFor="import-save-text">Import data</label>
+              <textarea
+                id="import-save-text"
+                rows={3}
+                placeholder="Paste exported data here"
+                aria-describedby="save-status"
+                value={importText}
+                onChange={(event) => onImportTextChange(event.target.value)}
+              ></textarea>
+              <div className="control-row control-row--end">
+                <button type="button" onClick={onImport}>
+                  Import
+                </button>
+              </div>
+            </fieldset>
           </div>
 
           <output id="save-status" aria-live="polite">

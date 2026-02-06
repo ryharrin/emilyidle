@@ -3951,6 +3951,59 @@ button[data-testid^="vault-interact-"] {
   max-width: 18rem;
 }
 
+.settings-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.settings-section {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: rgba(15, 17, 21, 0.72);
+  padding: 16px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section legend {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  margin-left: -6px;
+  padding: 0 10px;
+}
+
+.settings-visibility {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-visibility-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.settings-visibility-label {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.control-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.control-row--end {
+  justify-content: flex-end;
+}
+
 .muted {
   opacity: 0.75;
 }
