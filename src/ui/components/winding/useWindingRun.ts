@@ -69,6 +69,7 @@ export function useWindingRun({
   const [progressVelocity, setProgressVelocity] = useState(0);
 
   const progressRef = useRef(0);
+  const dragDistanceRef = useRef(0);
   const pointerStateRef = useRef<PointerState | null>(null);
   const stopRequestedRef = useRef(false);
   const angleRef = useRef(0);
@@ -154,6 +155,7 @@ export function useWindingRun({
         lastY: event.clientY,
         lastTime: event.timeStamp,
       };
+      dragDistanceRef.current = 0;
     },
     [open],
   );
@@ -179,11 +181,12 @@ export function useWindingRun({
         return;
       }
 
-      const rawProgress = progressRef.current + distance / fullDragDistance;
+      const nextDragDistance = Math.min(fullDragDistance, dragDistanceRef.current + distance);
+      const rawProgress = nextDragDistance / fullDragDistance;
       const quantized = quantizeProgress(rawProgress);
       const nextProgress = Math.min(1, quantized);
       const deltaProgress = nextProgress - progressRef.current;
-      const velocity = deltaProgress > 0 ? deltaProgress / deltaSeconds : 0;
+      const velocity = deltaSeconds > 0 ? deltaProgress / deltaSeconds : 0;
       setProgressVelocity(velocity);
 
       if (deltaProgress > 0) {
@@ -194,6 +197,8 @@ export function useWindingRun({
         angleRef.current = (angleRef.current + speed * deltaSeconds) % 360;
         setCrownAngleDeg(angleRef.current);
       }
+
+      dragDistanceRef.current = nextDragDistance;
 
       pointerStateRef.current = {
         pointerId: state.pointerId,
@@ -235,6 +240,7 @@ export function useWindingRun({
       setPhase("stopped");
       stopRequestedRef.current = false;
       lastSpeedRef.current = ANGLE_BASE_SPEED;
+      dragDistanceRef.current = 0;
       return;
     }
 
@@ -246,6 +252,7 @@ export function useWindingRun({
     setProgressVelocity(0);
     setPhase("running");
     lastSpeedRef.current = ANGLE_BASE_SPEED;
+    dragDistanceRef.current = 0;
   }, [cleanupAnimation, open]);
 
   useEffect(() => {
