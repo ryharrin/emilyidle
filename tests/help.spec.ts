@@ -82,6 +82,18 @@ test.describe("help entry point", () => {
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
   });
+
+  test("help still opens after using collection section nav", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("tab", { name: "Collection" }).click();
+    await page
+      .getByTestId("collection-section-nav-item-collection-events")
+      .getByRole("button")
+      .click({ force: true });
+
+    await page.getByTestId("help-open").click();
+    await expect(page.getByTestId("help-modal")).toBeVisible();
+  });
 });
 
 test.describe("icon cues", () => {

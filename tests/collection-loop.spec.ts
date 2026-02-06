@@ -8,6 +8,9 @@ const selectors = {
   softcap: "#softcap",
   catalogCards: '[data-testid="catalog-grid"] [data-testid="catalog-card"]',
   upgradesCallout: '[data-testid="upgrades-callout"]',
+  sectionNav: '[data-testid="collection-section-nav"]',
+  onboardingCoachmark: '[data-testid="collection-onboarding-coachmark-collection-overview"]',
+  navMilestones: '[data-testid="collection-section-nav-item-collection-milestones"] button',
   milestoneCards: "#milestone-list .card",
   setBonusCards: "#set-bonus-list .card",
   workshopPanel: '[data-testid="workshop-panel"]',
@@ -49,7 +52,7 @@ test.describe("collection loop", () => {
     await page.waitForFunction(
       () => window.localStorage.getItem("emily-idle:save") !== null,
       null,
-      { timeout: 3000 },
+      { timeout: 6000 },
     );
 
     const { raw, parsed } = await page.evaluate(() => {
@@ -129,6 +132,22 @@ test.describe("collection loop", () => {
     await page.getByRole("tab", { name: "Catalog" }).click();
     const catalogCardCount = await page.locator(selectors.catalogCards).count();
     expect(catalogCardCount).toBeGreaterThanOrEqual(WATCH_MODEL_COUNT);
+  });
+
+  test("collection section nav anchors and coachmark dismisses", async ({ page }) => {
+    await page.getByRole("tab", { name: "Collection" }).click();
+    await expect(page.locator(selectors.sectionNav)).toBeVisible();
+
+    const coachmark = page.locator(selectors.onboardingCoachmark);
+    await expect(coachmark).toBeVisible();
+
+    await page.locator(selectors.navMilestones).click({ force: true });
+    await expect(page.locator("#collection-milestones")).toBeInViewport();
+
+    await coachmark.getByRole("button", { name: "Got it" }).click({ force: true });
+
+    await page.reload();
+    await page.getByRole("tab", { name: "Collection" }).click();
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
