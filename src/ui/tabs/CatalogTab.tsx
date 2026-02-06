@@ -14,7 +14,7 @@ import { TierBadge } from "../components/TierBadge";
 import type { TierBadgeCategory } from "../../game/tierBadges";
 import { PowerReserveHint } from "../components/PowerReserveHint";
 
-import { formatMoneyFromCents } from "../../game/format";
+import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import { isTestEnvironment } from "../../game/runtime/isTestEnvironment";
 import {
   CATALOG_TIER_SEQUENCE,
@@ -239,6 +239,20 @@ export function CatalogPurchasePanel({
     return getPerWatchStatsRows(state, effectiveNowMs, currentEventMultiplier);
   }, [state, nowMs, currentEventMultiplier]);
 
+  const previewStatsByEntry = React.useMemo(() => {
+    const map = new Map<string, { enjoyment: string; cash: string }>();
+    for (const row of perWatchRows) {
+      const stats = {
+        enjoyment: formatRateFromCentsPerSec(row.enjoymentCentsPerSec),
+        cash: formatRateFromCentsPerSec(row.cashCentsPerSec),
+      };
+      row.catalogEntryIds.forEach((entryId) => {
+        map.set(entryId, stats);
+      });
+    }
+    return map;
+  }, [perWatchRows]);
+
   const { ownedCount, maxCapacity, collectionValueCents } = getCatalogCollectionContext(state);
   const upgradeContext = getCatalogUpgradeContext(state);
   const ownedCountLabel = formatCount(ownedCount);
@@ -396,6 +410,7 @@ export function CatalogPurchasePanel({
         : formatCount(unlockDetail.threshold)
       : "0";
     const gate = getWatchModelPurchaseGate(state, entry.id);
+    const previewStats = previewStatsByEntry.get(entry.id);
     const isActionable = unlocked && gate.ok;
     const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
     const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
@@ -424,9 +439,9 @@ export function CatalogPurchasePanel({
 
     const isWorn = state.wornWatchId === entry.id;
     const canWear = modelOwned > 0 && !isWorn;
-    const canDismantle =
-      atelierUnlocked && modelOwned > 1 && (craftingPartsPerWatch[tierId] ?? 0) > 0;
-    const showDismantle = (craftingPartsPerWatch[tierId] ?? 0) > 0;
+    const hasCraftingParts = (craftingPartsPerWatch[tierId] ?? 0) > 0;
+    const canDismantle = modelOwned > 1 && hasCraftingParts;
+    const showDismantleAction = atelierUnlocked && hasCraftingParts;
     const powerReserveDetail = getPowerReserveDetail(state, tierId);
     return (
       <article
@@ -438,6 +453,27 @@ export function CatalogPurchasePanel({
         }`}
         data-testid="catalog-card"
       >
+        {previewStats && (
+          <div
+            className="catalog-card-preview"
+            data-testid={`catalog-preview-${entry.id}`}
+            aria-hidden="true"
+            data-label="Stat preview"
+          >
+            <div className="catalog-card-preview__rows">
+              <div
+                className="catalog-card-preview__row catalog-card-preview__row--enjoyment"
+                data-label="Enjoyment / sec"
+                data-value={previewStats.enjoyment}
+              />
+              <div
+                className="catalog-card-preview__row catalog-card-preview__row--cash"
+                data-label="Cash / sec"
+                data-value={previewStats.cash}
+              />
+            </div>
+          </div>
+        )}
         <div className="catalog-media">
           <img
             src={getCatalogImageUrl(entry)}
@@ -534,7 +570,7 @@ export function CatalogPurchasePanel({
               onBuy={() => handlePurchase(entry.id)}
             />
           </div>
-          {(canWear || canShowInteract || (craftingPartsPerWatch[tierId] ?? 0) > 0) && (
+          {(canWear || canShowInteract || hasCraftingParts) && (
             <div className="card-actions">
               {canWear && (
                 <button
@@ -567,24 +603,17 @@ export function CatalogPurchasePanel({
                   className="help-open-button"
                 />
               )}
-              {showDismantle &&
-                (atelierUnlocked ? (
-                  <button
-                    type="button"
-                    className="secondary"
-                    disabled={!canDismantle}
-                    onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
-                  >
-                    Dismantle
-                  </button>
-                ) : (
-                  <div className="dismantle-locked">
-                    <button type="button" className="secondary" disabled>
-                      Dismantle
-                    </button>
-                    <span className="muted">Unlocks with Atelier reset.</span>
-                  </div>
-                ))}
+              {showDismantleAction && (
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid={`catalog-dismantle-${entry.id}`}
+                  disabled={!canDismantle}
+                  onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
+                >
+                  Dismantle
+                </button>
+              )}
             </div>
           )}
         </div>

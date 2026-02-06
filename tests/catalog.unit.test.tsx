@@ -1006,6 +1006,85 @@ describe("catalog purchase CTA", () => {
   });
 });
 
+describe("catalog card affordances", () => {
+  const openCatalogTab = async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await user.click(catalogTab);
+    await waitFor(() => {
+      expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    });
+  };
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("shows stat preview overlays on catalog cards", async () => {
+    localStorage.clear();
+    render(<App />);
+    await openCatalogTab();
+
+    const catalogGrid = await waitFor(() => screen.getByTestId("catalog-grid"));
+    const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
+    const preview = await waitFor(() => within(cards[0]).getByTestId(/catalog-preview-/));
+    const rows = preview.querySelectorAll(".catalog-card-preview__row");
+    expect(rows.length).toBe(2);
+    expect(preview.getAttribute("data-label")).toBe("Stat preview");
+    expect(rows[0]?.getAttribute("data-label")).toBe("Enjoyment / sec");
+    expect(rows[0]?.getAttribute("data-value")).toBeTruthy();
+    expect(rows[1]?.getAttribute("data-label")).toBe("Cash / sec");
+    expect(rows[1]?.getAttribute("data-value")).toBeTruthy();
+  });
+
+  it("hides dismantle actions until the workshop unlocks", async () => {
+    localStorage.clear();
+    render(<App />);
+    await openCatalogTab();
+
+    const catalogGrid = await waitFor(() => screen.getByTestId("catalog-grid"));
+    expect(within(catalogGrid).queryByTestId(/catalog-dismantle-/)).toBeNull();
+  });
+
+  it("reveals dismantle actions when the workshop unlocks", async () => {
+    cleanup();
+    localStorage.clear();
+    const baseState = createInitialState();
+    const starterModelId = getModelIdForTier("starter");
+    const seededState = {
+      ...baseState,
+      workshopBlueprints: 1,
+      items: {
+        ...baseState.items,
+        starter: 3,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [starterModelId]: 3,
+      },
+    };
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 2,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: Date.now(),
+        state: seededState,
+      }),
+    );
+
+    render(<App />);
+    await openCatalogTab();
+
+    const catalogGrid = await waitFor(() => screen.getByTestId("catalog-grid"));
+    const dismantleButtons = await waitFor(() =>
+      within(catalogGrid).getAllByTestId(/catalog-dismantle-/),
+    );
+    expect(dismantleButtons.length).toBeGreaterThan(0);
+  });
+});
+
 describe("catalog gating explanations", () => {
   const classicModelId = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 

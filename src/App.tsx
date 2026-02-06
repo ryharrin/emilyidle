@@ -1332,6 +1332,7 @@ export default function App() {
             nowMs={nowMs}
             currentEventMultiplier={currentEventMultiplier}
             onInteract={handleInteract}
+            atelierUnlocked={showWorkshopPanel}
           />
 
           <CareerTab

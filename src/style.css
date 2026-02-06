@@ -2524,6 +2524,76 @@ button[data-testid^="vault-interact-"] {
   grid-template-rows: auto 1fr;
   min-height: 100%;
   box-shadow: none;
+  position: relative;
+}
+
+.catalog-card-preview {
+  position: absolute;
+  inset: 14px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(16, 20, 28, 0.85);
+  border: 1px solid rgba(232, 198, 147, 0.35);
+  box-shadow: 0 4px 24px rgba(4, 6, 10, 0.7);
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  pointer-events: none;
+  color: #f7f7f7;
+  z-index: 2;
+}
+
+.catalog-card:hover .catalog-card-preview,
+.catalog-card:focus-within .catalog-card-preview {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.catalog-card-preview::before {
+  content: attr(data-label);
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: rgba(255, 255, 255, 0.68);
+  margin-bottom: 6px;
+}
+
+.catalog-card-preview__rows {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.catalog-card-preview__row {
+  position: relative;
+  padding: 4px 0;
+}
+
+.catalog-card-preview__row::before {
+  content: attr(data-label);
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.catalog-card-preview__row::after {
+  content: attr(data-value);
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 2px;
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-card-preview {
+    transition: none;
+  }
 }
 
 .power-reserve-hint {
@@ -2586,6 +2656,23 @@ button[data-testid^="vault-interact-"] {
   box-shadow:
     0 0 0 1px rgba(232, 198, 147, 0.35),
     0 18px 30px rgba(8, 10, 14, 0.45);
+  opacity: 1;
+}
+
+.catalog-card.catalog-actionable::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 196, 96, 0.45), transparent 55%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  z-index: 1;
+}
+
+.catalog-card.catalog-actionable:hover::after,
+.catalog-card.catalog-actionable:focus-within::after {
   opacity: 1;
 }
 
