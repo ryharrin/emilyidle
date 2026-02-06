@@ -81,6 +81,7 @@ export * from "./careerProgress";
 export * from "./careerNextAction";
 export * from "./therapistSessions";
 export * from "./therapistSalary";
+export * from "./statsBreakdown";
 export * from "./therapistNodeEffects";
 export { getTherapistXpRequiredForNextLevel } from "./therapistPolicy";
 

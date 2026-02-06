@@ -401,6 +401,77 @@ strong {
   gap: 12px;
 }
 
+.stats-breakdown {
+  display: grid;
+  gap: 16px;
+}
+
+.stats-breakdown__hero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stats-breakdown__grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.stats-breakdown__card {
+  padding: 16px;
+}
+
+.stats-breakdown__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stats-breakdown__total {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.stats-breakdown__groups {
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.stats-breakdown__modifier {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stats-breakdown__base-addends,
+.stats-breakdown__terms {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.stats-breakdown__softcap {
+  padding: 16px;
+}
+
+.stats-breakdown__softcap h4 {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.stats-breakdown__softcap p {
+  margin: 0;
+}
+
 .purchase-flash {
   border-color: rgba(232, 198, 147, 0.6);
   box-shadow:

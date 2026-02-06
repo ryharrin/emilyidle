@@ -28,7 +28,7 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
       <h2 id="vault-stats-title" className="visually-hidden">
         Collection stats
       </h2>
-      <div className="stats-header__grid">
+      <div className="stats-header__grid" data-testid="stats-metrics">
         <article className="stats-header__group">
           <div className="stats-header__group-title">
             <p className="eyebrow">Primary economy</p>
@@ -93,7 +93,9 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
             </div>
             <div>
               <dt>Event multiplier</dt>
-              <dd>x{systemStats.eventMultiplier.toFixed(2)}</dd>
+              <dd data-testid="stats-event-multiplier">
+                x{systemStats.eventMultiplier.toFixed(2)}
+              </dd>
             </div>
           </dl>
         </details>

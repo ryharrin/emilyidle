@@ -1,11 +1,16 @@
-import React from "react";
-
 import { formatRateFromCentsPerSec } from "../../game/format";
-import { getCashRateBreakdown, getEnjoymentRateBreakdown } from "../../game/state";
-import type { GameState } from "../../game/state";
+import {
+  getCashRateBreakdown,
+  getEnjoymentRateBreakdown,
+  getStatModifierGroups,
+  type GameState,
+  type RateBreakdownMultiplierTerm,
+  type StatsModifierGroup,
+} from "../../game/state";
 
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
+import type { StatsSummary } from "../components/StatsHeader";
 
 type TabId =
   | "collection"
@@ -17,15 +22,6 @@ type TabId =
   | "catalog"
   | "stats"
   | "save";
-
-type StatsSummary = {
-  cash: string;
-  cashRate: string;
-  enjoyment: string;
-  enjoymentRate: string;
-  sentimentalValue: string;
-  softcap: string;
-};
 
 type StatsTabProps = {
   isActive: boolean;
@@ -39,6 +35,56 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
   const nowMs = Date.now();
   const enjoymentRateBreakdown = getEnjoymentRateBreakdown(state, currentEventMultiplier);
   const cashRateBreakdown = getCashRateBreakdown(state, nowMs, currentEventMultiplier);
+  const enjoymentModifierGroups = getStatModifierGroups(
+    enjoymentRateBreakdown.baseCentsPerSec,
+    enjoymentRateBreakdown.multiplierTerms,
+  );
+  const cashBaseCentsPerSec = cashRateBreakdown.careerAddends.reduce(
+    (total, addend) => total + addend.centsPerSec,
+    0,
+  );
+  const cashModifierGroups = getStatModifierGroups(
+    cashBaseCentsPerSec,
+    cashRateBreakdown.multiplierTerms,
+  );
+
+  const renderModifierGroups = (groups: StatsModifierGroup[]) => {
+    const activeGroups = groups.filter((group) => group.multiplier !== 1);
+    if (activeGroups.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="stats-breakdown__groups">
+        {activeGroups.map((group) => (
+          <div className="stats-breakdown__modifier" key={group.id}>
+            <p className="eyebrow">{group.label}</p>
+            <p>
+              +{formatRateFromCentsPerSec(group.contributionCentsPerSec)} ×
+              {group.multiplier.toFixed(2)}
+            </p>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderModifierTerms = (terms: RateBreakdownMultiplierTerm[]) => {
+    const activeTerms = terms.filter((term) => term.multiplier !== 1);
+    if (activeTerms.length === 0) {
+      return null;
+    }
+
+    return (
+      <ul className="stats-breakdown__terms">
+        {activeTerms.map((term) => (
+          <li key={term.id}>
+            {term.label} ×{term.multiplier.toFixed(2)}
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   return (
     <section id="stats" role="tabpanel" aria-labelledby="stats-tab" hidden={!isActive}>
@@ -51,97 +97,64 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
               <p className="muted">Derived metrics from your current state.</p>
             </div>
           </header>
-          <dl className="stats-grid" data-testid="stats-metrics">
-            <div>
-              <dt>Collection enjoyment</dt>
-              <dd data-testid="stats-enjoyment">{stats.enjoyment}</dd>
-            </div>
-            <div>
-              <dt>Enjoyment / sec</dt>
-              <dd data-testid="stats-enjoyment-rate">{stats.enjoymentRate}</dd>
-            </div>
-            <div>
-              <dt>Dollars</dt>
-              <dd data-testid="stats-cash">{stats.cash}</dd>
-            </div>
-            <div>
-              <dt>Dollars / sec</dt>
-              <dd data-testid="stats-cash-rate">{stats.cashRate}</dd>
-            </div>
-            <div>
-              <dt>Memories</dt>
-              <dd data-testid="stats-memories">{stats.sentimentalValue}</dd>
-            </div>
-            <div>
-              <dt>Atelier resets</dt>
-              <dd data-testid="stats-workshop-prestige">{state.workshopPrestigeCount}</dd>
-            </div>
-            <div>
-              <dt>Maison heritage</dt>
-              <dd data-testid="stats-maison-heritage">{state.maisonHeritage}</dd>
-            </div>
-            <div>
-              <dt>Maison reputation</dt>
-              <dd data-testid="stats-maison-reputation">{state.maisonReputation}</dd>
-            </div>
-            <div>
-              <dt>Event multiplier</dt>
-              <dd data-testid="stats-event-multiplier">x{currentEventMultiplier.toFixed(2)}</dd>
-            </div>
-          </dl>
 
-          <h3>Rate breakdown</h3>
-          <p className="muted">Base + modifiers. Tap to expand.</p>
+          <section className="panel stats-breakdown">
+            <header className="stats-breakdown__hero">
+              <h3>Rate breakdown</h3>
+              <p className="muted">Base + modifiers. Softcap context lives below.</p>
+            </header>
+            <div className="stats-breakdown__grid">
+              <article
+                className="card stats-breakdown__card"
+                data-testid="enjoyment-rate-breakdown"
+              >
+                <header className="stats-breakdown__card-header">
+                  <div>
+                    <p className="eyebrow">Enjoyment / sec</p>
+                    <p className="stats-breakdown__total">
+                      {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
+                    </p>
+                  </div>
+                  <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
+                </header>
+                <p className="muted">
+                  Base: {formatRateFromCentsPerSec(enjoymentRateBreakdown.baseCentsPerSec)}
+                </p>
+                {renderModifierGroups(enjoymentModifierGroups)}
+                {renderModifierTerms(enjoymentRateBreakdown.multiplierTerms)}
+              </article>
 
-          <details data-testid="enjoyment-rate-breakdown" className="card">
-            <summary>
-              Enjoyment / sec ·{" "}
-              {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
-            </summary>
-            <div className="card-actions">
-              <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
-            </div>
-            <p className="muted">
-              Base: {formatRateFromCentsPerSec(enjoymentRateBreakdown.baseCentsPerSec)}
-            </p>
-            <ul>
-              {enjoymentRateBreakdown.multiplierTerms.map((term) => (
-                <li key={term.id}>
-                  {term.label} x{term.multiplier.toFixed(2)}{" "}
-                  {term.id === "worn-watch" && (
-                    <ExplainButton
-                      sectionId={HELP_SECTION_IDS.wornWatchBonus}
-                      label="Explain worn watch bonus"
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          </details>
-
-          <details data-testid="cash-rate-breakdown" className="card">
-            <summary>
-              Dollars / sec · {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
-            </summary>
-            <div className="card-actions">
-              <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
-            </div>
-            <ul>
-              {cashRateBreakdown.careerAddends.map((term) => (
-                <li key={term.id}>
-                  {term.label}: {formatRateFromCentsPerSec(term.centsPerSec)}
-                </li>
-              ))}
-              {currentEventMultiplier !== 1 &&
-                cashRateBreakdown.multiplierTerms
-                  .filter((term) => term.id === "event")
-                  .map((term) => (
-                    <li key={term.id}>
-                      {term.label} x{term.multiplier.toFixed(2)}
+              <article className="card stats-breakdown__card" data-testid="cash-rate-breakdown">
+                <header className="stats-breakdown__card-header">
+                  <div>
+                    <p className="eyebrow">Dollars / sec</p>
+                    <p className="stats-breakdown__total">
+                      {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
+                    </p>
+                  </div>
+                  <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
+                </header>
+                <ul className="stats-breakdown__base-addends">
+                  {cashRateBreakdown.careerAddends.map((addend) => (
+                    <li key={addend.id}>
+                      {addend.label}: {formatRateFromCentsPerSec(addend.centsPerSec)}
                     </li>
                   ))}
-            </ul>
-          </details>
+                </ul>
+                {renderModifierGroups(cashModifierGroups)}
+                {renderModifierTerms(cashRateBreakdown.multiplierTerms)}
+              </article>
+            </div>
+
+            <article className="card stats-breakdown__softcap" data-testid="stats-softcap">
+              <h4>Softcap efficiency</h4>
+              <p id="softcap">{stats.softcap}</p>
+              <p className="muted">
+                Income is smoothed once the atelier softcap threshold is exceeded so growth stays
+                balanced.
+              </p>
+            </article>
+          </section>
 
           <section className="panel stats-journal" data-testid="stats-journal">
             <h3>Journal</h3>
