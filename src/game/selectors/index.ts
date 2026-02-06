@@ -83,6 +83,7 @@ export * from "./therapistSessions";
 export * from "./therapistSalary";
 export * from "./statsBreakdown";
 export * from "./therapistNodeEffects";
+export * from "./collectionInsights";
 export { getTherapistXpRequiredForNextLevel } from "./therapistPolicy";
 
 const BASE_INCOME_CENTS_PER_SEC = 10;
