@@ -1,4 +1,27 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
+
+type Box = NonNullable<Awaited<ReturnType<Locator["boundingBox"]>>>;
+
+function hasOverlap(first: Box, second: Box) {
+  return !(
+    first.x + first.width <= second.x ||
+    second.x + second.width <= first.x ||
+    first.y + first.height <= second.y ||
+    second.y + second.height <= first.y
+  );
+}
+
+async function expectNoOverlap(first: Locator, second: Locator) {
+  await first.scrollIntoViewIfNeeded();
+  await second.scrollIntoViewIfNeeded();
+  const [firstBox, secondBox] = await Promise.all([first.boundingBox(), second.boundingBox()]);
+  expect(firstBox).not.toBeNull();
+  expect(secondBox).not.toBeNull();
+  if (!firstBox || !secondBox) {
+    return;
+  }
+  expect(hasOverlap(firstBox, secondBox)).toBe(false);
+}
 
 test("nostalgia prestige flow", async ({ page }) => {
   const seededState = {
@@ -117,11 +140,17 @@ test("nostalgia prestige flow", async ({ page }) => {
   const toastStack = page.getByTestId("toast-stack");
   await expect(toastStack).toBeVisible();
   await expect(toastStack).toContainText(/\+\d+ Nostalgia/);
+  await expectNoOverlap(toastStack, page.getByRole("button", { name: /^Unlock \(1\)$/ }).first());
   const dismissButton = page.getByRole("button", {
     name: /dismiss nostalgia prestige toast/i,
   });
   await dismissButton.click();
-  await expect(page.locator('[data-testid="toast-item"]')).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /dismiss nostalgia prestige toast/i })).toHaveCount(
+    0,
+  );
+  if ((await toastStack.count()) > 0) {
+    await expect(toastStack).not.toContainText(/\+\d+ Nostalgia/);
+  }
   const finalSave = await page.evaluate(() => {
     const raw = window.localStorage.getItem("emily-idle:save");
     return raw ? JSON.parse(raw).state : null;

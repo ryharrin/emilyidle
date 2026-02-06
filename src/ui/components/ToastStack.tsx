@@ -16,7 +16,13 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
   }
 
   return (
-    <div className="toast-stack" data-testid="toast-stack" role="status" aria-live="polite">
+    <div
+      className="toast-stack"
+      data-testid="toast-stack"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {toasts.map((toast) => (
         <article key={toast.id} className="toast-stack__toast" data-testid="toast-item">
           <div className="toast-stack__content">

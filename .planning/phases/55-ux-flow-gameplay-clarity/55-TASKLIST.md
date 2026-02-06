@@ -3,7 +3,7 @@
 ## Tracking Board
 
 - [x] Author context document (`55-CONTEXT.md`)
-- [ ] Execute `55-01-PLAN.md` (toast interruption-safe layout)
+- [x] Execute `55-01-PLAN.md` (toast interruption-safe layout)
 - [ ] Execute `55-02-PLAN.md` (Career primary action consolidation)
 - [ ] Execute `55-03-PLAN.md` (mobile density + sticky now-action rail)
 - [ ] Execute `55-04-PLAN.md` (catalog CTA hierarchy simplification)
@@ -18,3 +18,4 @@
 - Prioritize high-frequency gameplay actions over informational overlays.
 - Preserve deterministic selector/data-testid anchors for existing tests wherever possible.
 - Add/adjust e2e assertions for no-overlap/no-clipping contracts on mobile and desktop.
+- `55-01-SUMMARY.md` published with desktop/mobile non-overlap verification coverage.

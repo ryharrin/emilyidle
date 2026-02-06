@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 import { createInitialState, getWatchModels, type GameState } from "../src/game/state";
+import { openCatalogFilters } from "./helpers/catalogFilters";
 
 function buildSeededState(): { state: GameState; starterModelId: string } {
   const base = createInitialState();
@@ -63,15 +64,43 @@ async function seedPage(page: import("@playwright/test").Page, achievementsEnabl
   );
 }
 
-async function buyStarterWatch(page: import("@playwright/test").Page, starterModelId: string) {
+type Box = NonNullable<Awaited<ReturnType<Locator["boundingBox"]>>>;
+
+function hasOverlap(first: Box, second: Box) {
+  return !(
+    first.x + first.width <= second.x ||
+    second.x + second.width <= first.x ||
+    first.y + first.height <= second.y ||
+    second.y + second.height <= first.y
+  );
+}
+
+async function expectNoOverlap(first: Locator, second: Locator) {
+  await first.scrollIntoViewIfNeeded();
+  await second.scrollIntoViewIfNeeded();
+  const [firstBox, secondBox] = await Promise.all([first.boundingBox(), second.boundingBox()]);
+  expect(firstBox).not.toBeNull();
+  expect(secondBox).not.toBeNull();
+  if (!firstBox || !secondBox) {
+    return;
+  }
+  expect(hasOverlap(firstBox, secondBox)).toBe(false);
+}
+
+async function buyStarterWatch(
+  page: import("@playwright/test").Page,
+  starterModelId: string,
+): Promise<Locator> {
   await page.getByRole("tab", { name: "Catalog" }).click();
   const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
   const ownedTab = catalogPanel.getByRole("tab", { name: /^Owned/ }).first();
   if (!(await ownedTab.isVisible().catch(() => false))) {
-    await catalogPanel.getByRole("button", { name: /Filters/i }).click();
+    await openCatalogFilters(page);
   }
   await ownedTab.click();
-  await page.getByTestId(`catalog-buy-${starterModelId}`).click();
+  const buyButton = page.getByTestId(`catalog-buy-${starterModelId}`).first();
+  await buyButton.click();
+  return buyButton;
 }
 
 test.describe("achievement toasts", () => {
@@ -80,13 +109,16 @@ test.describe("achievement toasts", () => {
     await seedPage(page, true);
 
     await page.goto("/");
-    await buyStarterWatch(page, starterModelId);
+    const buyButton = await buyStarterWatch(page, starterModelId);
 
     await expect(page.getByTestId("toast-stack")).toContainText(/Achievement unlocked/i);
     await expect(page.getByTestId("toast-stack")).toContainText(/First drawer/i);
+    await expectNoOverlap(page.getByTestId("toast-stack"), buyButton);
   });
 
-  test("does not show unlock toast when achievement notifications are disabled", async ({ page }) => {
+  test("does not show unlock toast when achievement notifications are disabled", async ({
+    page,
+  }) => {
     const { starterModelId } = buildSeededState();
     await seedPage(page, false);
 
