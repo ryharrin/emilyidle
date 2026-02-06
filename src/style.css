@@ -982,6 +982,10 @@ button:not(:disabled):active {
   pointer-events: auto;
   touch-action: none;
   cursor: grab;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .winding-surface-copy {

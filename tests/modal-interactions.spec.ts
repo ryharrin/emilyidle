@@ -177,6 +177,39 @@ test.describe("Interaction modals", () => {
     }
   });
 
+  test("dragging the winding surface resolves the run", async ({ page }) => {
+    await openCatalogFromCollection(page);
+    const manualCandidates = page.locator(
+      '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
+    );
+    const manualCount = await manualCandidates.count();
+    test.skip(manualCount === 0, "No manual winding candidate available");
+    if (manualCount === 0) {
+      return;
+    }
+
+    const manualButton = manualCandidates.first();
+    await manualButton.click();
+    const surface = page.getByTestId("winding-surface");
+    const box = await surface.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) {
+      return;
+    }
+
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+    await page.mouse.move(centerX, centerY);
+    await page.mouse.down();
+    await page.mouse.move(centerX + Math.max(60, box.width * 0.6), centerY);
+    await page.mouse.up();
+
+    await expect(page.getByTestId("winding-live")).toHaveText(/Stopped at/i);
+    await expect(page.getByTestId("winding-outcome")).toBeVisible();
+    await page.getByTestId("winding-close").click();
+    await expect(page.getByTestId("winding-modal")).toHaveCount(0);
+  });
+
   test("shows the cooldown ring when a session is mid-cooldown", async ({ page }) => {
     const nowMs = Date.now();
     const sessionState = buildSeededState();
