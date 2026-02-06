@@ -142,4 +142,15 @@ test.describe("career map canvas", () => {
     await expect(page.getByTestId("career-map-viewport")).toBeVisible();
     await expect(page.getByTestId("career-stages-card")).toBeVisible();
   });
+
+  test("career timeline remains visible on narrow viewports", async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.clear());
+    await page.setViewportSize({ width: 420, height: 780 });
+    await page.goto("/");
+
+    const timeline = page.getByTestId("career-timeline");
+    await expect(timeline).toBeVisible();
+    const nodes = timeline.locator("[data-testid^=career-timeline-node-]");
+    await expect(nodes).toHaveCount(6);
+  });
 });

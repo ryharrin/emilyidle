@@ -87,3 +87,15 @@ test("deep links do not overwrite last-tab persistence for existing saves", asyn
   const stored = await page.evaluate(() => window.localStorage.getItem("emily-idle:navigation"));
   expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });
 });
+
+test("career timeline renders stage nodes alongside the map", async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.clear());
+  await page.goto("/");
+
+  const timeline = page.getByTestId("career-timeline");
+  await expect(timeline).toBeVisible();
+
+  const nodes = timeline.locator("li[data-testid=career-timeline-node]");
+  await expect(nodes).toHaveCount(6);
+  await expect(nodes.first()).toHaveAttribute("data-stage-id", "grad-student");
+});
