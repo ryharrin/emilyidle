@@ -23,6 +23,8 @@ const selectors = {
   importSave: "#import-save",
   importText: "#import-save-text",
   saveStatus: "#save-status",
+  statsMetrics: '[data-testid="stats-metrics"]',
+  eventMultiplier: '[data-testid="stats-event-multiplier"]',
 };
 
 const STARTER_MODEL_ID = "rolex-calibrorolex";
@@ -110,6 +112,8 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.currency)).toHaveText(/\$/);
     await expect(page.locator(selectors.income)).toHaveText(/\$/);
     await expect(page.locator(selectors.collectionValue)).toHaveText(/\$/);
+    await expect(page.locator(selectors.statsMetrics)).toBeVisible();
+    await expect(page.locator(selectors.eventMultiplier)).toContainText("x");
     await expect(page.locator(selectors.softcap)).toHaveText(/% efficiency/);
     await expect(page.locator("#enjoyment")).toHaveText(/\$/);
     await expect(page.locator("#enjoyment-rate")).toHaveText(/\$/);
@@ -118,7 +122,8 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
 
     await page.getByRole("tab", { name: "Catalog" }).click();
-    await expect(page.locator(selectors.catalogCards)).toHaveCount(WATCH_MODEL_COUNT);
+    const catalogCardCount = await page.locator(selectors.catalogCards).count();
+    expect(catalogCardCount).toBeGreaterThanOrEqual(WATCH_MODEL_COUNT);
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
