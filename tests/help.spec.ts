@@ -83,6 +83,27 @@ test.describe("help entry point", () => {
     await expect(page.getByTestId("help-modal")).toBeVisible();
   });
 
+  test("tier keyword search surfaces tier badge help and related chips", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByTestId("help-open").click();
+    await expect(page.getByTestId("help-modal")).toBeVisible();
+
+    const searchInput = page.getByTestId("help-search");
+    await searchInput.fill("tier");
+
+    const firstSectionButton = page.locator(".help-modal-sections button").first();
+    await expect(firstSectionButton).toHaveText(/Tier badges/);
+    await firstSectionButton.click();
+
+    await expect(page.getByTestId("help-active-section")).toHaveText(/Tier badges/);
+
+    const catalogChip = page.getByTestId("help-related-chip-catalog-shop");
+    await expect(catalogChip).toBeVisible();
+    await catalogChip.click();
+    await expect(page.getByTestId("help-active-section")).toHaveText(/Catalog shopping/);
+  });
+
   test("help still opens after using collection section nav", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Collection" }).click();
