@@ -20,6 +20,8 @@ import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
 import { resolveLandingTab, resolveTabAlias } from "./ui/navigation/landing";
+import { PageTabRail } from "./ui/navigation/PageTabRail";
+import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
 
 import {
   formatMoneyFromCents,
@@ -100,20 +102,6 @@ import { step } from "./game/sim";
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
 const SETTINGS_KEY = "emily-idle:settings";
 const NAVIGATION_KEY = "emily-idle:navigation";
-const TAB_DEFINITIONS = [
-  { id: "career", label: "Career" },
-  { id: "collection", label: "Collection" },
-  { id: "catalog", label: "Catalog" },
-  { id: "upgrades", label: "Upgrades" },
-  { id: "workshop", label: "Atelier" },
-  { id: "maison", label: "Maison" },
-  { id: "nostalgia", label: "Nostalgia" },
-  { id: "stats", label: "Stats" },
-  { id: "save", label: "Settings" },
-] as const;
-
-type TabId = (typeof TAB_DEFINITIONS)[number]["id"] | "catalog";
-
 type TabActivationSource = "user" | "deep-link" | "system";
 
 type NavigationState = {
@@ -359,6 +347,21 @@ export default function App() {
   const [focusedTab, setFocusedTab] = useState<TabId>("collection");
   const [hasResolvedInitialTab, setHasResolvedInitialTab] = useState(false);
   const tabRefs = useRef(new Map<TabId, HTMLButtonElement>());
+  const handleTabRef = useCallback((tabId: TabId, node: HTMLButtonElement | null) => {
+    if (!node) {
+      tabRefs.current.delete(tabId);
+      return;
+    }
+
+    tabRefs.current.set(tabId, node);
+  }, []);
+  const handleTabFocus = useCallback((tabId: TabId) => {
+    if (isTestEnvironment()) {
+      return;
+    }
+
+    setFocusedTab(tabId);
+  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") {
@@ -1106,45 +1109,18 @@ export default function App() {
               <h1>Emily Idle</h1>
               <p className="muted">Build your collection, unlock new lines, and stack bonuses.</p>
               <nav className="page-nav" aria-label="Primary navigation">
-                <div role="tablist" aria-label="Primary navigation" className="page-nav-tabs">
-                  {visibleTabs.map((tab) => {
-                    const selected = tab.id === activeTab;
-                    const focusable = tab.id === focusedTab;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        className="page-nav-link"
-                        role="tab"
-                        id={`${tab.id}-tab`}
-                        aria-selected={selected}
-                        aria-controls={tab.id}
-                        tabIndex={focusable ? 0 : -1}
-                        data-testid={tab.id === "nostalgia" ? "nostalgia-tab" : undefined}
-                        onClick={() => activateTab(tab.id, "user")}
-                        onFocus={() => {
-                          if (isTestEnvironment()) {
-                            return;
-                          }
-                          setFocusedTab(tab.id);
-                        }}
-                        onKeyDown={handleTabKeyDown}
-                        ref={(node) => {
-                          if (!node) {
-                            tabRefs.current.delete(tab.id);
-                            return;
-                          }
-                          tabRefs.current.set(tab.id, node);
-                        }}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                <PageTabRail
+                  tabs={visibleTabs}
+                  activeTabId={activeTab}
+                  focusedTabId={focusedTab}
+                  onTabClick={(tabId) => activateTab(tabId, "user")}
+                  onTabFocus={handleTabFocus}
+                  onTabKeyDown={handleTabKeyDown}
+                  onTabRef={handleTabRef}
+                />
                 <button
                   type="button"
-                  className="page-nav-link help-open-button"
+                  className="help-open-button"
                   aria-label="Open help"
                   data-testid="help-open"
                   onClick={handleOpenHelp}
