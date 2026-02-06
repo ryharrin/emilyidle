@@ -760,7 +760,6 @@ export default function App() {
   const nostalgiaUnlockIds = useMemo(() => getNostalgiaUnlockIds(), []);
   const milestones = useMemo(() => getMilestones(), []);
   const upgrades = useMemo(() => getUpgrades(), []);
-  const setBonuses = useMemo(() => getSetBonuses(), []);
   const achievements = useMemo(() => getAchievements(), []);
   const events = useMemo(() => getEvents(), []);
   const workshopUpgrades = useMemo(() => getWorkshopUpgrades(), []);
@@ -1357,7 +1356,6 @@ export default function App() {
             milestones={milestones}
             achievements={achievements}
             events={events}
-            setBonuses={setBonuses}
             currentEventMultiplier={currentEventMultiplier}
             nowMs={nowMs}
             onPurchase={handlePurchase}

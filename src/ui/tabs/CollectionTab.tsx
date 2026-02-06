@@ -2,7 +2,11 @@ import React from "react";
 
 import { type PurchaseMeta } from "./CatalogTab";
 import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
-import { TierBadge } from "../components/TierBadge";
+import { CollectionInsightsPanel } from "../components/CollectionInsightsPanel";
+import {
+  CollectionTierSegments,
+  type TierSegmentSummary,
+} from "../components/CollectionTierSegments";
 import {
   CollectionSectionNav,
   type CollectionSectionNavLink,
@@ -29,11 +33,7 @@ import {
   setWornWatchId,
   isEventActive,
 } from "../../game/state";
-import {
-  getTierBadgeByCategory,
-  type TierBadgeCategory,
-  type TierBadgeDefinition,
-} from "../../game/tierBadges";
+import { getTierBadgeByCategory, type TierBadgeCategory } from "../../game/tierBadges";
 import type {
   AchievementDefinition,
   CatalogTierBonusDefinition,
@@ -73,14 +73,6 @@ type Coachmark = {
   text: string;
 };
 
-type TierSummary = {
-  category: TierBadgeCategory;
-  badge: TierBadgeDefinition;
-  totalModels: number;
-  ownedCount: number;
-  discoveredCount: number;
-};
-
 const COLLECTION_SECTION_NAV_LINKS: CollectionSectionNavLink[] = [
   {
     id: "collection-overview",
@@ -94,6 +86,18 @@ const COLLECTION_SECTION_NAV_LINKS: CollectionSectionNavLink[] = [
   {
     id: "collection-tier-summary",
     label: "Tier summary",
+  },
+  {
+    id: "collection-segment-starter",
+    label: "Starter",
+  },
+  {
+    id: "collection-segment-mid",
+    label: "Mid-tier",
+  },
+  {
+    id: "collection-segment-lux",
+    label: "Luxury",
   },
   {
     id: "collection-milestones",
@@ -145,7 +149,6 @@ type CollectionTabProps = {
   milestones: ReadonlyArray<MilestoneDefinition>;
   achievements: ReadonlyArray<AchievementDefinition>;
   events: ReadonlyArray<EventDefinition>;
-  setBonuses: ReadonlyArray<SetBonusDefinition>;
   currentEventMultiplier: number;
   nowMs: number;
   onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
@@ -179,7 +182,6 @@ export function CollectionTab({
   milestones,
   achievements,
   events,
-  setBonuses,
   currentEventMultiplier,
   nowMs,
   onPurchase,
@@ -195,7 +197,7 @@ export function CollectionTab({
   const { discoveredCatalogEntries } = state;
 
   const tierCategories: ReadonlyArray<TierBadgeCategory> = ["starter", "mid", "lux"];
-  const tierSummary = React.useMemo<TierSummary[]>(() => {
+  const tierSummary = React.useMemo<TierSegmentSummary[]>(() => {
     const discoveredSet = new Set(discoveredCatalogEntries);
     return tierCategories.map((category) => {
       const modelsForCategory = watchModels.filter(
@@ -399,6 +401,7 @@ export function CollectionTab({
               sections={navigationSections}
               onCoachmarkDismiss={handleDismissSectionCoachmark}
             />
+            <CollectionInsightsPanel state={state} />
             <div id="collection-overview" className="collection-section collection-overview">
               <h2>Collection</h2>
               <p className="muted">Build your collection: buy, wear, and interact with watches.</p>
@@ -504,31 +507,7 @@ export function CollectionTab({
                       <span className="muted">Badge help</span>
                     </div>
                   </header>
-                  <div className="collection-tier-summary-grid">
-                    {tierSummary.map((summary) => (
-                      <div
-                        key={summary.category}
-                        className="collection-tier-summary-card"
-                        data-testid={`collection-tier-card-${summary.category}`}
-                      >
-                        <TierBadge
-                          tier={summary.badge.category}
-                          showLabel
-                          label={summary.badge.label}
-                          description={summary.badge.description}
-                          backgroundVar={summary.badge.backgroundVar}
-                          textVar={summary.badge.textVar}
-                        />
-                        <p>
-                          {summary.ownedCount}/{summary.totalModels} owned
-                        </p>
-                        <p className="muted">
-                          {summary.discoveredCount}/{summary.totalModels} discovered
-                        </p>
-                        <p className="muted">{summary.badge.description}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <CollectionTierSegments segments={tierSummary} />
                 </section>
               </div>
             </div>
@@ -794,55 +773,6 @@ export function CollectionTab({
                         <p className="muted" aria-live="polite">
                           {statusLabel}
                         </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </section>
-            <section id="collection-set-bonuses" className="collection-section">
-              <div className="panel">
-                <h3>Set bonuses</h3>
-                <div id="set-bonus-list" className="card-stack" data-testid="set-bonus-list">
-                  {setBonuses.map((bonus) => {
-                    const requirements = Object.entries(bonus.requirements) as Array<
-                      [keyof GameState["items"], number]
-                    >;
-                    const progress = requirements.map(([itemId, required]) => {
-                      const requiredCount = required ?? 0;
-                      const currentCount = state.items[itemId] ?? 0;
-                      return {
-                        itemId,
-                        label: watchItemLabels.get(itemId) ?? itemId,
-                        currentCount,
-                        requiredCount,
-                        met: currentCount >= requiredCount,
-                      };
-                    });
-                    const active = progress.every((entry) => entry.met);
-                    const bonusPercent = Math.round((bonus.incomeMultiplier - 1) * 100);
-                    return (
-                      <div
-                        className="card"
-                        key={bonus.id}
-                        data-testid="set-bonus-card"
-                        data-bonus-id={bonus.id}
-                      >
-                        <div className="card-header">
-                          <div>
-                            <h3>{bonus.name}</h3>
-                            <p>{bonus.description}</p>
-                          </div>
-                          <div className="muted">{active ? "Active" : "Inactive"}</div>
-                        </div>
-                        <div className="set-bonus-progress">
-                          {progress.map((entry) => (
-                            <p className={entry.met ? "" : "muted"} key={entry.itemId}>
-                              {entry.label} {entry.currentCount} / {entry.requiredCount}
-                            </p>
-                          ))}
-                        </div>
-                        <p className="muted">Income +{bonusPercent}%</p>
                       </div>
                     );
                   })}
