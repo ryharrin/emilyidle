@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 
 ## Current Position
 
-Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-10 (Career timeline + choice impact) — Completed
-Status: Phase 49 complete (10/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-10 (career timeline + coverage)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 complete (10/10 executed) [██████████]
-Next Phase: Phase 50 (Catalog & Collection Depth)
+Phase: 50 of 6 (Catalog & Collection Depth)
+Plan: 50-04 (Career timeline + upcoming choices) — Completed
+Status: Phase 50 in progress (4/5 plans executed)
+Last activity: 2026-02-06 — Completed Phase 50-04 (career timeline + choice context)
+Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 in progress (4/5 executed) [███████░░░]
+Next Phase: Phase 50 (Catalog & Collection Depth — plan 50-05 pending)
 
 ## Accumulated Context
 
@@ -93,12 +93,15 @@ Next Phase: Phase 50 (Catalog & Collection Depth)
 | 49 | Drive modal motion states through `data-live-state`/`data-outcome-state` pointers and CSS transitions | Lets winding, automatic, and quartz overlays share consistent animation polish while honoring reduced-motion |
 | 49 | Animate hero stats via ValueTicker while centralizing currency/upgrade icons in `coreIcons.tsx`. | Keeps metric readouts animated, accessible, and visually coherent for automation and reduced-motion audiences. | ✓ Good |
 | 49 | Send nostalgia resets through FloatingDelta + ToastStack feedback instead of blocking modals. | Lets destructive confirmations stay in modals while the toast stack surfaces dismissible +X cues. | ✓ Good |
+| 50 | Keep the timeline summary and upcoming choice cards tied directly to the career selectors for progress and choice state | Prevents UI copy from drifting away from the authoritative progression math shared with tests |
+| 50 | Hide the timeline meta on viewports narrower than 620px and gate pointer events so the Career map stays interactive | Keeps Pixel 5 map interactions responsive despite the new overlay cards |
+| 50 | Force Playwright hover/click actions for the Career map zoom controls when overlays still intercept the DOM | Lets the regression validate zoom persistence without uninstallable pointer conflicts |
 | 49 | Derive Collection anchors via `CollectionSectionNavLink` so nav copy, automation selectors, and scroll targets stay synchronized. | Keeps the new Collection subnav predictable while enabling future guts to reuse the same definition. | ✓ Good |
 | 49 | Persist onboarding dismissals in `settings.coachmarksDismissed` so no additional storage keys are introduced. | Honors existing settings guardrails while letting coachmarks pause for returning players. | ✓ Good |
 | 49 | Derive the new career timeline from `CAREER_STAGES` metadata and selector outputs so UI copy/test anchors stay in sync. | Prevents duplicating progression math while letting the timeline reuse the same progression sources as the career map. | ✓ Good |
 
 ## Session Continuity
 
-Last session: 2026-02-06T10:10:34Z
-Stopped at: Completed Phase 49-10 (career timeline + coverage)
+Last session: 2026-02-06T12:01:22Z
+Stopped at: Completed Phase 50-04 (career timeline + choice context)
 Resume file: None
