@@ -44,6 +44,7 @@ export function WatchComparePanel({
             type="button"
             className="secondary compare-panel-control"
             id="compare-clear-all"
+            data-testid="compare-clear-all"
             onClick={onClearAll}
             disabled={filledSlots === 0}
           >

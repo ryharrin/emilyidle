@@ -132,3 +132,43 @@
 .compare-slot-placeholder p {
   margin: 4px 0;
 }
+
+.catalog-card-compared {
+  border-color: #7df3c7;
+  box-shadow:
+    0 0 18px rgba(125, 243, 199, 0.35),
+    0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+.catalog-compare-toggle {
+  margin-left: 12px;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #f6f7fb;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  align-self: center;
+  transition:
+    background 0.2s ease,
+    border 0.2s ease;
+}
+
+.catalog-compare-toggle-active {
+  background: rgba(116, 255, 184, 0.2);
+  border-color: #74ffb8;
+}
+
+.catalog-tab-ready-badge {
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.6rem;
+  letter-spacing: 0.04em;
+  color: #b1c4ff;
+}
