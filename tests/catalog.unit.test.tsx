@@ -518,8 +518,8 @@ describe("set bonuses", () => {
   });
 
   it("renders set bonus cards and activates collector quartet", () => {
-    const list = screen.getByTestId("set-bonus-list");
-    const cards = within(list).getAllByTestId("set-bonus-card");
+    const grid = screen.getByTestId("collection-set-bonus-grid");
+    const cards = within(grid).getAllByTestId("collection-set-bonus-card");
 
     expect(cards).toHaveLength(getSetBonuses().length);
 
@@ -591,7 +591,7 @@ describe("catalog filters", () => {
   it("defaults catalog view to unowned", () => {
     const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
     const unownedTab = within(tabList).getByRole("tab", { name: /Unowned/i });
-    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned$/ });
+    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned/ });
 
     expect(unownedTab.getAttribute("aria-selected")).toBe("true");
     expect(ownedTab.getAttribute("aria-selected")).toBe("false");
@@ -745,7 +745,7 @@ describe("catalog filters", () => {
     await user.click(catalogTab);
 
     const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
-    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned$/ });
+    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned/ });
     await user.click(ownedTab);
 
     const searchInput = screen.getByTestId("catalog-search");
@@ -890,7 +890,7 @@ describe("catalog filters", () => {
   it("shows owned grid when tiers are owned", async () => {
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
-    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned$/ });
+    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned/ });
 
     await user.click(ownedTab);
 
@@ -975,7 +975,7 @@ describe("catalog purchase CTA", () => {
 
     await user.click(button);
 
-    const ownedTab = screen.getByRole("tab", { name: /^Owned$/ });
+    const ownedTab = screen.getByRole("tab", { name: /^Owned/ });
     await user.click(ownedTab);
 
     await waitFor(() => {
@@ -1449,7 +1449,7 @@ describe("wind minigame", () => {
     expect(screen.queryByTestId("winding-modal")).toBeNull();
 
     const ownershipTabs = screen.getByRole("tablist", { name: /Catalog ownership/i });
-    await user.click(within(ownershipTabs).getByRole("tab", { name: /^Owned$/i }));
+    await user.click(within(ownershipTabs).getByRole("tab", { name: /^Owned/i }));
 
     const tourbillonButtons = screen.getAllByTestId("vault-interact-tourbillon");
     const tourbillonInteract = tourbillonButtons.find(
