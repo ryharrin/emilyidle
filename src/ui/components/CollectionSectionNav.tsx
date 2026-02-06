@@ -1,6 +1,6 @@
 import React from "react";
 
-import { type MouseEvent, useCallback, useEffect, useState } from "react";
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { OnboardingCoachmark, type OnboardingCoachmarkDefinition } from "./OnboardingCoachmark";
 
 export type CollectionSectionNavLink = {
@@ -28,16 +28,31 @@ const readNavOffset = () => {
   return Number.isFinite(parsed) ? parsed : NAV_OFFSET_FALLBACK;
 };
 
+const getScrollElement = (): HTMLElement | null => {
+  if (typeof document === "undefined") {
+    return null;
+  }
+  return (
+    (document.scrollingElement as HTMLElement | null) ??
+    (document.documentElement as HTMLElement | null) ??
+    (document.body as HTMLElement | null)
+  );
+};
+
 const getTargetTop = (sectionId: string) => {
   const element = document.getElementById(sectionId);
   if (!element) {
     return null;
   }
-  return window.scrollY + element.getBoundingClientRect().top;
+  const scrollEl = getScrollElement();
+  const scrollTop = scrollEl ? scrollEl.scrollTop : window.scrollY;
+  return scrollTop + element.getBoundingClientRect().top;
 };
 
 export function CollectionSectionNav({ sections, onCoachmarkDismiss }: CollectionSectionNavProps) {
   const [activeId, setActiveId] = useState(sections[0]?.id ?? "");
+  const skipActiveUpdateRef = useRef(false);
+  const activeUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setActiveId(sections[0]?.id ?? "");
@@ -52,6 +67,9 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
     const offset = readNavOffset();
 
     const updateActiveSection = () => {
+      if (skipActiveUpdateRef.current) {
+        return;
+      }
       frame = 0;
       const candidates = sections
         .map((section) => {
@@ -78,7 +96,7 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
     };
 
     const handleScroll = () => {
-      if (frame) {
+      if (skipActiveUpdateRef.current || frame) {
         return;
       }
       frame = requestAnimationFrame(updateActiveSection);
@@ -91,6 +109,10 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
       window.removeEventListener("scroll", handleScroll);
       if (frame) {
         cancelAnimationFrame(frame);
+      }
+      if (activeUpdateTimerRef.current) {
+        clearTimeout(activeUpdateTimerRef.current);
+        activeUpdateTimerRef.current = null;
       }
     };
   }, [sections]);
@@ -106,8 +128,21 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
     }
     const offset = readNavOffset() + SCROLL_BUFFER;
     const destination = Math.max(targetTop - offset, 0);
-    window.scrollTo({ top: destination, behavior: "smooth" });
+    const scrollEl = getScrollElement();
+    if (scrollEl) {
+      scrollEl.scrollTo({ top: destination, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: destination, behavior: "smooth" });
+    }
     setActiveId(sectionId);
+    skipActiveUpdateRef.current = true;
+    if (activeUpdateTimerRef.current) {
+      clearTimeout(activeUpdateTimerRef.current);
+    }
+    activeUpdateTimerRef.current = setTimeout(() => {
+      skipActiveUpdateRef.current = false;
+      activeUpdateTimerRef.current = null;
+    }, 400);
   }, []);
 
   if (sections.length === 0) {
@@ -119,6 +154,7 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
       className="collection-section-nav"
       aria-label="Collection section navigation"
       data-testid="collection-section-nav"
+      data-active-section={activeId || undefined}
     >
       <div className="collection-section-nav__scroller">
         {sections.map((section) => (
