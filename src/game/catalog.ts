@@ -1112,6 +1112,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     facts: [
       "Starter-tier pacing: quick enjoyment wind-up with modest cash gain and zero reserve drain.",
       "Designed to feel accessible: low price, bright dial, and traceable tags for easy discovery.",
+      "Tags include starter and quartz so catalog filters and lane language highlight affordability.",
     ],
     image: {
       url: "/catalog/placeholders/starter-tier.svg",
@@ -1132,6 +1133,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     facts: [
       "Starter tier: tuned for momentum with balanced enjoyment/cash deltas and forgiving gates.",
       "Low reserve impact keeps the experience stable on mobile runs and rapid sessions.",
+      "Sport and starter tags point tests toward the low lane, preserving the envisioned pacing.",
     ],
     image: {
       url: "/catalog/placeholders/starter-tier.svg",
@@ -1152,6 +1154,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     facts: [
       "Mid-tier pacing: double the enjoyment of starter watches, with moderate cash weighting.",
       "Reserve-friendly rotor locks this tier into reliable automatic engagement.",
+      "Classic tags keep the lane names aligned while spotlighting a refined mechanical voice.",
     ],
     image: {
       url: "/catalog/placeholders/mid-tier.svg",
@@ -1172,6 +1175,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     facts: [
       "Chronograph mid-tier: heavier cash jump offset by prestige cues and satisfying winding.",
       "The tier mixing keeps watch pacing predictable for marketing stories and QA checks.",
+      "Chronograph tags anchor the lane copy to timing and show off the boosted cash story.",
     ],
     image: {
       url: "/catalog/placeholders/mid-tier.svg",
@@ -1193,6 +1197,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     facts: [
       "Luxury tier: steep cash gate with a pronounced enjoyment delta to justify prestige messaging.",
       "Tourbillon focus emphasizes reserve-rich interactions and exclusive discovery cadence.",
+      "Tourbillon and luxury tags keep the catalog lane rooted in the VIP narrative.",
     ],
     image: {
       url: "/catalog/placeholders/lux-tier.svg",
@@ -1213,6 +1218,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     facts: [
       "Luxury pacing keeps the tier rare, so each discovery unlocks record-high bonuses.",
       "Enjoyment/cash delta is tuned to leave room for Atelier resets and prestige stacking.",
+      "Celestial and tourbillon tags reinforce the luxe lane copy while supporting filter copy.",
     ],
     image: {
       url: "/catalog/placeholders/lux-tier.svg",
