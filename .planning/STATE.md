@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-05)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** v4.1 planning (watch interaction + catalog polish follow-up)
+**Current focus:** v4.1 planning (Phase 49 mobile + UX polish ready for execution)
 
 ## Current Position
 
-Phase: 48 of 6 (next milestone planning)
-Plan: 48-11 (UNLOCK-02 next unlock reveal) — Completed
-Status: Phase 48 complete (11/11 plans complete)
-Last activity: 2026-02-06 — Completed 48-11 (UNLOCK-02 next unlock reveal)
-Progress: Phase 48 complete (11/11 plans complete)
-Next Phase: Phase 48 (v4.1 planning)
+Phase: 49 of 6 (mobile & UX polish execution)
+Plan: 49-02 (tab readiness badges + shortcuts) — Planned
+Status: Phase 49 in progress (1/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-01 (TAB-01 grouped tab rail)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (1/10 executed)
+Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
 
@@ -77,9 +77,11 @@ Next Phase: Phase 48 (v4.1 planning)
 | 48 | Wrap the crown in a tier-aware glow shell so reduced-motion users still see resolved states | Keeps glow styling separate from the crown markup and preserves accessibility overrides
 | 48 | Surface the next-unlock effect summary via selector math in the featured preview row | Prevents the UI from drifting from authoritative requirement values while still highlighting the effect.
 | 48 | Keep the catalog lanes wrapped in the `catalog-grid` anchor before splitting into lanes | Preserves regression selectors while allowing visual lane groupings for Starter/Mid/Lux tiers.
+| 49 | Keep tab metadata inside `tabMeta.ts` so bucket/group data can evolve without renaming stable IDs. | Lets buckets be surfaced without touching legacy selectors or anchor names. | ✓ Good |
+| 49 | PageTabRail owns the tablist DOM so App can keep ref/focus wiring concentrated on state transitions. | Future mobile polish can reuse the component while preserving accessible semantics. | ✓ Good |
 
 ## Session Continuity
 
-Last session: 2026-02-06T04:15:45Z
-Stopped at: Completed Phase 48-11 (UNLOCK-02 next unlock reveal)
+Last session: 2026-02-06T04:59:25Z
+Stopped at: Completed Phase 49-01 (TAB-01 grouped tab rail)
 Resume file: None
