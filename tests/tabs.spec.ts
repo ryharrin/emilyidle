@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createInitialState } from "../src/game/state";
+import { openCatalogFilters } from "./helpers/catalogFilters";
 
 test("tabs respect hidden preferences", async ({ page }) => {
   const seededState = {
@@ -110,6 +111,7 @@ test("tabs surface readiness badges and honor numeric shortcuts", async ({ page 
   await expect(collectionTab).toHaveAttribute("aria-selected", "true");
 
   await catalogTab.click();
+  await openCatalogFilters(page);
   const searchInput = page.getByTestId("catalog-search");
   await expect(searchInput).toBeVisible();
   await searchInput.focus();

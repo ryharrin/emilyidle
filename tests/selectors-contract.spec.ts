@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createInitialState } from "../src/game/state";
+import { openCatalogFilters } from "./helpers/catalogFilters";
 
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
@@ -53,6 +54,7 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();
 
   await page.getByRole("tab", { name: "Catalog" }).click();
+  await openCatalogFilters(page);
   await expect(page.getByTestId("catalog-grid")).toBeVisible();
   await expect(page.getByTestId("catalog-card").first()).toBeVisible();
   await expect(page.getByTestId("catalog-shop")).toHaveCount(1);

@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { openCatalogFilters } from "./helpers/catalogFilters";
+
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
 test.describe("catalog disabled explanations", () => {
@@ -54,6 +56,7 @@ test.describe("catalog disabled explanations", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    await openCatalogFilters(page);
     await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
 
     const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);

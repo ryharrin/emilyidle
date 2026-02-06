@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { openCatalogFilters } from "./helpers/catalogFilters";
 
 const selectors = {
   currency: "#currency",
@@ -129,6 +130,7 @@ test.describe("collection loop", () => {
   test("buy button disabled when unaffordable", async ({ page }) => {
     await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    await openCatalogFilters(page);
     const catalogFilters = page.getByTestId("catalog-filters");
     await catalogFilters.getByTestId("catalog-search").fill("126713GRNR");
     const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);
@@ -188,6 +190,7 @@ test.describe("collection loop", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    await openCatalogFilters(page);
     await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
 
     const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);
@@ -344,6 +347,7 @@ test.describe("collection loop", () => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    await openCatalogFilters(page);
     const catalogFilters = page.getByTestId("catalog-filters");
     const catalogCards = page.getByTestId("catalog-grid").getByTestId("catalog-card");
     const resultsCount = page.getByTestId("catalog-results-count");
@@ -420,6 +424,7 @@ test.describe("collection loop", () => {
     await page.goto("/emilyidle/");
     await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    await openCatalogFilters(page);
 
     await page.getByTestId("catalog-search").fill("126713GRNR");
 
@@ -716,6 +721,7 @@ test.describe("collection loop", () => {
 
     await page.goto("/");
     await page.getByRole("tab", { name: "Catalog" }).click();
+    await openCatalogFilters(page);
     await page
       .getByTestId("catalog-owned-tabs")
       .getByRole("tab", { name: /^Owned$/ })
@@ -784,6 +790,7 @@ test.describe("collection loop", () => {
 
     await page.goto("/");
     await page.getByRole("tab", { name: "Catalog" }).click();
+    await openCatalogFilters(page);
     await page
       .getByTestId("catalog-owned-tabs")
       .getByRole("tab", { name: /^Owned$/ })

@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { openCatalogFilters } from "./helpers/catalogFilters";
+
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
 test("nostalgia unlocks flow", async ({ page }) => {
@@ -100,6 +102,7 @@ test("nostalgia unlocks flow", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Catalog" }).click();
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+  await openCatalogFilters(page);
   await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
   const classicBuyButton = page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`);
   await classicBuyButton.scrollIntoViewIfNeeded();
@@ -117,6 +120,7 @@ test("nostalgia unlocks flow", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Catalog" }).click();
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+  await openCatalogFilters(page);
   await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
   const classicBuyAfterReload = page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`);
   await classicBuyAfterReload.scrollIntoViewIfNeeded();
