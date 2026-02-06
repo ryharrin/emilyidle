@@ -1,0 +1,94 @@
+.page-tab-rail {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.page-tab-rail__scroll {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page-tab-rail__tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  color: #f5f5f6;
+  border-radius: 999px;
+  border: 1px solid #343946;
+  padding: 12px 14px;
+  padding-top: 16px;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(27, 30, 38, 0.6);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  min-width: 110px;
+  min-height: 52px;
+}
+
+.page-tab-rail__tab[data-bucket-start="true"]::before {
+  content: attr(data-bucket-label);
+  font-size: 0.58rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(245, 245, 246, 0.6);
+}
+
+[data-theme="light"] .page-tab-rail__tab[data-bucket-start="true"]::before {
+  color: rgba(42, 47, 59, 0.65);
+}
+
+.page-tab-rail__tab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  border-color: #4d5361;
+}
+
+.page-tab-rail__tab:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.page-tab-rail__tab[aria-selected="true"] {
+  background: rgba(232, 198, 147, 0.14);
+  border-color: rgba(232, 198, 147, 0.55);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .page-tab-rail__scroll {
+  gap: 10px;
+}
+
+[data-theme="light"] .page-tab-rail__tab {
+  color: #2a2f3b;
+  border-color: #d7cfc5;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .page-tab-rail__tab:hover {
+  box-shadow: 0 6px 16px rgba(90, 82, 70, 0.18);
+  border-color: #c3b7a8;
+}
+
+[data-theme="light"] .page-tab-rail__tab[aria-selected="true"] {
+  background: rgba(164, 128, 86, 0.12);
+  border-color: rgba(164, 128, 86, 0.45);
+  box-shadow:
+    0 12px 20px rgba(96, 80, 64, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
