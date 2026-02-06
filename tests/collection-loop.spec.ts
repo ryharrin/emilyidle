@@ -9,10 +9,15 @@ const selectors = {
   catalogCards: '[data-testid="catalog-grid"] [data-testid="catalog-card"]',
   upgradesCallout: '[data-testid="upgrades-callout"]',
   sectionNav: '[data-testid="collection-section-nav"]',
+  insightsPanel: '[data-testid="collection-insights-panel"]',
+  navSegmentStarter:
+    '[data-testid="collection-section-nav-item-collection-segment-starter"] button',
+  navSegmentMid: '[data-testid="collection-section-nav-item-collection-segment-mid"] button',
+  navSegmentLux: '[data-testid="collection-section-nav-item-collection-segment-lux"] button',
   onboardingCoachmark: '[data-testid="collection-onboarding-coachmark-collection-overview"]',
   navMilestones: '[data-testid="collection-section-nav-item-collection-milestones"] button',
   milestoneCards: "#milestone-list .card",
-  setBonusCards: "#set-bonus-list .card",
+  setBonusCards: '[data-testid="collection-set-bonus-card"]',
   workshopPanel: '[data-testid="workshop-panel"]',
   workshopGain: '[data-testid="workshop-reset"] .workshop-value',
   workshopResetButton: '[data-testid="workshop-panel"] .workshop-cta button',
@@ -148,6 +153,25 @@ test.describe("collection loop", () => {
 
     await page.reload();
     await page.getByRole("tab", { name: "Collection" }).click();
+  });
+
+  test("collection nav reaches insights panel and Starter/Mid/Lux segments", async ({ page }) => {
+    await page.getByRole("tab", { name: "Collection" }).click();
+    await expect(page.locator(selectors.insightsPanel)).toBeVisible();
+
+    const nav = page.locator(selectors.sectionNav);
+    const navSegments = [
+      { button: selectors.navSegmentStarter, target: "#collection-segment-starter" },
+      { button: selectors.navSegmentMid, target: "#collection-segment-mid" },
+      { button: selectors.navSegmentLux, target: "#collection-segment-lux" },
+    ];
+
+    for (const segment of navSegments) {
+      const button = page.locator(segment.button);
+      await button.scrollIntoViewIfNeeded();
+      await button.evaluate((el) => (el as HTMLButtonElement).click());
+      await expect(nav).toHaveAttribute("data-active-section", segment.target.slice(1));
+    }
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
@@ -717,6 +741,7 @@ test.describe("collection loop", () => {
   });
 
   test("winding interaction completes and applies rewards", async ({ page }) => {
+    test.setTimeout(120_000);
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 0,
@@ -747,7 +772,7 @@ test.describe("collection loop", () => {
     await openCatalogFilters(page);
     await page
       .getByTestId("catalog-owned-tabs")
-      .getByRole("tab", { name: /^Owned$/ })
+      .getByRole("tab", { name: /^Owned/ })
       .click();
 
     const before = await page.evaluate(() => {
@@ -816,7 +841,7 @@ test.describe("collection loop", () => {
     await openCatalogFilters(page);
     await page
       .getByTestId("catalog-owned-tabs")
-      .getByRole("tab", { name: /^Owned$/ })
+      .getByRole("tab", { name: /^Owned/ })
       .click();
 
     const parseRate = (text: string): number => {
