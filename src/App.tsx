@@ -18,6 +18,7 @@ import { PrestigeOnboardingModal } from "./ui/components/PrestigeOnboardingModal
 import { AutomaticMiniGameModal } from "./ui/components/AutomaticMiniGameModal";
 import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
+import { StatsHeader } from "./ui/components/StatsHeader";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
 import { resolveLandingTab, resolveTabAlias } from "./ui/navigation/landing";
 import { PageTabRail } from "./ui/navigation/PageTabRail";
@@ -743,6 +744,12 @@ export default function App() {
     () => getEventIncomeMultiplier(state, nowMs),
     [state, nowMs],
   );
+  const systemStats = {
+    atelierResets: state.workshopPrestigeCount,
+    maisonHeritage: state.maisonHeritage,
+    maisonReputation: state.maisonReputation,
+    eventMultiplier: currentEventMultiplier,
+  };
   const tabReadiness = useMemo(() => getTabReadiness(state, nowMs), [state, nowMs]);
   const catalogBrands = useMemo(() => {
     return ["All", ...new Set(catalogEntries.map((entry) => entry.brand))];
@@ -1241,43 +1248,7 @@ export default function App() {
                 </button>
               </nav>
             </div>
-            <section className="stats" aria-labelledby="vault-stats-title">
-              <h2 id="vault-stats-title" className="visually-hidden">
-                Collection stats
-              </h2>
-              <dl className="stats-grid">
-                <div>
-                  <dt className="inline-icon-button">
-                    Collection enjoyment
-                    <ExplainButton
-                      sectionId={HELP_SECTION_IDS.currencies}
-                      label="Explain currencies"
-                    />
-                  </dt>
-                  <dd id="enjoyment">{stats.enjoyment}</dd>
-                </div>
-                <div>
-                  <dt>Enjoyment / sec</dt>
-                  <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
-                </div>
-                <div>
-                  <dt>Dollars</dt>
-                  <dd id="currency">{stats.cash}</dd>
-                </div>
-                <div>
-                  <dt>Dollars / sec</dt>
-                  <dd id="income">{stats.cashRate}</dd>
-                </div>
-                <div>
-                  <dt>Memories</dt>
-                  <dd id="collection-value">{stats.sentimentalValue}</dd>
-                </div>
-                <div>
-                  <dt>Softcap</dt>
-                  <dd id="softcap">{stats.softcap}</dd>
-                </div>
-              </dl>
-            </section>
+            <StatsHeader stats={stats} systemStats={systemStats} />
           </header>
 
           <CollectionTab
