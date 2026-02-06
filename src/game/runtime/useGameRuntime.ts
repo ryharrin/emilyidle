@@ -8,6 +8,8 @@ import type { GameState } from "../state";
 
 const MAX_FRAME_DELTA_MS = 250;
 const AUTO_SAVE_INTERVAL_MS = 2_000;
+const OFFLINE_MAX_APPLY_MS = 8 * 60 * 60 * 1_000;
+const OFFLINE_STEP_CHUNK_MS = 1_000;
 type UseGameRuntimeArgs = {
   initialState: () => GameState;
   step: (state: GameState, dtMs: number, nowMs?: number) => GameState;
@@ -19,6 +21,7 @@ type UseGameRuntimeArgs = {
     speedMultiplier: number;
   };
   onPersistError?: (message: string) => void;
+  onOfflineProgress?: (info: OfflineProgressInfo) => void;
 };
 
 type UseGameRuntimeResult = {
@@ -29,6 +32,43 @@ type UseGameRuntimeResult = {
   persistNow: (reason: string, snapshot?: GameState) => SavePersistResult;
   markSaveDirty: () => void;
   resetSimulationClock: () => void;
+};
+
+export type OfflineProgressInfo = {
+  elapsedMs: number;
+  appliedMs: number;
+  gainedCurrencyCents: number;
+  gainedEnjoymentCents: number;
+};
+
+type OfflineSimulationResult = {
+  state: GameState;
+  appliedMs: number;
+};
+
+const simulateOfflineProgress = (
+  state: GameState,
+  elapsedMs: number,
+  step: (state: GameState, dtMs: number, nowMs?: number) => GameState,
+  lastSimulatedAtMs: number,
+): OfflineSimulationResult => {
+  const toApplyMs = Math.max(0, Math.min(OFFLINE_MAX_APPLY_MS, elapsedMs));
+  if (toApplyMs === 0) {
+    return { state, appliedMs: 0 };
+  }
+
+  let nextState = state;
+  let remainingMs = toApplyMs;
+  let currentTimeMs = lastSimulatedAtMs;
+
+  while (remainingMs > 0) {
+    const chunk = Math.min(remainingMs, OFFLINE_STEP_CHUNK_MS);
+    currentTimeMs += chunk;
+    nextState = step(nextState, chunk, currentTimeMs);
+    remainingMs -= chunk;
+  }
+
+  return { state: nextState, appliedMs: toApplyMs };
 };
 
 const resolveStateUpdate = (update: SetStateAction<GameState>, current: GameState): GameState => {
@@ -47,6 +87,7 @@ export const useGameRuntime = ({
   persistSave,
   devSettings,
   onPersistError,
+  onOfflineProgress,
 }: UseGameRuntimeArgs): UseGameRuntimeResult => {
   const [state, setStateBase] = useState<GameState>(() => initialState());
   const [lastSimulatedAtMs, setLastSimulatedAtMs] = useState(() => Date.now());
@@ -96,10 +137,47 @@ export const useGameRuntime = ({
   useEffect(() => {
     const loadResult = loadSave();
     if (loadResult.ok) {
+      const nowMs = Date.now();
+      const elapsedMs = Math.max(0, nowMs - loadResult.save.lastSimulatedAtMs);
+      const offlineResult = simulateOfflineProgress(
+        loadResult.save.state,
+        elapsedMs,
+        step,
+        loadResult.save.lastSimulatedAtMs,
+      );
+
+      if (offlineResult.appliedMs > 0) {
+        setState(offlineResult.state);
+        setLastSimulatedAtMs(nowMs);
+        persistNow("offline-apply", offlineResult.state);
+        console.info(
+          `Loaded save v${loadResult.save.version} from ${loadResult.save.savedAt} (last simulated at ${new Date(
+            loadResult.save.lastSimulatedAtMs,
+          ).toISOString()}); applied ${offlineResult.appliedMs}ms of offline progress (elapsed ${elapsedMs}ms).`,
+        );
+
+        if (onOfflineProgress) {
+          const gainedCurrencyCents =
+            offlineResult.state.currencyCents - loadResult.save.state.currencyCents;
+          const gainedEnjoymentCents =
+            offlineResult.state.enjoymentCents - loadResult.save.state.enjoymentCents;
+          onOfflineProgress({
+            elapsedMs,
+            appliedMs: offlineResult.appliedMs,
+            gainedCurrencyCents,
+            gainedEnjoymentCents,
+          });
+        }
+
+        return;
+      }
+
       setState(loadResult.save.state);
       setLastSimulatedAtMs(loadResult.save.lastSimulatedAtMs);
       console.info(
-        `Loaded save v${loadResult.save.version} from ${loadResult.save.savedAt} (last simulated at ${new Date(loadResult.save.lastSimulatedAtMs).toISOString()})`,
+        `Loaded save v${loadResult.save.version} from ${loadResult.save.savedAt} (last simulated at ${new Date(
+          loadResult.save.lastSimulatedAtMs,
+        ).toISOString()})`,
       );
       return;
     }
@@ -114,7 +192,7 @@ export const useGameRuntime = ({
     if (!clearResult.ok) {
       console.warn(`Failed to clear invalid save. ${clearResult.error}`);
     }
-  }, [clearSave, loadSave, setState]);
+  }, [clearSave, loadSave, persistNow, setState, step, onOfflineProgress]);
 
   useEffect(() => {
     if (typeof document === "undefined" || typeof window === "undefined") {

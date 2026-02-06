@@ -28,6 +28,7 @@ import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
 
 import {
+  formatDurationFromMs,
   formatMoneyFromCents,
   formatRateFromCentsPerSec,
   formatSoftcapEfficiency,
@@ -40,7 +41,7 @@ import {
   persistSaveToLocalStorage,
 } from "./game/persistence";
 import { isTestEnvironment } from "./game/runtime/isTestEnvironment";
-import { useGameRuntime } from "./game/runtime/useGameRuntime";
+import { useGameRuntime, type OfflineProgressInfo } from "./game/runtime/useGameRuntime";
 import {
   INTERACTION_BASE_COOLDOWN_MS,
   applyAutomaticReward,
@@ -327,23 +328,6 @@ export default function App() {
   );
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const toastTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-  const { state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
-    initialState: createInitialState,
-    step,
-    loadSave: loadSaveFromLocalStorage,
-    clearSave: clearLocalStorageSave,
-    persistSave: persistSaveToLocalStorage,
-    devSettings,
-    onPersistError: (message) => setSaveStatus(message),
-  });
-  const lastNostalgiaToastRef = useRef(state.nostalgiaLastGain);
-
-  const persistSettings = (nextSettings: Settings) => {
-    setSettings(nextSettings);
-    setCoachmarksDismissed(nextSettings.coachmarksDismissed);
-    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
-  };
-
   const pushToast = useCallback((toast: ToastMessage) => {
     setToasts((current) => {
       const next = current.filter((item) => item.id !== toast.id);
@@ -363,6 +347,48 @@ export default function App() {
 
     toastTimers.current.set(toast.id, timer);
   }, []);
+
+  const handleOfflineProgress = useCallback(
+    (info: OfflineProgressInfo) => {
+      if (info.appliedMs <= 0) {
+        return;
+      }
+
+      const elapsedLabel = formatDurationFromMs(info.elapsedMs);
+      const appliedLabel = formatDurationFromMs(info.appliedMs);
+      const currencyLabel = `${info.gainedCurrencyCents >= 0 ? "+" : ""}${formatMoneyFromCents(
+        info.gainedCurrencyCents,
+      )}`;
+      const enjoymentSign = info.gainedEnjoymentCents >= 0 ? "+" : "";
+      const enjoymentLabel = `${enjoymentSign}${Math.round(info.gainedEnjoymentCents).toLocaleString()} enjoyment`;
+
+      pushToast({
+        id: `offline-${Date.now()}`,
+        title: "Offline progress",
+        message: `Away for ${elapsedLabel} (applied ${appliedLabel}).`,
+        detail: `${currencyLabel} cash · ${enjoymentLabel}`,
+      });
+    },
+    [pushToast],
+  );
+
+  const { state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
+    initialState: createInitialState,
+    step,
+    loadSave: loadSaveFromLocalStorage,
+    clearSave: clearLocalStorageSave,
+    persistSave: persistSaveToLocalStorage,
+    devSettings,
+    onPersistError: (message) => setSaveStatus(message),
+    onOfflineProgress: handleOfflineProgress,
+  });
+  const lastNostalgiaToastRef = useRef(state.nostalgiaLastGain);
+
+  const persistSettings = (nextSettings: Settings) => {
+    setSettings(nextSettings);
+    setCoachmarksDismissed(nextSettings.coachmarksDismissed);
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
+  };
 
   const handleDismissToast = useCallback((toastId: string) => {
     setToasts((current) => current.filter((toast) => toast.id !== toastId));
