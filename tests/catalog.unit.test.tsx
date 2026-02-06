@@ -1276,7 +1276,7 @@ describe("catalog tier badges", () => {
 
   it("renders tier badges with proper tooltip text", async () => {
     const catalogGrid = await waitFor(() => screen.getByTestId("catalog-grid"));
-    const badge = catalogGrid.querySelector(".tier-badge");
+    const badge = catalogGrid.querySelector(".catalog-card .tier-badge");
     expect(badge).toBeTruthy();
     const category = badge?.getAttribute("data-tier-badge") as TierBadgeCategory | null;
     expect(category).toBeTruthy();
@@ -1413,13 +1413,13 @@ describe("quartz minigame", () => {
     cleanup();
   });
 
-  it("opens the quartz modal and applies an enjoyment reward", async () => {
+  it("opens the quartz modal and applies a cash reward", async () => {
     const user = userEvent.setup();
 
     const beforeRaw = localStorage.getItem("emily-idle:save");
     expect(beforeRaw).toBeTruthy();
     const before = beforeRaw
-      ? (JSON.parse(beforeRaw) as { state: { enjoymentCents: number } })
+      ? (JSON.parse(beforeRaw) as { state: { currencyCents: number } })
       : null;
     if (!before) {
       return;
@@ -1440,12 +1440,12 @@ describe("quartz minigame", () => {
 
     const afterRaw = localStorage.getItem("emily-idle:save");
     expect(afterRaw).toBeTruthy();
-    const after = afterRaw ? (JSON.parse(afterRaw) as { state: { enjoymentCents: number } }) : null;
+    const after = afterRaw ? (JSON.parse(afterRaw) as { state: { currencyCents: number } }) : null;
     if (!after) {
       return;
     }
 
-    expect(after.state.enjoymentCents).toBeGreaterThan(before.state.enjoymentCents);
+    expect(after.state.currencyCents).toBeGreaterThan(before.state.currencyCents);
   });
 });
 

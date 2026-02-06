@@ -1,40 +1,17 @@
 import { expect, test } from "@playwright/test";
+import { createInitialState } from "../src/game/state";
 
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
 test("selector contract anchors remain reachable", async ({ page }) => {
-  const seededState = {
-    currencyCents: 0,
-    enjoymentCents: 0,
-    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
-    upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-    unlockedMilestones: ["showcase"],
-    workshopBlueprints: 0,
-    workshopPrestigeCount: 0,
-    workshopUpgrades: {
-      "etched-ledgers": false,
-      "vault-calibration": false,
-      "heritage-templates": false,
-      "automation-blueprints": false,
-    },
-    maisonHeritage: 0,
-    maisonReputation: 0,
-    maisonUpgrades: {
-      "atelier-charter": false,
-      "heritage-loom": false,
-      "global-vitrine": false,
-    },
-    maisonLines: {
-      "atelier-line": false,
-      "heritage-line": false,
-      "complication-line": false,
-    },
-    achievementUnlocks: [],
-    eventStates: {
-      "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
-    },
-    discoveredCatalogEntries: [],
-    catalogTierUnlocks: [],
+  const seededState = createInitialState();
+  seededState.items = {
+    ...seededState.items,
+    starter: 1,
+  };
+  seededState.interactionNextAvailableAtMsByItem = {
+    ...seededState.interactionNextAvailableAtMsByItem,
+    starter: 0,
   };
 
   await page.addInitScript(
@@ -59,6 +36,7 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   );
 
   await page.goto("/");
+  await expect(page.getByTestId("tab-ready-collection")).toBeVisible();
 
   await expect(page.getByTestId("help-open")).toBeVisible();
   await page.getByTestId("help-open").click();

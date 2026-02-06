@@ -630,6 +630,14 @@ export function CatalogPurchasePanel({
     );
   };
 
+  const renderCatalogList = (showFacts: boolean) => (
+    <div className="catalog-grid" data-testid="catalog-grid">
+      {stableCatalogEntries.map((entry) => renderCatalogCard(entry, showFacts))}
+    </div>
+  );
+
+  const showLaneLayout = catalogSort === "default" || catalogSort === "tier";
+
   return (
     <>
       <header className="panel-header catalog-header">
@@ -827,8 +835,10 @@ export function CatalogPurchasePanel({
                 onCta={() => onNavigate("catalog", "catalog-shop")}
               />
             </div>
-          ) : (
+          ) : showLaneLayout ? (
             renderCatalogLanes(false)
+          ) : (
+            renderCatalogList(false)
           ))}
       </section>
       <section
@@ -856,8 +866,10 @@ export function CatalogPurchasePanel({
                   }
                 />
               </div>
-            ) : (
+            ) : showLaneLayout ? (
               renderCatalogLanes(true)
+            ) : (
+              renderCatalogList(true)
             )}
           </>
         )}

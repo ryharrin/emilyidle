@@ -102,5 +102,23 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
       await helpButton.focus();
       await expect(helpButton).toBeFocused();
     });
+
+    test("tab switch skeleton shows and tabs keep keyboard focus", async ({ page }) => {
+      const skeleton = page.getByTestId("tab-switch-skeleton");
+      const tabList = page.getByRole("tablist", { name: "Primary navigation" });
+      const collectionTab = tabList.getByRole("tab", { name: "Collection" });
+      const careerTab = tabList.getByRole("tab", { name: "Career" });
+      await expect(skeleton).toHaveAttribute("data-visible", "false");
+
+      await careerTab.click();
+      await expect(skeleton).toHaveAttribute("data-visible", "true");
+      await page.waitForTimeout(320);
+      await expect(skeleton).toHaveAttribute("data-visible", "false");
+
+      const helpButton = page.getByTestId("help-open");
+      await helpButton.focus();
+      await page.keyboard.press("Tab");
+      await expect(collectionTab).toBeFocused();
+    });
   });
 });

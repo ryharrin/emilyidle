@@ -567,6 +567,26 @@ export default function App() {
     setHelpOpen(true);
   };
 
+  const handleHelpKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== "Tab" || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (visibleTabs.length === 0) {
+      return;
+    }
+
+    const preferredTabId = visibleTabs.find((tab) => tab.id === "collection")?.id;
+    const nextTabId = preferredTabId ?? visibleTabs[0].id;
+    const nextTab = tabRefs.current.get(nextTabId);
+    if (nextTab) {
+      nextTab.focus();
+    }
+    setFocusedTab(nextTabId);
+  };
+
   const handleSelectHelpSection = (nextId: string) => {
     setHelpSectionId(nextId);
     persistHelpState({ lastSectionId: nextId });
@@ -1215,6 +1235,7 @@ export default function App() {
                   aria-label="Open help"
                   data-testid="help-open"
                   onClick={handleOpenHelp}
+                  onKeyDown={handleHelpKeyDown}
                 >
                   <HelpIcon size={18} />
                 </button>
