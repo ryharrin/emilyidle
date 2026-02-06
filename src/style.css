@@ -2057,6 +2057,32 @@ button[data-testid="help-close"] {
   margin-top: 0;
 }
 
+.help-modal-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.help-related-chip {
+  border-radius: 999px;
+  border: 1px solid #3f4b61;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5f7ff;
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  transition: background 0.2s ease;
+}
+
+.help-related-chip:focus-visible {
+  outline: 2px solid #79b7ff;
+  outline-offset: 2px;
+}
+
+.help-related-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .help-modal-body ul {
   margin: 10px 0 0;
   padding-left: 18px;

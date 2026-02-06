@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import type { HelpSection } from "./helpContent";
+import { searchHelpSections } from "./helpSearch";
 
 export const HELP_STORAGE_KEY = "emily-idle:help";
 
@@ -95,16 +96,19 @@ export function HelpModal({
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
 
-  const filteredSections = useMemo(() => {
-    if (!normalizedSearchTerm) {
-      return sections;
-    }
+  const filteredSections = useMemo(
+    () => searchHelpSections(sections, searchTerm),
+    [searchTerm, sections],
+  );
 
-    return sections.filter((section) => {
-      const haystack = `${section.title} ${section.body.join(" ")}`.toLowerCase();
-      return haystack.includes(normalizedSearchTerm);
-    });
-  }, [normalizedSearchTerm, sections]);
+  const relatedSections = useMemo(() => {
+    if (!activeSection?.relatedSectionIds?.length) {
+      return [] as HelpSection[];
+    }
+    return activeSection.relatedSectionIds
+      .map((id) => sections.find((section) => section.id === id))
+      .filter((section): section is HelpSection => Boolean(section));
+  }, [activeSection, sections]);
 
   useEffect(() => {
     if (!open) {
@@ -139,6 +143,15 @@ export function HelpModal({
     setHighlightedIndex(index);
     onSelectSectionId(section.id);
     focusSectionButton(index);
+  };
+
+  const navigateToSectionById = (id: string) => {
+    const existingIndex = filteredSections.findIndex((section) => section.id === id);
+    if (existingIndex >= 0) {
+      selectSection(existingIndex);
+      return;
+    }
+    onSelectSectionId(id);
   };
 
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -376,6 +389,21 @@ export function HelpModal({
           </ul>
         )}
         <div className="help-modal-content">
+          {relatedSections.length > 0 && (
+            <div className="help-modal-related" data-testid="help-related-chips">
+              {relatedSections.map((section) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  className="help-related-chip"
+                  data-testid={`help-related-chip-${section.id}`}
+                  onClick={() => navigateToSectionById(section.id)}
+                >
+                  {section.title}
+                </button>
+              ))}
+            </div>
+          )}
           {activeSection ? (
             <div className="help-modal-body">
               <h3 data-testid="help-active-section">{activeSection.title}</h3>
