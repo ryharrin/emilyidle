@@ -14,6 +14,10 @@ import { getCatalogCollectionContext } from "../catalog/collectionContext";
 import { getCatalogUpgradeContext } from "../catalog/upgradeContext";
 import { PerWatchStatsTable } from "../components/PerWatchStatsTable";
 import { TierBadge } from "../components/TierBadge";
+import {
+  WatchComparePanel,
+  type CompareSlotPayload,
+} from "../components/catalog/WatchComparePanel";
 import type { TierBadgeCategory } from "../../game/tierBadges";
 import { PowerReserveHint } from "../components/PowerReserveHint";
 
@@ -45,6 +49,7 @@ import {
   isItemUnlocked,
   setWornWatchId,
   type GameState,
+  type WatchModelPurchaseGate,
   type WatchItemId,
 } from "../../game/state";
 
@@ -89,6 +94,65 @@ type CatalogTabProps = {
   onInteract?: (itemId: WatchItemId) => void;
   atelierUnlocked?: boolean;
 };
+
+type CatalogFilterOptions = {
+  brand: string;
+  style: CatalogTabProps["catalogStyle"];
+  era: CatalogTabProps["catalogEra"];
+  type: CatalogTabProps["catalogType"];
+  query: string;
+};
+
+function matchesCatalogFilters(entry: CatalogEntry, options: CatalogFilterOptions): boolean {
+  const entryTags = getCatalogEntryTags(entry);
+  const matchesBrand = options.brand === "All" || entry.brand === options.brand;
+  const matchesStyle = options.style === "all" || entryTags.includes("womens");
+  const year = entry.year === "Unknown" ? null : Number(entry.year);
+  const matchesEra = (() => {
+    switch (options.era) {
+      case "all":
+        return true;
+      case "unknown":
+        return year === null;
+      case "pre-1970":
+        return year !== null && year < 1970;
+      case "1970-1999":
+        return year !== null && year >= 1970 && year <= 1999;
+      default:
+        return year !== null && year >= 2000;
+    }
+  })();
+  const matchesType =
+    options.type === "all" || entryTags.some((tag) => tag.toLowerCase() === options.type);
+  const tags = entryTags.join(" ");
+  const matchesQuery =
+    options.query.length === 0 ||
+    `${entry.brand} ${entry.model} ${entry.description} ${entry.year} ${tags}`
+      .toLowerCase()
+      .includes(options.query);
+  return matchesBrand && matchesStyle && matchesEra && matchesType && matchesQuery;
+}
+
+function describeGateStatus(gate: WatchModelPurchaseGate): string {
+  if (gate.ok) {
+    return "Ready to buy";
+  }
+  const reasons: string[] = [];
+  if (gate.cashDeficitCents && gate.cashDeficitCents > 0) {
+    reasons.push(`Need ${formatMoneyFromCents(gate.cashDeficitCents)} cash`);
+  }
+  if (gate.enjoymentDeficitCents && gate.enjoymentDeficitCents > 0) {
+    reasons.push(`Need ${formatMoneyFromCents(gate.enjoymentDeficitCents)} enjoyment`);
+  }
+  return reasons.length > 0 ? reasons.join(" + ") : "Awaiting resources";
+}
+
+function formatMovementLabel(movement?: string): string {
+  if (!movement) {
+    return "Movement unavailable";
+  }
+  return `${movement.charAt(0).toUpperCase()}${movement.slice(1)} movement`;
+}
 
 type CatalogLaneId = "low" | "mid" | "lux";
 
@@ -187,6 +251,8 @@ export function CatalogPurchasePanel({
     () => new Map(watchModels.map((model) => [model.id, model])),
     [watchModels],
   );
+  const [compareSlots, setCompareSlots] = React.useState<string[]>([]);
+  const comparedEntries = React.useMemo(() => new Set(compareSlots), [compareSlots]);
   const modelOwnedByTier = new Map<WatchItemId, number>();
   const firstModelByTier = new Map<WatchItemId, string>();
 
@@ -312,6 +378,30 @@ export function CatalogPurchasePanel({
     }));
   }, []);
 
+  const handleCompareToggle = React.useCallback((entryId: string) => {
+    setCompareSlots((prev) => {
+      if (prev.includes(entryId)) {
+        return prev.filter((id) => id !== entryId);
+      }
+      if (prev.length < 2) {
+        return [...prev, entryId];
+      }
+      return [prev[1], entryId];
+    });
+  }, []);
+
+  const handleClearCompareSlot = React.useCallback((index: number) => {
+    setCompareSlots((prev) => prev.filter((_, slotIndex) => slotIndex !== index));
+  }, []);
+
+  const handleClearAllCompare = React.useCallback(() => {
+    setCompareSlots([]);
+  }, []);
+
+  const handleSwapCompareOrder = React.useCallback(() => {
+    setCompareSlots((prev) => (prev.length === 2 ? [prev[1], prev[0]] : prev));
+  }, []);
+
   const triggerPurchaseHighlight = React.useCallback((entryId: string) => {
     setPurchaseHighlights((prev) => ({
       ...prev,
@@ -354,6 +444,107 @@ export function CatalogPurchasePanel({
     },
     [onPurchase, state, triggerPurchaseHighlight],
   );
+
+  const catalogFilterOptions = React.useMemo(
+    () => ({
+      brand: catalogBrand,
+      style: catalogStyle,
+      era: catalogEra,
+      type: catalogType,
+      query: catalogSearch.trim().toLowerCase(),
+    }),
+    [catalogBrand, catalogEra, catalogSearch, catalogStyle, catalogType],
+  );
+
+  const visibleUnownedEntries = React.useMemo(
+    () =>
+      catalogEntries.filter(
+        (entry) =>
+          matchesCatalogFilters(entry, catalogFilterOptions) &&
+          getWatchModelOwnedCount(state, entry.id) === 0,
+      ),
+    [catalogEntries, catalogFilterOptions, state],
+  );
+
+  const visibleOwnedEntries = React.useMemo(
+    () =>
+      catalogEntries.filter(
+        (entry) =>
+          matchesCatalogFilters(entry, catalogFilterOptions) &&
+          getWatchModelOwnedCount(state, entry.id) > 0,
+      ),
+    [catalogEntries, catalogFilterOptions, state],
+  );
+
+  const effectiveNowMs = React.useMemo(
+    () => (typeof nowMs === "number" ? nowMs : Date.now()),
+    [nowMs],
+  );
+
+  const hasQuickActionForOwnedEntry = React.useCallback(
+    (entryId: string) => {
+      const tierId = getWatchModelTierId(entryId);
+      const ownedCount = getWatchModelOwnedCount(state, entryId);
+      if (ownedCount <= 0) {
+        return false;
+      }
+      const movementGate = getInteractionMovementGate(tierId);
+      if (!movementGate.available) {
+        return false;
+      }
+      const cooldownRemaining = getInteractionCooldownRemainingMs(state, tierId, effectiveNowMs);
+      const hasInteract = cooldownRemaining <= 0;
+      const hasDismantle =
+        atelierUnlocked && (craftingPartsPerWatch[tierId] ?? 0) > 0 && ownedCount > 1;
+      return hasInteract || hasDismantle;
+    },
+    [atelierUnlocked, craftingPartsPerWatch, effectiveNowMs, state],
+  );
+
+  const unownedReady = React.useMemo(
+    () => visibleUnownedEntries.some((entry) => getWatchModelPurchaseGate(state, entry.id).ok),
+    [state, visibleUnownedEntries],
+  );
+
+  const ownedReady = React.useMemo(
+    () => visibleOwnedEntries.some((entry) => hasQuickActionForOwnedEntry(entry.id)),
+    [hasQuickActionForOwnedEntry, visibleOwnedEntries],
+  );
+
+  const compareSlotPayloads = React.useMemo<
+    [CompareSlotPayload | null, CompareSlotPayload | null]
+  >(() => {
+    const normalizedSlots: [string | null, string | null] = [
+      compareSlots[0] ?? null,
+      compareSlots[1] ?? null,
+    ];
+    const buildPayload = (entryId: string | null): CompareSlotPayload | null => {
+      if (!entryId) {
+        return null;
+      }
+      const entry = catalogEntryById.get(entryId);
+      if (!entry) {
+        return null;
+      }
+      const watchModel = watchModelById.get(entryId);
+      const tierId = getWatchModelTierId(entryId);
+      const tierItem = watchItemById.get(tierId);
+      const gate = getWatchModelPurchaseGate(state, entryId);
+      const preview = previewStatsByEntry.get(entryId);
+      return {
+        entry,
+        movementLabel: formatMovementLabel(tierItem?.movement),
+        priceLabel: formatMoneyFromCents(gate.cashPriceCents),
+        gateDescription: describeGateStatus(gate),
+        tierBadge: getWatchModelTierBadge(entryId, watchModel?.tierBadge),
+        enjoymentLabel: preview?.enjoyment ?? "-",
+        cashLabel: preview?.cash ?? "-",
+        ready: gate.ok,
+      };
+    };
+
+    return [buildPayload(normalizedSlots[0]), buildPayload(normalizedSlots[1])];
+  }, [compareSlots, catalogEntryById, previewStatsByEntry, state, watchItemById, watchModelById]);
 
   const renderCatalogDetailsContent = (entry: CatalogEntry, tags: string[], showFacts: boolean) => {
     const sourceLabel = entry.image.sourceUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -451,6 +642,7 @@ export function CatalogPurchasePanel({
     const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
     const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
     const isHighlighted = purchaseHighlights[entry.id];
+    const isCompared = comparedEntries.has(entry.id);
     const isDetailsOpen = detailsSheetTarget?.entryId === entry.id;
 
     const movementGate = getInteractionMovementGate(tierId);
@@ -487,7 +679,7 @@ export function CatalogPurchasePanel({
           discovered ? "catalog-discovered" : "catalog-locked"
         } ${isHighlighted ? "purchase-flash" : ""} ${
           isActionable ? "catalog-actionable" : "catalog-nonactionable"
-        }`}
+        } ${isCompared ? "catalog-card-compared" : ""}`}
         data-testid="catalog-card"
       >
         {previewStats && (
@@ -606,6 +798,15 @@ export function CatalogPurchasePanel({
               buyLabel={buyLabel}
               onBuy={() => handlePurchase(entry.id)}
             />
+            <button
+              type="button"
+              className={`catalog-compare-toggle ${isCompared ? "catalog-compare-toggle-active" : ""}`}
+              data-testid={`catalog-compare-toggle-${entry.id}`}
+              aria-pressed={isCompared}
+              onClick={() => handleCompareToggle(entry.id)}
+            >
+              {isCompared ? "Selected" : "Compare"}
+            </button>
           </div>
           {(canWear || canShowInteract || hasCraftingParts) && (
             <div className="card-actions">
@@ -968,12 +1169,32 @@ export function CatalogPurchasePanel({
                   onClick={() => onCatalogTabChange(tab.id)}
                 >
                   {tab.label}
+                  {tab.id === "unowned" && unownedReady && (
+                    <span
+                      className="catalog-tab-ready-badge"
+                      data-testid="catalog-tab-ready-unowned"
+                    >
+                      Ready
+                    </span>
+                  )}
+                  {tab.id === "owned" && ownedReady && (
+                    <span className="catalog-tab-ready-badge" data-testid="catalog-tab-ready-owned">
+                      Quick action ready
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
           </div>
         </div>
       </form>
+
+      <WatchComparePanel
+        slots={compareSlotPayloads}
+        onClearSlot={handleClearCompareSlot}
+        onClearAll={handleClearAllCompare}
+        onSwap={handleSwapCompareOrder}
+      />
 
       <section className="panel per-watch-stats-panel" data-testid="per-watch-stats-section">
         <PerWatchStatsTable rows={perWatchRows} highlightModelId={state.wornWatchId ?? null} />
