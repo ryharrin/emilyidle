@@ -2,6 +2,8 @@ export type HelpSection = {
   id: string;
   title: string;
   body: string[];
+  keywords?: string[];
+  relatedSectionIds?: string[];
 };
 
 export const HELP_SECTION_IDS = {
@@ -63,6 +65,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Each catalog card shows owned count, price, and the next gate if locked.",
       "Buying a watch reveals its entry and contributes to catalog discovery bonuses.",
     ],
+    keywords: ["catalog-first", "collection guidance", "collection segments", "catalog focus"],
   },
   {
     id: HELP_SECTION_IDS.catalogShop,
@@ -75,6 +78,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       "If a card mentions enjoyment, you need more enjoyment before it unlocks.",
       "Owned counts update immediately after a purchase to confirm the buy.",
     ],
+    keywords: ["catalog", "shopping", "buy", "purchase", "shop"],
   },
   {
     id: HELP_SECTION_IDS.tierBadges,
@@ -85,6 +89,16 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Luxury badges mark tourbillons reserved for prestige goals and showcase rewards.",
       "Hover a badge to read the tooltip copy and match catalog cards, Collection summary, and help text.",
     ],
+    keywords: [
+      "tier",
+      "badge",
+      "tier badges",
+      "starter",
+      "mid-tier",
+      "luxury",
+      "collection segments",
+    ],
+    relatedSectionIds: [HELP_SECTION_IDS.catalogShop, HELP_SECTION_IDS.catalogFirst],
   },
   {
     id: HELP_SECTION_IDS.careerStart,
