@@ -22,20 +22,20 @@ This phase is design + planning only. It does **not** ship gameplay logic change
 
 Hands-on browser walkthrough with desktop + mobile captures:
 
-- `output/playwright/ux-review-20260206/fresh-collection-desktop.png`
-- `output/playwright/ux-review-20260206/fresh-catalog-desktop.png`
-- `output/playwright/ux-review-20260206/advanced-catalog-tiers-desktop.png`
-- `output/playwright/ux-review-20260206/advanced-catalog-compare-desktop.png`
-- `output/playwright/ux-review-20260206/advanced-catalog-details-sheet-desktop.png`
-- `output/playwright/ux-review-20260206/advanced-career-desktop.png`
-- `output/playwright/ux-review-20260206/advanced-stats-desktop.png`
-- `output/playwright/ux-review-20260206/mobile-collection-iphone12.png`
-- `output/playwright/ux-review-20260206/mobile-catalog-iphone12.png`
-- `output/playwright/ux-review-20260206/mobile-catalog-filters-open-iphone12.png`
-- `output/playwright/ux-review-20260206/mobile-help-modal-iphone12.png`
-- `output/playwright/ux-review-20260206/mobile-settings-iphone12.png`
+- `.planning/uat-artifacts/52/raw/fresh-collection-desktop.jpg`
+- `.planning/uat-artifacts/52/raw/fresh-catalog-desktop.jpg`
+- `.planning/uat-artifacts/52/raw/advanced-catalog-tiers-desktop.jpg`
+- `.planning/uat-artifacts/52/raw/advanced-catalog-compare-desktop.jpg`
+- `.planning/uat-artifacts/52/raw/advanced-catalog-details-sheet-desktop.jpg`
+- `.planning/uat-artifacts/52/raw/advanced-career-desktop.jpg`
+- `.planning/uat-artifacts/52/raw/advanced-stats-desktop.jpg`
+- `.planning/uat-artifacts/52/raw/mobile-collection-iphone12.jpg`
+- `.planning/uat-artifacts/52/raw/mobile-catalog-iphone12.jpg`
+- `.planning/uat-artifacts/52/raw/mobile-catalog-filters-open-iphone12.jpg`
+- `.planning/uat-artifacts/52/raw/mobile-help-modal-iphone12.jpg`
+- `.planning/uat-artifacts/52/raw/mobile-settings-iphone12.jpg`
 
-Supporting metrics from `output/playwright/ux-review-20260206/metrics.json`:
+Supporting metrics from `.planning/uat-artifacts/52/metrics-baseline.json`:
 
 - Fresh desktop catalog: `372` visible interactives, `82` below 44px.
 - Advanced desktop catalog tiers: `429` visible interactives, `81` below 44px.

@@ -20,10 +20,13 @@ Planning next milestone scope (post-v4.1), with v4.1 kept as the current gamepla
 ### Active planning package
 - Phase 52 UX redesign spec is prepared in `.planning/phases/52-ux-redesign-spec/`:
   - `52-CONTEXT.md`
+  - `52-RESEARCH.md`
   - `52-01-DESIGN.md`
   - `52-01-PLAN.md`
   - `52-02-PLAN.md`
   - `52-03-PLAN.md`
+  - `52-TASKLIST.md`
+- Evidence artifacts live in `.planning/uat-artifacts/52/` (`README.md`, `capture.mjs`, `raw/*.jpg`, metrics snapshots).
 
 ## Requirements
 ### Validated

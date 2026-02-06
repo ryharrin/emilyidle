@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-06)
 Phase: 52 of 7 (UX Redesign Spec)
 Plan: 52-01 (Hierarchy foundations) — Planned
 Status: v4.1 execution complete; Phase 52 design + rollout plans authored.
-Last activity: 2026-02-06 — Captured desktop/mobile UX evidence, authored `52-CONTEXT`, `52-01-DESIGN`, and rollout plans `52-01`..`52-03`.
+Last activity: 2026-02-06 — Finalized Phase 52 planning pack (`52-CONTEXT`, `52-RESEARCH`, `52-01-DESIGN`, `52-01`..`52-03`) and moved UX evidence to `.planning/uat-artifacts/52/`.
 Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 planned (0/3) [░░░]
 Next Phase: Execute `52-01-PLAN.md` (action hierarchy + readability foundations).
 
