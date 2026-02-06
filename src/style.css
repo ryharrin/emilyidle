@@ -3997,6 +3997,12 @@ button[data-testid^="vault-interact-"] {
   overflow-x: auto;
 }
 
+.career-stages-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .career-timeline-list {
   margin: 0;
   padding: 0;

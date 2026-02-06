@@ -19,6 +19,7 @@ import { CareerStageChoiceSummary } from "../../components/CareerStageChoiceSumm
 import { ExplainButton } from "../../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../../help/helpContent";
 import { CareerMap } from "./CareerMap";
+import { CareerTimeline } from "../../components/CareerTimeline";
 import { CareerUpgradesView } from "./CareerUpgradesView";
 
 type CareerPanelProps = {
@@ -249,7 +250,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           </div>
 
           {activeView === "stages" ? (
-            <>
+            <div className="career-stages-pane">
               <div className="career-canvas-header">
                 <div>
                   <h4>Career stages</h4>
@@ -260,8 +261,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   label="Explain career stages"
                 />
               </div>
+              <CareerTimeline state={state} />
               <CareerMap state={state} onPurchase={onPurchase} />
-            </>
+            </div>
           ) : (
             <CareerUpgradesView state={state} nowMs={nowMs} onPurchase={onPurchase} />
           )}
