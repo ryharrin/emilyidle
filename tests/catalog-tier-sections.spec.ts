@@ -115,6 +115,7 @@ test("catalog tier lanes highlight the low/mid/lux wave", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 820 });
   await page.goto("/");
   await page.getByRole("tab", { name: "Catalog" }).click();
+  await page.getByTestId("catalog-sort").selectOption("tier");
 
   const filters = page.getByTestId("catalog-filters");
   await expect(filters).toBeVisible();

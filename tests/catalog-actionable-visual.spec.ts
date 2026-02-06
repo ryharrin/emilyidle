@@ -72,7 +72,7 @@ const getCatalogCardStyles = async (page: Page) => {
   const actionableStyles = await actionableCard.evaluate(getCardStyles);
   const nonActionableStyles = await nonActionableCard.evaluate(getCardStyles);
 
-  return { actionableStyles, nonActionableStyles };
+  return { actionableStyles, nonActionableStyles, actionableCard, nonActionableCard };
 };
 
 test("catalog actionable styling differs in dark and light themes", async ({ page }) => {
@@ -95,12 +95,25 @@ test("catalog actionable styling differs in dark and light themes", async ({ pag
     { state: seededState, lastSimulatedAtMs: Date.now(), settings: seededSettings },
   );
 
-  const { actionableStyles, nonActionableStyles } = await getCatalogCardStyles(page);
+  const { actionableStyles, nonActionableStyles, actionableCard, nonActionableCard } =
+    await getCatalogCardStyles(page);
 
   expect(actionableStyles.opacity).toBe("1");
   expect(actionableStyles.boxShadow).not.toBe("none");
   expect(Number(nonActionableStyles.opacity)).toBeLessThan(1);
   expect(nonActionableStyles.boxShadow).toBe("none");
+
+  await expect(actionableCard).toHaveClass(/catalog-actionable/);
+  await expect(nonActionableCard).toHaveClass(/catalog-nonactionable/);
+
+  const viewport = page.viewportSize();
+  if (!viewport || viewport.width >= 720) {
+    const preview = actionableCard.locator('[data-testid^="catalog-preview-"]').first();
+    await expect(preview).toHaveCSS("opacity", "0");
+    await actionableCard.hover();
+    await expect(preview).toHaveCSS("opacity", "1");
+    await page.mouse.move(0, 0);
+  }
 
   await page.evaluate((settings) => {
     const nextSettings = { ...settings, themeMode: "light" };

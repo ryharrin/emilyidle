@@ -118,6 +118,16 @@ const defineTouchTargetTests = (
       await page.keyboard.press("Escape");
     });
 
+    test("catalog details button opens bottom sheet", async ({ page }) => {
+      await openCatalogFromCollection(page);
+      const detailsButton = page.locator('[data-testid^="catalog-details-button-"]').first();
+      await expectTouchTarget(detailsButton, "catalog details button");
+      await detailsButton.click();
+      await expect(page.getByTestId("catalog-details-sheet")).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(page.getByTestId("catalog-details-sheet")).toHaveCount(0);
+    });
+
     test("interaction modals keep their buttons at 44px", async ({ page }) => {
       await openCatalogFromCollection(page);
 
