@@ -13,30 +13,16 @@ import {
 } from "../src/game/state";
 
 describe("upgrades preview", () => {
-  it("shows enjoyment delta and updates preview rates", () => {
-    const baseState = createInitialState();
-    const [firstModel] = getWatchModels();
+  const NOW_MS = 1_000;
 
-    expect(firstModel).toBeTruthy();
-    if (!firstModel) {
-      return;
-    }
-
-    const state = {
-      ...baseState,
-      currencyCents: 1_000_000,
-      watchModels: {
-        ...baseState.watchModels,
-        [firstModel.id]: 200,
-      },
-    };
-
+  const renderUpgradesTab = (state: ReturnType<typeof createInitialState>) =>
     render(
       <HelpProvider value={{ openHelpTo: vi.fn() }}>
         <UpgradesTab
           isActive={true}
           state={state}
           currentEventMultiplier={1}
+          nowMs={NOW_MS}
           upgrades={getUpgrades()}
           workshopUpgrades={getWorkshopUpgrades()}
           maisonUpgrades={getMaisonUpgrades()}
@@ -44,6 +30,31 @@ describe("upgrades preview", () => {
         />
       </HelpProvider>,
     );
+
+  const createSeededState = () => {
+    const baseState = createInitialState();
+    const [firstModel] = getWatchModels();
+    if (!firstModel) {
+      throw new Error("Missing watch model definitions");
+    }
+
+    return {
+      ...baseState,
+      currencyCents: 1_000_000,
+      workshopBlueprints: 10,
+      maisonHeritage: 10,
+      maisonReputation: 10,
+      watchModels: {
+        ...baseState.watchModels,
+        [firstModel.id]: 200,
+      },
+    };
+  };
+
+  it("shows enjoyment delta and updates preview rates", () => {
+    const state = createSeededState();
+
+    renderUpgradesTab(state);
 
     const [firstCard] = screen.getAllByTestId("upgrade-card");
     expect(firstCard).toBeTruthy();
@@ -70,5 +81,37 @@ describe("upgrades preview", () => {
 
     expect(enjoymentLines).toHaveLength(2);
     expect(enjoymentLines[0]).not.toBe(enjoymentLines[1]);
+  });
+
+  it("renders workshop and maison preview effects consistently", () => {
+    const state = createSeededState();
+
+    renderUpgradesTab(state);
+
+    const workshopCards = screen.getAllByTestId("workshop-upgrade-card");
+    const vaultCard = workshopCards[1];
+    expect(vaultCard).toBeTruthy();
+    if (!vaultCard) {
+      return;
+    }
+
+    const softcapLine = within(vaultCard).getByTestId("upgrade-effect-softcap-value");
+    const softcapBefore = within(softcapLine).getByTestId("upgrade-effect-value-before");
+    const softcapAfter = within(softcapLine).getByTestId("upgrade-effect-value-after");
+
+    expect(softcapBefore.textContent).not.toBe(softcapAfter.textContent);
+
+    const maisonCards = screen.getAllByTestId("maison-upgrade-card");
+    const heritageCard = maisonCards[1];
+    expect(heritageCard).toBeTruthy();
+    if (!heritageCard) {
+      return;
+    }
+
+    const collectionLine = within(heritageCard).getByTestId("upgrade-effect-collection-bonus");
+    const collectionBefore = within(collectionLine).getByTestId("upgrade-effect-value-before");
+    const collectionAfter = within(collectionLine).getByTestId("upgrade-effect-value-after");
+
+    expect(collectionBefore.textContent).not.toBe(collectionAfter.textContent);
   });
 });
