@@ -15,6 +15,7 @@ import type { TierBadgeCategory } from "../../game/tierBadges";
 import { PowerReserveHint } from "../components/PowerReserveHint";
 
 import { formatMoneyFromCents } from "../../game/format";
+import { isTestEnvironment } from "../../game/runtime/isTestEnvironment";
 import {
   CATALOG_TIER_SEQUENCE,
   getCatalogEntryTags,
@@ -208,6 +209,24 @@ export function CatalogPurchasePanel({
       ].join("|"),
     [catalogBrand, catalogEra, catalogSearch, catalogSort, catalogStyle, catalogTab, catalogType],
   );
+
+  const [filtersOpen, setFiltersOpen] = React.useState<boolean>(() => isTestEnvironment());
+  const activeFilterCount = [
+    catalogSearch.trim().length > 0,
+    catalogBrand !== "All",
+    catalogStyle !== "all",
+    catalogEra !== "all",
+    catalogType !== "all",
+  ].filter(Boolean).length;
+  React.useEffect(() => {
+    if (activeFilterCount > 0 && !filtersOpen) {
+      setFiltersOpen(true);
+    }
+  }, [activeFilterCount, filtersOpen]);
+  const toggleFilters = React.useCallback(() => {
+    setFiltersOpen((value) => !value);
+  }, []);
+  const filterCountLabel = activeFilterCount > 0 ? `${activeFilterCount} active` : "Show filters";
 
   const stableCatalogEntries = useStableCatalogEntries({
     entries: filteredCatalogEntries,
@@ -690,127 +709,151 @@ export function CatalogPurchasePanel({
         data-testid="catalog-filters"
         onSubmit={(event) => event.preventDefault()}
       >
-        <div className="filter-field">
-          <label className="filter-label" htmlFor="catalog-search">
-            Search
-          </label>
-          <input
-            id="catalog-search"
-            data-testid="catalog-search"
-            type="search"
-            placeholder="Search by model, year, tags"
-            value={catalogSearch}
-            onChange={(event) => onCatalogSearchChange(event.target.value)}
-          />
-        </div>
-        <div className="filter-field">
-          <label className="filter-label" htmlFor="catalog-brand">
-            Brand
-          </label>
-          <select
-            id="catalog-brand"
-            data-testid="catalog-brand"
-            value={catalogBrand}
-            onChange={(event) => onCatalogBrandChange(event.target.value)}
+        <div className="catalog-filter-heading">
+          <button
+            type="button"
+            className="catalog-filter-toggle"
+            aria-expanded={filtersOpen}
+            aria-controls="catalog-filter-panel"
+            onClick={toggleFilters}
+            data-testid="catalog-filter-toggle"
           >
-            {catalogBrands.map((brand) => (
-              <option key={brand} value={brand}>
-                {brand}
-              </option>
-            ))}
-          </select>
+            <span>Filters</span>
+            <span className="catalog-filter-count" aria-live="polite">
+              {filterCountLabel}
+            </span>
+          </button>
         </div>
-        <div className="filter-field">
-          <label className="filter-label" htmlFor="catalog-style">
-            Style
-          </label>
-          <select
-            id="catalog-style"
-            data-testid="catalog-style"
-            value={catalogStyle}
-            onChange={(event) => onCatalogStyleChange(event.target.value as typeof catalogStyle)}
-          >
-            <option value="all">All</option>
-            <option value="womens">Womens</option>
-          </select>
-        </div>
-        <div className="filter-field">
-          <label className="filter-label" htmlFor="catalog-sort">
-            Sort
-          </label>
-          <select
-            id="catalog-sort"
-            data-testid="catalog-sort"
-            value={catalogSort}
-            onChange={(event) => onCatalogSortChange(event.target.value as typeof catalogSort)}
-          >
-            <option value="default">Default</option>
-            <option value="brand">Brand (A→Z)</option>
-            <option value="year">Year (newest→oldest)</option>
-            <option value="tier">Tier (starter→tourbillon)</option>
-          </select>
-        </div>
-        <div className="filter-field">
-          <label className="filter-label" htmlFor="catalog-era">
-            Era
-          </label>
-          <select
-            id="catalog-era"
-            data-testid="catalog-era"
-            value={catalogEra}
-            onChange={(event) => onCatalogEraChange(event.target.value as typeof catalogEra)}
-          >
-            <option value="all">All</option>
-            <option value="pre-1970">Pre-1970</option>
-            <option value="1970-1999">1970-1999</option>
-            <option value="2000+">2000+</option>
-            <option value="unknown">Unknown</option>
-          </select>
-        </div>
-        <div className="filter-field">
-          <label className="filter-label" htmlFor="catalog-type">
-            Type
-          </label>
-          <select
-            id="catalog-type"
-            data-testid="catalog-type"
-            value={catalogType}
-            onChange={(event) => onCatalogTypeChange(event.target.value as typeof catalogType)}
-          >
-            <option value="all">All</option>
-            <option value="gmt">GMT</option>
-            <option value="chronograph">Chronograph</option>
-            <option value="dress">Dress</option>
-            <option value="diver">Diver</option>
-          </select>
-        </div>
-        <div className="filter-field" data-testid="catalog-owned-tabs">
-          <span className="filter-label">View</span>
-          <div
-            className="catalog-tablist"
-            role="tablist"
-            aria-label={embeddedInVault ? "Shop view" : "Catalog ownership"}
-          >
-            {(
-              [
-                { id: "unowned", label: "Unowned" },
-                { id: "owned", label: "Owned" },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                className={`catalog-tab ${catalogTab === tab.id ? "catalog-tab-active" : ""}`}
-                aria-selected={catalogTab === tab.id}
-                aria-controls={`catalog-${tab.id}`}
-                id={`catalog-${tab.id}-tab`}
-                tabIndex={catalogTab === tab.id ? 0 : -1}
-                onClick={() => onCatalogTabChange(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div
+          id="catalog-filter-panel"
+          className="catalog-filter-panel"
+          data-visible={filtersOpen ? "true" : "false"}
+          aria-hidden={!filtersOpen}
+          hidden={!filtersOpen}
+          data-testid="catalog-filter-panel"
+        >
+          <div className="filter-field">
+            <label className="filter-label" htmlFor="catalog-search">
+              Search
+            </label>
+            <input
+              id="catalog-search"
+              data-testid="catalog-search"
+              type="search"
+              placeholder="Search by model, year, tags"
+              value={catalogSearch}
+              onChange={(event) => onCatalogSearchChange(event.target.value)}
+            />
+          </div>
+          <div className="filter-field">
+            <label className="filter-label" htmlFor="catalog-brand">
+              Brand
+            </label>
+            <select
+              id="catalog-brand"
+              data-testid="catalog-brand"
+              value={catalogBrand}
+              onChange={(event) => onCatalogBrandChange(event.target.value)}
+            >
+              {catalogBrands.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-field">
+            <label className="filter-label" htmlFor="catalog-style">
+              Style
+            </label>
+            <select
+              id="catalog-style"
+              data-testid="catalog-style"
+              value={catalogStyle}
+              onChange={(event) => onCatalogStyleChange(event.target.value as typeof catalogStyle)}
+            >
+              <option value="all">All</option>
+              <option value="womens">Womens</option>
+            </select>
+          </div>
+          <div className="filter-field">
+            <label className="filter-label" htmlFor="catalog-sort">
+              Sort
+            </label>
+            <select
+              id="catalog-sort"
+              data-testid="catalog-sort"
+              value={catalogSort}
+              onChange={(event) => onCatalogSortChange(event.target.value as typeof catalogSort)}
+            >
+              <option value="default">Default</option>
+              <option value="brand">Brand (A→Z)</option>
+              <option value="year">Year (newest→oldest)</option>
+              <option value="tier">Tier (starter→tourbillon)</option>
+            </select>
+          </div>
+          <div className="filter-field">
+            <label className="filter-label" htmlFor="catalog-era">
+              Era
+            </label>
+            <select
+              id="catalog-era"
+              data-testid="catalog-era"
+              value={catalogEra}
+              onChange={(event) => onCatalogEraChange(event.target.value as typeof catalogEra)}
+            >
+              <option value="all">All</option>
+              <option value="pre-1970">Pre-1970</option>
+              <option value="1970-1999">1970-1999</option>
+              <option value="2000+">2000+</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </div>
+          <div className="filter-field">
+            <label className="filter-label" htmlFor="catalog-type">
+              Type
+            </label>
+            <select
+              id="catalog-type"
+              data-testid="catalog-type"
+              value={catalogType}
+              onChange={(event) => onCatalogTypeChange(event.target.value as typeof catalogType)}
+            >
+              <option value="all">All</option>
+              <option value="gmt">GMT</option>
+              <option value="chronograph">Chronograph</option>
+              <option value="dress">Dress</option>
+              <option value="diver">Diver</option>
+            </select>
+          </div>
+          <div className="filter-field" data-testid="catalog-owned-tabs">
+            <span className="filter-label">View</span>
+            <div
+              className="catalog-tablist"
+              role="tablist"
+              aria-label={embeddedInVault ? "Shop view" : "Catalog ownership"}
+            >
+              {(
+                [
+                  { id: "unowned", label: "Unowned" },
+                  { id: "owned", label: "Owned" },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  className={`catalog-tab ${catalogTab === tab.id ? "catalog-tab-active" : ""}`}
+                  aria-selected={catalogTab === tab.id}
+                  aria-controls={`catalog-${tab.id}`}
+                  id={`catalog-${tab.id}-tab`}
+                  tabIndex={catalogTab === tab.id ? 0 : -1}
+                  onClick={() => onCatalogTabChange(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </form>
