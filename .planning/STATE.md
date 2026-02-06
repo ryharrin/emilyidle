@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-08 (ANIM/FLOAT/NOSTALGIA/ICON) — Completed
-Status: Phase 49 in progress (8/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-08 (feedback primitives + nostalgia toasts)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (8/10 executed) [████████░░]
+Plan: 49-09 (Collection section nav + onboarding) — Completed
+Status: Phase 49 in progress (9/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-09 (collection nav + onboarding)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (9/10 executed) [█████████░]
 Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
@@ -93,9 +93,11 @@ Next Phase: Phase 49 (v4.1 execution)
 | 49 | Drive modal motion states through `data-live-state`/`data-outcome-state` pointers and CSS transitions | Lets winding, automatic, and quartz overlays share consistent animation polish while honoring reduced-motion |
 | 49 | Animate hero stats via ValueTicker while centralizing currency/upgrade icons in `coreIcons.tsx`. | Keeps metric readouts animated, accessible, and visually coherent for automation and reduced-motion audiences. | ✓ Good |
 | 49 | Send nostalgia resets through FloatingDelta + ToastStack feedback instead of blocking modals. | Lets destructive confirmations stay in modals while the toast stack surfaces dismissible +X cues. | ✓ Good |
+| 49 | Derive Collection anchors via `CollectionSectionNavLink` so nav copy, automation selectors, and scroll targets stay synchronized. | Keeps the new Collection subnav predictable while enabling future guts to reuse the same definition. | ✓ Good |
+| 49 | Persist onboarding dismissals in `settings.coachmarksDismissed` so no additional storage keys are introduced. | Honors existing settings guardrails while letting coachmarks pause for returning players. | ✓ Good |
 
 ## Session Continuity
 
-Last session: 2026-02-06T09:28:45Z
-Stopped at: Completed Phase 49-08 (feedback primitives + nostalgia toasts)
+Last session: 2026-02-06T09:57:02Z
+Stopped at: Completed Phase 49-09 (collection nav + onboarding)
 Resume file: None
