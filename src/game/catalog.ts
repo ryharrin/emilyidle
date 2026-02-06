@@ -1247,6 +1247,15 @@ const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
 };
 const TIER_TAGS = new Set(["starter", "classic", "chronograph", "tourbillon"]);
 
+// Explicit Tier Sequence for Phase 46 lanes: starter (low), classic + chronograph (mid), tourbillon (luxury).
+// Keeping this list in one place guarantees the lane order doesn’t drift when filters or sorts run.
+export const CATALOG_TIER_SEQUENCE: ReadonlyArray<CatalogTierId> = [
+  "starter",
+  "classic",
+  "chronograph",
+  "tourbillon",
+];
+
 function inferCatalogTier(entry: CatalogEntry, tags: string[]): CatalogTierId {
   const searchable = `${entry.model} ${entry.description}`.toLowerCase();
   const hasTag = (value: string) => tags.includes(value) || searchable.includes(value);
