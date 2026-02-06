@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-03 (SETTINGS-01 fieldsets, TOUCH-01 targets, LIGHT-01 contrast) — Completed
-Status: Phase 49 in progress (3/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-03 (settings shell polish + touch/contrast guardrails)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (3/10 executed) [███░░░░░░░]
+Plan: 49-04 (STATS-01 grouped header, BREAK-01 breakdown subtotals, SOFTCAP-01 relocation) — Completed
+Status: Phase 49 in progress (4/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-04 (stats header + breakdown polish)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (4/10 executed) [████░░░░░░]
 Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
@@ -83,9 +83,11 @@ Next Phase: Phase 49 (v4.1 execution)
 | 49 | When focus leaves the help button via Tab, cycle back to the collection tab so the skeleton + navrail focus story stays intact. | Keeps keyboard navigation anchored inside the primary nav and lets the new contract test resolve reliably. | ✓ Good |
 | 49 | Portal the Clear Save modal through `document.body` instead of inside the fieldset stack. | Keeps the confirmation dialog atop the new layout so Pixel 5 automation can click through. | ✓ Good |
 | 49 | Group settings controls into explicit fieldsets (Save, Audio, Preferences, Import) with clear legends and spacing. | Clarifies hierarchy while preserving existing DOM ids/data-testids for automation. | ✓ Good |
+| 49 | Group hero stats into primary, progression, and system buckets via the new `StatsHeader` so the hero panel stays scannable while keeping stable ids/data-testids. | Keeps the metrics contract consistent for regressions while exposing the grouped context. | ✓ Good |
+| 49 | Render the Stats tab breakdown panel even when the tab is inactive so relocated anchors like `#softcap` and `stats-event-multiplier` stay in the DOM for automation. | Prevents automated checks from losing the relocated softcap detail when the tab defaults to Collection. | ✓ Good |
 
 ## Session Continuity
 
-Last session: 2026-02-06T06:14:32Z
-Stopped at: Completed Phase 49-03 (settings-shell polish + touch-target/contrast guardrails)
+Last session: 2026-02-06T06:40:27Z
+Stopped at: Completed Phase 49-04 (stats header + breakdown polish)
 Resume file: None
