@@ -364,6 +364,14 @@ export function HelpModal({
             </button>
           </div>
         </header>
+        <div className="help-modal-meta" data-testid="help-search-count">
+          <span>{filteredSections.length} sections</span>
+          <span className="muted">
+            {normalizedSearchTerm.length > 0
+              ? `Filtered by “${searchTerm.trim()}”`
+              : "Browse all guidance"}
+          </span>
+        </div>
         {filteredSections.length === 0 ? (
           <p className="help-modal-no-results">No help sections match your search.</p>
         ) : (
@@ -377,11 +385,13 @@ export function HelpModal({
                     className={`help-section-button ${isActive ? "help-section-button-active" : ""}`}
                     onClick={() => selectSection(index)}
                     onKeyDown={(event) => handleSectionKeyDown(event, index)}
+                    aria-current={isActive ? "true" : undefined}
                     ref={(node) => {
                       sectionButtonRefs.current[index] = node;
                     }}
                   >
-                    {section.title}
+                    <span className="help-section-button-title">{section.title}</span>
+                    {isActive && <span className="help-section-button-state">Active</span>}
                   </button>
                 </li>
               );
@@ -409,7 +419,9 @@ export function HelpModal({
               <h3 data-testid="help-active-section">{activeSection.title}</h3>
               <ul>
                 {activeSection.body.map((line) => (
-                  <li key={line}>{line}</li>
+                  <li className="help-modal-body-line" key={line}>
+                    {line}
+                  </li>
                 ))}
               </ul>
             </div>

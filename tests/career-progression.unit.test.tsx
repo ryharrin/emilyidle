@@ -2,6 +2,8 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { CareerTimeline } from "../src/ui/components/CareerTimeline";
+import { HelpProvider } from "../src/ui/help/helpContext";
+import { CareerPanel } from "../src/ui/tabs/career/CareerPanel";
 import type { CareerModalityId, CareerTrackId } from "../src/game/model/types";
 import { CAREER_STAGES } from "../src/game/data/careerStages";
 import { createInitialState, enterPhdProgram } from "../src/game/state";
@@ -108,5 +110,21 @@ describe("career progression", () => {
     const trackChoice = within(upcoming).getByTestId("career-upcoming-choice-licensed-associate");
     expect(trackChoice).toHaveTextContent(/Track/);
     expect(trackChoice).toHaveTextContent(/level/);
+  });
+
+  it("renders Now/Next/Deep details sections in the career panel", () => {
+    const state = enterPhdProgram(createInitialState(), 0);
+    render(
+      <HelpProvider value={{ openHelpTo: () => {} }}>
+        <CareerPanel state={state} nowMs={0} onPurchase={() => {}} />
+      </HelpProvider>,
+    );
+
+    expect(screen.getByTestId("career-now-section")).toBeVisible();
+    expect(screen.getByTestId("career-next-section")).toBeVisible();
+    const deepDetails = screen.getByTestId("career-deep-details");
+    expect(deepDetails).toHaveAttribute("open");
+    expect(screen.getByTestId("career-deep-details-toggle")).toBeVisible();
+    expect(screen.getByTestId("career-view-switch")).toBeVisible();
   });
 });

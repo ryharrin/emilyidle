@@ -60,6 +60,8 @@ test("stats tab renders event calendar buckets", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: "Stats" }).click();
 
+  await expect(page.getByTestId("stats-summary-strip")).toBeVisible();
+  await expect(page.getByTestId("stats-disclosure-calendar")).toBeVisible();
   await expect(page.getByTestId("event-calendar")).toBeVisible();
   await expect(page.getByTestId("event-calendar-active")).toContainText(/Wind-up/i);
   await expect(page.getByTestId("event-calendar-upcoming")).toContainText(/Auction weekend/i);

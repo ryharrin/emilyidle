@@ -12,8 +12,8 @@
 - [x] Move UX artifacts into `.planning/uat-artifacts/52/`
 - [x] Execute `52-01-PLAN.md`
 - [x] Execute `52-02-PLAN.md`
-- [ ] Execute `52-03-PLAN.md`
-- [ ] Publish remaining phase summaries (`52-03-SUMMARY.md`)
+- [x] Execute `52-03-PLAN.md`
+- [x] Publish remaining phase summaries (`52-03-SUMMARY.md`)
 
 ## Notes
 

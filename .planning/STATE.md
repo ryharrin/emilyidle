@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** executing Phase 52 UX redesign rollout (52-01 complete, 52-02 next).
+**Current focus:** Phase 52 UX redesign rollout is complete; preparing post-v4.1 milestone planning.
 
 ## Current Position
 
 Phase: 52 of 7 (UX Redesign Spec)
-Plan: 52-02 (Mobile density pass) — Planned
-Status: v4.1 execution complete; Phase 52 rollout in progress with `52-01` shipped.
-Last activity: 2026-02-06 — Implemented `52-01` hierarchy foundations, completed verification (`typecheck`, targeted unit/e2e), and published `52-01-SUMMARY.md`.
-Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 in progress (1/3) [███░░░░░░░]
-Next Phase: Execute `52-02-PLAN.md` (mobile density pass and tap-target ergonomics).
+Plan: 52-03 (Progressive disclosure pass) — Complete
+Status: v4.1 execution complete; Phase 52 rollout closed (`52-01` through `52-03` complete).
+Last activity: 2026-02-06 — Implemented `52-03` progressive disclosure updates (Career/Stats/Help), re-captured UX metrics, and published `52-03-SUMMARY.md`.
+Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████]
+Next Phase: Define and plan the post-v4.1 milestone scope.
 
 ## Accumulated Context
 
@@ -113,6 +113,6 @@ Next Phase: Execute `52-02-PLAN.md` (mobile density pass and tap-target ergonomi
 
 ## Session Continuity
 
-Last session: 2026-02-06T17:26:00Z
-Stopped at: Completed Phase 52-01 implementation and verification
+Last session: 2026-02-06T18:15:00Z
+Stopped at: Completed Phase 52-03 implementation, verification, and metric recapture
 Resume file: None

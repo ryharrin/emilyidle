@@ -81,14 +81,14 @@
 4. Achievements send toasts and cover a broader set of behaviors.
 5. Mini-games include practice, tiered difficulty, and streak bonuses.
 
-### Phase 52: UX Redesign Spec (Planned)
+### Phase 52: UX Redesign Spec (Complete)
 
 **Goal:** Implement a high-clarity presentation pass that reduces interaction density, improves mobile ergonomics, and strengthens action hierarchy across Catalog/Career/Stats.
 
 **Plans:**
 - [x] 52-01-PLAN.md — Hierarchy foundations (primary CTA emphasis, tab rail discoverability, metric readability)
-- [ ] 52-02-PLAN.md — Mobile density pass (compact catalog mode, sticky quick actions, tap-target upgrades)
-- [ ] 52-03-PLAN.md — Progressive disclosure pass (Career/Stats/Help) + measurable UX delta capture
+- [x] 52-02-PLAN.md — Mobile density pass (compact catalog mode, sticky quick actions, tap-target upgrades)
+- [x] 52-03-PLAN.md — Progressive disclosure pass (Career/Stats/Help) + measurable UX delta capture
 
 **Success criteria:**
 1. Catalog default views are faster to scan, with clearer primary actions.
@@ -110,4 +110,4 @@
 | 49. Mobile & UX Polish | v4.1 | 10/10 | Complete | 49-10-SUMMARY.md |
 | 50. Catalog & Collection Depth | v4.1 | 5/5 | Complete | 50-05-SUMMARY.md |
 | 51. Quality of Life & Events | v4.1 | 5/5 | Complete | 51-05-SUMMARY.md |
-| 52. UX Redesign Spec | next milestone | 1/3 | In Progress | 52-01-SUMMARY.md |
+| 52. UX Redesign Spec | next milestone | 3/3 | Complete | 52-03-SUMMARY.md |

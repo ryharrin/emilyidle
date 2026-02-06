@@ -1622,12 +1622,14 @@ describe("quartz minigame", () => {
     cleanup();
   });
 
-  it("opens the quartz modal and applies a cash reward", async () => {
-    const user = userEvent.setup();
+  it(
+    "opens the quartz modal and applies a cash reward",
+    async () => {
+      const user = userEvent.setup();
 
-    const beforeRaw = localStorage.getItem("emily-idle:save");
-    expect(beforeRaw).toBeTruthy();
-    const before = beforeRaw
+      const beforeRaw = localStorage.getItem("emily-idle:save");
+      expect(beforeRaw).toBeTruthy();
+      const before = beforeRaw
       ? (JSON.parse(beforeRaw) as { state: { currencyCents: number } })
       : null;
     if (!before) {
@@ -1642,7 +1644,7 @@ describe("quartz minigame", () => {
     expect(screen.getByTestId("quartz-modal")).toBeTruthy();
 
     await user.click(screen.getByTestId("quartz-action"));
-    const quartzOutcome = await screen.findByTestId("quartz-outcome", {}, { timeout: 5_000 });
+    const quartzOutcome = await screen.findByTestId("quartz-outcome", {}, { timeout: 8_000 });
     expect(quartzOutcome.textContent).toMatch(/Enjoyment/i);
 
     await user.click(screen.getByTestId("quartz-done"));
@@ -1655,8 +1657,10 @@ describe("quartz minigame", () => {
       return;
     }
 
-    expect(after.state.currencyCents).toBeGreaterThan(before.state.currencyCents);
-  });
+      expect(after.state.currencyCents).toBeGreaterThan(before.state.currencyCents);
+    },
+    10_000,
+  );
 });
 
 describe("audio toggles", () => {

@@ -50,6 +50,11 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
     cashBaseCentsPerSec,
     cashRateBreakdown.multiplierTerms,
   );
+  const eventSummary = {
+    active: eventCalendar.active.length,
+    upcoming: eventCalendar.upcoming.length,
+    ready: eventCalendar.ready.length,
+  };
 
   const renderModifierGroups = (groups: StatsModifierGroup[]) => {
     const activeGroups = groups.filter((group) => group.multiplier !== 1);
@@ -142,105 +147,157 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
           </div>
         </header>
 
-        <section className="panel stats-breakdown">
-          <header className="stats-breakdown__hero">
-            <h3>Rate breakdown</h3>
-            <p className="muted">Base + modifiers. Softcap context lives below.</p>
-          </header>
-          <div className="stats-breakdown__grid">
-            <article className="card stats-breakdown__card" data-testid="enjoyment-rate-breakdown">
-              <header className="stats-breakdown__card-header">
-                <div>
-                  <p className="eyebrow">Enjoyment / sec</p>
-                  <p className="stats-breakdown__total">
-                    {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
-                  </p>
-                </div>
-                <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
-              </header>
-              <p className="muted">
-                Base: {formatRateFromCentsPerSec(enjoymentRateBreakdown.baseCentsPerSec)}
-              </p>
-              {renderModifierGroups(enjoymentModifierGroups)}
-              {renderModifierTerms(enjoymentRateBreakdown.multiplierTerms)}
-            </article>
-
-            <article className="card stats-breakdown__card" data-testid="cash-rate-breakdown">
-              <header className="stats-breakdown__card-header">
-                <div>
-                  <p className="eyebrow">Dollars / sec</p>
-                  <p className="stats-breakdown__total">
-                    {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
-                  </p>
-                </div>
-                <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
-              </header>
-              <ul className="stats-breakdown__base-addends">
-                {cashRateBreakdown.careerAddends.map((addend) => (
-                  <li key={addend.id}>
-                    {addend.label}: {formatRateFromCentsPerSec(addend.centsPerSec)}
-                  </li>
-                ))}
-              </ul>
-              {renderModifierGroups(cashModifierGroups)}
-              {renderModifierTerms(cashRateBreakdown.multiplierTerms)}
-            </article>
-          </div>
-
-          <article className="card stats-breakdown__softcap" data-testid="stats-softcap">
-            <h4>Softcap efficiency</h4>
-            <p id="softcap">{stats.softcap}</p>
-            <p className="muted">
-              Income is smoothed once the atelier softcap threshold is exceeded so growth stays
-              balanced.
+        <section className="stats-summary-strip" data-testid="stats-summary-strip">
+          <article className="stats-summary-strip__card">
+            <p className="eyebrow">Enjoyment / sec</p>
+            <p className="stats-summary-strip__value">
+              {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
             </p>
+          </article>
+          <article className="stats-summary-strip__card">
+            <p className="eyebrow">Dollars / sec</p>
+            <p className="stats-summary-strip__value">
+              {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
+            </p>
+          </article>
+          <article className="stats-summary-strip__card" data-testid="stats-softcap-summary">
+            <p className="eyebrow">Softcap</p>
+            <p className="stats-summary-strip__value">{stats.softcap}</p>
+          </article>
+          <article className="stats-summary-strip__card">
+            <p className="eyebrow">Events</p>
+            <p className="stats-summary-strip__value">
+              {eventSummary.active} active · {eventSummary.upcoming} upcoming
+            </p>
+            <p className="muted">{eventSummary.ready} ready</p>
           </article>
         </section>
 
-        <section className="panel stats-event-calendar-panel" data-testid="stats-event-calendar">
-          <h3>Event calendar</h3>
-          <div className="stats-event-calendar" data-testid="event-calendar">
-            {renderEventCalendarGroup("Active", eventCalendar.active, "event-calendar-active")}
-            {renderEventCalendarGroup(
-              "Upcoming",
-              eventCalendar.upcoming,
-              "event-calendar-upcoming",
-            )}
-            {renderEventCalendarGroup("Ready", eventCalendar.ready, "event-calendar-ready")}
-          </div>
-        </section>
-
-        <section className="panel stats-journal" data-testid="stats-journal">
-          <h3>Journal</h3>
-          <div className="card-stack" data-testid="lore-chapters">
-            {(
-              [
-                {
-                  id: "collector-shelf",
-                  title: "First arrivals",
-                  text: "The first pieces find their way into the collection, still warm from wrists and stories. You learn their rhythms, their quirks, and the quiet pull of the next addition.",
-                },
-                {
-                  id: "showcase",
-                  title: "The cabinet grows",
-                  text: "The collection starts to feel curated instead of accidental. A pattern emerges: what you seek, what you keep, and what you let go as the collection takes shape.",
-                },
-                {
-                  id: "atelier",
-                  title: "Atelier nights",
-                  text: "Late hours in the atelier turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the collection responds in kind.",
-                },
-              ] as const
-            )
-              .filter((chapter) => state.unlockedMilestones.includes(chapter.id))
-              .map((chapter) => (
-                <article className="card" key={chapter.id} data-testid="lore-chapter">
-                  <h4>{chapter.title}</h4>
-                  <p>{chapter.text}</p>
+        <details className="stats-disclosure" data-testid="stats-disclosure-rates" open>
+          <summary>
+            <span>Rate breakdown</span>
+            <span className="muted">Base + modifiers</span>
+          </summary>
+          <div className="stats-disclosure__body">
+            <section className="panel stats-breakdown">
+              <div className="stats-breakdown__grid">
+                <article
+                  className="card stats-breakdown__card"
+                  data-testid="enjoyment-rate-breakdown"
+                >
+                  <header className="stats-breakdown__card-header">
+                    <div>
+                      <p className="eyebrow">Enjoyment / sec</p>
+                      <p className="stats-breakdown__total">
+                        {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
+                      </p>
+                    </div>
+                    <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
+                  </header>
+                  <p className="muted">
+                    Base: {formatRateFromCentsPerSec(enjoymentRateBreakdown.baseCentsPerSec)}
+                  </p>
+                  {renderModifierGroups(enjoymentModifierGroups)}
+                  {renderModifierTerms(enjoymentRateBreakdown.multiplierTerms)}
                 </article>
-              ))}
+
+                <article className="card stats-breakdown__card" data-testid="cash-rate-breakdown">
+                  <header className="stats-breakdown__card-header">
+                    <div>
+                      <p className="eyebrow">Dollars / sec</p>
+                      <p className="stats-breakdown__total">
+                        {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
+                      </p>
+                    </div>
+                    <ExplainButton sectionId={HELP_SECTION_IDS.rates} label="Explain rates" />
+                  </header>
+                  <ul className="stats-breakdown__base-addends">
+                    {cashRateBreakdown.careerAddends.map((addend) => (
+                      <li key={addend.id}>
+                        {addend.label}: {formatRateFromCentsPerSec(addend.centsPerSec)}
+                      </li>
+                    ))}
+                  </ul>
+                  {renderModifierGroups(cashModifierGroups)}
+                  {renderModifierTerms(cashRateBreakdown.multiplierTerms)}
+                </article>
+              </div>
+
+              <article className="card stats-breakdown__softcap" data-testid="stats-softcap">
+                <h4>Softcap efficiency</h4>
+                <p id="softcap">{stats.softcap}</p>
+                <p className="muted">
+                  Income is smoothed once the atelier softcap threshold is exceeded so growth stays
+                  balanced.
+                </p>
+              </article>
+            </section>
           </div>
-        </section>
+        </details>
+
+        <details className="stats-disclosure" data-testid="stats-disclosure-calendar" open>
+          <summary>
+            <span>Event calendar</span>
+            <span className="muted">
+              {eventSummary.active} active · {eventSummary.upcoming} upcoming
+            </span>
+          </summary>
+          <div className="stats-disclosure__body">
+            <section
+              className="panel stats-event-calendar-panel"
+              data-testid="stats-event-calendar"
+            >
+              <div className="stats-event-calendar" data-testid="event-calendar">
+                {renderEventCalendarGroup("Active", eventCalendar.active, "event-calendar-active")}
+                {renderEventCalendarGroup(
+                  "Upcoming",
+                  eventCalendar.upcoming,
+                  "event-calendar-upcoming",
+                )}
+                {renderEventCalendarGroup("Ready", eventCalendar.ready, "event-calendar-ready")}
+              </div>
+            </section>
+          </div>
+        </details>
+
+        <details className="stats-disclosure" data-testid="stats-disclosure-journal">
+          <summary>
+            <span>Journal</span>
+            <span className="muted">First arrivals, cabinet growth, and atelier stories</span>
+          </summary>
+          <div className="stats-disclosure__body">
+            <section className="panel stats-journal" data-testid="stats-journal">
+              <div className="card-stack" data-testid="lore-chapters">
+                {(
+                  [
+                    {
+                      id: "collector-shelf",
+                      title: "First arrivals",
+                      text: "The first pieces find their way into the collection, still warm from wrists and stories. You learn their rhythms, their quirks, and the quiet pull of the next addition.",
+                    },
+                    {
+                      id: "showcase",
+                      title: "The cabinet grows",
+                      text: "The collection starts to feel curated instead of accidental. A pattern emerges: what you seek, what you keep, and what you let go as the collection takes shape.",
+                    },
+                    {
+                      id: "atelier",
+                      title: "Atelier nights",
+                      text: "Late hours in the atelier turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the collection responds in kind.",
+                    },
+                  ] as const
+                )
+                  .filter((chapter) => state.unlockedMilestones.includes(chapter.id))
+                  .map((chapter) => (
+                    <article className="card" key={chapter.id} data-testid="lore-chapter">
+                      <h4>{chapter.title}</h4>
+                      <p>{chapter.text}</p>
+                    </article>
+                  ))}
+              </div>
+            </section>
+          </div>
+        </details>
       </div>
     </section>
   );

@@ -1,5 +1,18 @@
 # Milestones: Emily Idle
 
+## Post-v4.1 UX Redesign Package (Completed: 2026-02-06)
+
+**Delivered:** Completed the three-plan Phase 52 UX redesign rollout focused on hierarchy clarity, mobile density reduction, and progressive disclosure across Career/Stats/Help.
+
+**Phase completed:** 52 (3 plans)
+
+**Summary anchors:**
+- `.planning/phases/52-ux-redesign-spec/52-01-SUMMARY.md`
+- `.planning/phases/52-ux-redesign-spec/52-02-SUMMARY.md`
+- `.planning/phases/52-ux-redesign-spec/52-03-SUMMARY.md`
+
+---
+
 ## v4.1 Next Wave (Shipped: 2026-02-06)
 
 **Delivered:** Completed the full post-v4.0 expansion cycle across sessions/atelier systems, mobile UX polish, catalog/collection depth, and quality-of-life + event systems.
@@ -68,4 +81,4 @@
 
 - `/gsd-new-milestone` — Define the post-v4.1 milestone scope and phase map.
 - `/gsd-requirements` — Capture new requirement IDs and acceptance criteria.
-- `/gsd-plan-phase 52` — Continue Phase 52 UX redesign rollout (`52-02` and `52-03` in `.planning/phases/52-ux-redesign-spec/`).
+- `/gsd-plan-phase` — Start the first execution plan for the next milestone.

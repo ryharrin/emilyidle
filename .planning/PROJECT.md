@@ -15,17 +15,19 @@ Deliver a satisfying watch-collecting idle loop that saves reliably and stays pl
 - Quality-of-life updates (offline gains, save import/export, undo, favorites, notifications, mini-game practice) and new achievements/events round out the experience.
 
 ## Current Milestone
-Executing post-v4.1 Phase 52 UX redesign rollout, with v4.1 kept as the gameplay baseline.
+Post-v4.1 Phase 52 UX redesign rollout is complete, with v4.1 kept as the gameplay baseline.
 
-### Active planning package
-- Phase 52 UX redesign spec is prepared in `.planning/phases/52-ux-redesign-spec/`:
+### Recently completed planning package
+- Phase 52 UX redesign spec is fully executed in `.planning/phases/52-ux-redesign-spec/`:
   - `52-CONTEXT.md`
   - `52-RESEARCH.md`
   - `52-01-DESIGN.md`
   - `52-01-PLAN.md`
-  - `52-01-SUMMARY.md` (completed)
   - `52-02-PLAN.md`
   - `52-03-PLAN.md`
+  - `52-01-SUMMARY.md`
+  - `52-02-SUMMARY.md`
+  - `52-03-SUMMARY.md`
   - `52-TASKLIST.md`
 - Evidence artifacts live in `.planning/uat-artifacts/52/` (`README.md`, `capture.mjs`, `raw/*.jpg`, metrics snapshots).
 
@@ -66,7 +68,7 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 - `/gsd-new-milestone` — Define the next milestone after v4.1
 - `/gsd-requirements` — Capture new requirement IDs and acceptance criteria
 - `/gsd-roadmap` — Sequence next-phase execution order and dependencies
-- `/gsd-plan-phase 52` — Execute hierarchy, density, and progressive disclosure UX redesign rollout
+- `/gsd-plan-phase` — Author the first plan in the next milestone sequence
 
 <details>
 <summary>Archived context (pre-v4.1 milestone)</summary>

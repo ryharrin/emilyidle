@@ -42,6 +42,7 @@ const formatDuration = (ms: number) => {
 
 export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const [activeView, setActiveView] = React.useState<"stages" | "upgrades">("stages");
+  const [deepDetailsOpen, setDeepDetailsOpen] = React.useState(true);
   const career = getTherapistCareer(state);
   const nextXpRequired = getTherapistXpRequiredForNextLevel(career.level);
   const sessionPolicy = getTherapistSessionPolicy(state, nowMs);
@@ -121,8 +122,16 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       </header>
 
       <div className="career-layout">
-        <div className="career-sidebar">
-          <div className="card-stack career-stack">
+        <section
+          className="career-priority-section career-priority-now"
+          data-testid="career-now-section"
+        >
+          <header className="career-priority-header">
+            <p className="eyebrow">Now</p>
+            <h4>Immediate action</h4>
+            <p className="muted">Prioritize the next move that advances salary and session flow.</p>
+          </header>
+          <div className="card-stack career-stack career-stack-now">
             <CareerNextActionCard state={state} nowMs={nowMs} onPurchase={onPurchase} />
             <div className="card career-session">
               <div className="career-session-header">
@@ -223,55 +232,80 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                 </button>
               </div>
             </div>
+          </div>
+        </section>
 
+        <section
+          className="career-priority-section career-priority-next"
+          data-testid="career-next-section"
+        >
+          <header className="career-priority-header">
+            <p className="eyebrow">Next</p>
+            <h4>Progress and choices</h4>
+            <p className="muted">Confirm near-term unlocks before using advanced planners.</p>
+          </header>
+          <div className="card-stack career-stack career-stack-next">
             <CareerProgressCard state={state} />
             <CareerStageChoiceSummary state={state} />
           </div>
-        </div>
+        </section>
 
-        <div className="career-canvas">
-          <div className="career-view-switch" data-testid="career-view-switch">
-            <button
-              type="button"
-              className={`secondary career-view-button ${activeView === "stages" ? "career-view-active" : ""}`}
-              data-testid="career-view-stages"
-              onClick={() => setActiveView("stages")}
-            >
-              Stages
-            </button>
-            <button
-              type="button"
-              className={`secondary career-view-button ${activeView === "upgrades" ? "career-view-active" : ""}`}
-              data-testid="career-view-upgrades"
-              onClick={() => setActiveView("upgrades")}
-            >
-              Upgrades
-            </button>
-          </div>
-
-          {activeView === "stages" ? (
-            <div className="career-stage-stack">
-              <div className="career-stages-pane">
-                <div className="career-timeline-wrapper">
-                  <div className="career-canvas-header">
-                    <div>
-                      <h4>Career stages</h4>
-                      <p className="muted">Drag to pan. Pinch or ctrl-wheel to zoom.</p>
-                    </div>
-                    <ExplainButton
-                      sectionId={HELP_SECTION_IDS.careerStages}
-                      label="Explain career stages"
-                    />
-                  </div>
-                  <CareerTimeline state={state} />
-                </div>
+        <details
+          className="career-deep-details"
+          open={deepDetailsOpen}
+          onToggle={(event) => setDeepDetailsOpen(event.currentTarget.open)}
+          data-testid="career-deep-details"
+        >
+          <summary data-testid="career-deep-details-toggle">
+            <span>Deep details</span>
+            <span className="muted">{deepDetailsOpen ? "Collapse" : "Expand"}</span>
+          </summary>
+          <div className="career-deep-details-body">
+            <div className="career-canvas">
+              <div className="career-view-switch" data-testid="career-view-switch">
+                <button
+                  type="button"
+                  className={`secondary career-view-button ${activeView === "stages" ? "career-view-active" : ""}`}
+                  data-testid="career-view-stages"
+                  onClick={() => setActiveView("stages")}
+                >
+                  Stages
+                </button>
+                <button
+                  type="button"
+                  className={`secondary career-view-button ${activeView === "upgrades" ? "career-view-active" : ""}`}
+                  data-testid="career-view-upgrades"
+                  onClick={() => setActiveView("upgrades")}
+                >
+                  Upgrades
+                </button>
               </div>
-              <CareerMap state={state} onPurchase={onPurchase} />
+
+              {activeView === "stages" ? (
+                <div className="career-stage-stack">
+                  <div className="career-stages-pane">
+                    <div className="career-timeline-wrapper">
+                      <div className="career-canvas-header">
+                        <div>
+                          <h4>Career stages</h4>
+                          <p className="muted">Drag to pan. Pinch or ctrl-wheel to zoom.</p>
+                        </div>
+                        <ExplainButton
+                          sectionId={HELP_SECTION_IDS.careerStages}
+                          label="Explain career stages"
+                        />
+                      </div>
+                      <CareerTimeline state={state} />
+                    </div>
+                  </div>
+                  <CareerMap state={state} onPurchase={onPurchase} />
+                </div>
+              ) : (
+                <CareerUpgradesView state={state} nowMs={nowMs} onPurchase={onPurchase} />
+              )}
             </div>
-          ) : (
-            <CareerUpgradesView state={state} nowMs={nowMs} onPurchase={onPurchase} />
-          )}
-        </div>
+          </div>
+        </details>
       </div>
     </div>
   );
