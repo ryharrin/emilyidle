@@ -33,6 +33,7 @@ import { UnlockHint } from "../components/UnlockHint";
 import { BlueprintCostDetail } from "../components/BlueprintCostDetail";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
+import { UpgradeIcon } from "../icons/coreIcons";
 import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 
 type PurchaseMeta = {
@@ -318,7 +319,10 @@ export function UpgradesTab({
         <div className="upgrades-layout">
           <header className="panel upgrades-header">
             <div>
-              <p className="eyebrow">Upgrades</p>
+              <p className="eyebrow inline-icon-button">
+                <UpgradeIcon className="inline-icon" />
+                Upgrades
+              </p>
               <h2>Collection improvements</h2>
               <p className="muted">
                 Compare rate changes before committing to collection, Atelier, or Maison upgrades.

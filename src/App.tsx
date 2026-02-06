@@ -671,11 +671,11 @@ export default function App() {
     const enjoymentRate = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
 
     return {
-      cash: formatMoneyFromCents(state.currencyCents),
-      cashRate: formatRateFromCentsPerSec(cashRate),
-      enjoyment: formatMoneyFromCents(getEnjoymentCents(state)),
-      enjoymentRate: formatRateFromCentsPerSec(enjoymentRate),
-      sentimentalValue: formatMoneyFromCents(getCollectionValueCents(state)),
+      cash: state.currencyCents,
+      cashRate,
+      enjoyment: getEnjoymentCents(state),
+      enjoymentRate,
+      sentimentalValue: getCollectionValueCents(state),
       softcap: formatSoftcapEfficiency(getSoftcapEfficiency(state)),
     };
   }, [state]);

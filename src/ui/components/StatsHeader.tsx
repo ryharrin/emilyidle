@@ -1,12 +1,15 @@
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
+import { CurrencyIcon } from "../icons/coreIcons";
+import { ValueTicker } from "./ValueTicker";
+import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 
 export type StatsSummary = {
-  cash: string;
-  cashRate: string;
-  enjoyment: string;
-  enjoymentRate: string;
-  sentimentalValue: string;
+  cash: number;
+  cashRate: number;
+  enjoyment: number;
+  enjoymentRate: number;
+  sentimentalValue: number;
   softcap: string;
 };
 
@@ -35,12 +38,30 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           </div>
           <dl className="stats-grid stats-header__metrics">
             <div>
-              <dt>Dollars</dt>
-              <dd id="currency">{stats.cash}</dd>
+              <dt className="inline-icon-button">
+                <CurrencyIcon className="inline-icon" />
+                Dollars
+              </dt>
+              <dd id="currency">
+                <ValueTicker
+                  value={stats.cash}
+                  formatValue={formatMoneyFromCents}
+                  testId="value-ticker-currency"
+                />
+              </dd>
             </div>
             <div>
-              <dt>Dollars / sec</dt>
-              <dd id="income">{stats.cashRate}</dd>
+              <dt className="inline-icon-button">
+                <CurrencyIcon className="inline-icon" />
+                Dollars / sec
+              </dt>
+              <dd id="income">
+                <ValueTicker
+                  value={stats.cashRate}
+                  formatValue={formatRateFromCentsPerSec}
+                  testId="value-ticker-income"
+                />
+              </dd>
             </div>
           </dl>
         </article>
@@ -55,18 +76,37 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           <dl className="stats-grid stats-header__metrics">
             <div>
               <dt className="inline-icon-button">
+                <CurrencyIcon className="inline-icon" />
                 Collection enjoyment
                 <ExplainButton sectionId={HELP_SECTION_IDS.currencies} label="Explain currencies" />
               </dt>
-              <dd id="enjoyment">{stats.enjoyment}</dd>
+              <dd id="enjoyment">
+                <ValueTicker
+                  value={stats.enjoyment}
+                  formatValue={formatMoneyFromCents}
+                  testId="value-ticker-enjoyment"
+                />
+              </dd>
             </div>
             <div>
               <dt>Enjoyment / sec</dt>
-              <dd id="enjoyment-rate">{stats.enjoymentRate}</dd>
+              <dd id="enjoyment-rate">
+                <ValueTicker
+                  value={stats.enjoymentRate}
+                  formatValue={formatRateFromCentsPerSec}
+                  testId="value-ticker-enjoyment-rate"
+                />
+              </dd>
             </div>
             <div>
               <dt>Memories</dt>
-              <dd id="collection-value">{stats.sentimentalValue}</dd>
+              <dd id="collection-value">
+                <ValueTicker
+                  value={stats.sentimentalValue}
+                  formatValue={formatMoneyFromCents}
+                  testId="value-ticker-memories"
+                />
+              </dd>
             </div>
           </dl>
         </details>
