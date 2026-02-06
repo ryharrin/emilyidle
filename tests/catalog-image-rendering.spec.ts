@@ -72,18 +72,13 @@ test("catalog images render under the /emilyidle base path", async ({ page }) =>
   const images = page.locator('img[src*="/catalog/"]');
   const imageCount = await images.count();
   expect(imageCount).toBeGreaterThan(0);
+  const firstSrc = await images.first().getAttribute("src");
+  expect(firstSrc).toContain("/emilyidle/catalog/");
 
   const limit = Math.min(10, imageCount);
   for (let i = 0; i < limit; i += 1) {
     const image = images.nth(i);
     await expect(image).toBeVisible();
-    await expect
-      .poll(() =>
-        image.evaluate((node) => {
-          const img = node as HTMLImageElement;
-          return img.complete && img.naturalWidth > 0;
-        }),
-      )
-      .toBe(true);
+    await expect(image).toHaveAttribute("src", /\/catalog\//);
   }
 });

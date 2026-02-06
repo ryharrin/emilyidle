@@ -3829,7 +3829,9 @@ button[data-testid^="catalog-buy-"]:disabled {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  margin-top: 2px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .catalog-grid-density-compact .catalog-action-bar {
@@ -3842,17 +3844,18 @@ button[data-testid^="catalog-buy-"]:disabled {
 
 .catalog-grid-density-compact .catalog-secondary-actions {
   gap: 6px;
+  padding-top: 6px;
 }
 
 .catalog-secondary-action,
 .catalog-favorite-toggle,
 .catalog-compare-toggle {
-  min-height: 44px;
+  min-height: 40px;
   border-radius: 10px;
-  padding-inline: 12px;
+  padding-inline: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   border-color: rgba(95, 104, 120, 0.66);
   background: rgba(20, 24, 32, 0.84);
   color: #dce3ef;
@@ -3979,6 +3982,12 @@ button[data-testid^="catalog-buy-"]:disabled {
   color: #c7cdd6;
 }
 
+.catalog-disabled-next {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #9da3ad;
+}
+
 [data-theme="light"] .catalog-action-meta {
   color: #6f6559;
 }
@@ -4020,6 +4029,10 @@ button[data-testid^="catalog-buy-"]:disabled {
   color: #4b4034;
 }
 
+[data-theme="light"] .catalog-secondary-actions {
+  border-top-color: rgba(170, 130, 86, 0.2);
+}
+
 [data-theme="light"] .catalog-favorite-toggle--active,
 [data-theme="light"] .catalog-compare-toggle-active {
   border-color: rgba(146, 109, 68, 0.7);
@@ -4059,6 +4072,10 @@ button[data-testid^="catalog-buy-"]:disabled {
 
 [data-theme="light"] .catalog-disabled-body {
   color: #5b5348;
+}
+
+[data-theme="light"] .catalog-disabled-next {
+  color: #6e6256;
 }
 
 .catalog-sources {
@@ -4399,6 +4416,72 @@ button[data-testid^="catalog-buy-"]:disabled {
   margin: 0;
 }
 
+.career-next-details {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(15, 17, 21, 0.5);
+  overflow: hidden;
+}
+
+.career-next-details summary {
+  cursor: pointer;
+  list-style: none;
+  min-height: 46px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+}
+
+.career-next-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.career-next-details .career-stack-next {
+  padding: 10px;
+}
+
+.career-next-action-card {
+  display: grid;
+  gap: 10px;
+}
+
+.career-next-action-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.career-next-action-header h4 {
+  margin: 0;
+}
+
+.career-next-action-status {
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.career-feedback-strip {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(232, 198, 147, 0.24);
+  background: rgba(17, 20, 28, 0.6);
+  display: grid;
+  gap: 4px;
+}
+
+.career-feedback-strip p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
 .career-economy-summary {
   display: grid;
   gap: 10px;
@@ -4498,6 +4581,26 @@ button[data-testid^="catalog-buy-"]:disabled {
 
 [data-theme="light"] .career-economy-summary-window {
   color: #4f473d;
+}
+
+[data-theme="light"] .career-next-action-status {
+  border-color: rgba(170, 130, 86, 0.42);
+  background: rgba(170, 130, 86, 0.15);
+  color: #4a3f30;
+}
+
+[data-theme="light"] .career-feedback-strip {
+  border-color: rgba(170, 130, 86, 0.24);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .career-next-details {
+  border-color: rgba(170, 130, 86, 0.24);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+[data-theme="light"] .career-next-details summary {
+  border-color: rgba(170, 130, 86, 0.2);
 }
 
 [data-theme="light"] .career-deep-details summary {
@@ -4805,9 +4908,54 @@ button[data-testid^="catalog-buy-"]:disabled {
       "deep";
   }
 
+  .career-priority-next .career-priority-header {
+    display: none;
+  }
+
   .career-map,
   .career-map-viewport {
     min-height: 520px;
+  }
+
+  .career-mobile-now-rail {
+    position: sticky;
+    bottom: 12px;
+    z-index: 10;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(232, 198, 147, 0.32);
+    background: rgba(10, 12, 16, 0.92);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.32);
+  }
+
+  .career-mobile-now-rail button {
+    white-space: nowrap;
+  }
+
+  .career-mobile-now-rail-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .career-mobile-now-rail-copy p {
+    margin: 0;
+  }
+
+  .career-mobile-now-rail-copy p:not(.eyebrow) {
+    font-size: 0.85rem;
+    color: #f5f5f6;
+  }
+}
+
+@media (min-width: 821px) {
+  .career-mobile-now-rail {
+    display: none;
   }
 }
 

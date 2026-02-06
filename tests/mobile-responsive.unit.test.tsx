@@ -1,5 +1,9 @@
-import { render } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { TierBadge } from "../src/ui/components/TierBadge";
+import { HelpProvider } from "../src/ui/help/helpContext";
+import { CareerPanel } from "../src/ui/tabs/career/CareerPanel";
+import { createInitialState } from "../src/game/state";
+import type { GameState } from "../src/game/state";
 
 const STYLE_ID = "mobile-responsive-test-styles";
 const originalMatchMedia = window.matchMedia;
@@ -203,5 +207,53 @@ describe("Mobile responsive layout helpers", () => {
     const badge = container.querySelector(".tier-badge") as HTMLElement;
     expect(badge).toHaveAttribute("data-tier", "lux");
     expect(queryByText("Luxury")).not.toBeInTheDocument();
+  });
+
+  test("Career panel collapses secondary sections and shows sticky now-action rail on mobile", async () => {
+    const state = createInitialState();
+    setViewportWidth(430);
+
+    render(
+      <HelpProvider value={{ openHelpTo: () => {} }}>
+        <CareerPanel state={state} nowMs={0} onPurchase={() => {}} />
+      </HelpProvider>,
+    );
+
+    expect(screen.getByTestId("career-mobile-now-rail")).toBeVisible();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("career-next-details")).not.toHaveAttribute("open");
+      expect(screen.getByTestId("career-deep-details")).not.toHaveAttribute("open");
+    });
+  });
+
+  test("Mobile now-action rail can open progression details", async () => {
+    const base = createInitialState();
+    const state: GameState = {
+      ...base,
+      therapistCareer: {
+        ...base.therapistCareer,
+        careerStartId: "phd-program",
+        level: 3,
+        primaryTrackId: null,
+        activeTrackId: null,
+      },
+    };
+
+    setViewportWidth(430);
+    render(
+      <HelpProvider value={{ openHelpTo: () => {} }}>
+        <CareerPanel state={state} nowMs={0} onPurchase={() => {}} />
+      </HelpProvider>,
+    );
+
+    const openButton = screen.getByTestId("career-mobile-now-rail-action");
+    expect(openButton).toHaveTextContent("Open progression");
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("career-next-details")).toHaveAttribute("open");
+      expect(screen.getByTestId("career-deep-details")).toHaveAttribute("open");
+    });
   });
 });

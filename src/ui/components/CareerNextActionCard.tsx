@@ -8,21 +8,44 @@ import { HELP_SECTION_IDS } from "../help/helpContent";
 type CareerNextActionCardProps = {
   state: GameState;
   nowMs: number;
+  statusLabel: string;
   onPurchase: (nextState: GameState) => void;
 };
 
-export function CareerNextActionCard({ state, nowMs, onPurchase }: CareerNextActionCardProps) {
+export function CareerNextActionCard({
+  state,
+  nowMs,
+  statusLabel,
+  onPurchase,
+}: CareerNextActionCardProps) {
   const cue = getCareerNextActionCue(state, nowMs);
 
+  const secondaryHint = (() => {
+    if (cue.id === "choose-track" || cue.id === "choose-modality") {
+      return "Open deep details and choose the highlighted stage card.";
+    }
+    if (cue.id === "choose-operating-style" || cue.id === "choose-expansion-focus") {
+      return "Open deep details and lock in your next permanent choice.";
+    }
+    if (cue.id === "perform-session") {
+      return "Use Run session in the Sessions card when the action is ready.";
+    }
+    return null;
+  })();
+
   return (
-    <div className="card" data-testid="career-next-action">
-      <div className="career-track-header">
+    <article className="card career-next-action-card" data-testid="career-next-action">
+      <header className="career-next-action-header">
         <div>
-          <h4>Next action</h4>
-          <p className="muted">{cue.label}</p>
+          <p className="eyebrow">Primary action</p>
+          <h4>{cue.label}</h4>
         </div>
-      </div>
+        <p className="results-count career-next-action-status" data-testid="career-next-action-status">
+          {statusLabel}
+        </p>
+      </header>
       <p className="muted">{cue.detail}</p>
+      {secondaryHint ? <p className="muted">{secondaryHint}</p> : null}
 
       {cue.id === "start-career" ? (
         <div className="card-actions">
@@ -39,6 +62,6 @@ export function CareerNextActionCard({ state, nowMs, onPurchase }: CareerNextAct
           />
         </div>
       ) : null}
-    </div>
+    </article>
   );
 }

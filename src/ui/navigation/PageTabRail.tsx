@@ -70,6 +70,41 @@ export function PageTabRail({
       return;
     }
 
+    const selectedTab = scrollNode.querySelector<HTMLButtonElement>(`#${activeTabId}-tab`);
+    if (!selectedTab) {
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, scrollNode.scrollWidth - scrollNode.clientWidth);
+    const centeredLeft = selectedTab.offsetLeft - (scrollNode.clientWidth - selectedTab.offsetWidth) / 2;
+    const nextLeft = Math.min(maxScrollLeft, Math.max(0, centeredLeft));
+
+    if (Math.abs(scrollNode.scrollLeft - nextLeft) <= 2) {
+      return;
+    }
+
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (typeof scrollNode.scrollTo === "function") {
+      scrollNode.scrollTo({
+        left: nextLeft,
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+      return;
+    }
+
+    scrollNode.scrollLeft = nextLeft;
+  }, [activeTabId, tabs]);
+
+  useEffect(() => {
+    const scrollNode = scrollRef.current;
+    if (!scrollNode) {
+      return;
+    }
+
     const handleScrollOrResize = () => {
       updateOverflowState();
     };

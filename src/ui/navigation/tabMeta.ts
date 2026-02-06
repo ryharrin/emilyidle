@@ -20,8 +20,8 @@ export type TabMeta = {
 
 export const TAB_DEFINITIONS: TabMeta[] = [
   { id: "career", label: "Career", bucket: "primary" },
-  { id: "collection", label: "Collection", bucket: "primary" },
   { id: "catalog", label: "Catalog", bucket: "primary" },
+  { id: "collection", label: "Collection", bucket: "primary" },
   { id: "upgrades", label: "Upgrades", bucket: "progression" },
   { id: "workshop", label: "Atelier", bucket: "progression" },
   { id: "maison", label: "Maison", bucket: "progression" },

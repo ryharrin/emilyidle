@@ -76,6 +76,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Cards show whether you are cash-gated or enjoyment-gated before you buy.",
       "If a card says Need $X more, you are short on cash for that purchase.",
       "If a card mentions enjoyment, you need more enjoyment before it unlocks.",
+      "Why can't I buy? uses short labels (Funds, Enjoyment, Locked, Undiscovered) plus next-step hints.",
       "Owned counts update immediately after a purchase to confirm the buy.",
     ],
     keywords: ["catalog", "shopping", "buy", "purchase", "shop"],

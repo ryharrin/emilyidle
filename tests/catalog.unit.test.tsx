@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen, within, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
@@ -164,26 +164,26 @@ describe("primary navigation tabs", () => {
 
     await user.keyboard("{ArrowRight}");
 
-    expect(document.activeElement).toBe(vaultTab);
-    expect(careerTab.getAttribute("aria-selected")).toBe("true");
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
-    expect(careerTab.getAttribute("tabindex")).toBe("-1");
-    expect(vaultTab.getAttribute("tabindex")).toBe("0");
-
-    await user.keyboard("{ArrowRight}");
-
     expect(document.activeElement).toBe(catalogTab);
     expect(careerTab.getAttribute("aria-selected")).toBe("true");
     expect(catalogTab.getAttribute("aria-selected")).toBe("false");
-    expect(vaultTab.getAttribute("tabindex")).toBe("-1");
+    expect(careerTab.getAttribute("tabindex")).toBe("-1");
     expect(catalogTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{ArrowRight}");
+
+    expect(document.activeElement).toBe(vaultTab);
+    expect(careerTab.getAttribute("aria-selected")).toBe("true");
+    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
+    expect(catalogTab.getAttribute("tabindex")).toBe("-1");
+    expect(vaultTab.getAttribute("tabindex")).toBe("0");
 
     await user.keyboard("{ArrowRight}");
 
     expect(document.activeElement).toBe(upgradesTab);
     expect(careerTab.getAttribute("aria-selected")).toBe("true");
     expect(upgradesTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("tabindex")).toBe("-1");
+    expect(vaultTab.getAttribute("tabindex")).toBe("-1");
     expect(upgradesTab.getAttribute("tabindex")).toBe("0");
 
     await user.keyboard("{ArrowRight}");
@@ -203,10 +203,10 @@ describe("primary navigation tabs", () => {
 
     await user.keyboard("{ArrowLeft}");
 
-    expect(document.activeElement).toBe(catalogTab);
+    expect(document.activeElement).toBe(vaultTab);
     expect(careerTab.getAttribute("aria-selected")).toBe("true");
-    expect(catalogTab.getAttribute("aria-selected")).toBe("false");
-    expect(catalogTab.getAttribute("tabindex")).toBe("0");
+    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
+    expect(vaultTab.getAttribute("tabindex")).toBe("0");
   });
 
   it.each([
@@ -216,7 +216,7 @@ describe("primary navigation tabs", () => {
     const user = userEvent.setup();
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
 
     expect(screen.queryByRole("tabpanel", { name: /Collection/i })).toBeNull();
@@ -229,14 +229,14 @@ describe("primary navigation tabs", () => {
 
     await user.keyboard("{ArrowRight}");
 
-    expect(document.activeElement).toBe(vaultTab);
-    expect(vaultTab.getAttribute("aria-selected")).toBe("false");
+    expect(document.activeElement).toBe(catalogTab);
+    expect(catalogTab.getAttribute("aria-selected")).toBe("false");
 
     await user.keyboard(key);
 
-    expect(vaultTab.getAttribute("aria-selected")).toBe("true");
+    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
     expect(careerTab.getAttribute("aria-selected")).toBe("false");
-    expect(screen.getByRole("tabpanel", { name: /Collection/i })).toBeTruthy();
+    expect(screen.getByRole("tabpanel", { name: /Catalog/i })).toBeTruthy();
   });
 
   it("restores the last visited tab for existing saves", () => {
@@ -1115,8 +1115,11 @@ describe("catalog purchase CTA", () => {
 
     const favoriteToggle = within(card).getByTestId(/catalog-favorite-toggle-/);
     const compareToggle = within(card).getByTestId(/catalog-compare-toggle-/);
+    const primaryActions = card.querySelector(".catalog-primary-actions");
+    const primaryButtons = primaryActions?.querySelectorAll(".catalog-primary-action");
 
     expect(buyButton.classList.contains("catalog-primary-action")).toBe(true);
+    expect(primaryButtons?.length).toBe(1);
     expect(favoriteToggle.classList.contains("secondary")).toBe(true);
     expect(compareToggle.classList.contains("secondary")).toBe(true);
   });
@@ -1199,6 +1202,30 @@ describe("catalog card affordances", () => {
     );
     expect(dismantleButtons.length).toBeGreaterThan(0);
   });
+
+  it("falls back to tier placeholders before using terminal media fallback", async () => {
+    localStorage.clear();
+    render(<App />);
+    await openCatalogTab();
+
+    const catalogGrid = await waitFor(() => screen.getByTestId("catalog-grid"));
+    const firstImage = catalogGrid.querySelector("img");
+    if (!(firstImage instanceof HTMLImageElement)) {
+      throw new Error("Expected a catalog image");
+    }
+
+    fireEvent.error(firstImage);
+    await waitFor(() => {
+      expect(firstImage.dataset.fallbackStage).toBe("tier");
+    });
+    expect(firstImage.src).toContain("/catalog/placeholders/");
+
+    fireEvent.error(firstImage);
+    await waitFor(() => {
+      expect(firstImage.dataset.fallbackStage).toBe("final");
+    });
+    expect(firstImage.src).toContain("data:image/svg+xml");
+  });
 });
 
 describe("catalog gating explanations", () => {
@@ -1256,8 +1283,9 @@ describe("catalog gating explanations", () => {
 
     const explainer = screen.getByTestId(`catalog-explain-${classicModelId}`);
     expect(explainer).toHaveAttribute("open");
-    expect(explainer.textContent).toContain("Enjoyment requirement");
-    expect(explainer.textContent).toContain("Cash requirement");
+    expect(explainer.textContent).toContain("Enjoyment");
+    expect(explainer.textContent).toContain("Funds");
+    expect(explainer.textContent).toContain("Next:");
   });
 });
 

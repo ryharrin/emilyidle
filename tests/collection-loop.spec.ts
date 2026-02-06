@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import { openCatalogFilters } from "./helpers/catalogFilters";
 
 const selectors = {
@@ -41,6 +41,97 @@ const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 const TOURBILLON_MODEL_ID =
   "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
 const WATCH_MODEL_COUNT = 59;
+
+async function clickPrimaryTab(page: Page, name: string) {
+  const tab = page.getByRole("tab", { name });
+  await expect(tab).toBeVisible();
+  await tab.evaluate((element) => (element as HTMLButtonElement).click());
+}
+
+async function switchCatalogToOwned(page: Page) {
+  const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
+  const ownedTab = catalogPanel.getByRole("tab", { name: /^Owned/ }).first();
+  if (!(await ownedTab.isVisible().catch(() => false))) {
+    const quickFilters = catalogPanel.getByTestId("catalog-quick-filters");
+    if (await quickFilters.isVisible().catch(() => false)) {
+      await quickFilters.click({ force: true });
+    } else {
+      const filterToggle = catalogPanel.getByTestId("catalog-filter-toggle");
+      if (await filterToggle.isVisible().catch(() => false)) {
+        await filterToggle.click({ force: true });
+      }
+    }
+  }
+  await ownedTab.click({ force: true });
+}
+
+async function openCatalogDetailsSheet(page: Page) {
+  const sheet = page.getByTestId("catalog-details-sheet");
+  if (await sheet.isVisible().catch(() => false)) {
+    return true;
+  }
+
+  const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
+  const detailsButtons = catalogPanel.locator('[data-testid^="catalog-details-button-"]');
+  const detailsCount = await detailsButtons.count();
+  for (let index = 0; index < detailsCount; index += 1) {
+    const button = detailsButtons.nth(index);
+    if (!(await button.isVisible().catch(() => false))) {
+      continue;
+    }
+    await button.click({ force: true });
+    if (await sheet.isVisible().catch(() => false)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function resolveCatalogInteractCandidates(page: Page, selector: string): Promise<Locator> {
+  const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
+  const panelCandidates = catalogPanel.locator(selector);
+  if ((await panelCandidates.count()) > 0) {
+    return panelCandidates;
+  }
+
+  const opened = await openCatalogDetailsSheet(page);
+  if (!opened) {
+    return panelCandidates;
+  }
+
+  const sheetCandidates = page.getByTestId("catalog-details-sheet").locator(selector);
+  if ((await sheetCandidates.count()) > 0) {
+    return sheetCandidates;
+  }
+
+  return panelCandidates;
+}
+
+async function openCatalogInteractionModal(
+  page: Page,
+  interactSelector: string,
+  modalTestId: string,
+): Promise<void> {
+  const interactCandidates = await resolveCatalogInteractCandidates(page, interactSelector);
+  const modal = page.getByTestId(modalTestId);
+  const candidateCount = await interactCandidates.count();
+  expect(candidateCount).toBeGreaterThan(0);
+
+  for (let index = 0; index < candidateCount; index += 1) {
+    const candidate = interactCandidates.nth(index);
+    if (!(await candidate.isVisible().catch(() => false))) {
+      continue;
+    }
+    await candidate.scrollIntoViewIfNeeded().catch(() => {});
+    await candidate.click({ force: true });
+    if (await modal.isVisible().catch(() => false)) {
+      return;
+    }
+  }
+
+  await expect(modal).toBeVisible({ timeout: 10_000 });
+}
 
 test.describe("collection loop", () => {
   test.beforeEach(async ({ page }) => {
@@ -89,7 +180,7 @@ test.describe("collection loop", () => {
 
     await page.reload();
 
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     const buyButton = page.getByTestId(`catalog-buy-${STARTER_MODEL_ID}`);
     await buyButton.scrollIntoViewIfNeeded();
@@ -117,7 +208,7 @@ test.describe("collection loop", () => {
   });
 
   test("renders collection structure and stats", async ({ page }) => {
-    await page.getByRole("tab", { name: "Collection" }).click();
+    await clickPrimaryTab(page, "Collection");
     await expect(page.locator(selectors.currency)).toHaveText(/\$/);
     await expect(page.locator(selectors.income)).toHaveText(/\$/);
     await expect(page.locator(selectors.collectionValue)).toHaveText(/\$/);
@@ -134,13 +225,13 @@ test.describe("collection loop", () => {
     await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
     await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
 
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     const catalogCardCount = await page.locator(selectors.catalogCards).count();
     expect(catalogCardCount).toBeGreaterThanOrEqual(WATCH_MODEL_COUNT);
   });
 
   test("collection section nav anchors and coachmark dismisses", async ({ page }) => {
-    await page.getByRole("tab", { name: "Collection" }).click();
+    await clickPrimaryTab(page, "Collection");
     await expect(page.locator(selectors.sectionNav)).toBeVisible();
 
     const coachmark = page.locator(selectors.onboardingCoachmark);
@@ -152,11 +243,11 @@ test.describe("collection loop", () => {
     await coachmark.getByRole("button", { name: "Got it" }).click({ force: true });
 
     await page.reload();
-    await page.getByRole("tab", { name: "Collection" }).click();
+    await clickPrimaryTab(page, "Collection");
   });
 
   test("collection nav reaches insights panel and Starter/Mid/Lux segments", async ({ page }) => {
-    await page.getByRole("tab", { name: "Collection" }).click();
+    await clickPrimaryTab(page, "Collection");
     await expect(page.locator(selectors.insightsPanel)).toBeVisible();
 
     const nav = page.locator(selectors.sectionNav);
@@ -175,7 +266,7 @@ test.describe("collection loop", () => {
   });
 
   test("buy button disabled when unaffordable", async ({ page }) => {
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     await openCatalogFilters(page);
     const catalogFilters = page.getByTestId("catalog-filters");
@@ -235,7 +326,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     await openCatalogFilters(page);
     await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
@@ -246,23 +337,69 @@ test.describe("collection loop", () => {
     await expect(gate).toContainText("Requires");
   });
 
+  test("fresh save career session leads into first catalog purchase", async ({ page }) => {
+    await page.goto("/");
+    await clickPrimaryTab(page, "Career");
+
+    const startCareerButton = page.getByTestId("career-next-action-start");
+    if ((await startCareerButton.count()) > 0) {
+      await startCareerButton.click();
+    }
+
+    const runSessionButton = page.getByTestId("career-action");
+    await expect(runSessionButton).toBeEnabled({ timeout: 10_000 });
+    await runSessionButton.click();
+
+    const nextDetails = page.getByTestId("career-next-details");
+    if ((await nextDetails.count()) > 0) {
+      const isOpen = await nextDetails.evaluate((node) => (node as HTMLDetailsElement).open);
+      if (!isOpen) {
+        await page.getByTestId("career-next-details-toggle").click({ force: true });
+      }
+    }
+
+    await expect(page.getByTestId("career-feedback-strip")).toBeVisible();
+    await expect(page.getByTestId("career-feedback-primary")).toContainText(/Last session|Next step/);
+
+    await clickPrimaryTab(page, "Catalog");
+    await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
+    const starterBuy = page.getByTestId(`catalog-buy-${STARTER_MODEL_ID}`);
+    await expect(starterBuy).toBeEnabled({ timeout: 15_000 });
+    await starterBuy.click();
+
+    await page.waitForFunction(
+      (modelId) => {
+        const saved = window.localStorage.getItem("emily-idle:save");
+        if (!saved) {
+          return false;
+        }
+        const payload = JSON.parse(saved);
+        return (payload.state?.watchModels?.[modelId] ?? 0) >= 1;
+      },
+      STARTER_MODEL_ID,
+      { timeout: 5_000 },
+    );
+  });
+
   test("export and import save round trip", async ({ page }) => {
-    await page.getByRole("tab", { name: "Settings" }).click();
+    await clickPrimaryTab(page, "Settings");
     await page.getByRole("button", { name: "Export" }).click();
     const saveText = await page.inputValue(selectors.importText);
     expect(saveText.length).toBeGreaterThan(0);
 
+    const importButton = page.getByRole("button", { name: "Import", exact: true }).first();
+
     await page.fill(selectors.importText, "");
-    await page.getByRole("button", { name: "Import" }).click();
+    await importButton.click();
     await expect(page.locator(selectors.saveStatus)).toContainText("Paste an exported save string");
 
     await page.fill(selectors.importText, saveText);
-    await page.getByRole("button", { name: "Import" }).click();
+    await importButton.click();
     await expect(page.locator(selectors.saveStatus)).toContainText("Imported save from");
   });
 
   test("audio toggles render and respond", async ({ page }) => {
-    await page.getByRole("tab", { name: "Settings" }).click();
+    await clickPrimaryTab(page, "Settings");
 
     const sfxToggle = page.getByTestId("audio-sfx-toggle");
     const bgmToggle = page.getByTestId("audio-bgm-toggle");
@@ -392,7 +529,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     await openCatalogFilters(page);
     const catalogFilters = page.getByTestId("catalog-filters");
@@ -469,7 +606,7 @@ test.describe("collection loop", () => {
     const imageFilename = "Rolex_GMT-Master_II_ref._126713GRNR.jpg";
 
     await page.goto("/emilyidle/");
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     await openCatalogFilters(page);
 
@@ -554,14 +691,14 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await clickPrimaryTab(page, "Atelier");
     await expect(page.locator(selectors.workshopPanel)).toBeVisible();
     await expect(page.locator(selectors.workshopGain).nth(1)).toContainText("+1 Blueprints");
     await expect(page.locator(selectors.workshopResetButton)).toBeEnabled();
   });
 
   test("automation toggle appears after automation upgrade", async ({ page }) => {
-    await page.getByRole("tab", { name: "Collection" }).click();
+    await clickPrimaryTab(page, "Collection");
     const automationToggle = page.locator(selectors.automationToggle);
     await expect(automationToggle).toContainText("Unlock automation with Atelier blueprints.");
 
@@ -615,7 +752,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Collection" }).click();
+    await clickPrimaryTab(page, "Collection");
     await expect(page.locator(selectors.automationToggle).getByRole("button")).toHaveText(
       /Auto-buy (on|off)/,
     );
@@ -673,7 +810,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Maison" }).click();
+    await clickPrimaryTab(page, "Maison");
     await expect(page.locator(selectors.maisonPanel)).toBeVisible();
     await expect(page.locator(selectors.maisonGain).nth(1)).toContainText("+2 Heritage");
     await expect(page.locator(selectors.maisonGain).nth(2)).toContainText("+0 Reputation");
@@ -732,12 +869,14 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Collection" }).click();
+    await clickPrimaryTab(page, "Collection");
     await expect(page.getByRole("heading", { name: "Achievements" })).toBeVisible();
 
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
-    await expect(page.getByText(/Auction weekend/)).toBeVisible();
-    await expect(page.getByText(/Income x/).first()).toBeVisible();
+    const auctionWeekendCard = page.locator('[data-testid="event-calendar-auction-weekend"]:visible').first();
+    await expect(auctionWeekendCard).toBeVisible();
+    await expect(auctionWeekendCard).toContainText(/Auction weekend/);
+    await expect(auctionWeekendCard).toContainText(/Income x/);
   });
 
   test("winding interaction completes and applies rewards", async ({ page }) => {
@@ -768,12 +907,9 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     await openCatalogFilters(page);
-    await page
-      .getByTestId("catalog-owned-tabs")
-      .getByRole("tab", { name: /^Owned/ })
-      .click();
+    await switchCatalogToOwned(page);
 
     const before = await page.evaluate(() => {
       const saved = window.localStorage.getItem("emily-idle:save");
@@ -781,14 +917,12 @@ test.describe("collection loop", () => {
       return parsed?.state?.enjoymentCents ?? 0;
     });
 
-    const interactButton = page
-      .locator('[data-testid="vault-interact-chronograph"]:not([disabled])')
-      .first();
-    await interactButton.scrollIntoViewIfNeeded();
-    await expect(interactButton).toBeEnabled();
-    await interactButton.click();
+    await openCatalogInteractionModal(
+      page,
+      '[data-testid="vault-interact-chronograph"]:not([disabled]), [data-testid="vault-interact-tourbillon"]:not([disabled])',
+      "winding-modal",
+    );
 
-    await expect(page.getByTestId("winding-modal")).toBeVisible();
     const surface = page.getByTestId("winding-surface");
     await surface.focus();
     await page.keyboard.press("Space");
@@ -837,12 +971,9 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Catalog" }).click();
+    await clickPrimaryTab(page, "Catalog");
     await openCatalogFilters(page);
-    await page
-      .getByTestId("catalog-owned-tabs")
-      .getByRole("tab", { name: /^Owned/ })
-      .click();
+    await switchCatalogToOwned(page);
 
     const parseRate = (text: string): number => {
       const match = text.replace(/,/g, "").match(/\$(\d+(?:\.\d+)?)/);
@@ -852,14 +983,12 @@ test.describe("collection loop", () => {
     const beforeRateText = await page.locator("#enjoyment-rate").innerText();
     const beforeRate = parseRate(beforeRateText);
 
-    const interactButton = page
-      .locator('[data-testid="vault-interact-classic"]:not([disabled])')
-      .first();
-    await interactButton.scrollIntoViewIfNeeded();
-    await expect(interactButton).toBeEnabled();
-    await interactButton.click();
+    await openCatalogInteractionModal(
+      page,
+      '[data-testid="vault-interact-classic"]:not([disabled])',
+      "automatic-modal",
+    );
 
-    await expect(page.getByTestId("automatic-modal")).toBeVisible();
     await expect(page.getByTestId("automatic-outcome")).toBeVisible({ timeout: 5000 });
     await page.getByTestId("automatic-done").click();
     await expect(page.getByTestId("automatic-modal")).toHaveCount(0);
@@ -936,7 +1065,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await clickPrimaryTab(page, "Atelier");
 
     const parts = page.getByTestId("workshop-crafting-parts");
     await expect(parts).toContainText("0 parts");

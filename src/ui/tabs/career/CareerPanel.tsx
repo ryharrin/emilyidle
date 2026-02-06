@@ -4,6 +4,8 @@ import { CAREER_TRACKS, TRACK_CHOICE_UNLOCK_LEVEL } from "../../../game/data/car
 import { formatMoneyFromCents } from "../../../game/format";
 import {
   canPerformTherapistSession,
+  enterPhdProgram,
+  getCareerNextActionCue,
   getTherapistCareer,
   getTherapistSessionCostLabel,
   getTherapistSessionValueDeltaSummary,
@@ -43,10 +45,23 @@ const formatDuration = (ms: number) => {
   return `${seconds}s`;
 };
 
+const MOBILE_CAREER_QUERY = "(max-width: 820px)";
+
+const getIsCompactCareerViewport = () => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+
+  return window.matchMedia(MOBILE_CAREER_QUERY).matches;
+};
+
 export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const [activeView, setActiveView] = React.useState<"stages" | "upgrades">("stages");
-  const [deepDetailsOpen, setDeepDetailsOpen] = React.useState(true);
+  const [isCompactLayout, setIsCompactLayout] = React.useState(getIsCompactCareerViewport);
+  const [deepDetailsOpen, setDeepDetailsOpen] = React.useState(() => !getIsCompactCareerViewport());
+  const [nextSectionOpen, setNextSectionOpen] = React.useState(() => !getIsCompactCareerViewport());
   const career = getTherapistCareer(state);
+  const nextActionCue = getCareerNextActionCue(state, nowMs);
   const nextXpRequired = getTherapistXpRequiredForNextLevel(career.level);
   const sessionPolicy = getTherapistSessionPolicy(state, nowMs);
   const costLabel = getTherapistSessionCostLabel(state, nowMs);
@@ -111,6 +126,68 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     return `Next session costs ${normalCost} enjoyment.`;
   })();
 
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_CAREER_QUERY);
+    const syncLayout = (matches: boolean) => {
+      setIsCompactLayout(matches);
+      if (matches) {
+        setDeepDetailsOpen(false);
+        setNextSectionOpen(false);
+        return;
+      }
+
+      setDeepDetailsOpen(true);
+      setNextSectionOpen(true);
+    };
+
+    syncLayout(mediaQuery.matches);
+    const onChange = (event: MediaQueryListEvent) => {
+      syncLayout(event.matches);
+    };
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", onChange);
+      return () => mediaQuery.removeEventListener("change", onChange);
+    }
+
+    mediaQuery.addListener(onChange);
+    return () => mediaQuery.removeListener(onChange);
+  }, []);
+
+  const openProgressDetails = React.useCallback(() => {
+    setNextSectionOpen(true);
+    setDeepDetailsOpen(true);
+    setActiveView("stages");
+  }, []);
+
+  const mobileRailAction = (() => {
+    if (nextActionCue.id === "start-career") {
+      return {
+        label: "Enter program",
+        disabled: false,
+        onClick: () => onPurchase(enterPhdProgram(state, nowMs)),
+      };
+    }
+
+    if (nextActionCue.id === "perform-session") {
+      return {
+        label: canPerform ? "Run session" : "Run session (locked)",
+        disabled: !sessionPolicy.supportsSessions || !canPerform,
+        onClick: () => onPurchase(performTherapistSession(state, nowMs)),
+      };
+    }
+
+    return {
+      label: "Open progression",
+      disabled: false,
+      onClick: openProgressDetails,
+    };
+  })();
+
   return (
     <div className="panel" data-testid="career-panel">
       <header className="panel-header">
@@ -134,11 +211,18 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
         >
           <header className="career-priority-header">
             <p className="eyebrow">Now</p>
-            <h4>Immediate action</h4>
-            <p className="muted">Prioritize the next move that advances salary and session flow.</p>
+            <h4>Primary action lane</h4>
+            <p className="muted">
+              One canonical action summary, then supporting diagnostics underneath.
+            </p>
           </header>
           <div className="card-stack career-stack career-stack-now">
-            <CareerNextActionCard state={state} nowMs={nowMs} onPurchase={onPurchase} />
+            <CareerNextActionCard
+              state={state}
+              nowMs={nowMs}
+              statusLabel={statusLabel}
+              onPurchase={onPurchase}
+            />
             <article className="card career-economy-summary" data-testid="career-economy-summary">
               <header className="career-economy-summary-header">
                 <h4>Session value snapshot</h4>
@@ -187,7 +271,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
             <div className="card career-session">
               <div className="career-session-header">
                 <div>
-                  <h4>Sessions</h4>
+                  <h4>Session execution</h4>
                   <p className="muted">Run focused sessions for cash bursts and career XP.</p>
                 </div>
                 <div className="career-session-note">{sessionCostNote}</div>
@@ -290,15 +374,35 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           className="career-priority-section career-priority-next"
           data-testid="career-next-section"
         >
-          <header className="career-priority-header">
-            <p className="eyebrow">Next</p>
-            <h4>Progress and choices</h4>
-            <p className="muted">Confirm near-term unlocks before using advanced planners.</p>
-          </header>
-          <div className="card-stack career-stack career-stack-next">
-            <CareerProgressCard state={state} />
-            <CareerStageChoiceSummary state={state} />
-          </div>
+          {isCompactLayout ? (
+            <details
+              className="career-next-details"
+              open={nextSectionOpen}
+              onToggle={(event) => setNextSectionOpen(event.currentTarget.open)}
+              data-testid="career-next-details"
+            >
+              <summary data-testid="career-next-details-toggle">
+                <span>Progress and choices</span>
+                <span className="muted">{nextSectionOpen ? "Collapse" : "Expand"}</span>
+              </summary>
+              <div className="card-stack career-stack career-stack-next">
+                <CareerProgressCard state={state} nowMs={nowMs} />
+                <CareerStageChoiceSummary state={state} />
+              </div>
+            </details>
+          ) : (
+            <>
+              <header className="career-priority-header">
+                <p className="eyebrow">Next</p>
+                <h4>Progress and choices</h4>
+                <p className="muted">Confirm near-term unlocks before using advanced planners.</p>
+              </header>
+              <div className="card-stack career-stack career-stack-next">
+                <CareerProgressCard state={state} nowMs={nowMs} />
+                <CareerStageChoiceSummary state={state} />
+              </div>
+            </>
+          )}
         </section>
 
         <details
@@ -357,6 +461,21 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
             </div>
           </div>
         </details>
+      </div>
+
+      <div className="career-mobile-now-rail" data-testid="career-mobile-now-rail">
+        <div className="career-mobile-now-rail-copy">
+          <p className="eyebrow">Now</p>
+          <p>{nextActionCue.label}</p>
+        </div>
+        <button
+          type="button"
+          data-testid="career-mobile-now-rail-action"
+          disabled={mobileRailAction.disabled}
+          onClick={mobileRailAction.onClick}
+        >
+          {mobileRailAction.label}
+        </button>
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
 export type TabId =
-  | "collection"
   | "career"
+  | "catalog"
+  | "collection"
   | "upgrades"
   | "workshop"
   | "maison"
   | "nostalgia"
   | "stats"
-  | "save"
-  | "catalog";
+  | "save";
 
 export type TabActivationSource = "deep-link" | "system";
 
@@ -16,15 +16,15 @@ export type NavigationState = {
 };
 
 const TAB_IDS: TabId[] = [
-  "collection",
   "career",
+  "catalog",
+  "collection",
   "upgrades",
   "workshop",
   "maison",
   "nostalgia",
   "stats",
   "save",
-  "catalog",
 ];
 
 const isTabId = (value: string): value is TabId => TAB_IDS.includes(value as TabId);

@@ -1239,6 +1239,12 @@ const BASE_URL =
     ? import.meta.env.BASE_URL
     : "/";
 const LOCAL_CATALOG_ROOT = `${BASE_URL}catalog/`;
+const TIER_PLACEHOLDER_FILES: Record<CatalogTierId, string> = {
+  starter: "starter-tier.svg",
+  classic: "mid-tier.svg",
+  chronograph: "mid-tier.svg",
+  tourbillon: "lux-tier.svg",
+};
 const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
   "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo%2C_met%C3%A0_anni_Novanta.jpg":
     "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo,_meta_anni_Novanta.jpg",
@@ -1255,6 +1261,23 @@ export const CATALOG_TIER_SEQUENCE: ReadonlyArray<CatalogTierId> = [
   "chronograph",
   "tourbillon",
 ];
+
+function resolveCatalogAssetUrl(path: string): string {
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:") ||
+    path.startsWith(BASE_URL)
+  ) {
+    return path;
+  }
+
+  const normalizedPath = path.replace(/^\/+/, "");
+  if (normalizedPath.startsWith("catalog/")) {
+    return `${BASE_URL}${normalizedPath}`;
+  }
+  return `${LOCAL_CATALOG_ROOT}${normalizedPath}`;
+}
 
 function inferCatalogTier(entry: CatalogEntry, tags: string[]): CatalogTierId {
   const searchable = `${entry.model} ${entry.description}`.toLowerCase();
@@ -1289,9 +1312,21 @@ export function getCatalogImageUrl(entry: CatalogEntry): string {
   if (entry.image.url.startsWith(WIKIMEDIA_BASE_URL)) {
     const relativePath = entry.image.url.slice(WIKIMEDIA_BASE_URL.length);
     const localPath = LOCAL_CATALOG_OVERRIDES[relativePath] ?? relativePath;
-    return `${LOCAL_CATALOG_ROOT}${localPath}`;
+    return resolveCatalogAssetUrl(localPath);
+  }
+  if (
+    entry.image.url.startsWith("/catalog/") ||
+    entry.image.url.startsWith("catalog/")
+  ) {
+    return resolveCatalogAssetUrl(entry.image.url);
   }
   return entry.image.url;
+}
+
+export function getCatalogFallbackImageUrl(entry: CatalogEntry): string {
+  const tier = inferCatalogTier(entry, getCatalogEntryTags(entry));
+  const fallbackFile = TIER_PLACEHOLDER_FILES[tier];
+  return resolveCatalogAssetUrl(`catalog/placeholders/${fallbackFile}`);
 }
 
 export function getWatchModelTierBadge(

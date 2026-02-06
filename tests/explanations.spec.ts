@@ -18,9 +18,20 @@ async function seedSave(page: Page, seeded: SeededSave) {
 }
 
 async function clickExplainTrigger(page: Page, testId: string) {
-  const trigger = page.getByTestId(testId);
+  if (testId.startsWith("explain-career-")) {
+    const deepDetails = page.getByTestId("career-deep-details");
+    if ((await deepDetails.count()) > 0) {
+      const isOpen = await deepDetails.evaluate((node) => (node as HTMLDetailsElement).open);
+      if (!isOpen) {
+        await page.getByTestId("career-deep-details-toggle").click({ force: true });
+      }
+    }
+  }
+
+  const trigger = page.locator(`[data-testid="${testId}"]:visible`).first();
+  await expect(trigger).toBeVisible();
   await trigger.scrollIntoViewIfNeeded();
-  await trigger.click({ force: true });
+  await trigger.evaluate((element) => (element as HTMLButtonElement).click());
 }
 
 test("currency explain trigger opens currencies help", async ({ page }) => {
@@ -95,6 +106,25 @@ test("career stages explain trigger opens stages help", async ({ page }) => {
   await expect(page.getByTestId("help-active-section")).toHaveText(/Career stages/);
 });
 
+test("career progression card surfaces the now-action feedback strip", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Career" }).click();
+
+  const nextDetails = page.getByTestId("career-next-details");
+  if ((await nextDetails.count()) > 0) {
+    const isOpen = await nextDetails.evaluate((node) => (node as HTMLDetailsElement).open);
+    if (!isOpen) {
+      await page.getByTestId("career-next-details-toggle").click({ force: true });
+    }
+  }
+
+  await expect(page.getByTestId("career-feedback-strip")).toBeVisible();
+  await expect(page.getByTestId("career-feedback-primary")).toContainText(/Next step|Last session/);
+  await expect(page.getByTestId("career-feedback-secondary")).toContainText(
+    /threshold|Cost|complete/i,
+  );
+});
+
 test("stats rate breakdown disclosures render line items", async ({ page }) => {
   const seededState = {
     currencyCents: 10_000,
@@ -133,13 +163,18 @@ test("stats rate breakdown disclosures render line items", async ({ page }) => {
   await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Stats" }).click();
+  const statsTab = page.getByRole("tab", { name: "Stats" });
+  await statsTab.evaluate((element) => (element as HTMLButtonElement).click());
 
   const enjoymentBreakdown = page.getByTestId("enjoyment-rate-breakdown");
   const cashBreakdown = page.getByTestId("cash-rate-breakdown");
 
-  await expect(enjoymentBreakdown.locator("li").first()).toBeVisible();
-  await expect(cashBreakdown.locator("li").first()).toBeVisible();
+  await expect
+    .poll(async () => enjoymentBreakdown.locator("li").count(), { timeout: 10_000 })
+    .toBeGreaterThan(0);
+  await expect
+    .poll(async () => cashBreakdown.locator("li").count(), { timeout: 10_000 })
+    .toBeGreaterThan(0);
   await expect(cashBreakdown).toContainText(/Career salary/);
 });
 

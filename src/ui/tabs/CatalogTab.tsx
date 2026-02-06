@@ -26,6 +26,7 @@ import { isTestEnvironment } from "../../game/runtime/isTestEnvironment";
 import {
   CATALOG_TIER_SEQUENCE,
   getCatalogEntryTags,
+  getCatalogFallbackImageUrl,
   getCatalogImageUrl,
   getWatchModelTierBadge,
 } from "../../game/catalog";
@@ -753,8 +754,7 @@ export function CatalogPurchasePanel({
     const canInteract = movementGate.available && interactionHint === null;
     const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
     const gate = getWatchModelPurchaseGate(state, entry.id);
-    const showPrimaryInteract = canShowInteract && ownedCount > 0 && !gate.ok;
-    const showSecondaryInteract = canShowInteract && ownedCount > 0 && !showPrimaryInteract;
+    const showSecondaryInteract = canShowInteract && ownedCount > 0;
     const isFavorite = favoriteSet.has(entry.id);
     const isCompared = comparedEntries.has(entry.id);
 
@@ -897,8 +897,7 @@ export function CatalogPurchasePanel({
           : null);
     const canInteract = movementGate.available && interactionHint === null;
     const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
-    const showPrimaryInteract = canShowInteract && ownedCount > 0 && !gate.ok;
-    const showSecondaryInteract = canShowInteract && ownedCount > 0 && !showPrimaryInteract;
+    const showSecondaryInteract = canShowInteract && ownedCount > 0;
 
     const isWorn = state.wornWatchId === entry.id;
     const canWear = modelOwned > 0 && !isWorn;
@@ -948,21 +947,28 @@ export function CatalogPurchasePanel({
             loading="lazy"
             onError={(event) => {
               const target = event.currentTarget;
-              const placeholder =
+              const tierFallback = getCatalogFallbackImageUrl(entry);
+              const finalFallback =
                 "data:image/svg+xml;utf8," +
                 encodeURIComponent(
                   `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'>` +
-                    `<rect width='100%' height='100%' fill='#131720'/>` +
-                    `<path d='M140 280c40-72 88-120 180-120s140 48 180 120' stroke='#3e4554' stroke-width='12' fill='none' stroke-linecap='round'/>` +
-                    `<circle cx='320' cy='260' r='70' fill='none' stroke='#3e4554' stroke-width='10'/>` +
-                    `<text x='50%' y='78%' dominant-baseline='middle' text-anchor='middle' fill='#9da3ad' font-size='26' font-family='Arial, sans-serif'>Image unavailable</text>` +
+                    `<defs><linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#161b24'/><stop offset='1' stop-color='#0f131b'/></linearGradient></defs>` +
+                    `<rect width='100%' height='100%' fill='url(#bg)'/>` +
+                    `<path d='M126 294c42-68 94-112 194-112s152 44 194 112' stroke='#3a4150' stroke-width='10' fill='none' stroke-linecap='round'/>` +
+                    `<circle cx='320' cy='252' r='68' fill='none' stroke='#3a4150' stroke-width='9'/>` +
+                    `<rect x='248' y='354' width='144' height='28' rx='14' fill='rgba(232,198,147,0.12)' stroke='rgba(232,198,147,0.35)'/>` +
+                    `<text x='320' y='372' dominant-baseline='middle' text-anchor='middle' fill='#d5c4a8' font-size='16' font-family='Arial, sans-serif'>Reference pending</text>` +
                     `</svg>`,
                 );
 
-              if (target.dataset.fallback !== "true") {
-                target.dataset.fallback = "true";
-                target.src = placeholder;
+              if (target.dataset.fallbackStage !== "tier") {
+                target.dataset.fallbackStage = "tier";
+                target.src = tierFallback;
+                return;
               }
+
+              target.dataset.fallbackStage = "final";
+              target.src = finalFallback;
             }}
           />
           {!discovered && (
@@ -1037,17 +1043,6 @@ export function CatalogPurchasePanel({
                 buyLabel={buyLabel}
                 onBuy={() => handlePurchase(entry.id)}
               />
-              {showPrimaryInteract && (
-                <button
-                  type="button"
-                  className="catalog-primary-action"
-                  disabled={!canInteract}
-                  data-testid={`vault-interact-${tierId}`}
-                  onClick={() => onInteract?.(tierId)}
-                >
-                  {interactionLabel}
-                </button>
-              )}
             </div>
           </div>
           <div className="catalog-secondary-actions">

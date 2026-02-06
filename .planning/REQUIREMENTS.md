@@ -100,16 +100,16 @@
 - [ ] TEST-UNIT-ASYNC-01: Remove sleep-based waits and reduce `act(...)` warning noise in unit tests.
 - [ ] CI-STABILITY-01: Document and enforce stable local/CI execution order to avoid unit/e2e contention and improve reproducibility.
 
-## Planned (v4.4 UX Flow + Gameplay Clarity)
+## Completed (v4.4 UX Flow + Gameplay Clarity)
 
-- [ ] UXFLOW-01: Make notification/toast layout interruption-safe so primary gameplay CTAs are never obscured.
-- [ ] UXFLOW-02: Consolidate Career first-view action guidance into one canonical primary-action module.
-- [ ] UXFLOW-03: Apply mobile progressive disclosure and sticky now-action affordances to reduce long-session scroll/tap fatigue.
-- [ ] UXFLOW-04: Simplify catalog card action hierarchy to one dominant CTA with demoted secondary actions.
-- [ ] UXFLOW-05: Normalize catalog gating explanations into concise taxonomy-driven reasons with clear next steps.
-- [ ] UXFLOW-06: Improve catalog fallback media treatment and verify missing-asset states remain intentional and trustworthy.
-- [ ] UXFLOW-07: Harden mobile tab rail label legibility and active-tab discoverability on narrow viewports.
-- [ ] UXFLOW-08: Surface first-session cause/effect feedback (recent gains + next threshold) and guard with end-to-end flow checks.
+- [x] UXFLOW-01: Make notification/toast layout interruption-safe so primary gameplay CTAs are never obscured.
+- [x] UXFLOW-02: Consolidate Career first-view action guidance into one canonical primary-action module.
+- [x] UXFLOW-03: Apply mobile progressive disclosure and sticky now-action affordances to reduce long-session scroll/tap fatigue.
+- [x] UXFLOW-04: Simplify catalog card action hierarchy to one dominant CTA with demoted secondary actions.
+- [x] UXFLOW-05: Normalize catalog gating explanations into concise taxonomy-driven reasons with clear next steps.
+- [x] UXFLOW-06: Improve catalog fallback media treatment and verify missing-asset states remain intentional and trustworthy.
+- [x] UXFLOW-07: Harden mobile tab rail label legibility and active-tab discoverability on narrow viewports.
+- [x] UXFLOW-08: Surface first-session cause/effect feedback (recent gains + next threshold) and guard with end-to-end flow checks.
 
 ## Out of Scope
 
@@ -192,14 +192,14 @@
 | TEST-MEDIA-01 | Phase 54 | Planned |
 | TEST-UNIT-ASYNC-01 | Phase 54 | Planned |
 | CI-STABILITY-01 | Phase 54 | Planned |
-| UXFLOW-01 | Phase 55 | Planned |
-| UXFLOW-02 | Phase 55 | Planned |
-| UXFLOW-03 | Phase 55 | Planned |
-| UXFLOW-04 | Phase 55 | Planned |
-| UXFLOW-05 | Phase 55 | Planned |
-| UXFLOW-06 | Phase 55 | Planned |
-| UXFLOW-07 | Phase 55 | Planned |
-| UXFLOW-08 | Phase 55 | Planned |
+| UXFLOW-01 | Phase 55 | Complete |
+| UXFLOW-02 | Phase 55 | Complete |
+| UXFLOW-03 | Phase 55 | Complete |
+| UXFLOW-04 | Phase 55 | Complete |
+| UXFLOW-05 | Phase 55 | Complete |
+| UXFLOW-06 | Phase 55 | Complete |
+| UXFLOW-07 | Phase 55 | Complete |
+| UXFLOW-08 | Phase 55 | Complete |
 
 **Coverage:**
 - v1 requirements: 74 total
@@ -208,4 +208,4 @@
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-06 after Phase 55 package creation*
+*Last updated: 2026-02-06 after Phase 55 execution and closeout summary*

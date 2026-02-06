@@ -72,6 +72,7 @@
   flex: 0 0 auto;
   min-width: 110px;
   min-height: 52px;
+  white-space: nowrap;
 }
 
 .page-tab-rail__tab[data-bucket-start="true"]::before {
@@ -236,5 +237,35 @@
   .page-tab-rail__skeleton::before {
     animation: none;
     left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-tab-rail__scroll {
+    gap: 8px;
+  }
+
+  .page-tab-rail__tab {
+    min-width: fit-content;
+    padding: 10px 12px;
+    padding-top: 13px;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+  }
+
+  .page-tab-rail__tab[data-bucket-start="true"]::before {
+    font-size: 0.54rem;
+    letter-spacing: 0.18em;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-tab-rail__tab[data-bucket-start="true"]::before {
+    display: none;
+  }
+
+  .page-tab-rail__tab {
+    padding-top: 10px;
+    min-height: 46px;
   }
 }

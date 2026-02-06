@@ -125,6 +125,8 @@ describe("career progression", () => {
     expect(screen.getByTestId("career-economy-summary")).toBeVisible();
     expect(screen.getByTestId("session-delta-breakdown")).toBeVisible();
     expect(screen.getByTestId("salary-window-timer")).toBeVisible();
+    expect(screen.getByTestId("career-feedback-strip")).toBeVisible();
+    expect(screen.getByTestId("career-feedback-primary").textContent).toMatch(/Next step|Last session/);
     const deepDetails = screen.getByTestId("career-deep-details");
     expect(deepDetails).toHaveAttribute("open");
     expect(screen.getByTestId("career-deep-details-toggle")).toBeVisible();

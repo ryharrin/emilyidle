@@ -14,7 +14,10 @@ describe("catalog image URL mapping contract", () => {
     expect(text).toMatch(/const\s+BASE_URL\s*=[\s\S]*?import\.meta\.env\.BASE_URL/);
     expect(text).toMatch(/const\s+LOCAL_CATALOG_ROOT\s*=\s*`[^`]*\$\{BASE_URL\}[^`]*catalog\//);
     expect(text).toMatch(/const\s+LOCAL_CATALOG_OVERRIDES[^=]*=/);
+    expect(text).toMatch(/function\s+resolveCatalogAssetUrl\s*\([\s\S]*?\)\s*\{/);
     expect(text).toMatch(/function\s+getCatalogImageUrl\s*\([\s\S]*?\)\s*\{/);
-    expect(text).toMatch(/return\s+`\$\{LOCAL_CATALOG_ROOT\}\$\{localPath\}`/);
+    expect(text).toMatch(/return\s+resolveCatalogAssetUrl\(localPath\);/);
+    expect(text).toMatch(/entry\.image\.url\.startsWith\(\"\/catalog\/\"\)/);
+    expect(text).toMatch(/entry\.image\.url\.startsWith\(\"catalog\/\"\)/);
   });
 });

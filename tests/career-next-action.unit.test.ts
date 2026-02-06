@@ -8,6 +8,12 @@ import {
 } from "../src/game/state";
 
 describe("career next action", () => {
+  it("defaults to entering the program on a fresh save", () => {
+    const cue = getCareerNextActionCue(createInitialState(), 0);
+    expect(cue.id).toBe("start-career");
+    expect(cue.label).toContain("PhD");
+  });
+
   it("recommends choosing a track when stage 2 choice is available", () => {
     const base = createInitialState();
     const seeded: GameState = {

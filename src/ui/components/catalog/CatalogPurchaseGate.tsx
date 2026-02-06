@@ -68,8 +68,10 @@ export function CatalogPurchaseGate({
 
   if (!discovered) {
     reasons.push({
-      title: "Undiscovered reference",
-      body: "This entry hasn't been discovered yet. Discovery is tracked separately from buying.",
+      code: "undiscovered",
+      label: "Undiscovered",
+      detail: "Reference data is still hidden for this entry.",
+      nextStep: "Buy watches to expand discovery progress.",
     });
   }
 
@@ -80,27 +82,29 @@ export function CatalogPurchaseGate({
         : "";
     const detailLabel = unlockDetail?.label ?? "Unlock requirement";
     reasons.push({
-      title: "Tier locked",
-      body: `${detailLabel}${progressLabel}`,
+      code: "locked",
+      label: "Locked",
+      detail: `${detailLabel}${progressLabel}`,
+      nextStep: "Hit the threshold shown above to unlock this tier.",
     });
   }
 
   if (!gate.ok) {
     if (gate.enjoymentDeficitCents !== undefined) {
       reasons.push({
-        title: "Enjoyment requirement",
-        body: `Requires ${formatMoneyFromCents(gate.enjoymentRequiredCents)} (${formatMoneyFromCents(
-          gate.enjoymentDeficitCents,
-        )} more).`,
+        code: "enjoyment",
+        label: "Enjoyment",
+        detail: `Need ${formatMoneyFromCents(gate.enjoymentDeficitCents)} more enjoyment.`,
+        nextStep: `Target ${formatMoneyFromCents(gate.enjoymentRequiredCents)} enjoyment.`,
       });
     }
 
     if (gate.cashDeficitCents !== undefined) {
       reasons.push({
-        title: "Cash requirement",
-        body: `Price ${formatMoneyFromCents(gate.cashPriceCents)} (${formatMoneyFromCents(
-          gate.cashDeficitCents,
-        )} more).`,
+        code: "funds",
+        label: "Funds",
+        detail: `Need ${formatMoneyFromCents(gate.cashDeficitCents)} more cash.`,
+        nextStep: `Price is ${formatMoneyFromCents(gate.cashPriceCents)}.`,
       });
     }
   }

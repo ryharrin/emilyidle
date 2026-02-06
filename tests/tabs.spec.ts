@@ -108,6 +108,9 @@ test("tabs surface readiness badges and honor numeric shortcuts", async ({ page 
   await expect(careerTab).toHaveAttribute("aria-selected", "true");
 
   await page.keyboard.press("Digit2");
+  await expect(catalogTab).toHaveAttribute("aria-selected", "true");
+
+  await page.keyboard.press("Digit3");
   await expect(collectionTab).toHaveAttribute("aria-selected", "true");
 
   await catalogTab.click();

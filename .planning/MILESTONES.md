@@ -1,15 +1,17 @@
 # Milestones: Emily Idle
 
-## v4.4 UX Flow + Gameplay Clarity (Planned: 2026-02-06)
+## v4.4 UX Flow + Gameplay Clarity (Completed: 2026-02-06)
 
-**Goal:** Resolve high-impact UX/gameplay flow friction from visual/live-play audit evidence, focusing on interruption-safe notifications, primary-action clarity, mobile density reduction, and catalog action ergonomics.
+**Delivered:** Completed the eight-plan UX/gameplay clarity package with Career action-lane consolidation, mobile disclosure/sticky-action ergonomics, catalog CTA/gating simplification, tab-rail hardening, and first-session feedback guardrails.
 
-**Phase planned:** 55 (8 plans)
+**Phase completed:** 55 (8 plans)
 
-**Planning package:**
+**Summary anchors:**
 - `.planning/phases/55-ux-flow-gameplay-clarity/55-CONTEXT.md`
 - `.planning/phases/55-ux-flow-gameplay-clarity/55-TASKLIST.md`
 - `.planning/phases/55-ux-flow-gameplay-clarity/55-01-PLAN.md` .. `55-08-PLAN.md`
+- `.planning/phases/55-ux-flow-gameplay-clarity/55-01-SUMMARY.md`
+- `.planning/phases/55-ux-flow-gameplay-clarity/55-08-SUMMARY.md`
 
 ---
 
@@ -121,4 +123,3 @@
 - `/gsd-plan-phase` — Execute `54-01` (selector disambiguation + strict-mode hardening).
 - `/gsd-plan-phase` — Execute `54-02` (desktop/mobile project scoping cleanup).
 - `/gsd-plan-phase` — Execute `54-03` (mobile helper stabilization for catalog/interactions).
-- `/gsd-plan-phase` — Execute `55-01` (toast interruption-safe layout) after Phase 54.
