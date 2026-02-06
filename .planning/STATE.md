@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 49 of 6 (mobile & UX polish execution)
-Plan: 49-07 (HELP-01 + MODAL-01) — Completed
-Status: Phase 49 in progress (7/10 plans executed)
-Last activity: 2026-02-06 — Completed Phase 49-07 (help modal header + modal touch polish)
-Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (7/10 executed) [███████░░░]
+Plan: 49-08 (ANIM/FLOAT/NOSTALGIA/ICON) — Completed
+Status: Phase 49 in progress (8/10 plans executed)
+Last activity: 2026-02-06 — Completed Phase 49-08 (feedback primitives + nostalgia toasts)
+Progress: Phase 48 complete (11/11 plans complete), Phase 49 in progress (8/10 executed) [████████░░]
 Next Phase: Phase 49 (v4.1 execution)
 
 ## Accumulated Context
@@ -91,9 +91,11 @@ Next Phase: Phase 49 (v4.1 execution)
 | 49 | Portal the catalog detail sheet through `CatalogCardDetailsSheet` and restore focus to the trigger | Reuses the existing detail markup while keeping keyboard/focus contracts intact |
 | 49 | Keep HelpModal search and close within a shared header action strip for mobile | Keeps both controls within 44px targets while preserving keyboard trapping and focus sentinels |
 | 49 | Drive modal motion states through `data-live-state`/`data-outcome-state` pointers and CSS transitions | Lets winding, automatic, and quartz overlays share consistent animation polish while honoring reduced-motion |
+| 49 | Animate hero stats via ValueTicker while centralizing currency/upgrade icons in `coreIcons.tsx`. | Keeps metric readouts animated, accessible, and visually coherent for automation and reduced-motion audiences. | ✓ Good |
+| 49 | Send nostalgia resets through FloatingDelta + ToastStack feedback instead of blocking modals. | Lets destructive confirmations stay in modals while the toast stack surfaces dismissible +X cues. | ✓ Good |
 
 ## Session Continuity
 
-Last session: 2026-02-06T08:59:07Z
-Stopped at: Completed Phase 49-07 (help modal header + modal touch polish)
+Last session: 2026-02-06T09:28:45Z
+Stopped at: Completed Phase 49-08 (feedback primitives + nostalgia toasts)
 Resume file: None
