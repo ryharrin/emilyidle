@@ -21,6 +21,7 @@ import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
 import { resolveLandingTab, resolveTabAlias } from "./ui/navigation/landing";
 import { PageTabRail } from "./ui/navigation/PageTabRail";
+import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
 
 import {
@@ -289,6 +290,7 @@ export default function App() {
   const [prestigeOnboarding, setPrestigeOnboarding] = useState<PrestigeEvent | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [helpSectionId, setHelpSectionId] = useState<string | null>(null);
+
   const [autoBuyToggle, setAutoBuyToggle] = useState(true);
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => loadAudioSettings());
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
@@ -696,6 +698,7 @@ export default function App() {
     () => getEventIncomeMultiplier(state, nowMs),
     [state, nowMs],
   );
+  const tabReadiness = useMemo(() => getTabReadiness(state, nowMs), [state, nowMs]);
   const catalogBrands = useMemo(() => {
     return ["All", ...new Set(catalogEntries.map((entry) => entry.brand))];
   }, [catalogEntries]);
@@ -1117,6 +1120,7 @@ export default function App() {
                   onTabFocus={handleTabFocus}
                   onTabKeyDown={handleTabKeyDown}
                   onTabRef={handleTabRef}
+                  tabReadiness={tabReadiness}
                 />
                 <button
                   type="button"

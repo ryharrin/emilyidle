@@ -1,6 +1,7 @@
 import type { KeyboardEvent } from "react";
 
 import type { TabBucket, TabId, TabMeta } from "./tabMeta";
+import type { TabReadinessMap } from "./tabReadiness";
 
 import "./pageTabRail.css";
 
@@ -12,6 +13,7 @@ type PageTabRailProps = {
   onTabFocus: (tabId: TabId) => void;
   onTabKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
   onTabRef: (tabId: TabId, node: HTMLButtonElement | null) => void;
+  tabReadiness: TabReadinessMap;
 };
 
 const BUCKET_LABELS: Record<TabBucket, string> = {
@@ -28,6 +30,7 @@ export function PageTabRail({
   onTabFocus,
   onTabKeyDown,
   onTabRef,
+  tabReadiness,
 }: PageTabRailProps) {
   let lastBucket: TabBucket | null = null;
 
@@ -39,6 +42,7 @@ export function PageTabRail({
           lastBucket = tab.bucket;
           const selected = tab.id === activeTabId;
           const focusable = tab.id === focusedTabId;
+          const readiness = tabReadiness[tab.id];
 
           return (
             <button
@@ -60,6 +64,12 @@ export function PageTabRail({
               ref={(node) => onTabRef(tab.id, node)}
             >
               {tab.label}
+              {readiness && (
+                <span className="page-tab-rail__badge" data-testid={`tab-ready-${tab.id}`}>
+                  <span className="page-tab-rail__badge-dot" aria-hidden="true" />
+                  <span className="visually-hidden">{readiness.label}</span>
+                </span>
+              )}
             </button>
           );
         })}
