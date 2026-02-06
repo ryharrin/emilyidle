@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <defs>
+    <radialGradient id="midGradient" cx="50%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#f5c565" />
+      <stop offset="100%" stop-color="#c87c31" />
+    </radialGradient>
+  </defs>
+  <rect width="640" height="480" rx="12" ry="12" fill="url(#midGradient)" />
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Georgia, serif" font-size="46" fill="#2a1a0b">
+    Mid-tier
+  </text>
+  <text x="50%" y="68%" text-anchor="middle" font-family="Inter, sans-serif" font-size="20" fill="#1b0d02" letter-spacing="0.25em">
+    Classic & Chrono
+  </text>
+</svg>

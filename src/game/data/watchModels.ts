@@ -34,6 +34,10 @@ function getTierIdForCatalogEntry(entry: CatalogEntry): CatalogTierId {
   return tierTag ?? "starter";
 }
 
+// Phase 46 adds new low/mid/lux models so each lane carries narrative metadata and steady pacing:
+// - Starter (Omega Aurora Frost + Seashore Drift) keeps enjoyment/cash anchors light while remaining first-wave friendly.
+// - Mid-tier (Jaeger-LeCoultre Atmos VSP + Cartier Ballon de Lumière Chrono) mixes automatic and chrono stories with predictable reserve behavior.
+// - Luxury (Audemars Piguet Luminous Tourbillon + Rolex Celestial Tourbillon) focuses on high-end pacing, tourbillon drama, and prestige multipliers.
 export const WATCH_MODELS: ReadonlyArray<WatchModelDefinition> = (() => {
   const brandCounters = new Map<CatalogBrand, number>();
 

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="starterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3c5dfe" />
+      <stop offset="100%" stop-color="#85c1ff" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#starterGradient)" />
+  <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="48" fill="#f9fafb" letter-spacing="0.1em">
+    Starter Tier
+  </text>
+  <text x="50%" y="70%" text-anchor="middle" font-family="Inter, sans-serif" font-size="24" fill="#dbe9ff" letter-spacing="0.2em">
+    Quartz first wave
+  </text>
+</svg>

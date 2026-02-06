@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <defs>
+    <linearGradient id="luxGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f9d976" />
+      <stop offset="100%" stop-color="#b47a04" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#luxGradient)" />
+  <circle cx="320" cy="220" r="160" fill="rgba(255, 255, 255, 0.12)" />
+  <text x="50%" y="47%" text-anchor="middle" dominant-baseline="middle" font-family="" fill="#1b0d02" font-size="46">
+    Luxury
+  </text>
+  <text x="50%" y="65%" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" fill="#1b0d02" letter-spacing="0.3em">
+    Tourbillon Signal
+  </text>
+</svg>

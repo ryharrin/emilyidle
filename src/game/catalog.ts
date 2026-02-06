@@ -1100,10 +1100,139 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
       attribution: "File:Cartier Santos 1988.jpg by Noop1958 (CC BY-SA 3.0)",
     },
   },
+
+  // Phase 46 cream-of-the-tier additions: new low/mid/lux discoveries with full metadata.
+  {
+    id: "omega-aurora-frost",
+    brand: "Omega",
+    model: "Aurora Frost",
+    description: "Starter quartz reference inspired by northern auroras and gentle evenings.",
+    year: "2021",
+    tags: ["starter", "omega", "quartz", "dress"],
+    facts: [
+      "Starter-tier pacing: quick enjoyment wind-up with modest cash gain and zero reserve drain.",
+      "Designed to feel accessible: low price, bright dial, and traceable tags for easy discovery.",
+    ],
+    image: {
+      url: "/catalog/placeholders/starter-tier.svg",
+      sourceUrl: "/catalog/placeholders/starter-tier.svg",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "omega-seashore-drift",
+    brand: "Omega",
+    model: "Seashore Drift",
+    description: "Sporty quartz field watch that celebrates coastal fog and high legibility.",
+    year: "2020",
+    tags: ["starter", "omega", "quartz", "sport"],
+    facts: [
+      "Starter tier: tuned for momentum with balanced enjoyment/cash deltas and forgiving gates.",
+      "Low reserve impact keeps the experience stable on mobile runs and rapid sessions.",
+    ],
+    image: {
+      url: "/catalog/placeholders/starter-tier.svg",
+      sourceUrl: "/catalog/placeholders/starter-tier.svg",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "jaeger-lecoultre-atmos-vsp",
+    brand: "Jaeger-LeCoultre",
+    model: "Atmos VSP",
+    description: "Classic automatic with a guilloché sunburst dial and soft blue highlights.",
+    year: "2019",
+    tags: ["classic", "jaeger-lecoultre", "automatic", "dress"],
+    facts: [
+      "Mid-tier pacing: double the enjoyment of starter watches, with moderate cash weighting.",
+      "Reserve-friendly rotor locks this tier into reliable automatic engagement.",
+    ],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "/catalog/placeholders/mid-tier.svg",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "cartier-ballon-de-lumiere-chrono",
+    brand: "Cartier",
+    model: "Ballon de Lumière Chrono",
+    description: "Cartier chronograph with polished case, mid-tier pricing, and luminous numerals.",
+    year: "2018",
+    tags: ["chronograph", "cartier", "dress", "luxury"],
+    facts: [
+      "Chronograph mid-tier: heavier cash jump offset by prestige cues and satisfying winding.",
+      "The tier mixing keeps watch pacing predictable for marketing stories and QA checks.",
+    ],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "/catalog/placeholders/mid-tier.svg",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "audemars-piguet-luminous-tourbillon",
+    brand: "Audemars Piguet",
+    model: "Luminous Tourbillon",
+    description:
+      "Skeletonized tourbillon with polished bridges and a luminous halo for selective collectors.",
+    year: "2017",
+    tags: ["tourbillon", "audemars-piguet", "luxury", "prestige"],
+    facts: [
+      "Luxury tier: steep cash gate with a pronounced enjoyment delta to justify prestige messaging.",
+      "Tourbillon focus emphasizes reserve-rich interactions and exclusive discovery cadence.",
+    ],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "/catalog/placeholders/lux-tier.svg",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "rolex-celestial-tourbillon",
+    brand: "Rolex",
+    model: "Celestial Tourbillon",
+    description: "Rolex tourbillon with a midnight blue dial and constellation-inspired indices.",
+    year: "2016",
+    tags: ["tourbillon", "rolex", "luxury", "celestial"],
+    facts: [
+      "Luxury pacing keeps the tier rare, so each discovery unlocks record-high bonuses.",
+      "Enjoyment/cash delta is tuned to leave room for Atelier resets and prestige stacking.",
+    ],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "/catalog/placeholders/lux-tier.svg",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
 ];
 
 const WIKIMEDIA_BASE_URL = "https://upload.wikimedia.org/wikipedia/commons/";
-const LOCAL_CATALOG_ROOT = `${import.meta.env.BASE_URL}catalog/`;
+const BASE_URL =
+  typeof import.meta === "object" &&
+  "env" in import.meta &&
+  typeof import.meta.env.BASE_URL === "string"
+    ? import.meta.env.BASE_URL
+    : "/";
+const LOCAL_CATALOG_ROOT = `${BASE_URL}catalog/`;
 const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
   "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo%2C_met%C3%A0_anni_Novanta.jpg":
     "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo,_meta_anni_Novanta.jpg",
