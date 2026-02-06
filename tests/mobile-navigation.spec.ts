@@ -48,7 +48,7 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
     });
 
     test("maintains horizontal scroll snap and sticky tabs", async ({ page }) => {
-      const navTabs = page.locator(".page-nav-tabs");
+      const navTabs = page.locator(".page-tab-rail__scroll");
       await expect(navTabs).toBeVisible();
 
       const scrollSnap = await navTabs.evaluate((el) => getComputedStyle(el).scrollSnapType);

@@ -26,11 +26,11 @@ const responsiveCss = `
   }
 }
 
-.page-nav-link[data-tab="extra"] {
+.page-tab-rail__tab[data-tab="extra"] {
   display: inline-flex;
 }
 @media (max-width: 500px) {
-  .page-nav-link[data-tab="extra"] {
+  .page-tab-rail__tab[data-tab="extra"] {
     display: none;
   }
 }
@@ -149,7 +149,7 @@ describe("Mobile responsive layout helpers", () => {
 
   test("Tab visibility toggles based on responsive breakpoints", () => {
     const tab = document.createElement("button");
-    tab.className = "page-nav-link";
+    tab.className = "page-tab-rail__tab";
     tab.dataset.tab = "extra";
     document.body.appendChild(tab);
     setViewportWidth(900);
