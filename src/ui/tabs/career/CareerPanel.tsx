@@ -250,18 +250,22 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           </div>
 
           {activeView === "stages" ? (
-            <div className="career-stages-pane">
-              <div className="career-canvas-header">
-                <div>
-                  <h4>Career stages</h4>
-                  <p className="muted">Drag to pan. Pinch or ctrl-wheel to zoom.</p>
+            <div className="career-stage-stack">
+              <div className="career-stages-pane">
+                <div className="career-timeline-wrapper">
+                  <div className="career-canvas-header">
+                    <div>
+                      <h4>Career stages</h4>
+                      <p className="muted">Drag to pan. Pinch or ctrl-wheel to zoom.</p>
+                    </div>
+                    <ExplainButton
+                      sectionId={HELP_SECTION_IDS.careerStages}
+                      label="Explain career stages"
+                    />
+                  </div>
+                  <CareerTimeline state={state} />
                 </div>
-                <ExplainButton
-                  sectionId={HELP_SECTION_IDS.careerStages}
-                  label="Explain career stages"
-                />
               </div>
-              <CareerTimeline state={state} />
               <CareerMap state={state} onPurchase={onPurchase} />
             </div>
           ) : (
