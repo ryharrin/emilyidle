@@ -1,0 +1,134 @@
+.compare-panel {
+  background: var(--surface-raised, #10172f);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 24px;
+  color: #f6f7fb;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.compare-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.compare-panel-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.compare-panel-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.compare-panel-control {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.compare-panel-body {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.compare-slot {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.compare-slot-ready {
+  border-color: #74ffb8;
+  box-shadow: 0 0 12px rgba(116, 255, 184, 0.35);
+}
+
+.compare-slot-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.compare-slot-label {
+  color: #8a96c6;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.compare-slot h4 {
+  margin: 4px 0;
+}
+
+.compare-slot-movement {
+  font-size: 0.85rem;
+  color: #c7d0ff;
+}
+
+.compare-slot-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.compare-slot-clear {
+  background: none;
+  border: none;
+  color: #9fb0ff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.compare-slot-main {
+  display: grid;
+  gap: 8px;
+}
+
+.compare-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.compare-stat-label {
+  color: #8f9cd4;
+  font-size: 0.75rem;
+}
+
+.compare-stat-value {
+  font-weight: 600;
+}
+
+.compare-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.compare-slot-empty {
+  min-height: 130px;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.12);
+  justify-content: center;
+}
+
+.compare-slot-placeholder {
+  text-align: center;
+  color: #b0b8d9;
+}
+
+.compare-slot-placeholder p {
+  margin: 4px 0;
+}
