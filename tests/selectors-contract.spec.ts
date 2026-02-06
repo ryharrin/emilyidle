@@ -68,6 +68,7 @@ test("selector contract anchors remain reachable", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Collection" }).click();
   await expect(page.getByTestId("next-unlock-preview")).toBeVisible();
+  await expect(page.getByTestId("next-unlock-lead")).toBeVisible();
   await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();
   await page.getByTestId("next-unlock-cta-career").click();
   await expect(page.getByTestId("catalog-collection-context")).toBeVisible();

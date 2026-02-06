@@ -598,7 +598,7 @@ export function CatalogPurchasePanel({
     }
 
     return (
-      <div className="catalog-lanes">
+      <div className="catalog-grid catalog-lanes" data-testid="catalog-grid">
         {CATALOG_LANES.map((lane) => {
           const laneEntries = laneMap.get(lane.id) ?? [];
           return (
