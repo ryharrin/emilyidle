@@ -19,6 +19,7 @@ import { AutomaticMiniGameModal } from "./ui/components/AutomaticMiniGameModal";
 import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { StatsHeader } from "./ui/components/StatsHeader";
+import { ToastStack, type ToastMessage } from "./ui/components/ToastStack";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
 import { resolveLandingTab, resolveTabAlias } from "./ui/navigation/landing";
 import { PageTabRail } from "./ui/navigation/PageTabRail";
@@ -324,6 +325,8 @@ export default function App() {
   const [coachmarksDismissed, setCoachmarksDismissed] = useState<Record<string, boolean>>(
     () => settings.coachmarksDismissed,
   );
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const toastTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const { state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
     initialState: createInitialState,
     step,
@@ -333,12 +336,68 @@ export default function App() {
     devSettings,
     onPersistError: (message) => setSaveStatus(message),
   });
+  const lastNostalgiaToastRef = useRef(state.nostalgiaLastGain);
 
   const persistSettings = (nextSettings: Settings) => {
     setSettings(nextSettings);
     setCoachmarksDismissed(nextSettings.coachmarksDismissed);
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
   };
+
+  const pushToast = useCallback((toast: ToastMessage) => {
+    setToasts((current) => {
+      const next = current.filter((item) => item.id !== toast.id);
+      next.unshift(toast);
+      return next.slice(0, 3);
+    });
+
+    const existingTimer = toastTimers.current.get(toast.id);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      setToasts((current) => current.filter((item) => item.id !== toast.id));
+      toastTimers.current.delete(toast.id);
+    }, 6000);
+
+    toastTimers.current.set(toast.id, timer);
+  }, []);
+
+  const handleDismissToast = useCallback((toastId: string) => {
+    setToasts((current) => current.filter((toast) => toast.id !== toastId));
+    const timer = toastTimers.current.get(toastId);
+    if (timer) {
+      clearTimeout(timer);
+      toastTimers.current.delete(toastId);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      toastTimers.current.forEach((timer) => {
+        clearTimeout(timer);
+      });
+      toastTimers.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (state.nostalgiaLastGain > 0 && lastNostalgiaToastRef.current !== state.nostalgiaLastGain) {
+      lastNostalgiaToastRef.current = state.nostalgiaLastGain;
+      pushToast({
+        id: `nostalgia-${state.nostalgiaLastGain}-${Date.now()}`,
+        title: "Nostalgia prestige",
+        message: `+${state.nostalgiaLastGain.toLocaleString()} Nostalgia`,
+        detail: `Resets ${state.nostalgiaResets} · Total ${state.nostalgiaPoints.toLocaleString()} Nostalgia`,
+      });
+      return;
+    }
+
+    if (state.nostalgiaLastGain === 0) {
+      lastNostalgiaToastRef.current = 0;
+    }
+  }, [pushToast, state.nostalgiaLastGain, state.nostalgiaPoints, state.nostalgiaResets]);
 
   const handleDismissWindingTapHint = () => {
     if (settings.coachmarksDismissed["winding:tap-hint"]) {
@@ -1536,6 +1595,7 @@ export default function App() {
             />
           )}
         </main>
+        <ToastStack toasts={toasts} onDismiss={handleDismissToast} />
       </div>
       <HelpModal
         open={helpOpen}

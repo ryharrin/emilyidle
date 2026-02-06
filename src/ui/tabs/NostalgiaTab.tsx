@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { LockIcon, PrestigeIcon } from "../icons/coreIcons";
+import { FloatingDelta } from "../components/FloatingDelta";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { PrestigeSummary } from "../components/PrestigeSummary";
@@ -93,6 +94,41 @@ export function NostalgiaTab({
   persistSettings,
   onPurchase,
 }: NostalgiaTabProps) {
+  const [floatingDelta, setFloatingDelta] = useState<{ message: string } | null>(null);
+  const [floatingDeltaVisible, setFloatingDeltaVisible] = useState(false);
+  const floatingDeltaTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastNostalgiaGainRef = useRef(state.nostalgiaLastGain);
+
+  useEffect(() => {
+    if (state.nostalgiaLastGain > 0 && state.nostalgiaLastGain !== lastNostalgiaGainRef.current) {
+      lastNostalgiaGainRef.current = state.nostalgiaLastGain;
+      setFloatingDelta({
+        message: `+${state.nostalgiaLastGain.toLocaleString()} Nostalgia`,
+      });
+      setFloatingDeltaVisible(true);
+      if (floatingDeltaTimer.current) {
+        clearTimeout(floatingDeltaTimer.current);
+      }
+      floatingDeltaTimer.current = setTimeout(() => {
+        setFloatingDeltaVisible(false);
+        setFloatingDelta(null);
+        floatingDeltaTimer.current = null;
+      }, 900);
+      return;
+    }
+
+    if (state.nostalgiaLastGain === 0 && lastNostalgiaGainRef.current !== 0) {
+      lastNostalgiaGainRef.current = 0;
+    }
+  }, [state.nostalgiaLastGain]);
+
+  useEffect(() => {
+    return () => {
+      if (floatingDeltaTimer.current) {
+        clearTimeout(floatingDeltaTimer.current);
+      }
+    };
+  }, []);
   return (
     <section id="nostalgia" role="tabpanel" aria-labelledby="nostalgia-tab" hidden={!isActive}>
       {isActive && showNostalgiaSection && (
@@ -165,21 +201,30 @@ export function NostalgiaTab({
               />
 
               <div className="card-actions">
-                <button
-                  type="button"
-                  className="inline-icon-button"
-                  data-testid="nostalgia-prestige"
-                  disabled={!canPrestigeNostalgia}
-                  onClick={() => {
-                    if (!canPrestigeNostalgia) {
-                      return;
-                    }
-                    onToggleNostalgiaModal(true);
-                  }}
-                >
-                  <PrestigeIcon className="inline-icon" />
-                  Prestige for Nostalgia
-                </button>
+                <div className="floating-delta-anchor">
+                  <button
+                    type="button"
+                    className="inline-icon-button"
+                    data-testid="nostalgia-prestige"
+                    disabled={!canPrestigeNostalgia}
+                    onClick={() => {
+                      if (!canPrestigeNostalgia) {
+                        return;
+                      }
+                      onToggleNostalgiaModal(true);
+                    }}
+                  >
+                    <PrestigeIcon className="inline-icon" />
+                    Prestige for Nostalgia
+                  </button>
+                  {floatingDelta && (
+                    <FloatingDelta
+                      visible={floatingDeltaVisible}
+                      message={floatingDelta.message}
+                      testId="nostalgia-floating-delta"
+                    />
+                  )}
+                </div>
               </div>
 
               {state.nostalgiaResets >= 1 && (
