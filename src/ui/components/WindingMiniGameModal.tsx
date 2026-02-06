@@ -440,6 +440,7 @@ export function WindingMiniGameModal({
             className="winding-live"
             data-testid="winding-live"
             aria-live="polite"
+            data-live-state={outcomeState}
           >
             {liveMessageText}
           </div>

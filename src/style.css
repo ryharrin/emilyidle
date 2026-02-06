@@ -763,6 +763,56 @@ button:not(:disabled):active {
   gap: 12px;
 }
 
+.winding-modal-body,
+.automatic-modal-body,
+.quartz-modal-body {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.winding-modal-body[data-outcome-state="resolved"],
+.automatic-modal-body[data-outcome-state="resolved"],
+.quartz-modal-body[data-outcome-state="resolved"] {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.32);
+}
+
+.winding-live,
+.automatic-live,
+.quartz-live {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    background 220ms ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.winding-live[data-live-state="resolved"],
+.automatic-live[data-live-state="resolved"],
+.quartz-live[data-live-state="resolved"] {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(72, 175, 255, 0.26);
+  background: rgba(72, 175, 255, 0.08);
+}
+
+.winding-outcome,
+.automatic-outcome,
+.quartz-outcome {
+  animation: modal-outcome-entrance 260ms ease both;
+}
+
+@keyframes modal-outcome-entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .winding-status-grid {
   display: flex;
   align-items: center;
@@ -2014,6 +2064,19 @@ textarea:focus-visible {
   }
 
   .purchase-flash {
+    animation: none !important;
+  }
+
+  .winding-modal-body,
+  .automatic-modal-body,
+  .quartz-modal-body,
+  .winding-live,
+  .automatic-live,
+  .quartz-live,
+  .winding-outcome,
+  .automatic-outcome,
+  .quartz-outcome {
+    transition: none !important;
     animation: none !important;
   }
 }

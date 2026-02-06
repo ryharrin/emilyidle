@@ -292,7 +292,12 @@ export function QuartzMiniGameModal({
           <div className="quartz-target-time" data-testid="quartz-target-time">
             <strong>Set to: {formatTime(targetTime.hour, targetTime.minute)}</strong>
           </div>
-          <div className="quartz-live" data-testid="quartz-live" aria-live="polite">
+          <div
+            className="quartz-live"
+            data-testid="quartz-live"
+            aria-live="polite"
+            data-live-state={outcomeState}
+          >
             {liveMessageText}
           </div>
 
