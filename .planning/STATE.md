@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 ## Current Position
 
 Phase: 50 of 6 (Catalog & Collection Depth)
-Plan: 50-04 (Career timeline + upcoming choices) — Completed
+Plan: 50-02 (Collection depth navigation + analytics insights) — Completed
 Status: Phase 50 in progress (4/5 plans executed)
-Last activity: 2026-02-06 — Completed Phase 50-04 (career timeline + choice context)
+Last activity: 2026-02-06 — Completed Phase 50-02 (collection insights + segmented nav coverage)
 Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 in progress (4/5 executed) [███████░░░]
 Next Phase: Phase 50 (Catalog & Collection Depth — plan 50-05 pending)
 
@@ -99,9 +99,12 @@ Next Phase: Phase 50 (Catalog & Collection Depth — plan 50-05 pending)
 | 49 | Derive Collection anchors via `CollectionSectionNavLink` so nav copy, automation selectors, and scroll targets stay synchronized. | Keeps the new Collection subnav predictable while enabling future guts to reuse the same definition. | ✓ Good |
 | 49 | Persist onboarding dismissals in `settings.coachmarksDismissed` so no additional storage keys are introduced. | Honors existing settings guardrails while letting coachmarks pause for returning players. | ✓ Good |
 | 49 | Derive the new career timeline from `CAREER_STAGES` metadata and selector outputs so UI copy/test anchors stay in sync. | Prevents duplicating progression math while letting the timeline reuse the same progression sources as the career map. | ✓ Good |
+| 50 | Expose `data-active-section` on the CollectionSectionNav and stop relying on `aria-current` alone | Keeps Playwright nav assertions stable even when readiness badges append extra text to tab labels |
+| 50 | Pause automatic active-section detection for ~400 ms after programmatic jumps | Prevents the sticky nav from flipping back to `collection-overview` before automation captures the intended anchor |
+| 50 | Relax the Owned tab matcher to `/^Owned/` and click via `evaluate` so viewport restrictions do not block the script | Guards the winding and automatic interaction flows even when readiness badges change the tab copy |
 
 ## Session Continuity
 
-Last session: 2026-02-06T12:01:22Z
-Stopped at: Completed Phase 50-04 (career timeline + choice context)
+Last session: 2026-02-06T12:56:48Z
+Stopped at: Completed Phase 50-02 (collection depth navigation + analytics coverage)
 Resume file: None
