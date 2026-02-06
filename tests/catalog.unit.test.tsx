@@ -830,6 +830,24 @@ describe("catalog filters", () => {
     expect(cards[cards.length - 1]?.textContent).toContain("Unknown");
   });
 
+  it("orders default catalog results by price ascending", async () => {
+    const catalogGrid = screen.getByTestId("catalog-grid");
+    const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
+
+    expect(cards.length).toBeGreaterThan(1);
+
+    const priceValues = cards.map((card) => {
+      const priceText = card.querySelector(".catalog-price")?.textContent ?? "";
+      const parsed = Number(priceText.replace(/[^0-9.]/g, ""));
+      expect(Number.isFinite(parsed)).toBe(true);
+      return parsed;
+    });
+
+    for (let index = 1; index < priceValues.length; index += 1) {
+      expect(priceValues[index]).toBeGreaterThanOrEqual(priceValues[index - 1]);
+    }
+  });
+
   it("filters catalog by era ranges", async () => {
     const user = userEvent.setup();
 

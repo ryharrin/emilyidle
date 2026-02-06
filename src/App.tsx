@@ -90,6 +90,7 @@ import {
   getNostalgiaPrestigeThresholdCents,
   getCollectionValueCents,
   getWatchModelOwnedCount,
+  getWatchModelPriceCents,
   getWorkshopPrestigeGain,
   getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
@@ -1012,7 +1013,25 @@ export default function App() {
 
     const sorted = (() => {
       if (catalogSort === "default") {
-        return filteredByFilters;
+        const pricedEntries = filteredByFilters.map((entry) => ({
+          entry,
+          price: getWatchModelPriceCents(state, entry.id),
+        }));
+
+        return pricedEntries
+          .sort((a, b) => {
+            if (a.price !== b.price) {
+              return a.price - b.price;
+            }
+
+            const brandDelta = a.entry.brand.localeCompare(b.entry.brand);
+            if (brandDelta !== 0) {
+              return brandDelta;
+            }
+
+            return a.entry.model.localeCompare(b.entry.model);
+          })
+          .map(({ entry }) => entry);
       }
 
       const copy = filteredByFilters.slice();
