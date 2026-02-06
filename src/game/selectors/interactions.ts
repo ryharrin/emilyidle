@@ -5,8 +5,6 @@ const WATCH_ITEM_MOVEMENTS = new Map<WatchItemId, WatchMovement>(
   WATCH_ITEMS.map((item) => [item.id, item.movement]),
 );
 
-export const AUTOMATIC_WINDING_REASON = "Automatic watches don’t wind by crown drag";
-
 function getWatchMovement(itemId: WatchItemId): WatchMovement {
   const movement = WATCH_ITEM_MOVEMENTS.get(itemId);
   if (!movement) {
@@ -21,10 +19,7 @@ export type InteractionMovementGate = {
 };
 
 export function getInteractionMovementGate(itemId: WatchItemId): InteractionMovementGate {
-  if (getWatchMovement(itemId) === "automatic") {
-    return { available: false, reason: AUTOMATIC_WINDING_REASON };
-  }
-
+  getWatchMovement(itemId);
   return { available: true };
 }
 

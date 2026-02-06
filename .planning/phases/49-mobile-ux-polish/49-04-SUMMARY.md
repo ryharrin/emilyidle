@@ -91,7 +91,8 @@ completed: 2026-02-06
 
 ## Issues Encountered
 
-- `pnpm test:e2e -- tests/collection-loop.spec.ts` still times out on the “automatic interaction increases power reserve and enjoyment rate” scenario across Chromium, WebKit, and Pixel 5 workers; the helper never finds an enabled `[data-testid="vault-interact-classic"]` button before the 60s timeout even after the stats changes. The rest of the suite passes.
+- Follow-up debug on 2026-02-06 confirmed the timeout was a pre-existing regression from Phase 48 (`feat(48-session-atelier-4): gate winding by movement`), where `getInteractionMovementGate` disabled automatic movements globally and kept `[data-testid="vault-interact-classic"]` permanently disabled.
+- The regression is now resolved: automatic interactions are enabled again for owned/off-cooldown watches, the movement-gating unit contract was updated, and `pnpm test:e2e -- tests/collection-loop.spec.ts` passes across Chromium/WebKit/Pixel5.
 
 ## User Setup Required
 
@@ -100,7 +101,7 @@ None
 ## Next Phase Readiness
 
 - Stats UI now surfaces grouped hero metrics and selector-driven breakdowns, so subsequent plans can reference the new data-testids without retouching these components.
-- Playwright flakiness on the automatic interaction test remains; future work should retry or quarantine that case before depending on `pnpm test:e2e` for gating.
+- The automatic interaction timeout is no longer blocking Phase 49 verification; full collection-loop Playwright coverage is green again.
 
 ---
 *Phase: 49-mobile-ux-polish*

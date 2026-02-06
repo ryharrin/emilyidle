@@ -5,7 +5,6 @@ import { vi } from "vitest";
 
 import App from "../src/App";
 import {
-  AUTOMATIC_WINDING_REASON,
   createInitialState,
   getInteractionMovementGate,
   getPowerReserveDetail,
@@ -23,11 +22,8 @@ function getModelIdForTier(tierId: string): string {
 }
 
 describe("interaction movement gating", () => {
-  it("blocks automatic watches with a reason", () => {
-    expect(getInteractionMovementGate("classic")).toEqual({
-      available: false,
-      reason: AUTOMATIC_WINDING_REASON,
-    });
+  it("allows automatic watches for rotor interactions", () => {
+    expect(getInteractionMovementGate("classic")).toEqual({ available: true });
   });
 
   it("allows quartz and hand-wind watches", () => {
