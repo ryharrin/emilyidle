@@ -4,8 +4,9 @@
 
 - ✅ **v4.0 Watch Interactions & Catalog Polish** — Phases 42-47 (shipped 2026-02-05)  
   [Milestone archive](milestones/v4.0-ROADMAP.md)
+- ✅ **v4.1 Next Wave** — Phases 48-51 (shipped 2026-02-06)
 
-## Active Milestone: v4.1 Next Wave (In Progress)
+## Milestone v4.1 Next Wave (Shipped)
 
 **Goal:** Redesign session/atelier systems, polish mobile/tab UX, and deepen catalog/quality-of-life features.
 
@@ -67,11 +68,11 @@
 **Goal:** Deliver offline progress, save export, undo actions, favorites, notifications, event/achievement polish, and mini-game enhancements.
 
 **Plans:**
-- [ ] 51-01-PLAN.md — Offline gains cap + save import/export resilience (`OFFLINE-01`, `SAVE-01`)
-- [ ] 51-02-PLAN.md — Latest-purchase undo + favorites filtering (`UNDO-01`, `FAVE-01`)
-- [ ] 51-03-PLAN.md — Notification preferences + achievement toast gating (`NOTIF-01`, `ACHIEVE-01`)
-- [ ] 51-04-PLAN.md — Achievement category expansion + event calendar (`ACHIEVE-02`, `EVENT-01`)
-- [ ] 51-05-PLAN.md — Mini-game practice, difficulty scaling, and streak bonuses (`PRACTICE-01`, `DIFF-01`, `STREAK-01`)
+- [x] 51-01-PLAN.md — Offline gains cap + save import/export resilience (`OFFLINE-01`, `SAVE-01`)
+- [x] 51-02-PLAN.md — Latest-purchase undo + favorites filtering (`UNDO-01`, `FAVE-01`)
+- [x] 51-03-PLAN.md — Notification preferences + achievement toast gating (`NOTIF-01`, `ACHIEVE-01`)
+- [x] 51-04-PLAN.md — Achievement category expansion + event calendar (`ACHIEVE-02`, `EVENT-01`)
+- [x] 51-05-PLAN.md — Mini-game practice, difficulty scaling, and streak bonuses (`PRACTICE-01`, `DIFF-01`, `STREAK-01`)
 
 **Success criteria:**
 1. Returning players see capped offline gains and can import/export saves.
@@ -93,4 +94,4 @@
 | 48. Session & Atelier Rework | v4.1 | 11/11 | Complete | 48-11-SUMMARY.md |
 | 49. Mobile & UX Polish | v4.1 | 10/10 | Complete | 49-10-SUMMARY.md |
 | 50. Catalog & Collection Depth | v4.1 | 5/5 | Complete | 50-05-SUMMARY.md |
-| 51. Quality of Life & Events | v4.1 | 0/5 | Planned | - |
+| 51. Quality of Life & Events | v4.1 | 5/5 | Complete | 51-05-SUMMARY.md |

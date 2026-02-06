@@ -1,5 +1,24 @@
 # Milestones: Emily Idle
 
+## v4.1 Next Wave (Shipped: 2026-02-06)
+
+**Delivered:** Completed the full post-v4.0 expansion cycle across sessions/atelier systems, mobile UX polish, catalog/collection depth, and quality-of-life + event systems.
+
+**Phases completed:** 48-51 (31 plans)
+
+**Key accomplishments:**
+- Added progressive session cost policy, drag-based winding refresh, atelier pacing clarity, power reserve explanations, salary alerts, and unlock/upgrade previews.
+- Shipped full mobile/tab UX polish (grouped horizontal tab rail, keyboard shortcuts, compact filters, modal/help improvements, focus-safe interactions).
+- Added catalog/collection depth features: set bonus progress, prestige previews, compare panel, collection analytics, help keyword routing, and segmented collection navigation.
+- Completed quality-of-life/event loop: capped offline progress, import/export resiliency, undo purchase, favorites, notification preferences, achievement toasts, event calendar, practice mode, tier difficulty scaling, and streak bonuses.
+
+**Summary anchors:**
+- `.planning/phases/51-quality-of-life-events/51-05-SUMMARY.md`
+- `.planning/phases/50-catalog-collection-depth/50-05-SUMMARY.md`
+- `.planning/phases/48-session-atelier/48-11-SUMMARY.md`
+
+---
+
 ## v4.0 Watch Interactions & Catalog Polish (Shipped: 2026-02-05)
 
 **Delivered:** Expanded interaction suite, per-watch stats surfaces, catalog variety, and a mobile-first UI polish sealed by Playwright regression guards and WebKit-friendly focus treatments.
@@ -47,4 +66,5 @@
 
 ## What's next
 
-- `/gsd-new-milestone` — Start v4.1 (placeholder) to define goals, requirements, and phases for the next iteration.
+- `/gsd-new-milestone` — Define the post-v4.1 milestone scope and phase map.
+- `/gsd-requirements` — Capture new requirement IDs and acceptance criteria.

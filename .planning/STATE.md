@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-05)
+See: .planning/PROJECT.md (updated 2026-02-06)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** v4.1 execution prep (Phase 51 quality-of-life/events plans ready)
+**Current focus:** v4.1 closeout complete; preparing next milestone planning.
 
 ## Current Position
 
 Phase: 51 of 6 (Quality of Life & Events)
-Plan: 51-01 (Offline & save reliability) — Completed
-Status: Phase 51 execution in progress (Plan 1 done, 4 remaining)
-Last activity: 2026-02-06 — Completed Phase 51-01 (`OFFLINE-01` + `SAVE-01`) and logged the summary/state updates.
-Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 executing (1/5 executed) [█░░░░░]
-Next Phase: Phase 51 execution continues (next plan: `51-02-PLAN.md`)
+Plan: 51-05 (Mini-game practice/difficulty/streak) — Completed
+Status: v4.1 execution complete (Phases 48-51 complete)
+Last activity: 2026-02-06 — Completed remaining Phase 51 plans (`51-02` through `51-05`), added missing phase summaries (46/50/51), and synced top-level planning docs.
+Progress: Phase 49 complete (10/10 executed) [██████████], Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████]
+Next Phase: Start next milestone planning (`/gsd-new-milestone`) and define post-v4.1 roadmap.
 
 ## Accumulated Context
 
@@ -107,9 +107,12 @@ Next Phase: Phase 51 execution continues (next plan: `51-02-PLAN.md`)
 | 50 | Harden help/explanations e2e interactions with mobile-safe click paths and align stats-rate assertions to card line items | Removes mobile pointer-interception flake and keeps the verification suite aligned with current StatsTab markup |
 | 51 | Keep offline progress on the runtime step path instead of inventing a separate economy flow | Keeps the economy deterministic across live play and subsequent loads |
 | 51 | Route every save import (paste or file) through the persistence decoder before mutating state | Ensures invalid payloads are rejected centrally and no progress is lost |
+| 51 | Include favorites state in Catalog's stable-entry signature | Prevents favorites-only filters from showing stale results after toggles |
+| 51 | Keep latest-purchase undo bounded to a single validated snapshot | Ensures undo cannot corrupt inventory/currency state or rewind arbitrarily |
+| 51 | Make practice mode reward-free and keep streak bonuses normal-mode only | Preserves economy integrity while allowing skill training loops |
 
 ## Session Continuity
 
-Last session: 2026-02-06T14:09:14Z
-Stopped at: Completed Phase 51-01 (Offline/resilient save import)
+Last session: 2026-02-06T16:45:00Z
+Stopped at: Completed Phase 51 closeout + planning document synchronization
 Resume file: None

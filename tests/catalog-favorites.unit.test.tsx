@@ -5,7 +5,10 @@ import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 
 describe("catalog favorites experience", () => {
-  afterEach(() => cleanup());
+  afterEach(() => {
+    cleanup();
+    window.localStorage.clear();
+  });
 
   const isVisibleInPanel = (node: HTMLElement) => node.closest("[hidden]") === null;
 
@@ -21,6 +24,19 @@ describe("catalog favorites experience", () => {
   async function waitForTabSwitchComplete() {
     await waitFor(() => {
       expect(screen.getByTestId("tab-switch-skeleton")).toHaveAttribute("data-visible", "false");
+    });
+  }
+
+  async function enableFavorite(
+    user: ReturnType<typeof userEvent.setup>,
+    favoriteToggle: HTMLElement,
+    favoriteToggleTestId: string,
+  ) {
+    if (favoriteToggle.getAttribute("aria-pressed") !== "true") {
+      await user.click(favoriteToggle);
+    }
+    await waitFor(() => {
+      expect(screen.getByTestId(favoriteToggleTestId)).toHaveAttribute("aria-pressed", "true");
     });
   }
 
@@ -42,19 +58,21 @@ describe("catalog favorites experience", () => {
     }
     const favoriteToggle = within(firstCard).getByTestId(/catalog-favorite-toggle-/);
     const favoriteToggleTestId = favoriteToggle.getAttribute("data-testid");
-    await user.click(favoriteToggle);
     expect(favoriteToggleTestId).not.toBeNull();
     if (!favoriteToggleTestId) {
       return;
     }
-    await waitFor(() => {
-      expect(screen.getByTestId(favoriteToggleTestId)).toHaveAttribute("aria-pressed", "true");
-    });
+    await enableFavorite(user, favoriteToggle, favoriteToggleTestId);
 
     const favoritesOnly = within(filterPanel).getByTestId("catalog-favorites-only");
     await user.click(favoritesOnly);
     await waitFor(() => {
       expect((screen.getByTestId("catalog-favorites-only") as HTMLInputElement).checked).toBe(true);
+    });
+    await waitFor(() => {
+      expect(within(catalogPanel).getByTestId("catalog-results-count")).toHaveTextContent(
+        /^1 results/,
+      );
     });
 
     const filteredCards = within(catalogPanel)
@@ -84,14 +102,11 @@ describe("catalog favorites experience", () => {
     }
     const favoriteToggle = within(firstCard).getByTestId(/catalog-favorite-toggle-/);
     const favoriteToggleTestId = favoriteToggle.getAttribute("data-testid");
-    await user.click(favoriteToggle);
     expect(favoriteToggleTestId).not.toBeNull();
     if (!favoriteToggleTestId) {
       return;
     }
-    await waitFor(() => {
-      expect(screen.getByTestId(favoriteToggleTestId)).toHaveAttribute("aria-pressed", "true");
-    });
+    await enableFavorite(user, favoriteToggle, favoriteToggleTestId);
 
     const collectionTab = screen.getByRole("tab", { name: /Collection/i });
     await user.click(collectionTab);

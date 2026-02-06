@@ -293,6 +293,17 @@ export function CatalogPurchasePanel({
     detailsTriggerRef.current = null;
   }, []);
 
+  const favoriteSet = React.useMemo(
+    () => new Set(state.favoriteWatchIds ?? []),
+    [state.favoriteWatchIds],
+  );
+
+  const [filtersOpen, setFiltersOpen] = React.useState<boolean>(() => isTestEnvironment());
+  const [catalogFavoritesOnly, setCatalogFavoritesOnly] = React.useState(false);
+  const favoriteIdsSignature = React.useMemo(
+    () => (state.favoriteWatchIds ?? []).join(","),
+    [state.favoriteWatchIds],
+  );
   const filterSignature = React.useMemo(
     () =>
       [
@@ -303,16 +314,21 @@ export function CatalogPurchasePanel({
         catalogSort,
         catalogEra,
         catalogType,
+        catalogFavoritesOnly ? "favorites-only" : "all-catalog",
+        catalogFavoritesOnly ? favoriteIdsSignature : "favorites-ignored",
       ].join("|"),
-    [catalogBrand, catalogEra, catalogSearch, catalogSort, catalogStyle, catalogTab, catalogType],
+    [
+      catalogBrand,
+      catalogEra,
+      catalogFavoritesOnly,
+      catalogSearch,
+      catalogSort,
+      catalogStyle,
+      catalogTab,
+      catalogType,
+      favoriteIdsSignature,
+    ],
   );
-  const favoriteSet = React.useMemo(
-    () => new Set(state.favoriteWatchIds ?? []),
-    [state.favoriteWatchIds],
-  );
-
-  const [filtersOpen, setFiltersOpen] = React.useState<boolean>(() => isTestEnvironment());
-  const [catalogFavoritesOnly, setCatalogFavoritesOnly] = React.useState(false);
   const activeFilterCount = [
     catalogSearch.trim().length > 0,
     catalogBrand !== "All",

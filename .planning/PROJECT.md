@@ -6,13 +6,16 @@ Emily Idle is a browser-based watch-collecting idle/incremental game that blends
 ## Core Value
 Deliver a satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-## Current Milestone: v4.1 Next Wave
+## Last Shipped Milestone: v4.1 Next Wave (Shipped: 2026-02-06)
 **Goal:** Redesign sessions and atelier systems, finish the mobile/UX polish, and deepen catalog depth and quality-of-life features.
-**Target features:**
+**Delivered features:**
 - Sessions reward strategic choice through progressive costs, visual cooldown cues, and richer winding interactions.
 - Mobile UX receives sticky horizontal tabs, keyboard shortcuts, focus-safe help modals, and accessibility-friendly touch targets.
 - The catalog and Collection gain analytics, comparison tools, and notifications tied to achievements/events.
 - Quality-of-life updates (offline gains, save import/export, undo, favorites, notifications, mini-game practice) and new achievements/events round out the experience.
+
+## Current Milestone
+Planning next milestone scope (post-v4.1), with v4.1 kept as the current gameplay baseline.
 
 ## Requirements
 ### Validated
@@ -22,13 +25,13 @@ Deliver a satisfying watch-collecting idle loop that saves reliably and stays pl
 - ✓ STATS-04 — Collection call-out explains the equipped watch contribution delta (v4.0)
 - ✓ STATS-05 — Stats visible before owning the watch and the UI surfaces them directly in Catalog (v4.0)
 
-### Active
-The v4.1 requirements are grouped into the following clusters:
+### Completed in v4.1
+The v4.1 requirement clusters are fully implemented and documented:
 - **Sessions & Atelier systems** (SESSION-01 through UPGRADE-01)
 - **Mobile & UX polish** (TAB-01 through CAREER-01)
 - **Catalog & Collection depth** (SETBONUS-01 through VAULT-02)
 - **Quality of Life & Events** (OFFLINE-01 through STREAK-01)
-Each requirement is testable, user-facing, and mapped to a specific phase in the upcoming roadmap.
+See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completion states.
 
 ### Out of Scope
 - Multiplayer, social sharing, watch trading, augmented reality, custom watch design, virtual exhibitions, mentorship, watch clubs, seasonal events, and any feature that depends on multiplayer infrastructure remain explicitly rejected (per NOTES-02-02-26).
@@ -48,10 +51,9 @@ Each requirement is testable, user-facing, and mapped to a specific phase in the
 | Tab/Shift+Tab between the help search input and Close button is intercepted manually | Keeps iOS Safari keyboard navigation inside the modal | ✓ Good |
 
 ## Next Steps
-- `/gsd-plan-phase 48` — Kick off session & atelier work (phase 48)
-- `/gsd-plan-phase 49` — Follow with the mobile & UX polish phase
-- `/gsd-plan-phase 50` — Deliver catalog depth features
-- `/gsd-plan-phase 51` — Ship quality-of-life and events improvements
+- `/gsd-new-milestone` — Define the next milestone after v4.1
+- `/gsd-requirements` — Capture new requirement IDs and acceptance criteria
+- `/gsd-roadmap` — Sequence next-phase execution order and dependencies
 
 <details>
 <summary>Archived context (pre-v4.1 milestone)</summary>
