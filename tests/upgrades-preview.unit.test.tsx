@@ -56,6 +56,9 @@ describe("upgrades preview", () => {
 
     renderUpgradesTab(state);
 
+    expect(screen.getByTestId("upgrades-recommendations")).toBeTruthy();
+    expect(screen.getByTestId("upgrade-intent-buckets")).toBeTruthy();
+
     const [firstCard] = screen.getAllByTestId("upgrade-card");
     expect(firstCard).toBeTruthy();
     if (!firstCard) {
@@ -65,22 +68,11 @@ describe("upgrades preview", () => {
     const cardScope = within(firstCard);
 
     expect(cardScope.getByText(/Enjoyment \+/)).toBeTruthy();
-    expect(cardScope.queryByText(/Cash \+/)).toBeNull();
-
-    const cashLines = cardScope
-      .queryAllByText(/^Cash /)
-      .map((node) => node.textContent ?? "")
-      .filter((text) => !text.includes("+"));
-
-    expect(cashLines).toHaveLength(0);
-
-    const enjoymentLines = cardScope
-      .getAllByText(/^Enjoyment /)
-      .map((node) => node.textContent ?? "")
-      .filter((text) => !text.includes("+"));
-
-    expect(enjoymentLines).toHaveLength(2);
-    expect(enjoymentLines[0]).not.toBe(enjoymentLines[1]);
+    expect(cardScope.getByTestId("upgrade-impact-summary")).toBeTruthy();
+    expect(cardScope.getByTestId("upgrade-impact-row-cash")).toBeTruthy();
+    expect(cardScope.getByTestId("upgrade-impact-row-enjoyment")).toBeTruthy();
+    expect(cardScope.getByTestId("upgrade-roi-summary")).toBeTruthy();
+    expect(cardScope.getByText("Deep diagnostics")).toBeTruthy();
   });
 
   it("renders workshop and maison preview effects consistently", () => {
@@ -113,5 +105,19 @@ describe("upgrades preview", () => {
     const collectionAfter = within(collectionLine).getByTestId("upgrade-effect-value-after");
 
     expect(collectionBefore.textContent).not.toBe(collectionAfter.textContent);
+  });
+
+  it("highlights up to three actionable recommendations", () => {
+    const state = createSeededState();
+
+    renderUpgradesTab(state);
+
+    const recommendationCards = screen.getAllByTestId("upgrade-recommendation-card");
+    expect(recommendationCards.length).toBeGreaterThan(0);
+    expect(recommendationCards.length).toBeLessThanOrEqual(3);
+
+    for (const card of recommendationCards) {
+      expect(within(card).getByTestId("upgrade-roi-summary")).toBeTruthy();
+    }
   });
 });

@@ -9,27 +9,36 @@ type PrestigeSummaryProps = {
 
 export function PrestigeSummary({ summary, testId }: PrestigeSummaryProps): JSX.Element {
   return (
-    <div className="card-stack" data-testid={testId}>
-      <div className="card" data-testid={testId ? `${testId}-gain` : undefined}>
-        <h4>Gain</h4>
+    <div className="card-stack prestige-summary-grid" data-testid={testId}>
+      <div
+        className="card prestige-summary-card"
+        data-testid={testId ? `${testId}-current` : undefined}
+      >
+        <h4>Current run</h4>
         <ul>
-          {summary.gain.map((entry, index) => (
+          {summary.current.map((entry, index) => (
             <li key={`${index}-${entry}`}>{entry}</li>
           ))}
         </ul>
       </div>
-      <div className="card" data-testid={testId ? `${testId}-keep` : undefined}>
-        <h4>Keeps</h4>
+      <div
+        className="card prestige-summary-card"
+        data-testid={testId ? `${testId}-next` : undefined}
+      >
+        <h4>Next run keeps</h4>
         <ul>
-          {summary.keep.map((entry, index) => (
+          {summary.next.map((entry, index) => (
             <li key={`${index}-${entry}`}>{entry}</li>
           ))}
         </ul>
       </div>
-      <div className="card" data-testid={testId ? `${testId}-lose` : undefined}>
-        <h4>Loses</h4>
+      <div
+        className="card prestige-summary-card"
+        data-testid={testId ? `${testId}-delta` : undefined}
+      >
+        <h4>Delta</h4>
         <ul>
-          {summary.lose.map((entry, index) => (
+          {summary.delta.map((entry, index) => (
             <li key={`${index}-${entry}`}>{entry}</li>
           ))}
         </ul>

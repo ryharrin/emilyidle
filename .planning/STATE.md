@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-06)
+See: .planning/PROJECT.md (updated 2026-02-07 closeout sync)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** Phase 55 UX/gameplay clarity is complete; Phase 54 test reliability + CI stability remains queued for execution.
+**Current focus:** Phase 56 full UI audit remediation is complete with audit artifacts published; Phase 54 test reliability + CI stability is the next queued execution package.
 
 ## Current Position
 
-Phase: 55 of 10 (UX Flow + Gameplay Clarity)
-Plan: 55-08 (First-session feedback strip + flow guardrails) — Complete
-Status: Phase 55 package executed (`55-01` through `55-08`) with closeout summary published; Phase 54 remains planned.
-Last activity: 2026-02-06 — Executed Phase 55 plans, verified target suites, and synced top-level planning docs.
-Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 complete (6/6) [██████████], Phase 54 planned (0/7) [░░░░░░░░░░], Phase 55 complete (8/8) [██████████]
-Next Phase: Execute Phase 54 plan sequence (`54-01` through `54-07`).
+Phase: 54 of 11 (Test Reliability + CI Stability)
+Plan: 54-01 (selector disambiguation + strict-mode hardening) — Planned
+Status: Phase 56 package fully executed (`56-01` through `56-09`) with audit evidence indexed; Phase 54 remains planned for reliability hardening.
+Last activity: 2026-02-07 — Completed `56-09`, generated full audit index/checklists, and synced top-level planning docs.
+Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 complete (6/6) [██████████], Phase 54 planned (0/7) [░░░░░░░░░░], Phase 55 complete (8/8) [██████████], Phase 56 complete (9/9) [██████████]
+Next Phase: Execute Phase 54 sequence (`54-01` through `54-07`).
 
 ## Accumulated Context
 
@@ -115,9 +115,13 @@ Next Phase: Execute Phase 54 plan sequence (`54-01` through `54-07`).
 | 54 | Keep desktop-only expectations scoped to desktop projects in Playwright matrix | Prevents deterministic mobile false-failures from viewport-incompatible assertions |
 | 55 | Treat primary-action visibility as a UX contract: toast/overlay layers cannot obscure core loop controls | Keeps high-frequency actions continuously available and reduces interruption friction |
 | 55 | Use concise taxonomy-driven gating reasons instead of verbose repeated copy | Improves scan speed and actionability while preserving deterministic selector/assertion anchors |
+| 56 | Lock global tab order to `Career -> Catalog -> Collection` and keep tab labels discoverable on narrow screens | Preserves primary IA intent from audit findings and removes navigation ambiguity in mobile first view |
+| 56 | Define one-primary-action-first contract per tab and prohibit overlay occlusion of that zone | Reduces decision paralysis and interruption friction in high-frequency gameplay loops |
+| 56 | Execute full UI audit captures as tab-scoped tests that emit per-tab manifests and coverage summaries | Improves failure isolation and keeps audit evidence deterministic for desktop/mobile regressions |
+| 56 | Generate rubric-tagged audit indexes/checklists (`nav`, `cta`, `overlay`, `density`, `gating`, `meta`) from manifests | Eliminates manual file crawling and speeds review triage across 396 captured artifacts |
 
 ## Session Continuity
 
-Last session: 2026-02-06T16:45:00Z
-Stopped at: Completed Phase 55 execution + planning closeout sync; pending Phase 54 reliability sequence
+Last session: 2026-02-07T12:59:35Z
+Stopped at: Completed Phase 56 closeout (`56-09-SUMMARY.md`) and published indexed desktop/mobile audit evidence
 Resume file: None

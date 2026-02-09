@@ -1,5 +1,20 @@
 # Milestones: Emily Idle
 
+## v4.5 Full UI Audit Remediation (Completed: 2026-02-07)
+
+**Delivered:** Completed the nine-plan remediation sequence derived from full desktop/mobile screenshot coverage, including tab/system UX fixes and a repeatable indexed audit harness.
+
+**Phase completed:** 56 (9 plans)
+
+**Summary anchors:**
+- `.planning/phases/56-full-ui-audit-remediation/56-CONTEXT.md`
+- `.planning/phases/56-full-ui-audit-remediation/56-TASKLIST.md`
+- `.planning/phases/56-full-ui-audit-remediation/56-01-PLAN.md` .. `56-09-PLAN.md`
+- `.planning/phases/56-full-ui-audit-remediation/56-01-SUMMARY.md` .. `56-09-SUMMARY.md`
+- `output/playwright/full-ui-coverage-audit-20260207/index.md`
+
+---
+
 ## v4.4 UX Flow + Gameplay Clarity (Completed: 2026-02-06)
 
 **Delivered:** Completed the eight-plan UX/gameplay clarity package with Career action-lane consolidation, mobile disclosure/sticky-action ergonomics, catalog CTA/gating simplification, tab-rail hardening, and first-session feedback guardrails.
@@ -123,3 +138,4 @@
 - `/gsd-plan-phase` — Execute `54-01` (selector disambiguation + strict-mode hardening).
 - `/gsd-plan-phase` — Execute `54-02` (desktop/mobile project scoping cleanup).
 - `/gsd-plan-phase` — Execute `54-03` (mobile helper stabilization for catalog/interactions).
+- `/gsd-plan-phase` — Continue `54-04` .. `54-07` (runtime determinism, media verification hardening, unit async cleanup, CI sequencing policy).

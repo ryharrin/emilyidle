@@ -12,7 +12,11 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run --config vitest.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:chromium-mobile": "playwright test --project=chromium-mobile-pixel5",
+    "test:e2e:webkit-mobile": "playwright test --project=webkit-mobile-iphone12",
+    "test:ci:stable": "pnpm test:unit && pnpm test:e2e && pnpm typecheck"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.18",

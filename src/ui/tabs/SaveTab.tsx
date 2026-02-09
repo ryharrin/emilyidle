@@ -111,73 +111,64 @@ export function SaveTab({
             </div>
           </header>
           <div className="settings-shell">
-            <fieldset className="settings-section settings-section--save">
-              <legend>Save data</legend>
+            <fieldset
+              className="settings-section settings-section--save"
+              data-testid="settings-save-safety"
+            >
+              <legend>Save safety</legend>
+              <p className="muted">
+                Export before making risky changes so you always have a recovery snapshot.
+              </p>
               <div className="control-row">
-                <button type="button" className="secondary" onClick={onExport}>
-                  Export
-                </button>
                 <button
+                  id="export-save"
                   type="button"
-                  className="danger"
-                  data-testid="settings-clear-save"
-                  onClick={() => setConfirmClearOpen(true)}
+                  className="secondary"
+                  data-testid="export-save-trigger"
+                  onClick={onExport}
                 >
-                  Clear save
+                  Export backup
                 </button>
               </div>
             </fieldset>
 
-            <ConfirmModal
-              open={confirmClearOpen}
-              title="Clear local save?"
-              description="This clears the local save on this device and reloads the page. Export first if you want a backup."
-              confirmLabel="Clear save"
-              confirmClassName="danger"
-              confirmTestId="settings-clear-save-confirm"
-              cancelTestId="settings-clear-save-cancel"
-              onCancel={() => setConfirmClearOpen(false)}
-              onConfirm={() => {
-                setConfirmClearOpen(false);
-                onClearSave();
-              }}
-            />
-
-            <fieldset className="settings-section" data-testid="audio-controls">
-              <legend>Audio settings</legend>
-              <div className="controls">
-                <label className="settings-control">
-                  <input
-                    type="checkbox"
-                    data-testid="audio-sfx-toggle"
-                    checked={audioSettings.sfxEnabled}
-                    onChange={(event) =>
-                      onUpdateAudioSettings({
-                        ...audioSettings,
-                        sfxEnabled: event.target.checked,
-                      })
-                    }
-                  />
-                  Enable SFX
-                </label>
-                <label className="settings-control">
-                  <input
-                    type="checkbox"
-                    data-testid="audio-bgm-toggle"
-                    checked={audioSettings.bgmEnabled}
-                    onChange={(event) =>
-                      onUpdateAudioSettings({
-                        ...audioSettings,
-                        bgmEnabled: event.target.checked,
-                      })
-                    }
-                  />
-                  Enable BGM
-                </label>
+            <fieldset className="settings-section settings-section--import">
+              <legend>Import / restore</legend>
+              <label htmlFor="import-save-text">Import data</label>
+              <textarea
+                id="import-save-text"
+                rows={3}
+                placeholder="Paste exported data here"
+                aria-describedby="save-status"
+                value={importText}
+                onChange={(event) => onImportTextChange(event.target.value)}
+              ></textarea>
+              <div className="control-row control-row--end">
+                <button id="import-save" type="button" data-testid="import-save-trigger" onClick={onImport}>
+                  Import
+                </button>
+              </div>
+              <div className="file-import">
+                <label htmlFor="import-save-file">Import from file</label>
+                <input
+                  id="import-save-file"
+                  type="file"
+                  accept=".json,application/json"
+                  data-testid="import-save-file"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null;
+                    onImportFile(file);
+                    event.target.value = "";
+                  }}
+                />
+                <p className="muted">Use a JSON export from this game.</p>
               </div>
             </fieldset>
 
-            <fieldset className="settings-section" data-testid="settings-controls">
+            <fieldset
+              className="settings-section settings-section--preferences"
+              data-testid="settings-controls"
+            >
               <legend>Preferences</legend>
               <div className="controls">
                 <label className="settings-control settings-control--stacked">
@@ -211,105 +202,6 @@ export function SaveTab({
                   />
                   Hide completed achievements
                 </label>
-              </div>
-
-              <div className="settings-visibility">
-                <span className="muted settings-visibility-label">Notifications</span>
-                <div className="controls settings-visibility-grid">
-                  <label className="settings-control">
-                    <input
-                      type="checkbox"
-                      data-testid="settings-notify-sessions"
-                      checked={settings.notificationPreferences.sessionsReady}
-                      onChange={(event) =>
-                        persistSettings({
-                          ...settings,
-                          notificationPreferences: {
-                            ...settings.notificationPreferences,
-                            sessionsReady: event.target.checked,
-                          },
-                        })
-                      }
-                    />
-                    Sessions ready
-                  </label>
-                  <label className="settings-control">
-                    <input
-                      type="checkbox"
-                      data-testid="settings-notify-prestige"
-                      checked={settings.notificationPreferences.prestigeReady}
-                      onChange={(event) =>
-                        persistSettings({
-                          ...settings,
-                          notificationPreferences: {
-                            ...settings.notificationPreferences,
-                            prestigeReady: event.target.checked,
-                          },
-                        })
-                      }
-                    />
-                    Prestige ready
-                  </label>
-                  <label className="settings-control">
-                    <input
-                      type="checkbox"
-                      data-testid="settings-notify-achievements"
-                      checked={settings.notificationPreferences.achievements}
-                      onChange={(event) =>
-                        persistSettings({
-                          ...settings,
-                          notificationPreferences: {
-                            ...settings.notificationPreferences,
-                            achievements: event.target.checked,
-                          },
-                        })
-                      }
-                    />
-                    Achievement toasts
-                  </label>
-                  <label className="settings-control">
-                    <input
-                      type="checkbox"
-                      data-testid="settings-notify-events"
-                      checked={settings.notificationPreferences.events}
-                      onChange={(event) =>
-                        persistSettings({
-                          ...settings,
-                          notificationPreferences: {
-                            ...settings.notificationPreferences,
-                            events: event.target.checked,
-                          },
-                        })
-                      }
-                    />
-                    Event updates
-                  </label>
-                </div>
-              </div>
-
-              <div className="settings-visibility">
-                <span className="muted settings-visibility-label">Visible tabs</span>
-                <div className="controls settings-visibility-grid">
-                  {visibleTabOptions.map((tab) => (
-                    <label key={tab.id} className="settings-control">
-                      <input
-                        type="checkbox"
-                        data-testid={`tab-visibility-${tab.id}`}
-                        checked={!hiddenTabsSet.has(tab.id)}
-                        onChange={(event) => {
-                          const nextHiddenTabs = event.target.checked
-                            ? settings.hiddenTabs.filter((hiddenTab) => hiddenTab !== tab.id)
-                            : Array.from(new Set([...settings.hiddenTabs, tab.id]));
-                          persistSettings({
-                            ...settings,
-                            hiddenTabs: nextHiddenTabs,
-                          });
-                        }}
-                      />
-                      {tab.label}
-                    </label>
-                  ))}
-                </div>
               </div>
 
               {devSettings.enabled && (
@@ -382,38 +274,182 @@ export function SaveTab({
               )}
             </fieldset>
 
-            <fieldset className="settings-section settings-section--import">
-              <legend>Import data</legend>
-              <label htmlFor="import-save-text">Import data</label>
-              <textarea
-                id="import-save-text"
-                rows={3}
-                placeholder="Paste exported data here"
-                aria-describedby="save-status"
-                value={importText}
-                onChange={(event) => onImportTextChange(event.target.value)}
-              ></textarea>
-              <div className="control-row control-row--end">
-                <button type="button" onClick={onImport}>
-                  Import
-                </button>
-              </div>
-              <div className="file-import">
-                <label htmlFor="import-save-file">Import from file</label>
-                <input
-                  id="import-save-file"
-                  type="file"
-                  accept=".json,application/json"
-                  data-testid="import-save-file"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0] ?? null;
-                    onImportFile(file);
-                    event.target.value = "";
-                  }}
-                />
-                <p className="muted">Use a JSON export from this game.</p>
+            <fieldset
+              className="settings-section settings-section--audio"
+              data-testid="audio-controls"
+            >
+              <legend>Audio</legend>
+              <div className="controls">
+                <label className="settings-control">
+                  <input
+                    type="checkbox"
+                    data-testid="audio-sfx-toggle"
+                    checked={audioSettings.sfxEnabled}
+                    onChange={(event) =>
+                      onUpdateAudioSettings({
+                        ...audioSettings,
+                        sfxEnabled: event.target.checked,
+                      })
+                    }
+                  />
+                  Enable SFX
+                </label>
+                <label className="settings-control">
+                  <input
+                    type="checkbox"
+                    data-testid="audio-bgm-toggle"
+                    checked={audioSettings.bgmEnabled}
+                    onChange={(event) =>
+                      onUpdateAudioSettings({
+                        ...audioSettings,
+                        bgmEnabled: event.target.checked,
+                      })
+                    }
+                  />
+                  Enable BGM
+                </label>
               </div>
             </fieldset>
+
+            <fieldset
+              className="settings-section settings-section--notifications"
+              data-testid="settings-notifications"
+            >
+              <legend>Notifications</legend>
+              <div className="controls settings-visibility-grid">
+                <label className="settings-control">
+                  <input
+                    type="checkbox"
+                    data-testid="settings-notify-sessions"
+                    checked={settings.notificationPreferences.sessionsReady}
+                    onChange={(event) =>
+                      persistSettings({
+                        ...settings,
+                        notificationPreferences: {
+                          ...settings.notificationPreferences,
+                          sessionsReady: event.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  Sessions ready
+                </label>
+                <label className="settings-control">
+                  <input
+                    type="checkbox"
+                    data-testid="settings-notify-prestige"
+                    checked={settings.notificationPreferences.prestigeReady}
+                    onChange={(event) =>
+                      persistSettings({
+                        ...settings,
+                        notificationPreferences: {
+                          ...settings.notificationPreferences,
+                          prestigeReady: event.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  Prestige ready
+                </label>
+                <label className="settings-control">
+                  <input
+                    type="checkbox"
+                    data-testid="settings-notify-achievements"
+                    checked={settings.notificationPreferences.achievements}
+                    onChange={(event) =>
+                      persistSettings({
+                        ...settings,
+                        notificationPreferences: {
+                          ...settings.notificationPreferences,
+                          achievements: event.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  Achievement toasts
+                </label>
+                <label className="settings-control">
+                  <input
+                    type="checkbox"
+                    data-testid="settings-notify-events"
+                    checked={settings.notificationPreferences.events}
+                    onChange={(event) =>
+                      persistSettings({
+                        ...settings,
+                        notificationPreferences: {
+                          ...settings.notificationPreferences,
+                          events: event.target.checked,
+                        },
+                      })
+                    }
+                  />
+                  Event updates
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset
+              className="settings-section settings-section--visibility"
+              data-testid="settings-visibility"
+            >
+              <legend>Visible tabs</legend>
+              <div className="controls settings-visibility-grid">
+                {visibleTabOptions.map((tab) => (
+                  <label key={tab.id} className="settings-control">
+                    <input
+                      type="checkbox"
+                      data-testid={`tab-visibility-${tab.id}`}
+                      checked={!hiddenTabsSet.has(tab.id)}
+                      onChange={(event) => {
+                        const nextHiddenTabs = event.target.checked
+                          ? settings.hiddenTabs.filter((hiddenTab) => hiddenTab !== tab.id)
+                          : Array.from(new Set([...settings.hiddenTabs, tab.id]));
+                        persistSettings({
+                          ...settings,
+                          hiddenTabs: nextHiddenTabs,
+                        });
+                      }}
+                    />
+                    {tab.label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset
+              className="settings-section settings-section--danger"
+              data-testid="settings-danger-zone"
+            >
+              <legend>Danger zone</legend>
+              <p className="muted">
+                Clear save removes local progress on this device after confirmation.
+              </p>
+              <div className="control-row">
+                <button
+                  type="button"
+                  className="danger"
+                  data-testid="settings-clear-save"
+                  onClick={() => setConfirmClearOpen(true)}
+                >
+                  Clear save
+                </button>
+              </div>
+            </fieldset>
+
+            <ConfirmModal
+              open={confirmClearOpen}
+              title="Clear local save?"
+              description="This clears the local save on this device and reloads the page. Export first if you want a backup."
+              confirmLabel="Clear save"
+              confirmClassName="danger"
+              confirmTestId="settings-clear-save-confirm"
+              cancelTestId="settings-clear-save-cancel"
+              onCancel={() => setConfirmClearOpen(false)}
+              onConfirm={() => {
+                setConfirmClearOpen(false);
+                onClearSave();
+              }}
+            />
           </div>
 
           <output id="save-status" aria-live="polite">

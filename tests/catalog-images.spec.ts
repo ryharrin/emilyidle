@@ -1,8 +1,12 @@
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 const CATALOG_FILE_URL = new URL("../src/game/catalog.ts", import.meta.url);
 const WIKIMEDIA_PREFIX = "https://upload.wikimedia.org/wikipedia/commons/";
+const CATALOG_SRC_PATH = "/emilyidle/catalog/";
+const DECODE_SAMPLE_SIZE = 3;
+const DECODE_POLL_TIMEOUT_MS = 20_000;
 const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
   "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo%2C_met%C3%A0_anni_Novanta.jpg":
     "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo,_meta_anni_Novanta.jpg",
@@ -27,7 +31,31 @@ const formatMissing = (missing: string[]) => {
   return `Missing catalog images (${missing.length}):\n${lines}${suffix}`;
 };
 
+const pickDeterministicSubset = (
+  values: readonly string[],
+  targetCount: number,
+): ReadonlyArray<string> => {
+  if (values.length <= targetCount) {
+    return [...values].sort();
+  }
+
+  const sorted = [...values].sort();
+  const picks = new Set<string>();
+  const denominator = Math.max(targetCount - 1, 1);
+  for (let i = 0; i < targetCount; i += 1) {
+    const index = Math.floor((i * (sorted.length - 1)) / denominator);
+    const value = sorted[index];
+    if (value) {
+      picks.add(value);
+    }
+  }
+
+  return [...picks];
+};
+
 test("catalog images exist under public catalog", async ({ page }) => {
+  test.slow();
+
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
@@ -117,34 +145,32 @@ test("catalog images exist under public catalog", async ({ page }) => {
     );
     await page.reload();
   }
-  let catalogRoot = "";
   const catalogTab = page.getByRole("tab", { name: "Catalog" });
-  if ((await catalogTab.count()) > 0) {
-    await catalogTab.click();
-    await expect(page.getByTestId("catalog-grid")).toBeVisible();
+  await expect(catalogTab).toHaveCount(1);
+  await clickLocatorSafely(catalogTab);
+  await expect(page.getByTestId("catalog-grid")).toBeVisible();
 
-    const firstImage = page.locator('img[src*="/catalog/"]').first();
-    await expect(firstImage).toBeVisible();
-    const src = await firstImage.getAttribute("src");
-    if (!src) {
-      throw new Error("Expected a catalog image src to derive catalog root.");
-    }
+  const firstImage = page.locator('img[src*="/catalog/"]').first();
+  await expect(firstImage).toBeVisible();
+  await expect(firstImage).toHaveAttribute("src", /\/emilyidle\/catalog\//);
 
-    const [catalogPrefix] = src.split("/catalog/");
-    catalogRoot = `${catalogPrefix}/catalog/`;
-  } else {
-    catalogRoot = new URL("catalog/", page.url()).toString();
-  }
-  if (!catalogRoot.startsWith("http")) {
-    catalogRoot = new URL(catalogRoot, page.url()).toString();
-  }
+  const catalogRoot = new URL(CATALOG_SRC_PATH, page.url()).toString();
+  expect(catalogRoot).toContain(CATALOG_SRC_PATH);
+
   const expectedRelatives = await getCatalogImageRelatives();
   const missing: string[] = [];
 
   for (const relative of expectedRelatives) {
     const localRelative = LOCAL_CATALOG_OVERRIDES[relative] ?? relative;
     const url = new URL(localRelative, catalogRoot).toString();
-    const response = await page.request.get(url);
+    expect(url).toContain(CATALOG_SRC_PATH);
+    let response: Awaited<ReturnType<typeof page.request.get>>;
+    try {
+      response = await page.request.get(url, { timeout: 5_000 });
+    } catch {
+      missing.push(relative);
+      continue;
+    }
     const contentType = response.headers()["content-type"] ?? "";
 
     if (response.status() !== 200 || !contentType.startsWith("image/")) {
@@ -154,5 +180,36 @@ test("catalog images exist under public catalog", async ({ page }) => {
 
   if (missing.length > 0) {
     throw new Error(formatMissing(missing));
+  }
+
+  const decodeRelatives = pickDeterministicSubset(expectedRelatives, DECODE_SAMPLE_SIZE);
+  for (const relative of decodeRelatives) {
+    const localRelative = LOCAL_CATALOG_OVERRIDES[relative] ?? relative;
+    const url = new URL(localRelative, catalogRoot).toString();
+    await expect
+      .poll(
+        () =>
+          page.evaluate(async (imageUrl) => {
+            const image = new Image();
+            image.src = imageUrl;
+
+            try {
+              if (typeof image.decode === "function") {
+                await image.decode();
+              } else {
+                await new Promise<void>((resolve, reject) => {
+                  image.onload = () => resolve();
+                  image.onerror = () => reject(new Error("Image load failed."));
+                });
+              }
+            } catch {
+              return false;
+            }
+
+            return image.naturalWidth > 0 && !image.src.startsWith("data:image");
+          }, url),
+        { timeout: DECODE_POLL_TIMEOUT_MS },
+      )
+      .toBe(true);
   }
 });

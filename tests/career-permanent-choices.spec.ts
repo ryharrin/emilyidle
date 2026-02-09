@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openCareerProgression, selectCareerView } from "./helpers/careerProgression";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 const seededState = {
   currencyCents: 1_000_000,
@@ -76,13 +78,8 @@ test("career permanent choices show previews and persist across refresh", async 
 
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-
-  const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-  const careerTab = tabList.getByRole("tab", { name: "Career" });
-  await expect(careerTab).toBeVisible();
-  await careerTab.click();
-  await expect(page.getByTestId("career-panel")).toBeVisible();
-
+  await openCareerProgression(page);
+  await selectCareerView(page, "stages");
   await expect(page.getByTestId("career-stages-card")).toBeVisible();
 
   // Stage 2: pick a primary track (permanent)
@@ -90,8 +87,16 @@ test("career permanent choices show previews and persist across refresh", async 
   await expect(trackOption).toBeVisible();
 
   await trackOption.scrollIntoViewIfNeeded();
-  await trackOption.click();
-  await expect(page.getByTestId("career-choice-locked-licensed-associate")).toBeVisible();
+  await clickLocatorSafely(trackOption);
+  const lockedTrackLabel = page.getByTestId("career-choice-locked-licensed-associate");
+  if (!(await lockedTrackLabel.isVisible().catch(() => false))) {
+    if (await trackOption.isVisible().catch(() => false)) {
+      await trackOption.evaluate((element) => {
+        (element as HTMLButtonElement).click();
+      });
+    }
+  }
+  await expect(lockedTrackLabel).toBeVisible();
 
   // Stage 3: verify previews exist and show a delta
   const modalityOption = page.getByTestId("career-choice-option-cbt");
@@ -99,8 +104,16 @@ test("career permanent choices show previews and persist across refresh", async 
   const salaryAfter = await modalityOption.getByTestId("career-choice-salary-after").innerText();
   expect(salaryBefore).not.toEqual(salaryAfter);
 
-  await modalityOption.click();
-  await expect(page.getByTestId("career-choice-locked-specialist-certification")).toBeVisible();
+  await clickLocatorSafely(modalityOption);
+  const lockedModalityLabel = page.getByTestId("career-choice-locked-specialist-certification");
+  if (!(await lockedModalityLabel.isVisible().catch(() => false))) {
+    if (await modalityOption.isVisible().catch(() => false)) {
+      await modalityOption.evaluate((element) => {
+        (element as HTMLButtonElement).click();
+      });
+    }
+  }
+  await expect(lockedModalityLabel).toBeVisible();
 
   // Wait for autosave to persist the permanent choice before reloading.
   await page.waitForFunction(() => {
@@ -135,7 +148,8 @@ test("career permanent choices show previews and persist across refresh", async 
   await page.reload();
   await page.waitForLoadState("networkidle");
 
-  await expect(page.getByTestId("career-panel")).toBeVisible();
+  await openCareerProgression(page);
+  await selectCareerView(page, "stages");
   await expect(page.getByTestId("career-choice-locked-licensed-associate")).toBeVisible();
   await expect(page.getByTestId("career-choice-locked-specialist-certification")).toBeVisible();
   await expect(page.getByTestId("career-choice-option-cbt")).toHaveCount(0);

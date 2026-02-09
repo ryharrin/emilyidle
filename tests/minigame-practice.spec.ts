@@ -1,4 +1,10 @@
 import { expect, test } from "@playwright/test";
+import {
+  openCatalogTab,
+  resolveCatalogInteractCandidates,
+  switchCatalogToOwned,
+} from "./helpers/catalogFilters";
+import { clickLocatorSafely, findFirstVisible } from "./helpers/interactions";
 
 import { CATALOG_ENTRIES } from "../src/game/catalog";
 import type { GameState } from "../src/game/state";
@@ -42,16 +48,20 @@ test("practice runs stay reward-free and keep streak state unchanged", async ({ 
   );
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  await openCatalogTab(page);
+  await switchCatalogToOwned(page);
 
-  const manualButton = page
-    .locator(
-      '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
-    )
-    .first();
-  await expect(manualButton).toBeVisible();
+  const manualCandidates = await resolveCatalogInteractCandidates(
+    page,
+    '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
+  );
+  const manualButton = await findFirstVisible(manualCandidates);
+  expect(manualButton).not.toBeNull();
+  if (manualButton === null) {
+    throw new Error("Expected a visible manual interaction button");
+  }
 
-  await manualButton.click();
+  await clickLocatorSafely(manualButton);
   await expect(page.getByTestId("winding-modal")).toBeVisible();
   await page.getByTestId("winding-practice-toggle").check();
 
@@ -73,8 +83,17 @@ test("practice runs stay reward-free and keep streak state unchanged", async ({ 
   await page.getByTestId("winding-close").click();
   await expect(page.getByTestId("winding-modal")).toHaveCount(0);
 
-  await expect(manualButton).toBeEnabled();
-  await manualButton.click();
+  const manualCandidatesAfterRun = await resolveCatalogInteractCandidates(
+    page,
+    '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
+  );
+  const manualButtonAfterRun = await findFirstVisible(manualCandidatesAfterRun);
+  expect(manualButtonAfterRun).not.toBeNull();
+  if (manualButtonAfterRun === null) {
+    throw new Error("Expected manual interaction button after practice run");
+  }
+
+  await clickLocatorSafely(manualButtonAfterRun);
   await expect(page.getByTestId("winding-streak-label")).toContainText(/Perfect streak: 0/i);
   await page.getByTestId("winding-close").click();
 });

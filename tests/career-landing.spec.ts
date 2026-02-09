@@ -89,6 +89,11 @@ test("deep links do not overwrite last-tab persistence for existing saves", asyn
 });
 
 test("career timeline renders stage nodes alongside the map", async ({ page }) => {
+  test.skip(
+    (page.viewportSize()?.width ?? 1280) < 900,
+    "Timeline node density assertions are desktop-only.",
+  );
+
   await page.addInitScript(() => window.localStorage.clear());
   await page.goto("/");
 
@@ -103,6 +108,11 @@ test("career timeline renders stage nodes alongside the map", async ({ page }) =
 test("career timeline meta renders current summary and upcoming choices on desktop", async ({
   page,
 }) => {
+  test.skip(
+    (page.viewportSize()?.width ?? 1280) < 900,
+    "Timeline summary cards are hidden on narrow/mobile viewports.",
+  );
+
   await page.goto("/");
 
   const currentSummary = page.getByTestId("career-timeline-current");

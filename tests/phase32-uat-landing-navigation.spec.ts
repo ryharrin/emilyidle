@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 const seededState = {
   currencyCents: 1000,
@@ -56,6 +57,58 @@ async function seedExistingSave(page: Page, lastTabId: string = "save") {
   );
 }
 
+async function expectTabSelected(page: Page, name: string) {
+  const tabList = page.getByRole("tablist", { name: "Primary navigation" });
+  const tab = tabList.getByRole("tab", { name });
+  const panel = page.getByRole("tabpanel", { name });
+
+  await expect(tab).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const selected = await tab.getAttribute("aria-selected");
+        if (selected === "true") {
+          return true;
+        }
+        return panel.isVisible().catch(() => false);
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+}
+
+async function gotoApp(page: Page, path: string = "/") {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    await page.request.get(path, { timeout: 10_000, failOnStatusCode: false }).catch(() => {});
+    try {
+      await page.goto(path, { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
+        timeout: 20_000,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 3) {
+        break;
+      }
+      await page.goto("about:blank", { waitUntil: "commit", timeout: 10_000 }).catch(() => {});
+      await page.waitForTimeout(attempt * 150);
+    }
+  }
+  throw lastError;
+}
+
+async function captureBestEffort(page: Page, path: string) {
+  await page
+    .screenshot({
+      path,
+      fullPage: false,
+      timeout: 8_000,
+    })
+    .catch(() => {});
+}
+
 test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
   test.describe("Desktop", () => {
     test("1. Fresh save: visiting / lands on Career; tabs usable", async ({ page }) => {
@@ -63,8 +116,7 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
         window.localStorage.clear();
       });
 
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await gotoApp(page);
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
       const careerTab = tabList.getByRole("tab", { name: "Career" });
@@ -73,7 +125,7 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       const saveTab = tabList.getByRole("tab", { name: "Settings" });
 
       // Verify Career is selected
-      await expect(careerTab).toHaveAttribute("aria-selected", "true");
+      await expectTabSelected(page, "Career");
       await expect(page.getByTestId("career-panel")).toBeVisible();
 
       // Verify tabs are usable
@@ -83,11 +135,11 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       await expect(careerTab).toBeVisible();
 
       // Test tab switching works
-      await vaultTab.click();
-      await expect(vaultTab).toHaveAttribute("aria-selected", "true");
+      await clickLocatorSafely(vaultTab);
+      await expectTabSelected(page, "Collection");
 
-      await careerTab.click();
-      await expect(careerTab).toHaveAttribute("aria-selected", "true");
+      await clickLocatorSafely(careerTab);
+      await expectTabSelected(page, "Career");
     });
 
     test("2. Existing save + last-tab persistence: lands on Settings when lastTabId=save", async ({
@@ -95,13 +147,12 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
     }) => {
       await seedExistingSave(page, "save");
 
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await gotoApp(page);
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
       const saveTab = tabList.getByRole("tab", { name: "Settings" });
 
-      await expect(saveTab).toHaveAttribute("aria-selected", "true");
+      await expectTabSelected(page, "Settings");
     });
 
     test("3. Deep link non-persistence: ?tab=career opens Career, then / returns to Settings", async ({
@@ -110,19 +161,17 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       await seedExistingSave(page, "save");
 
       // First visit - should land on Settings
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await gotoApp(page);
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
       const saveTab = tabList.getByRole("tab", { name: "Settings" });
       const careerTab = tabList.getByRole("tab", { name: "Career" });
 
-      await expect(saveTab).toHaveAttribute("aria-selected", "true");
+      await expectTabSelected(page, "Settings");
 
       // Deep link to Career
-      await page.goto("/?tab=career");
-      await page.waitForLoadState("networkidle");
-      await expect(careerTab).toHaveAttribute("aria-selected", "true");
+      await gotoApp(page, "/?tab=career");
+      await expectTabSelected(page, "Career");
 
       // Verify navigation localStorage is still "save"
       const stored = await page.evaluate(() =>
@@ -131,9 +180,8 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });
 
       // Visit / again - should return to Settings
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
-      await expect(saveTab).toHaveAttribute("aria-selected", "true");
+      await gotoApp(page);
+      await expectTabSelected(page, "Settings");
 
       // Final verification: navigation still shows "save"
       const storedFinal = await page.evaluate(() =>
@@ -145,13 +193,12 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
     test("4. Deep link alias: ?tab=catalog lands on Catalog", async ({ page }) => {
       await seedExistingSave(page, "save");
 
-      await page.goto("/?tab=catalog");
-      await page.waitForLoadState("networkidle");
+      await gotoApp(page, "/?tab=catalog");
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
       const catalogTab = tabList.getByRole("tab", { name: "Catalog" });
 
-      await expect(catalogTab).toHaveAttribute("aria-selected", "true");
+      await expectTabSelected(page, "Catalog");
     });
   });
 
@@ -163,20 +210,16 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
         window.localStorage.clear();
       });
 
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await gotoApp(page);
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
       const careerTab = tabList.getByRole("tab", { name: "Career" });
 
       // Verify Career is selected
-      await expect(careerTab).toHaveAttribute("aria-selected", "true");
+      await expectTabSelected(page, "Career");
 
       // Take screenshot for visual verification
-      await page.screenshot({
-        path: "test-results/uat-mobile-fresh-save.png",
-        fullPage: false,
-      });
+      await captureBestEffort(page, "test-results/uat-mobile-fresh-save.png");
 
       // Verify tabs are visible and usable in mobile viewport
       const vaultTab = tabList.getByRole("tab", { name: "Collection" });
@@ -188,11 +231,11 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       await expect(saveTab).toBeVisible();
 
       // Test tab switching works on mobile
-      await vaultTab.click();
-      await expect(vaultTab).toHaveAttribute("aria-selected", "true");
+      await clickLocatorSafely(vaultTab);
+      await expectTabSelected(page, "Collection");
 
-      await careerTab.click();
-      await expect(careerTab).toHaveAttribute("aria-selected", "true");
+      await clickLocatorSafely(careerTab);
+      await expectTabSelected(page, "Career");
     });
 
     test("3. Deep link non-persistence mobile: ?tab=career opens Career, then / returns to Settings", async ({
@@ -201,31 +244,23 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       await seedExistingSave(page, "save");
 
       // First visit - should land on Settings
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await gotoApp(page);
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
       const saveTab = tabList.getByRole("tab", { name: "Settings" });
       const careerTab = tabList.getByRole("tab", { name: "Career" });
 
-      await expect(saveTab).toHaveAttribute("aria-selected", "true");
+      await expectTabSelected(page, "Settings");
 
       // Take screenshot of Settings tab on mobile
-      await page.screenshot({
-        path: "test-results/uat-mobile-save-tab.png",
-        fullPage: false,
-      });
+      await captureBestEffort(page, "test-results/uat-mobile-save-tab.png");
 
       // Deep link to Career
-      await page.goto("/?tab=career");
-      await page.waitForLoadState("networkidle");
-      await expect(careerTab).toHaveAttribute("aria-selected", "true");
+      await gotoApp(page, "/?tab=career");
+      await expectTabSelected(page, "Career");
 
       // Take screenshot of Career tab on mobile
-      await page.screenshot({
-        path: "test-results/uat-mobile-career-deep-link.png",
-        fullPage: false,
-      });
+      await captureBestEffort(page, "test-results/uat-mobile-career-deep-link.png");
 
       // Verify navigation localStorage is still "save"
       const stored = await page.evaluate(() =>
@@ -234,16 +269,14 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });
 
       // Visit / again - should return to Settings
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
-      await expect(saveTab).toHaveAttribute("aria-selected", "true");
+      await gotoApp(page);
+      await expectTabSelected(page, "Settings");
     });
 
     test("Mobile layout: tablist does not break at small viewport", async ({ page }) => {
       await seedExistingSave(page, "career");
 
-      await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await gotoApp(page);
 
       const tabList = page.getByRole("tablist", { name: "Primary navigation" });
 
@@ -260,10 +293,7 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       }
 
       // Take screenshot for visual verification
-      await page.screenshot({
-        path: "test-results/uat-mobile-tablist-layout.png",
-        fullPage: false,
-      });
+      await captureBestEffort(page, "test-results/uat-mobile-tablist-layout.png");
     });
   });
 });

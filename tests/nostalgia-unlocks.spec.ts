@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { openCatalogFilters } from "./helpers/catalogFilters";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
@@ -79,19 +80,19 @@ test("nostalgia unlocks flow", async ({ page }) => {
     { state: seededState, lastSimulatedAtMs: Date.now() },
   );
 
-  await page.goto("/");
-  await page.getByTestId("nostalgia-tab").click();
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await clickLocatorSafely(page.getByTestId("nostalgia-tab"));
 
   await expect(page.getByTestId("nostalgia-unlocks")).toBeVisible();
   await expect(page.getByTestId("nostalgia-unlock-buy-classic")).toBeEnabled();
   await expect(page.getByTestId("nostalgia-unlock-buy-chronograph")).toBeDisabled();
 
-  await page.getByTestId("nostalgia-unlock-buy-classic").click();
+  await clickLocatorSafely(page.getByTestId("nostalgia-unlock-buy-classic"));
 
   const unlockModal = page.getByTestId("nostalgia-unlock-modal");
   try {
     await unlockModal.waitFor({ state: "visible", timeout: 1000 });
-    await unlockModal.getByRole("button", { name: "Confirm unlock" }).click();
+    await clickLocatorSafely(unlockModal.getByRole("button", { name: "Confirm unlock" }));
   } catch {
     // Confirmation toggle may be disabled; no modal appears.
   }
@@ -100,7 +101,7 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await expect(page.getByTestId("nostalgia-unlock-refund-classic")).toBeEnabled();
   await expect(page.getByTestId("nostalgia-balance")).toHaveText(/0 Nostalgia/);
 
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
   await openCatalogFilters(page);
   await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
@@ -109,16 +110,16 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await expect(classicBuyButton).toBeEnabled();
 
   await expect(page.getByTestId("nostalgia-tab")).toBeVisible();
-  await page.getByTestId("nostalgia-tab").click();
+  await clickLocatorSafely(page.getByTestId("nostalgia-tab"));
   await expect(page.getByTestId("nostalgia-unlocks")).toBeVisible();
 
-  await page.reload();
+  await page.reload({ waitUntil: "domcontentloaded" });
 
-  await page.getByTestId("nostalgia-tab").click();
+  await clickLocatorSafely(page.getByTestId("nostalgia-tab"));
   await expect(page.getByTestId("nostalgia-unlock-buy-classic")).toBeDisabled();
   await expect(page.getByTestId("nostalgia-unlock-refund-classic")).toBeEnabled();
 
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
   await openCatalogFilters(page);
   await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");

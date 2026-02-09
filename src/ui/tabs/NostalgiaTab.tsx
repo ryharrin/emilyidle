@@ -13,6 +13,7 @@ import {
   canBuyNostalgiaUnlock,
   canRefundNostalgiaUnlock,
   getEnjoymentThresholdLabel,
+  getEnjoymentRateCentsPerSec,
   getNostalgiaUnlockCost,
   prestigeNostalgia,
   refundNostalgiaUnlock,
@@ -135,6 +136,16 @@ export function NostalgiaTab({
       }
     };
   }, []);
+  const enjoymentRate = getEnjoymentRateCentsPerSec(state);
+  const nostalgiaRemainingCents = Math.max(0, nostalgiaPrestigeThreshold - nostalgiaEarned);
+  const nostalgiaRecoveryEtaSeconds =
+    enjoymentRate > 0 ? Math.ceil(nostalgiaRemainingCents / enjoymentRate) : null;
+  const nostalgiaRecoveryEtaLabel =
+    nostalgiaRecoveryEtaSeconds === null
+      ? "ETA unavailable"
+      : nostalgiaRecoveryEtaSeconds < 60
+        ? `${nostalgiaRecoveryEtaSeconds}s`
+        : `${Math.ceil(nostalgiaRecoveryEtaSeconds / 60)}m`;
   return (
     <section id="nostalgia" role="tabpanel" aria-labelledby="nostalgia-tab" hidden={!isActive}>
       {isActive && showNostalgiaSection && (
@@ -199,6 +210,13 @@ export function NostalgiaTab({
                 <h4>Projected nostalgia</h4>
                 <p className="muted">Reset now to gain +{nostalgiaPrestigeGain} Nostalgia.</p>
                 <p>Current balance: {state.nostalgiaPoints.toLocaleString()} Nostalgia</p>
+                <p className="muted">
+                  Recovery ETA at current enjoyment pace: {nostalgiaRecoveryEtaLabel}.
+                </p>
+                <p className="muted">
+                  Current run resets; owned watches, catalog discovery, achievements, and Nostalgia
+                  unlock purchases carry forward.
+                </p>
               </div>
 
               <PrestigeSummary
@@ -221,7 +239,7 @@ export function NostalgiaTab({
                     }}
                   >
                     <PrestigeIcon className="inline-icon" />
-                    Prestige for Nostalgia
+                    Review reset
                   </button>
                   {floatingDelta && (
                     <FloatingDelta
@@ -357,8 +375,7 @@ export function NostalgiaTab({
                   <div className="nostalgia-modal-card">
                     <h3>Confirm nostalgia prestige</h3>
                     <p className="muted">
-                      You will gain +{nostalgiaPrestigeGain} Nostalgia and reset collection
-                      progress.
+                      Review Current run, Next run keeps, and Delta before confirming the reset.
                     </p>
                     <PrestigeSummary
                       summary={buildNostalgiaPrestigeSummary(nostalgiaPrestigeGain)}
@@ -380,7 +397,7 @@ export function NostalgiaTab({
                         className="secondary"
                         onClick={() => onToggleNostalgiaModal(false)}
                       >
-                        Cancel
+                        Keep current run
                       </button>
                     </div>
                   </div>

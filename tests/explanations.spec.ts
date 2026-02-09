@@ -1,4 +1,5 @@
 import { expect, Page, test } from "@playwright/test";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 type SeededSave = {
   state: Record<string, unknown>;
@@ -23,7 +24,7 @@ async function clickExplainTrigger(page: Page, testId: string) {
     if ((await deepDetails.count()) > 0) {
       const isOpen = await deepDetails.evaluate((node) => (node as HTMLDetailsElement).open);
       if (!isOpen) {
-        await page.getByTestId("career-deep-details-toggle").click({ force: true });
+        await clickLocatorSafely(page.getByTestId("career-deep-details-toggle"));
       }
     }
   }
@@ -35,9 +36,10 @@ async function clickExplainTrigger(page: Page, testId: string) {
 }
 
 test("currency explain trigger opens currencies help", async ({ page }) => {
+  test.slow();
   await page.goto("/");
 
-  await page.getByTestId("explain-currencies").click();
+  await clickLocatorSafely(page.getByTestId("explain-currencies"));
   await expect(page.getByTestId("help-modal")).toBeVisible();
   await expect(page.getByTestId("help-active-section")).toHaveText(/Currencies/);
 });
@@ -80,17 +82,17 @@ test("catalog help opens shopping guidance", async ({ page }) => {
   await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
 
-  await page.getByTestId("explain-catalog-shop").click();
+  await clickLocatorSafely(page.getByTestId("explain-catalog-shop"));
   await expect(page.getByTestId("help-modal")).toBeVisible();
   await expect(page.getByTestId("help-active-section")).toHaveText(/Catalog shopping/);
 });
 
 test("career start explain trigger opens starting-career help", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("tab", { name: "Career" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));
 
   await clickExplainTrigger(page, "explain-career-start");
   await expect(page.getByTestId("help-modal")).toBeVisible();
@@ -99,7 +101,7 @@ test("career start explain trigger opens starting-career help", async ({ page })
 
 test("career stages explain trigger opens stages help", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("tab", { name: "Career" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));
 
   await clickExplainTrigger(page, "explain-career-stages");
   await expect(page.getByTestId("help-modal")).toBeVisible();
@@ -108,13 +110,13 @@ test("career stages explain trigger opens stages help", async ({ page }) => {
 
 test("career progression card surfaces the now-action feedback strip", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("tab", { name: "Career" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));
 
   const nextDetails = page.getByTestId("career-next-details");
   if ((await nextDetails.count()) > 0) {
     const isOpen = await nextDetails.evaluate((node) => (node as HTMLDetailsElement).open);
     if (!isOpen) {
-      await page.getByTestId("career-next-details-toggle").click({ force: true });
+      await clickLocatorSafely(page.getByTestId("career-next-details-toggle"));
     }
   }
 
@@ -164,7 +166,12 @@ test("stats rate breakdown disclosures render line items", async ({ page }) => {
 
   await page.goto("/");
   const statsTab = page.getByRole("tab", { name: "Stats" });
-  await statsTab.evaluate((element) => (element as HTMLButtonElement).click());
+  await clickLocatorSafely(statsTab);
+
+  await expect(page.getByTestId("stats-priority-board")).toBeVisible();
+  await expect(page.getByTestId("stats-priority-trigger")).toContainText(
+    /Wind-up|Auction weekend|ready/i,
+  );
 
   const enjoymentBreakdown = page.getByTestId("enjoyment-rate-breakdown");
   const cashBreakdown = page.getByTestId("cash-rate-breakdown");
@@ -240,9 +247,15 @@ test("nostalgia unlock order explain trigger opens nostalgia help", async ({ pag
   await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
 
   await page.goto("/");
-  await page.getByTestId("nostalgia-tab").click();
+  await clickLocatorSafely(page.getByTestId("nostalgia-tab"));
+  await expect(page.getByTestId("nostalgia-panel")).toBeVisible();
+  await expect(page.getByTestId("nostalgia-unlocks")).toBeVisible();
 
-  await page.getByTestId("explain-nostalgia-unlocks").click();
+  const explainUnlocks = page.locator('[data-testid="explain-nostalgia-unlocks"]:visible').first();
+  await clickLocatorSafely(explainUnlocks);
+  if (!(await page.getByTestId("help-modal").isVisible().catch(() => false))) {
+    await clickLocatorSafely(explainUnlocks);
+  }
   await expect(page.getByTestId("help-modal")).toBeVisible();
   await expect(page.getByTestId("help-active-section")).toHaveText(/Nostalgia unlocks/);
 });

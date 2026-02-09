@@ -78,10 +78,15 @@ describe("catalog favorites experience", () => {
     const filteredCards = within(catalogPanel)
       .getAllByTestId("catalog-card")
       .filter((card) => isVisibleInPanel(card as HTMLElement));
-    expect(filteredCards.length).toBe(1);
-    expect(
-      within(filteredCards[0]).getByTestId(/catalog-favorite-toggle-/),
-    ).toHaveAttribute("aria-pressed", "true");
+    await waitFor(() => {
+      const visibleFilteredCards = within(catalogPanel)
+        .getAllByTestId("catalog-card")
+        .filter((card) => isVisibleInPanel(card as HTMLElement));
+      expect(visibleFilteredCards.length).toBe(1);
+      expect(
+        within(visibleFilteredCards[0]).getByTestId(/catalog-favorite-toggle-/),
+      ).toHaveAttribute("aria-pressed", "true");
+    });
   });
 
   it("shows favorited watches in the collection filter panel", async () => {
@@ -117,11 +122,14 @@ describe("catalog favorites experience", () => {
     );
     await user.click(favoritesToggle);
 
-    expect(screen.getByTestId("collection-favorites-panel")).toBeInTheDocument();
     const collectionPanel = screen.getByRole("tabpanel", { name: /Collection/i });
-    const favoriteCards = within(collectionPanel)
-      .queryAllByTestId(/collection-favorite-/)
-      .filter((card) => isVisibleInPanel(card as HTMLElement));
-    expect(favoriteCards.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(favoritesToggle).toBeChecked();
+      expect(screen.getByTestId("collection-favorites-panel")).toBeInTheDocument();
+      const favoriteCards = within(collectionPanel)
+        .queryAllByTestId(/collection-favorite-/)
+        .filter((card) => isVisibleInPanel(card as HTMLElement));
+      expect(favoriteCards.length).toBeGreaterThan(0);
+    });
   });
 });

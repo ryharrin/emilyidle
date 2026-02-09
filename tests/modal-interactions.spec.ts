@@ -3,6 +3,7 @@ import type { GameState } from "../src/game/state";
 import { createInitialState } from "../src/game/state";
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 
@@ -42,8 +43,29 @@ const seedState = async (page: Page) => {
   );
 };
 
+const gotoApp = async (page: Page) => {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      await page.goto("/", { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
+        timeout: 15_000,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 2) {
+        break;
+      }
+      await page.goto("about:blank", { waitUntil: "commit", timeout: 10_000 }).catch(() => {});
+      await page.waitForTimeout(100);
+    }
+  }
+  throw lastError;
+};
+
 const openCatalogFromCollection = async (page: Page) => {
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
   await expect(catalogPanel.getByTestId("catalog-grid")).toBeVisible();
   return catalogPanel;
@@ -54,12 +76,12 @@ const switchCatalogToOwned = async (catalogPanel: Locator) => {
   if (!(await ownedTab.isVisible().catch(() => false))) {
     const quickFilters = catalogPanel.getByTestId("catalog-quick-filters");
     if (await quickFilters.isVisible().catch(() => false)) {
-      await quickFilters.click();
+      await clickLocatorSafely(quickFilters);
     } else {
-      await catalogPanel.getByTestId("catalog-filter-toggle").click();
+      await clickLocatorSafely(catalogPanel.getByTestId("catalog-filter-toggle"));
     }
   }
-  await ownedTab.click();
+  await clickLocatorSafely(ownedTab);
 };
 
 const closeCatalogDetailsSheetIfOpen = async (page: Page) => {
@@ -67,7 +89,7 @@ const closeCatalogDetailsSheetIfOpen = async (page: Page) => {
   if (await sheet.isVisible().catch(() => false)) {
     await page.keyboard.press("Escape");
     if (await sheet.isVisible().catch(() => false)) {
-      await sheet.click({ force: true });
+      await clickLocatorSafely(sheet);
     }
     await expect(sheet).toHaveCount(0);
   }
@@ -86,7 +108,7 @@ const openCatalogDetailsSheet = async (page: Page, catalogPanel: Locator) => {
     if (!(await button.isVisible().catch(() => false))) {
       continue;
     }
-    await button.click();
+    await clickLocatorSafely(button);
     if (await sheet.isVisible().catch(() => false)) {
       return true;
     }
@@ -128,19 +150,36 @@ test.describe("Help modal interactions", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await seedState(page);
-    await page.goto("/");
+    await gotoApp(page);
   });
 
   test("locks scroll, traps focus, and restores focus on mobile", async ({ page }) => {
     const helpButton = page.getByTestId("help-open");
-    await helpButton.click();
+    await clickLocatorSafely(helpButton);
     const helpModal = page.getByTestId("help-modal");
     await expect(helpModal).toBeVisible();
+    await expect(helpModal).toHaveAttribute("data-overlay-kind", "blocking");
     const headerActions = helpModal.locator(".help-modal-header-actions");
     await expect(headerActions).toBeVisible();
     await expect(headerActions.getByTestId("help-search")).toBeVisible();
     await expect(headerActions.getByTestId("help-close")).toBeVisible();
     expect(await page.evaluate(() => document.body.style.overflow)).toBe("hidden");
+    const overlayOrder = await page.evaluate(() => {
+      const toNumericZIndex = (selector: string) => {
+        const node = document.querySelector(selector);
+        if (!(node instanceof HTMLElement)) {
+          return 0;
+        }
+        const parsed = Number.parseInt(getComputedStyle(node).zIndex, 10);
+        return Number.isFinite(parsed) ? parsed : 0;
+      };
+
+      return {
+        help: toNumericZIndex("[data-testid='help-modal']"),
+        toast: toNumericZIndex("[data-testid='toast-stack']"),
+      };
+    });
+    expect(overlayOrder.help).toBeGreaterThan(overlayOrder.toast);
 
     let focusInside = false;
     for (let index = 0; index < 4; index += 1) {
@@ -165,10 +204,9 @@ test.describe("Help modal interactions", () => {
 
   test("search filters sections and keyboard navigation activates catalog", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.reload();
 
     const helpButton = page.getByTestId("help-open");
-    await helpButton.click();
+    await clickLocatorSafely(helpButton);
     const helpModal = page.getByTestId("help-modal");
     await expect(helpModal).toBeVisible();
 
@@ -204,7 +242,7 @@ test.describe("Interaction modals", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await seedState(page);
-    await page.goto("/");
+    await gotoApp(page);
   });
 
   test("winding, automatic, and quartz modals lock scroll and trap focus", async ({ page }) => {
@@ -225,7 +263,7 @@ test.describe("Interaction modals", () => {
         if (!(await candidate.isVisible().catch(() => false))) {
           continue;
         }
-        await candidate.click({ force: true });
+        await clickLocatorSafely(candidate);
         if (await windingModal.isVisible().catch(() => false)) {
           opened = true;
           break;
@@ -260,7 +298,7 @@ test.describe("Interaction modals", () => {
         if (!(await candidate.isVisible())) {
           continue;
         }
-        await candidate.click({ force: true });
+        await clickLocatorSafely(candidate);
         if (await automaticModal.isVisible().catch(() => false)) {
           opened = true;
           break;
@@ -270,7 +308,7 @@ test.describe("Interaction modals", () => {
         await expect(page.getByTestId("automatic-practice-toggle")).toBeVisible();
         await expect(page.getByTestId("automatic-difficulty")).toBeVisible();
         await page.keyboard.press("Tab");
-        await page.getByTestId("automatic-close").click();
+        await clickLocatorSafely(page.getByTestId("automatic-close"));
         await expect(automaticModal).toHaveCount(0);
         await page.waitForTimeout(50);
         expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
@@ -292,7 +330,7 @@ test.describe("Interaction modals", () => {
         if (!(await candidate.isVisible().catch(() => false))) {
           continue;
         }
-        await candidate.click({ force: true });
+        await clickLocatorSafely(candidate);
         if (await quartzModal.isVisible().catch(() => false)) {
           opened = true;
           break;
@@ -302,7 +340,7 @@ test.describe("Interaction modals", () => {
         await expect(page.getByTestId("quartz-practice-toggle")).toBeVisible();
         await expect(page.getByTestId("quartz-difficulty")).toBeVisible();
         await page.keyboard.press("Tab");
-        await page.getByTestId("quartz-close").click();
+        await clickLocatorSafely(page.getByTestId("quartz-close"));
         await expect(quartzModal).toHaveCount(0);
       }
     }
@@ -331,7 +369,7 @@ test.describe("Interaction modals", () => {
       if (!(await candidate.isVisible().catch(() => false))) {
         continue;
       }
-      await candidate.click({ force: true });
+      await clickLocatorSafely(candidate);
       if (await surface.isVisible().catch(() => false)) {
         opened = true;
         break;
@@ -356,7 +394,7 @@ test.describe("Interaction modals", () => {
 
     await expect(page.getByTestId("winding-live")).toHaveText(/Stopped at/i);
     await expect(page.getByTestId("winding-outcome")).toBeVisible();
-    await page.getByTestId("winding-close").click();
+    await clickLocatorSafely(page.getByTestId("winding-close"));
     await expect(page.getByTestId("winding-modal")).toHaveCount(0);
   });
 
@@ -388,7 +426,7 @@ test.describe("Interaction modals", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Career" }).click();
+    await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));
     await expect(page.getByTestId("career-session-cooldown-ring")).toBeVisible();
   });
 });

@@ -31,21 +31,38 @@ export function ConfirmModal({
     return null;
   }
 
+  const titleId = "confirm-modal-title";
+  const descriptionId = "confirm-modal-description";
+
   return createPortal(
-    <div className="nostalgia-modal confirm-modal" role="dialog" aria-modal="true">
+    <div
+      className="nostalgia-modal confirm-modal"
+      data-overlay-kind="blocking"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+    >
       <div className="nostalgia-modal-card confirm-modal-card">
-        <h3>{title}</h3>
-        <p className="muted">{description}</p>
+        <h3 id={titleId}>{title}</h3>
+        <p id={descriptionId} className="muted">
+          {description}
+        </p>
         <div className="card-actions">
           <button
             type="button"
-            className={confirmClassName}
+            className={["action-priority-primary", confirmClassName].filter(Boolean).join(" ")}
             data-testid={confirmTestId}
             onClick={onConfirm}
           >
             {confirmLabel}
           </button>
-          <button type="button" className="secondary" data-testid={cancelTestId} onClick={onCancel}>
+          <button
+            type="button"
+            className="secondary action-priority-secondary"
+            data-testid={cancelTestId}
+            onClick={onCancel}
+          >
             {cancelLabel}
           </button>
         </div>

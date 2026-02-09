@@ -72,7 +72,13 @@ async function buyStarterWatch(starterModelId: string) {
   await user.click(within(navTabList).getByRole("tab", { name: /Catalog/i }));
 
   await user.click(screen.getByRole("tab", { name: /^Owned/ }));
+  const currencyBeforePurchase = screen.getByTestId("value-ticker-currency").textContent;
   await user.click(screen.getByTestId(`catalog-buy-${starterModelId}`));
+  await waitFor(() => {
+    expect(screen.getByTestId("value-ticker-currency").textContent).not.toBe(
+      currencyBeforePurchase,
+    );
+  });
 }
 
 describe("achievement toast gating", () => {
@@ -103,7 +109,8 @@ describe("achievement toast gating", () => {
 
     await buyStarterWatch(starterModelId);
 
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    expect(screen.queryByText(/Achievement unlocked/i)).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByText(/Achievement unlocked/i)).not.toBeInTheDocument();
+    });
   });
 });

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 const artifactDir = ".planning/uat-artifacts/35";
 
@@ -7,6 +8,15 @@ const clearStorage = async (page: Page) => {
   await page.addInitScript(() => {
     window.localStorage.clear();
   });
+};
+
+const openPrimaryTab = async (page: Page, name: string) => {
+  const tab = page.getByRole("tab", { name: new RegExp(`^${name}`, "i") }).first();
+  await clickLocatorSafely(tab);
+  await expect(tab).toHaveAttribute("aria-selected", "true");
+  const panel = page.getByRole("tabpanel", { name: new RegExp(`^${name}`, "i") });
+  await expect(panel).toBeVisible();
+  return panel;
 };
 
 test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
@@ -112,26 +122,23 @@ test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
   });
 
   test("3) Shop vs Catalog surface clarity", async ({ page }) => {
+    test.slow();
+
     await clearStorage(page);
     await page.goto("/");
 
     // Navigate to Vault/Collection tab
-    const collectionTab = page.getByRole("tab", { name: "Collection" });
-    await collectionTab.click();
+    const vaultPanel = await openPrimaryTab(page, "Collection");
     await expect(page.getByTestId("collection-setup")).toBeVisible();
 
     // Screenshot: Vault tab
     await page.screenshot({ path: `${artifactDir}/06-vault-tab.png` });
 
     // Confirm Vault does not include the catalog-shop purchase surface
-    const vaultPanel = page.getByRole("tabpanel", { name: "Collection" });
     await expect(vaultPanel.locator("[data-testid='catalog-shop']")).toHaveCount(0);
 
     // Navigate to Catalog tab
-    const catalogTab = page.getByRole("tab", { name: "Catalog" });
-    await catalogTab.click();
-    const catalogPanel = page.getByRole("tabpanel", { name: "Catalog" });
-    await expect(catalogPanel).toBeVisible();
+    const catalogPanel = await openPrimaryTab(page, "Catalog");
 
     // Catalog tab owns the purchase surface
     const shopPanel = catalogPanel.getByTestId("catalog-shop");

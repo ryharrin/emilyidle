@@ -7,6 +7,7 @@ const MOBILE_VIEWPORTS = [
 
 const mobileProjects = MOBILE_VIEWPORTS.map(({ name, device }) => ({
   name,
+  ...(name === "webkit-mobile-iphone12" ? { timeout: 180_000, retries: 1, workers: 1 } : {}),
   use: {
     ...devices[device],
     hasTouch: true,

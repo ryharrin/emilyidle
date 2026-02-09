@@ -1,4 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import {
+  openCatalogInteractionModal,
+  openCatalogTab,
+  switchCatalogToOwned,
+} from "./helpers/catalogFilters";
 
 type SeedArgs = {
   lastSimulatedAtMs: number;
@@ -29,14 +34,16 @@ async function seedQuartzSave(page: Page, args: SeedArgs) {
 
 async function openQuartzModal(page: Page) {
   await page.goto("/");
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  const catalogPanel = await openCatalogTab(page);
+  await switchCatalogToOwned(page, catalogPanel);
 
-  const interactButton = page
-    .locator('[data-testid="vault-interact-starter"]:not([disabled])')
-    .first();
-  await interactButton.scrollIntoViewIfNeeded();
-  await expect(interactButton).toBeEnabled();
-  await interactButton.click();
+  const quartzOpened = await openCatalogInteractionModal(
+    page,
+    '[data-testid="vault-interact-starter"]:not([disabled])',
+    "quartz-modal",
+    catalogPanel,
+  );
+  expect(quartzOpened).toBeTruthy();
 
   await expect(page.getByTestId("quartz-modal")).toBeVisible();
 }

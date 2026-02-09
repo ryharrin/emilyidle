@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 import { createInitialState, getWatchModels, type GameState } from "../src/game/state";
 
@@ -25,13 +26,13 @@ function buildState(nowMs: number): GameState {
     eventStates: {
       ...base.eventStates,
       "wind-up": {
-        activeUntilMs: nowMs + 15_000,
-        nextAvailableAtMs: nowMs + 35_000,
+        activeUntilMs: nowMs + 300_000,
+        nextAvailableAtMs: nowMs + 360_000,
         incomeMultiplier: 1.12,
       },
       "auction-weekend": {
         activeUntilMs: 0,
-        nextAvailableAtMs: nowMs + 25_000,
+        nextAvailableAtMs: nowMs + 240_000,
         incomeMultiplier: 1.6,
       },
     },
@@ -39,6 +40,7 @@ function buildState(nowMs: number): GameState {
 }
 
 test("stats tab renders event calendar buckets", async ({ page }) => {
+  test.slow();
   const nowMs = Date.now();
   const state = buildState(nowMs);
 
@@ -58,9 +60,14 @@ test("stats tab renders event calendar buckets", async ({ page }) => {
   );
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Stats" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Stats" }));
 
   await expect(page.getByTestId("stats-summary-strip")).toBeVisible();
+  await expect(page.getByTestId("stats-priority-board")).toBeVisible();
+  await expect(page.getByTestId("stats-priority-rates")).toContainText(/Enjoyment/i);
+  await expect(page.getByTestId("stats-priority-trigger")).toContainText(
+    /Wind-up|Auction weekend/i,
+  );
   await expect(page.getByTestId("stats-disclosure-calendar")).toBeVisible();
   await expect(page.getByTestId("event-calendar")).toBeVisible();
   await expect(page.getByTestId("event-calendar-active")).toContainText(/Wind-up/i);

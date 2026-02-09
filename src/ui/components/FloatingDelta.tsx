@@ -10,7 +10,13 @@ export function FloatingDelta({ visible, message, testId }: FloatingDeltaProps) 
   }
 
   return (
-    <span className="floating-delta" data-testid={testId} aria-live="polite">
+    <span
+      className="floating-delta"
+      data-testid={testId}
+      data-overlay-kind="non-blocking"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {message}
     </span>
   );

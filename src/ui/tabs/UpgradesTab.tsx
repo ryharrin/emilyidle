@@ -29,12 +29,12 @@ import type {
   WorkshopUpgradeDefinition,
 } from "../../game/state";
 
-import { UnlockHint } from "../components/UnlockHint";
 import { BlueprintCostDetail } from "../components/BlueprintCostDetail";
+import { UnlockHint } from "../components/UnlockHint";
+import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { UpgradeIcon } from "../icons/coreIcons";
-import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 
 type PurchaseMeta = {
   prestigeTier?: "workshop" | "maison" | "nostalgia";
@@ -65,6 +65,103 @@ type EffectPreviewLine = {
   after: string;
 };
 
+type UpgradeIntent = "income" | "enjoyment" | "automation" | "meta";
+
+type UpgradeStatus = "actionable" | "locked" | "installed" | "unaffordable" | "no-change";
+
+type UpgradeRecommendation = {
+  key: string;
+  cardId: string;
+  name: string;
+  sourceLabel: string;
+  intent: UpgradeIntent;
+  status: UpgradeStatus;
+  costLabel: string;
+  preview: RatePreview;
+  combinedDelta: number;
+  paybackSeconds: number | null;
+};
+
+type CollectionUpgradeCard = {
+  upgrade: UpgradeDefinition;
+  key: string;
+  cardId: string;
+  level: number;
+  price: number;
+  unlocked: boolean;
+  canAfford: boolean;
+  unlockCurrentLabel: string;
+  unlockThresholdLabel: string;
+  unlockDetail: ReturnType<typeof getMilestoneUnlockProgressDetail> | null;
+  preview: RatePreview;
+  status: UpgradeStatus;
+  intent: UpgradeIntent;
+  combinedDelta: number;
+  paybackSeconds: number | null;
+};
+
+type WorkshopUpgradeCard = {
+  upgrade: WorkshopUpgradeDefinition;
+  key: string;
+  cardId: string;
+  owned: boolean;
+  canAfford: boolean;
+  effectLabel: string;
+  effectLines: EffectPreviewLine[];
+  preview: RatePreview;
+  status: UpgradeStatus;
+  intent: UpgradeIntent;
+  combinedDelta: number;
+};
+
+type MaisonUpgradeCard = {
+  upgrade: MaisonUpgradeDefinition;
+  key: string;
+  cardId: string;
+  owned: boolean;
+  canAfford: boolean;
+  costLabel: string;
+  effectLabel: string;
+  effectLines: EffectPreviewLine[];
+  preview: RatePreview;
+  status: UpgradeStatus;
+  intent: UpgradeIntent;
+  combinedDelta: number;
+};
+
+const UPGRADE_INTENT_META: Record<
+  UpgradeIntent,
+  {
+    label: string;
+    summary: string;
+  }
+> = {
+  income: {
+    label: "Income",
+    summary: "Directly boosts collection output and earning pace.",
+  },
+  enjoyment: {
+    label: "Enjoyment",
+    summary: "Improves base enjoyment scaling in current runs.",
+  },
+  automation: {
+    label: "Automation",
+    summary: "Reduces manual upkeep and improves flow stability.",
+  },
+  meta: {
+    label: "Meta progression",
+    summary: "Strengthens prestige loops and softcap resilience.",
+  },
+};
+
+const UPGRADE_STATUS_LABELS: Record<UpgradeStatus, string> = {
+  actionable: "Ready",
+  locked: "Locked",
+  installed: "Installed",
+  unaffordable: "Need resources",
+  "no-change": "Low impact",
+};
+
 const buildRatePreview = (
   state: GameState,
   nextState: GameState,
@@ -87,6 +184,134 @@ const formatMultiplierValue = (value: number) => `${value.toFixed(2)}x`;
 const formatExponentValue = (value: number) => value.toFixed(2);
 
 const formatAutomationState = (enabled: boolean) => (enabled ? "Enabled" : "Disabled");
+
+const getUpgradeCardClassName = (status: UpgradeStatus, recommended: boolean) => {
+  const classNames = ["card", "upgrade-card"];
+  if (recommended) {
+    classNames.push("upgrade-card--recommended");
+  }
+  if (status !== "actionable") {
+    classNames.push("upgrade-card--deemphasized");
+  }
+  return classNames.join(" ");
+};
+
+const getCombinedDelta = (preview: RatePreview) =>
+  preview.afterCash - preview.beforeCash + (preview.afterEnjoyment - preview.beforeEnjoyment);
+
+const getPaybackSeconds = (costCents: number, preview: RatePreview): number | null => {
+  const cashDelta = preview.afterCash - preview.beforeCash;
+  if (cashDelta <= 0) {
+    return null;
+  }
+  return costCents / cashDelta;
+};
+
+const formatDurationFromSeconds = (seconds: number): string => {
+  const roundedSeconds = Math.max(1, Math.round(seconds));
+  const minutes = Math.floor(roundedSeconds / 60);
+  const remainderSeconds = roundedSeconds % 60;
+
+  if (minutes <= 0) {
+    return `${roundedSeconds}s`;
+  }
+
+  if (remainderSeconds === 0) {
+    return `${minutes}m`;
+  }
+
+  return `${minutes}m ${remainderSeconds}s`;
+};
+
+const formatPaybackLabel = (paybackSeconds: number | null): string => {
+  if (paybackSeconds === null) {
+    return "No direct cash payback";
+  }
+
+  return `Payback ${formatDurationFromSeconds(paybackSeconds)}`;
+};
+
+const getRecommendationReason = (recommendation: UpgradeRecommendation): string => {
+  const intentLabel = UPGRADE_INTENT_META[recommendation.intent].label;
+
+  if (recommendation.paybackSeconds !== null) {
+    return `${intentLabel} focus - ${formatPaybackLabel(recommendation.paybackSeconds)}`;
+  }
+
+  return `${intentLabel} focus - ${formatPaybackLabel(recommendation.paybackSeconds)}`;
+};
+
+const compareRecommendations = (
+  left: UpgradeRecommendation,
+  right: UpgradeRecommendation,
+): number => {
+  const leftPayback = left.paybackSeconds ?? Number.POSITIVE_INFINITY;
+  const rightPayback = right.paybackSeconds ?? Number.POSITIVE_INFINITY;
+
+  if (leftPayback !== rightPayback) {
+    return leftPayback - rightPayback;
+  }
+
+  if (left.combinedDelta !== right.combinedDelta) {
+    return right.combinedDelta - left.combinedDelta;
+  }
+
+  return left.name.localeCompare(right.name);
+};
+
+const resolveCollectionStatus = (unlocked: boolean, canAfford: boolean, combinedDelta: number) => {
+  if (!unlocked) {
+    return "locked";
+  }
+  if (!canAfford) {
+    return "unaffordable";
+  }
+  if (combinedDelta <= 0) {
+    return "no-change";
+  }
+  return "actionable";
+};
+
+const resolvePersistentUpgradeStatus = (
+  owned: boolean,
+  canAfford: boolean,
+  combinedDelta: number,
+  hasNonRateEffect: boolean,
+): UpgradeStatus => {
+  if (owned) {
+    return "installed";
+  }
+  if (!canAfford) {
+    return "unaffordable";
+  }
+  if (combinedDelta <= 0 && !hasNonRateEffect) {
+    return "no-change";
+  }
+  return "actionable";
+};
+
+const resolveWorkshopIntent = (upgrade: WorkshopUpgradeDefinition): UpgradeIntent => {
+  if (upgrade.unlocks?.autoBuyEnabled) {
+    return "automation";
+  }
+  if (upgrade.softcapMultiplier || upgrade.softcapExponentBonus) {
+    return "meta";
+  }
+  if (upgrade.incomeMultiplier) {
+    return "income";
+  }
+  return "meta";
+};
+
+const resolveMaisonIntent = (upgrade: MaisonUpgradeDefinition): UpgradeIntent => {
+  if (upgrade.softcapMultiplier) {
+    return "meta";
+  }
+  if (upgrade.collectionBonusMultiplier || upgrade.incomeMultiplier) {
+    return "income";
+  }
+  return "meta";
+};
 
 const buildSoftcapValueLine = (
   state: GameState,
@@ -231,7 +456,7 @@ const renderEffectLines = (lines: EffectPreviewLine[]) => {
               {line.before}
             </span>
             <span className="upgrade-effect-arrow" aria-hidden="true">
-              →
+              {"->"}
             </span>
             <span data-testid="upgrade-effect-value-after" className="upgrade-effect-value">
               {line.after}
@@ -271,12 +496,54 @@ const renderDeltaChips = (preview: RatePreview) => {
   return <div className="upgrade-deltas">{chips}</div>;
 };
 
+const renderImpactSummary = (preview: RatePreview) => (
+  <div className="upgrade-impact-summary" data-testid="upgrade-impact-summary">
+    <p className="muted">Before {"->"} After</p>
+    <div className="upgrade-impact-row" data-testid="upgrade-impact-row-cash">
+      <span>Cash</span>
+      <span>
+        {formatRateFromCentsPerSec(preview.beforeCash)} {"->"}{" "}
+        {formatRateFromCentsPerSec(preview.afterCash)}
+      </span>
+    </div>
+    <div className="upgrade-impact-row" data-testid="upgrade-impact-row-enjoyment">
+      <span>Enjoyment</span>
+      <span>
+        {formatRateFromCentsPerSec(preview.beforeEnjoyment)} {"->"}{" "}
+        {formatRateFromCentsPerSec(preview.afterEnjoyment)}
+      </span>
+    </div>
+  </div>
+);
+
+const renderRoiSummary = (
+  costLabel: string,
+  paybackSeconds: number | null,
+  status: UpgradeStatus,
+  intent: UpgradeIntent,
+) => {
+  if (status === "locked") {
+    return (
+      <p className="upgrade-roi-summary" data-testid="upgrade-roi-summary">
+        Cost {costLabel} {"->"} locked until requirement is met.
+      </p>
+    );
+  }
+
+  return (
+    <p className="upgrade-roi-summary" data-testid="upgrade-roi-summary">
+      Cost {costLabel} {"->"} {formatPaybackLabel(paybackSeconds)} {"->"}{" "}
+      {UPGRADE_INTENT_META[intent].label}
+    </p>
+  );
+};
+
 const renderPreviewDetails = (preview: RatePreview) => {
   const showCash = preview.beforeCash !== preview.afterCash;
 
   return (
     <details className="card upgrade-preview-details">
-      <summary>Rate preview</summary>
+      <summary>Deep diagnostics</summary>
       <div className="upgrade-preview-grid">
         <div>
           <p className="muted">Before</p>
@@ -307,6 +574,186 @@ export function UpgradesTab({
   const blueprintCostDetail = getWorkshopBlueprintCostDetail(state);
   const blueprintTooltip = buildBlueprintTooltip(state, getWorkshopPrestigeGain(state));
 
+  const collectionUpgradeCards: CollectionUpgradeCard[] = upgrades.map((upgrade) => {
+    const level = state.upgrades[upgrade.id] ?? 0;
+    const price = getUpgradePriceCents(state, upgrade.id, 1);
+    const unlocked = isUpgradeUnlocked(state, upgrade.id);
+    const canAfford = canBuyUpgrade(state, upgrade.id, 1);
+    const unlockMilestoneId = upgrade.unlockMilestoneId;
+    const unlockDetail = unlockMilestoneId
+      ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+      : null;
+    const unlockUsesCents = unlockMilestoneId === "showcase";
+    const unlockCurrentLabel = unlockDetail
+      ? unlockUsesCents
+        ? formatMoneyFromCents(unlockDetail.current)
+        : formatCount(unlockDetail.current)
+      : "0";
+    const unlockThresholdLabel = unlockDetail
+      ? unlockUsesCents
+        ? formatMoneyFromCents(unlockDetail.threshold)
+        : formatCount(unlockDetail.threshold)
+      : "0";
+    const nextState = buyUpgrade(state, upgrade.id);
+    const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
+    const combinedDelta = getCombinedDelta(preview);
+
+    return {
+      upgrade,
+      key: `collection:${upgrade.id}`,
+      cardId: `upgrade-card-${upgrade.id}`,
+      level,
+      price,
+      unlocked,
+      canAfford,
+      unlockCurrentLabel,
+      unlockThresholdLabel,
+      unlockDetail,
+      preview,
+      status: resolveCollectionStatus(unlocked, canAfford, combinedDelta),
+      intent: "enjoyment",
+      combinedDelta,
+      paybackSeconds: getPaybackSeconds(price, preview),
+    };
+  });
+
+  const workshopUpgradeCards: WorkshopUpgradeCard[] = workshopUpgrades.map((upgrade) => {
+    const owned = state.workshopUpgrades[upgrade.id] ?? false;
+    const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
+    const effectLabel = (() => {
+      if (upgrade.incomeMultiplier) {
+        return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
+      }
+      if (upgrade.softcapMultiplier) {
+        return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
+      }
+      if (upgrade.softcapExponentBonus) {
+        return `Softcap exponent +${upgrade.softcapExponentBonus}`;
+      }
+      if (upgrade.unlocks?.autoBuyEnabled) {
+        return "Unlocks automation";
+      }
+      return "Permanent upgrade";
+    })();
+    const nextState = buyWorkshopUpgrade(state, upgrade.id);
+    const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
+    const effectLines = buildWorkshopEffectLines(state, nextState, upgrade);
+    const combinedDelta = getCombinedDelta(preview);
+
+    return {
+      upgrade,
+      key: `workshop:${upgrade.id}`,
+      cardId: `upgrade-card-${upgrade.id}`,
+      owned,
+      canAfford,
+      effectLabel,
+      effectLines,
+      preview,
+      status: resolvePersistentUpgradeStatus(
+        owned,
+        canAfford,
+        combinedDelta,
+        effectLines.length > 0,
+      ),
+      intent: resolveWorkshopIntent(upgrade),
+      combinedDelta,
+    };
+  });
+
+  const maisonUpgradeCards: MaisonUpgradeCard[] = maisonUpgrades.map((upgrade) => {
+    const owned = state.maisonUpgrades[upgrade.id] ?? false;
+    const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
+    const costLabel =
+      upgrade.currency === "heritage" ? `${upgrade.cost} Heritage` : `${upgrade.cost} Reputation`;
+    const effectLabel = (() => {
+      if (upgrade.incomeMultiplier) {
+        return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
+      }
+      if (upgrade.collectionBonusMultiplier) {
+        return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+      }
+      if (upgrade.softcapMultiplier) {
+        return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
+      }
+      return "Permanent upgrade";
+    })();
+    const nextState = buyMaisonUpgrade(state, upgrade.id);
+    const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
+    const effectLines = buildMaisonEffectLines(state, nextState, upgrade);
+    const combinedDelta = getCombinedDelta(preview);
+
+    return {
+      upgrade,
+      key: `maison:${upgrade.id}`,
+      cardId: `upgrade-card-${upgrade.id}`,
+      owned,
+      canAfford,
+      costLabel,
+      effectLabel,
+      effectLines,
+      preview,
+      status: resolvePersistentUpgradeStatus(
+        owned,
+        canAfford,
+        combinedDelta,
+        effectLines.length > 0,
+      ),
+      intent: resolveMaisonIntent(upgrade),
+      combinedDelta,
+    };
+  });
+
+  const recommendations: UpgradeRecommendation[] = [
+    ...collectionUpgradeCards.map((card) => ({
+      key: card.key,
+      cardId: card.cardId,
+      name: card.upgrade.name,
+      sourceLabel: "Collection",
+      intent: card.intent,
+      status: card.status,
+      costLabel: formatMoneyFromCents(card.price),
+      preview: card.preview,
+      combinedDelta: card.combinedDelta,
+      paybackSeconds: card.paybackSeconds,
+    })),
+    ...workshopUpgradeCards.map((card) => ({
+      key: card.key,
+      cardId: card.cardId,
+      name: card.upgrade.name,
+      sourceLabel: "Workshop",
+      intent: card.intent,
+      status: card.status,
+      costLabel: `${card.upgrade.blueprintCost} Blueprints`,
+      preview: card.preview,
+      combinedDelta: card.combinedDelta,
+      paybackSeconds: null,
+    })),
+    ...maisonUpgradeCards.map((card) => ({
+      key: card.key,
+      cardId: card.cardId,
+      name: card.upgrade.name,
+      sourceLabel: "Maison",
+      intent: card.intent,
+      status: card.status,
+      costLabel: card.costLabel,
+      preview: card.preview,
+      combinedDelta: card.combinedDelta,
+      paybackSeconds: null,
+    })),
+  ];
+
+  const topRecommendations = recommendations
+    .filter((recommendation) => recommendation.status === "actionable")
+    .sort(compareRecommendations)
+    .slice(0, 3);
+  const recommendedKeys = new Set(topRecommendations.map((recommendation) => recommendation.key));
+  const intentBucketCounts = (Object.keys(UPGRADE_INTENT_META) as UpgradeIntent[])
+    .map((intent) => ({
+      intent,
+      count: topRecommendations.filter((recommendation) => recommendation.intent === intent).length,
+    }))
+    .filter((bucket) => bucket.count > 0);
+
   return (
     <section
       id="upgrades"
@@ -334,220 +781,317 @@ export function UpgradesTab({
             </div>
           </header>
 
-          <section className="panel upgrades-group" aria-labelledby="upgrades-cash-title">
+          <section
+            className="panel upgrades-recommendations"
+            data-testid="upgrades-recommendations"
+          >
             <header className="panel-header">
               <div>
-                <p className="eyebrow">Collection enjoyment</p>
-                <h3 id="upgrades-cash-title">Collection upgrades</h3>
-                <p className="muted">Spend cash to lift enjoyment growth with clear previews.</p>
+                <p className="eyebrow">Top opportunities</p>
+                <h3>Recommended next upgrades</h3>
+                <p className="muted">
+                  The top three actionable upgrades are ranked by immediate impact and payback.
+                </p>
               </div>
             </header>
-            <div className="card-stack" data-testid="upgrades-cash-list">
-              {upgrades.map((upgrade) => {
-                const level = state.upgrades[upgrade.id] ?? 0;
-                const price = getUpgradePriceCents(state, upgrade.id, 1);
-                const unlocked = isUpgradeUnlocked(state, upgrade.id);
-                const unlockMilestoneId = upgrade.unlockMilestoneId;
-                const unlockDetail = unlockMilestoneId
-                  ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
-                  : null;
-                const unlockUsesCents = unlockMilestoneId === "showcase";
-                const unlockCurrentLabel = unlockDetail
-                  ? unlockUsesCents
-                    ? formatMoneyFromCents(unlockDetail.current)
-                    : formatCount(unlockDetail.current)
-                  : "0";
-                const unlockThresholdLabel = unlockDetail
-                  ? unlockUsesCents
-                    ? formatMoneyFromCents(unlockDetail.threshold)
-                    : formatCount(unlockDetail.threshold)
-                  : "0";
-                const nextState = buyUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
 
-                return (
-                  <div className="card upgrade-card" key={upgrade.id} data-testid="upgrade-card">
-                    <div className="card-header">
-                      <div>
-                        <h4>{upgrade.name}</h4>
-                        <p>{upgrade.description}</p>
-                      </div>
-                      <div className="muted">Level {level}</div>
+            <div className="upgrade-intent-buckets" data-testid="upgrade-intent-buckets">
+              {intentBucketCounts.length > 0 ? (
+                intentBucketCounts.map((bucket) => (
+                  <div
+                    key={bucket.intent}
+                    className="upgrade-intent-chip"
+                    data-testid={`upgrade-intent-bucket-${bucket.intent}`}
+                  >
+                    <strong>{UPGRADE_INTENT_META[bucket.intent].label}</strong>
+                    <span>{bucket.count} recommendation(s)</span>
+                  </div>
+                ))
+              ) : (
+                <p className="muted">
+                  No actionable recommendations yet. Keep progressing unlocks.
+                </p>
+              )}
+            </div>
+
+            {topRecommendations.length > 0 && (
+              <div
+                className="upgrade-recommendation-grid"
+                data-testid="upgrade-recommendation-grid"
+              >
+                {topRecommendations.map((recommendation, index) => (
+                  <article
+                    key={recommendation.key}
+                    className="card upgrade-recommendation-card"
+                    data-testid="upgrade-recommendation-card"
+                  >
+                    <div className="upgrade-recommendation-header">
+                      <p className="eyebrow">#{index + 1}</p>
+                      <p className="muted">{recommendation.sourceLabel}</p>
                     </div>
-                    <p>
-                      +{Math.round(upgrade.incomeMultiplierPerLevel * 100)}% enjoyment per level
-                    </p>
-                    {renderDeltaChips(preview)}
-                    {renderPreviewDetails(preview)}
-                    {!unlocked && unlockDetail && (
-                      <div data-testid={`locked-upgrade-hint-${upgrade.id}`}>
-                        <UnlockHint
-                          eyebrow="Locked"
-                          title="Unlock requirement"
-                          detail={unlockDetail.label}
-                          currentLabel={unlockCurrentLabel}
-                          thresholdLabel={unlockThresholdLabel}
-                          ratio={unlockDetail.ratio}
-                        />
-                      </div>
+                    <h4>{recommendation.name}</h4>
+                    <p>{getRecommendationReason(recommendation)}</p>
+                    {renderDeltaChips(recommendation.preview)}
+                    {renderRoiSummary(
+                      recommendation.costLabel,
+                      recommendation.paybackSeconds,
+                      recommendation.status,
+                      recommendation.intent,
                     )}
-                    <div className="card-actions">
-                      <button
-                        type="button"
-                        disabled={!canBuyUpgrade(state, upgrade.id, 1) || !unlocked}
-                        onClick={() => onPurchase(buyUpgrade(state, upgrade.id))}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="panel upgrades-group" aria-labelledby="upgrades-cash-title">
+            <details
+              className="upgrades-group-disclosure"
+              data-testid="upgrades-group-collection"
+              open
+            >
+              <summary className="upgrades-group-summary">
+                <div>
+                  <p className="eyebrow">Collection enjoyment</p>
+                  <h3 id="upgrades-cash-title">Collection upgrades</h3>
+                  <p className="muted">Spend cash to lift enjoyment growth with clear previews.</p>
+                </div>
+                <span className="upgrade-disclosure-hint">Expand/collapse</span>
+              </summary>
+              <div className="upgrades-group-content">
+                <div className="card-stack" data-testid="upgrades-cash-list">
+                  {collectionUpgradeCards.map((card) => {
+                    const recommendation = recommendations.find(
+                      (candidate) => candidate.key === card.key,
+                    );
+                    const isRecommended = recommendedKeys.has(card.key);
+                    return (
+                      <div
+                        className={getUpgradeCardClassName(card.status, isRecommended)}
+                        key={card.upgrade.id}
+                        data-testid="upgrade-card"
+                        id={card.cardId}
                       >
-                        Upgrade ({formatMoneyFromCents(price)})
-                      </button>
-                      {!unlocked &&
-                        upgrade.unlockMilestoneId &&
-                        shouldShowUnlockTag(state, upgrade.unlockMilestoneId) && (
-                          <div className="unlock-tag">
-                            Unlocking soon ·{" "}
-                            {getMilestoneRequirementLabel(upgrade.unlockMilestoneId)}
+                        <div className="card-header">
+                          <div>
+                            <h4>{card.upgrade.name}</h4>
+                            <p>{card.upgrade.description}</p>
+                          </div>
+                          <div className="upgrade-card-meta">
+                            <div className="muted">Level {card.level}</div>
+                            <span className={`upgrade-status upgrade-status--${card.status}`}>
+                              {isRecommended ? "Recommended" : UPGRADE_STATUS_LABELS[card.status]}
+                            </span>
+                          </div>
+                        </div>
+                        <p>
+                          +{Math.round(card.upgrade.incomeMultiplierPerLevel * 100)}% enjoyment per
+                          level
+                        </p>
+                        <p className="upgrade-intent-label">
+                          Intent: {UPGRADE_INTENT_META[card.intent].label}
+                        </p>
+                        {renderDeltaChips(card.preview)}
+                        {renderImpactSummary(card.preview)}
+                        {renderRoiSummary(
+                          formatMoneyFromCents(card.price),
+                          card.paybackSeconds,
+                          card.status,
+                          card.intent,
+                        )}
+                        {card.status === "actionable" && recommendation && (
+                          <p className="upgrade-recommendation-note">
+                            {getRecommendationReason(recommendation)}
+                          </p>
+                        )}
+                        {renderPreviewDetails(card.preview)}
+                        {!card.unlocked && card.unlockDetail && (
+                          <div data-testid={`locked-upgrade-hint-${card.upgrade.id}`}>
+                            <UnlockHint
+                              eyebrow="Locked"
+                              title="Unlock requirement"
+                              detail={card.unlockDetail.label}
+                              currentLabel={card.unlockCurrentLabel}
+                              thresholdLabel={card.unlockThresholdLabel}
+                              ratio={card.unlockDetail.ratio}
+                            />
                           </div>
                         )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            disabled={!card.canAfford || !card.unlocked}
+                            onClick={() => onPurchase(buyUpgrade(state, card.upgrade.id))}
+                          >
+                            Upgrade ({formatMoneyFromCents(card.price)})
+                          </button>
+                          {!card.unlocked &&
+                            card.upgrade.unlockMilestoneId &&
+                            shouldShowUnlockTag(state, card.upgrade.unlockMilestoneId) && (
+                              <div className="unlock-tag">
+                                Unlocking soon {"->"}{" "}
+                                {getMilestoneRequirementLabel(card.upgrade.unlockMilestoneId)}
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
           </section>
 
           <section className="panel upgrades-group" aria-labelledby="upgrades-workshop-title">
-            <header className="panel-header">
-              <div>
-                <p className="eyebrow">Atelier</p>
-                <h3 id="upgrades-workshop-title">Workshop upgrades</h3>
-                <p className="muted">Spend Blueprints to compound collection efficiency.</p>
-              </div>
-            </header>
-            <BlueprintCostDetail
-              detail={blueprintCostDetail}
-              tooltipContent={blueprintTooltip}
-              testId="upgrades-blueprint-cost"
-            />
-            <div className="card-stack" data-testid="upgrades-workshop-list">
-              {workshopUpgrades.map((upgrade) => {
-                const owned = state.workshopUpgrades[upgrade.id] ?? false;
-                const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
-                const effectLabel = (() => {
-                  if (upgrade.incomeMultiplier) {
-                    return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
-                  }
-                  if (upgrade.softcapMultiplier) {
-                    return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                  }
-                  if (upgrade.softcapExponentBonus) {
-                    return `Softcap exponent +${upgrade.softcapExponentBonus}`;
-                  }
-                  if (upgrade.unlocks?.autoBuyEnabled) {
-                    return "Unlocks automation";
-                  }
-                  return "Permanent upgrade";
-                })();
-                const nextState = buyWorkshopUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
-                const effectLines = buildWorkshopEffectLines(state, nextState, upgrade);
+            <details className="upgrades-group-disclosure" data-testid="upgrades-group-workshop">
+              <summary className="upgrades-group-summary">
+                <div>
+                  <p className="eyebrow">Atelier</p>
+                  <h3 id="upgrades-workshop-title">Workshop upgrades</h3>
+                  <p className="muted">Spend Blueprints to compound collection efficiency.</p>
+                </div>
+                <span className="upgrade-disclosure-hint">Expand/collapse</span>
+              </summary>
+              <div className="upgrades-group-content">
+                <BlueprintCostDetail
+                  detail={blueprintCostDetail}
+                  tooltipContent={blueprintTooltip}
+                  testId="upgrades-blueprint-cost"
+                />
+                <div className="card-stack" data-testid="upgrades-workshop-list">
+                  {workshopUpgradeCards.map((card) => {
+                    const recommendation = recommendations.find(
+                      (candidate) => candidate.key === card.key,
+                    );
+                    const isRecommended = recommendedKeys.has(card.key);
 
-                return (
-                  <div
-                    className="card upgrade-card"
-                    key={upgrade.id}
-                    data-testid="workshop-upgrade-card"
-                  >
-                    <div className="card-header">
-                      <div>
-                        <h4>{upgrade.name}</h4>
-                        <p>{upgrade.description}</p>
-                      </div>
-                      <div className="muted">
-                        {owned ? "Owned" : `${upgrade.blueprintCost} Blueprints`}
-                      </div>
-                    </div>
-                    <p>{effectLabel}</p>
-                    {renderDeltaChips(preview)}
-                    {renderEffectLines(effectLines)}
-                    {renderPreviewDetails(preview)}
-                    <div className="card-actions">
-                      <button
-                        type="button"
-                        className="secondary"
-                        disabled={owned || !canAfford}
-                        onClick={() => onPurchase(buyWorkshopUpgrade(state, upgrade.id))}
+                    return (
+                      <div
+                        className={getUpgradeCardClassName(card.status, isRecommended)}
+                        key={card.upgrade.id}
+                        data-testid="workshop-upgrade-card"
+                        id={card.cardId}
                       >
-                        {owned ? "Installed" : `Buy (${upgrade.blueprintCost} Blueprints)`}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                        <div className="card-header">
+                          <div>
+                            <h4>{card.upgrade.name}</h4>
+                            <p>{card.upgrade.description}</p>
+                          </div>
+                          <div className="upgrade-card-meta">
+                            <div className="muted">
+                              {card.owned ? "Owned" : `${card.upgrade.blueprintCost} Blueprints`}
+                            </div>
+                            <span className={`upgrade-status upgrade-status--${card.status}`}>
+                              {isRecommended ? "Recommended" : UPGRADE_STATUS_LABELS[card.status]}
+                            </span>
+                          </div>
+                        </div>
+                        <p>{card.effectLabel}</p>
+                        <p className="upgrade-intent-label">
+                          Intent: {UPGRADE_INTENT_META[card.intent].label}
+                        </p>
+                        {renderDeltaChips(card.preview)}
+                        {renderImpactSummary(card.preview)}
+                        {renderRoiSummary(
+                          `${card.upgrade.blueprintCost} Blueprints`,
+                          null,
+                          card.status,
+                          card.intent,
+                        )}
+                        {card.status === "actionable" && recommendation && (
+                          <p className="upgrade-recommendation-note">
+                            {getRecommendationReason(recommendation)}
+                          </p>
+                        )}
+                        {renderEffectLines(card.effectLines)}
+                        {renderPreviewDetails(card.preview)}
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            className="secondary"
+                            disabled={card.owned || !card.canAfford}
+                            onClick={() => onPurchase(buyWorkshopUpgrade(state, card.upgrade.id))}
+                          >
+                            {card.owned
+                              ? "Installed"
+                              : `Buy (${card.upgrade.blueprintCost} Blueprints)`}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
           </section>
 
           <section className="panel upgrades-group" aria-labelledby="upgrades-maison-title">
-            <header className="panel-header">
-              <div>
-                <p className="eyebrow">Maison</p>
-                <h3 id="upgrades-maison-title">Maison upgrades</h3>
-                <p className="muted">Heritage and Reputation upgrades stack across prestiges.</p>
-              </div>
-            </header>
-            <div className="card-stack" data-testid="upgrades-maison-list">
-              {maisonUpgrades.map((upgrade) => {
-                const owned = state.maisonUpgrades[upgrade.id] ?? false;
-                const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
-                const costLabel =
-                  upgrade.currency === "heritage"
-                    ? `${upgrade.cost} Heritage`
-                    : `${upgrade.cost} Reputation`;
-                const effectLabel = (() => {
-                  if (upgrade.incomeMultiplier) {
-                    return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
-                  }
-                  if (upgrade.collectionBonusMultiplier) {
-                    return `+${Math.round((upgrade.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                  }
-                  if (upgrade.softcapMultiplier) {
-                    return `+${Math.round((upgrade.softcapMultiplier - 1) * 100)}% softcap`;
-                  }
-                  return "Permanent upgrade";
-                })();
-                const nextState = buyMaisonUpgrade(state, upgrade.id);
-                const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
-                const effectLines = buildMaisonEffectLines(state, nextState, upgrade);
+            <details className="upgrades-group-disclosure" data-testid="upgrades-group-maison">
+              <summary className="upgrades-group-summary">
+                <div>
+                  <p className="eyebrow">Maison</p>
+                  <h3 id="upgrades-maison-title">Maison upgrades</h3>
+                  <p className="muted">Heritage and Reputation upgrades stack across prestiges.</p>
+                </div>
+                <span className="upgrade-disclosure-hint">Expand/collapse</span>
+              </summary>
+              <div className="upgrades-group-content">
+                <div className="card-stack" data-testid="upgrades-maison-list">
+                  {maisonUpgradeCards.map((card) => {
+                    const recommendation = recommendations.find(
+                      (candidate) => candidate.key === card.key,
+                    );
+                    const isRecommended = recommendedKeys.has(card.key);
 
-                return (
-                  <div
-                    className="card upgrade-card"
-                    key={upgrade.id}
-                    data-testid="maison-upgrade-card"
-                  >
-                    <div className="card-header">
-                      <div>
-                        <h4>{upgrade.name}</h4>
-                        <p>{upgrade.description}</p>
-                      </div>
-                      <div className="muted">{owned ? "Owned" : costLabel}</div>
-                    </div>
-                    <p>{effectLabel}</p>
-                    {renderDeltaChips(preview)}
-                    {renderEffectLines(effectLines)}
-                    {renderPreviewDetails(preview)}
-                    <div className="card-actions">
-                      <button
-                        type="button"
-                        className="secondary"
-                        disabled={owned || !canAfford}
-                        onClick={() => onPurchase(buyMaisonUpgrade(state, upgrade.id))}
+                    return (
+                      <div
+                        className={getUpgradeCardClassName(card.status, isRecommended)}
+                        key={card.upgrade.id}
+                        data-testid="maison-upgrade-card"
+                        id={card.cardId}
                       >
-                        {owned ? "Installed" : `Buy (${costLabel})`}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                        <div className="card-header">
+                          <div>
+                            <h4>{card.upgrade.name}</h4>
+                            <p>{card.upgrade.description}</p>
+                          </div>
+                          <div className="upgrade-card-meta">
+                            <div className="muted">{card.owned ? "Owned" : card.costLabel}</div>
+                            <span className={`upgrade-status upgrade-status--${card.status}`}>
+                              {isRecommended ? "Recommended" : UPGRADE_STATUS_LABELS[card.status]}
+                            </span>
+                          </div>
+                        </div>
+                        <p>{card.effectLabel}</p>
+                        <p className="upgrade-intent-label">
+                          Intent: {UPGRADE_INTENT_META[card.intent].label}
+                        </p>
+                        {renderDeltaChips(card.preview)}
+                        {renderImpactSummary(card.preview)}
+                        {renderRoiSummary(card.costLabel, null, card.status, card.intent)}
+                        {card.status === "actionable" && recommendation && (
+                          <p className="upgrade-recommendation-note">
+                            {getRecommendationReason(recommendation)}
+                          </p>
+                        )}
+                        {renderEffectLines(card.effectLines)}
+                        {renderPreviewDetails(card.preview)}
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            className="secondary"
+                            disabled={card.owned || !card.canAfford}
+                            onClick={() => onPurchase(buyMaisonUpgrade(state, card.upgrade.id))}
+                          >
+                            {card.owned ? "Installed" : `Buy (${card.costLabel})`}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
           </section>
         </div>
       )}

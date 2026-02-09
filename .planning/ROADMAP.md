@@ -7,6 +7,7 @@
 - ✅ **v4.1 Next Wave** — Phases 48-51 (shipped 2026-02-06)
 - ✅ **Post-v4.1 Reliability + Career Clarity** — Phase 53 (completed 2026-02-06)
 - ✅ **v4.4 UX Flow + Gameplay Clarity** — Phase 55 (completed 2026-02-06)
+- ✅ **v4.5 Full UI Audit Remediation** — Phase 56 (completed 2026-02-07)
 
 ## Planned Milestones
 
@@ -163,6 +164,34 @@
 5. Tab labels remain legible and discoverable across narrow viewports.
 6. Early-game users can understand immediate gains and next threshold from first-session feedback.
 
+### Phase 56: Full UI Audit Remediation (Complete)
+
+**Goal:** Execute the full screenshot-audit remediation package to improve navigation discoverability, action hierarchy, and gameplay-loop clarity across every tab/system.
+
+**Plans:**
+- [x] 56-01-PLAN.md — Global nav discoverability + tab order (Catalog left of Collection)
+- [x] 56-02-PLAN.md — Global CTA hierarchy + overlay orchestration
+- [x] 56-03-PLAN.md — Career first-loop clarity
+- [x] 56-04-PLAN.md — Catalog loop simplification
+- [x] 56-05-PLAN.md — Collection objective clarity
+- [x] 56-06-PLAN.md — Upgrades prioritization + ROI framing
+- [x] 56-07-PLAN.md — Workshop/Maison/Nostalgia meta-loop messaging
+- [x] 56-08-PLAN.md — Stats/Settings scanability + safety pass
+- [x] 56-09-PLAN.md — Full audit regression harness + closeout sync
+
+**Success criteria:**
+1. Mobile and desktop navigation are fully discoverable, with stable tab ordering and no clipped primary labels.
+2. First viewport of each tab exposes one dominant action and non-blocking overlay behavior.
+3. Catalog/Collection/Upgrades loops provide concise next-step guidance with reduced repetitive interaction overhead.
+4. Meta-loop reset/unlock flows show explicit before/after/delta outcomes and persistence rules.
+5. Full UI coverage audit artifacts are reproducible and mapped to tab/system review sheets.
+
+**Closeout artifacts:**
+- `.planning/phases/56-full-ui-audit-remediation/56-09-SUMMARY.md`
+- `output/playwright/full-ui-coverage-audit-20260207/index.md`
+- `output/playwright/full-ui-coverage-audit-20260207/chromium/index.md`
+- `output/playwright/full-ui-coverage-audit-20260207/chromium-mobile-pixel5/index.md`
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -181,3 +210,4 @@
 | 53. Reliability + Career Clarity | post-v4.1 | 6/6 | Complete | 53-06-SUMMARY.md |
 | 54. Test Reliability + CI Stability | post-v4.1 | 0/7 | Planned | - |
 | 55. UX Flow + Gameplay Clarity | v4.4 | 8/8 | Complete | 55-08-SUMMARY.md |
+| 56. Full UI Audit Remediation | v4.5 | 9/9 | Complete | 56-09-SUMMARY.md |

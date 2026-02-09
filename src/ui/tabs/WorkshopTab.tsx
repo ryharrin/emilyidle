@@ -14,6 +14,8 @@ import {
   buyWorkshopUpgrade,
   canBuyWorkshopUpgrade,
   getEnjoymentThresholdLabel,
+  getEnjoymentRateCentsPerSec,
+  getPrestigeUnlockProgressDetail,
   getWorkshopBlueprintCostDetail,
   getWorkshopNextBlueprintProgress,
   getWorkshopPrestigeThresholdCents,
@@ -112,6 +114,18 @@ export function WorkshopTab({
       : nextBlueprintProgress.etaSeconds < 60
         ? `${nextBlueprintProgress.etaSeconds}s`
         : `${Math.ceil(nextBlueprintProgress.etaSeconds / 60)}m`;
+  const resetProgress = getPrestigeUnlockProgressDetail(state, "workshop");
+  const enjoymentRate = getEnjoymentRateCentsPerSec(state);
+  const resetEtaSeconds =
+    enjoymentRate > 0
+      ? Math.ceil(Math.max(0, resetProgress.threshold - resetProgress.current) / enjoymentRate)
+      : null;
+  const resetEtaLabel =
+    resetEtaSeconds === null
+      ? "ETA unavailable"
+      : resetEtaSeconds < 60
+        ? `${resetEtaSeconds}s`
+        : `${Math.ceil(resetEtaSeconds / 60)}m`;
   return (
     <section id="workshop" role="tabpanel" aria-labelledby="workshop-tab" hidden={!isActive}>
       {isActive && (
@@ -157,6 +171,21 @@ export function WorkshopTab({
                       </p>
                     </div>
                   </div>
+                  <div
+                    className="card workshop-recovery-guide"
+                    data-testid="workshop-recovery-guide"
+                  >
+                    <h4>Recovery guide</h4>
+                    <p className="muted">
+                      Reset readiness {Math.round(resetProgress.ratio * 100)}% (
+                      {formatMoneyFromCents(resetProgress.current)} /{" "}
+                      {getEnjoymentThresholdLabel(resetProgress.threshold)}).
+                    </p>
+                    <p className="muted">
+                      At current enjoyment pace, workshop reset recovery ETA: {resetEtaLabel}.
+                    </p>
+                    <p className="muted">Next blueprint ETA after rebuild: {etaLabel}.</p>
+                  </div>
                   <BlueprintCostDetail
                     detail={blueprintCostDetail}
                     tooltipContent={blueprintTooltip}
@@ -194,8 +223,12 @@ export function WorkshopTab({
                   </div>
                   <fieldset className="workshop-cta">
                     <legend className="visually-hidden">Reset atelier</legend>
+                    <p className="muted workshop-persistence-copy">
+                      Current run resources reset. Atelier upgrades, crafting progress, Maison
+                      legacy, and Nostalgia progression carry forward.
+                    </p>
                     {workshopResetArmed ? (
-                      <div className="workshop-confirm">
+                      <div className="workshop-confirm meta-action-controls">
                         <button
                           type="button"
                           disabled={!canPrestigeWorkshop}
@@ -216,7 +249,7 @@ export function WorkshopTab({
                           className="secondary"
                           onClick={() => onToggleWorkshopResetArmed(false)}
                         >
-                          Cancel
+                          Keep current run
                         </button>
                       </div>
                     ) : (
@@ -227,14 +260,14 @@ export function WorkshopTab({
                         onClick={() => onToggleWorkshopResetArmed(true)}
                       >
                         <PrestigeIcon className="inline-icon" />
-                        Reset atelier
+                        Review reset
                       </button>
                     )}
                     <p className="muted" aria-live="polite">
                       {workshopResetArmed
-                        ? "Confirming will reset progress and grant Blueprints."
+                        ? "Review Current run, Next run keeps, and Delta, then confirm reset."
                         : canPrestigeWorkshop
-                          ? "Resetting trades your enjoyment for Blueprints and permanent boosts."
+                          ? "Open reset review to compare what resets against what carries forward."
                           : "Requires reaching the enjoyment threshold."}
                     </p>
                   </fieldset>

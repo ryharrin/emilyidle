@@ -2,6 +2,7 @@ import { expect, test, type Locator } from "@playwright/test";
 
 import { createInitialState, getWatchModels, type GameState } from "../src/game/state";
 import { openCatalogFilters } from "./helpers/catalogFilters";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 function buildSeededState(): { state: GameState; starterModelId: string } {
   const base = createInitialState();
@@ -91,15 +92,23 @@ async function buyStarterWatch(
   page: import("@playwright/test").Page,
   starterModelId: string,
 ): Promise<Locator> {
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  const catalogTab = page.getByRole("tab", { name: /^Catalog/i }).first();
+  await clickLocatorSafely(catalogTab);
+  await expect(catalogTab).toHaveAttribute("aria-selected", "true");
+
   const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
-  const ownedTab = catalogPanel.getByRole("tab", { name: /^Owned/ }).first();
+  await expect(catalogPanel).toBeVisible();
+  const ownedTab = catalogPanel.locator("#catalog-owned-tab").first();
   if (!(await ownedTab.isVisible().catch(() => false))) {
     await openCatalogFilters(page);
   }
-  await ownedTab.click();
-  const buyButton = page.getByTestId(`catalog-buy-${starterModelId}`).first();
-  await buyButton.click();
+
+  await expect(ownedTab).toBeVisible();
+  await clickLocatorSafely(ownedTab);
+  await expect(ownedTab).toHaveAttribute("aria-selected", "true");
+
+  const buyButton = catalogPanel.getByTestId(`catalog-buy-${starterModelId}`).first();
+  await clickLocatorSafely(buyButton);
   return buyButton;
 }
 
@@ -111,9 +120,13 @@ test.describe("achievement toasts", () => {
     await page.goto("/");
     const buyButton = await buyStarterWatch(page, starterModelId);
 
-    await expect(page.getByTestId("toast-stack")).toContainText(/Achievement unlocked/i);
-    await expect(page.getByTestId("toast-stack")).toContainText(/First drawer/i);
-    await expectNoOverlap(page.getByTestId("toast-stack"), buyButton);
+    const toastStack = page.getByTestId("toast-stack");
+    await expect(toastStack).toContainText(/Achievement unlocked/i);
+    await expect(toastStack).toContainText(/First drawer/i);
+    await expect(toastStack).toHaveAttribute("data-overlay-kind", "non-blocking");
+    await expect(toastStack).toHaveAttribute("data-overlay-queue-depth", /[1-9][0-9]*/);
+    await expect(page.getByTestId("toast-item")).toHaveCount(1);
+    await expectNoOverlap(toastStack, buyButton);
   });
 
   test("does not show unlock toast when achievement notifications are disabled", async ({

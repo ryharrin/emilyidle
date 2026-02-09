@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { openCareerProgression, selectCareerView } from "./helpers/careerProgression";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 test.describe("career upgrades tree interactions", () => {
   test("spend point, respec refunds, and track section appears after choosing track", async ({
@@ -41,11 +43,8 @@ test.describe("career upgrades tree interactions", () => {
     );
 
     await page.goto("/");
-
-    const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-    await tabList.getByRole("tab", { name: "Career" }).click();
-
-    await page.getByTestId("career-view-upgrades").click();
+    await openCareerProgression(page);
+    await selectCareerView(page, "upgrades");
     await expect(page.getByTestId("career-tree")).toBeVisible();
 
     const pointsLabel = page.getByTestId("career-tree-points");
@@ -55,7 +54,7 @@ test.describe("career upgrades tree interactions", () => {
 
     const foundational = page.getByTestId("career-tree-node-core-foundation");
     await expect(foundational).toBeVisible();
-    await foundational.click();
+    await clickLocatorSafely(foundational);
     await expect(page.getByTestId("career-upgrade-modal")).toBeVisible();
     await page.getByTestId("career-upgrade-spend").click();
     await expect(page.getByTestId("career-upgrade-modal")).toBeHidden();
@@ -67,7 +66,7 @@ test.describe("career upgrades tree interactions", () => {
 
     const respec = page.getByTestId("career-tree-respec");
     await expect(respec).toBeEnabled();
-    await respec.click();
+    await clickLocatorSafely(respec);
     const afterRespecText = await pointsLabel.innerText();
     const afterRespecPoints = Number(afterRespecText.replace(/[^0-9]/g, ""));
     expect(afterRespecPoints).toEqual(beforePoints);
@@ -78,13 +77,20 @@ test.describe("career upgrades tree interactions", () => {
     await expect(page.getByTestId("career-tree-node-private-intake")).toHaveCount(0);
 
     // Choose a primary track via stages view.
-    await page.getByTestId("career-view-stages").click();
+    await selectCareerView(page, "stages");
     const trackOption = page.getByTestId("career-choice-option-private-practice");
     await trackOption.scrollIntoViewIfNeeded();
     await expect(trackOption).toBeVisible();
-    await trackOption.click();
+    await clickLocatorSafely(trackOption);
+    const lockedTrackLabel = page.getByTestId("career-choice-locked-licensed-associate");
+    if (!(await lockedTrackLabel.isVisible().catch(() => false))) {
+      await trackOption.evaluate((element) => {
+        (element as HTMLButtonElement).click();
+      });
+    }
+    await expect(lockedTrackLabel).toBeVisible();
 
-    await page.getByTestId("career-view-upgrades").click();
+    await selectCareerView(page, "upgrades");
     await expect(page.getByTestId("career-tree-node-private-intake")).toBeVisible();
   });
 });

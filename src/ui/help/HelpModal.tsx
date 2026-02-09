@@ -321,7 +321,13 @@ export function HelpModal({
   sectionButtonRefs.current = [];
 
   return (
-    <div className="help-modal" data-testid="help-modal" role="dialog" aria-modal="true">
+    <div
+      className="help-modal"
+      data-testid="help-modal"
+      data-overlay-kind="blocking"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="help-modal-card" ref={modalRef} tabIndex={-1}>
         <button
           type="button"
@@ -354,7 +360,7 @@ export function HelpModal({
             </div>
             <button
               type="button"
-              className="secondary"
+              className="secondary action-priority-secondary"
               data-testid="help-close"
               onClick={onClose}
               onKeyDown={handleCloseKeyDown}

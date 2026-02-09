@@ -11,27 +11,27 @@ describe("prestige summary builders", () => {
     const summary = buildWorkshopPrestigeSummary(3);
 
     expect(summary.tier).toBe("workshop");
-    expect(summary.gain.join(" ")).toContain("+3 Blueprints");
-    expect(summary.keep.join(" ")).toContain("Atelier upgrades");
-    expect(summary.lose.join(" ")).toContain("Cash and enjoyment totals");
+    expect(summary.delta.join(" ")).toContain("+3 Blueprints");
+    expect(summary.next.join(" ")).toContain("Atelier upgrades");
+    expect(summary.current.join(" ")).toContain("cash and enjoyment");
   });
 
   it("builds maison summary with the correct tier and gains", () => {
     const summary = buildMaisonPrestigeSummary(2, 1);
 
     expect(summary.tier).toBe("maison");
-    expect(summary.gain.join(" ")).toContain("+2 Heritage");
-    expect(summary.gain.join(" ")).toContain("+1 Reputation");
-    expect(summary.keep.join(" ")).toContain("Maison upgrades");
-    expect(summary.lose.join(" ")).toContain("Atelier progress");
+    expect(summary.delta.join(" ")).toContain("+2 Heritage");
+    expect(summary.delta.join(" ")).toContain("+1 Reputation");
+    expect(summary.next.join(" ")).toContain("Maison upgrades");
+    expect(summary.delta.join(" ")).toContain("Atelier progress");
   });
 
   it("builds nostalgia summary with the correct tier and gain", () => {
     const summary = buildNostalgiaPrestigeSummary(4);
 
     expect(summary.tier).toBe("nostalgia");
-    expect(summary.gain.join(" ")).toContain("+4 Nostalgia");
-    expect(summary.keep.join(" ")).toContain("Catalog discoveries");
-    expect(summary.lose.join(" ")).toContain("Career");
+    expect(summary.delta.join(" ")).toContain("+4 Nostalgia");
+    expect(summary.next.join(" ")).toContain("Catalog discoveries");
+    expect(summary.delta.join(" ")).toContain("Career");
   });
 });

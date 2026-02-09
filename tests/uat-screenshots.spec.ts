@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 const SCREENSHOT_DIR = "test-results/uat-screenshots";
 
@@ -21,7 +22,7 @@ test.describe("UAT Screenshot Inspection", () => {
 
     // Click Vault tab to ensure we're on collection
     const vaultTab = page.getByRole("tab", { name: /Collection/i });
-    await vaultTab.click();
+    await clickLocatorSafely(vaultTab);
     await page.waitForTimeout(500);
 
     // Screenshot 2: Full Vault page
@@ -104,7 +105,7 @@ test.describe("UAT Screenshot Inspection", () => {
 
     // Click Vault
     const vaultTab = page.getByRole("tab", { name: /Collection/i });
-    await vaultTab.click();
+    await clickLocatorSafely(vaultTab);
     await page.waitForTimeout(500);
 
     // Screenshot 7: Mobile Vault full page
@@ -128,6 +129,7 @@ test.describe("UAT Screenshot Inspection", () => {
   });
 
   test("buy flow - click and verify", async ({ page }) => {
+    test.slow();
     // Clear storage
     await page.goto("/");
     await page.evaluate(() => {
@@ -139,13 +141,13 @@ test.describe("UAT Screenshot Inspection", () => {
 
     // Click Vault
     const vaultTab = page.getByRole("tab", { name: /Collection/i });
-    await vaultTab.click();
+    await clickLocatorSafely(vaultTab);
     await page.waitForTimeout(500);
 
     // Click "Buy watches" CTA if present
     const buyWatchesCta = page.getByTestId("next-unlock-cta-career");
     if (await buyWatchesCta.isVisible().catch(() => false)) {
-      await buyWatchesCta.click();
+      await clickLocatorSafely(buyWatchesCta);
       await page.waitForTimeout(500);
 
       // Screenshot 9: After clicking Buy watches CTA
@@ -174,7 +176,7 @@ test.describe("UAT Screenshot Inspection", () => {
       });
 
       // Click buy
-      await firstBuy.click();
+      await clickLocatorSafely(firstBuy);
       await page.waitForTimeout(500);
 
       // Screenshot 11: After clicking buy
@@ -197,7 +199,7 @@ test.describe("UAT Screenshot Inspection", () => {
 
     // Click Vault
     const vaultTab = page.getByRole("tab", { name: /Collection/i });
-    await vaultTab.click();
+    await clickLocatorSafely(vaultTab);
     await page.waitForTimeout(500);
 
     // Scroll to catalog shop
@@ -209,7 +211,7 @@ test.describe("UAT Screenshot Inspection", () => {
       // Click help button
       const helpButton = page.getByTestId("catalog-help").getByRole("button");
       if (await helpButton.isVisible().catch(() => false)) {
-        await helpButton.click();
+        await clickLocatorSafely(helpButton);
         await page.waitForTimeout(500);
 
         // Screenshot 12: Help modal open

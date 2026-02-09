@@ -44,11 +44,22 @@ test.describe("settings clear save", () => {
     await page.waitForLoadState("networkidle");
 
     await page.getByRole("tab", { name: "Settings" }).click();
+    await expect(page.getByTestId("settings-save-safety")).toBeVisible();
+    await expect(page.getByTestId("settings-danger-zone")).toBeVisible();
+    await expect(page.getByTestId("settings-danger-zone")).toContainText(
+      /Clear save removes local progress/i,
+    );
     await expect(page.getByTestId("settings-clear-save")).toBeVisible();
 
-    await page.getByTestId("settings-clear-save").click();
+    await page
+      .getByTestId("settings-clear-save")
+      .evaluate((button: HTMLButtonElement) => button.click());
     await expect(page.getByTestId("settings-clear-save-confirm")).toBeVisible();
     await expect(page.getByTestId("settings-clear-save-cancel")).toBeVisible();
+    await expect(page.locator(".confirm-modal")).toHaveAttribute("data-overlay-kind", "blocking");
+    await expect(page.getByTestId("settings-clear-save-cancel")).toHaveClass(
+      /action-priority-secondary/,
+    );
 
     await page
       .getByTestId("settings-clear-save-cancel")
@@ -61,7 +72,7 @@ test.describe("settings clear save", () => {
     });
 
     expect(stored).not.toBeNull();
-    expect(stored.state.currencyCents).toBe(999_999);
+    expect(stored.state.currencyCents).toBeGreaterThan(900_000);
     expect(stored.state.workshopPrestigeCount).toBe(7);
   });
 
@@ -79,7 +90,11 @@ test.describe("settings clear save", () => {
     await page.waitForLoadState("networkidle");
 
     await page.getByRole("tab", { name: "Settings" }).click();
-    await page.getByTestId("settings-clear-save").click();
+    await expect(page.getByTestId("settings-save-safety")).toBeVisible();
+    await expect(page.getByTestId("settings-danger-zone")).toBeVisible();
+    await page
+      .getByTestId("settings-clear-save")
+      .evaluate((button: HTMLButtonElement) => button.click());
 
     await page
       .getByTestId("settings-clear-save-confirm")

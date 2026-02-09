@@ -8,10 +8,13 @@ import {
   buyMaisonUpgrade,
   canBuyMaisonUpgrade,
   getEnjoymentThresholdLabel,
+  getEnjoymentRateCentsPerSec,
   getMaisonPrestigeThresholdCents,
+  getPrestigeUnlockProgressDetail,
   prestigeMaison,
 } from "../../game/state";
 import type { GameState, MaisonUpgradeDefinition } from "../../game/state";
+import { formatMoneyFromCents } from "../../game/format";
 
 type TabId =
   | "collection"
@@ -58,6 +61,19 @@ export function MaisonTab({
   onPurchase,
   maisonUpgrades,
 }: MaisonTabProps) {
+  const resetProgress = getPrestigeUnlockProgressDetail(state, "maison");
+  const enjoymentRate = getEnjoymentRateCentsPerSec(state);
+  const resetEtaSeconds =
+    enjoymentRate > 0
+      ? Math.ceil(Math.max(0, resetProgress.threshold - resetProgress.current) / enjoymentRate)
+      : null;
+  const resetEtaLabel =
+    resetEtaSeconds === null
+      ? "ETA unavailable"
+      : resetEtaSeconds < 60
+        ? `${resetEtaSeconds}s`
+        : `${Math.ceil(resetEtaSeconds / 60)}m`;
+
   return (
     <section id="maison" role="tabpanel" aria-labelledby="maison-tab" hidden={!isActive}>
       {isActive && (
@@ -99,13 +115,28 @@ export function MaisonTab({
                       <p className="workshop-value">+{maisonReputationGain} Reputation</p>
                     </div>
                   </div>
+                  <div className="card workshop-recovery-guide" data-testid="maison-recovery-guide">
+                    <h4>Recovery guide</h4>
+                    <p className="muted">
+                      Reset readiness {Math.round(resetProgress.ratio * 100)}% (
+                      {formatMoneyFromCents(resetProgress.current)} /{" "}
+                      {getEnjoymentThresholdLabel(resetProgress.threshold)}).
+                    </p>
+                    <p className="muted">
+                      At current enjoyment pace, maison reset recovery ETA: {resetEtaLabel}.
+                    </p>
+                  </div>
                   <p className="muted maison-reset-detail">
                     Resets Collection + Atelier progress. Maison lines remain active.
                   </p>
                   <fieldset className="workshop-cta">
                     <legend className="visually-hidden">Reset atelier</legend>
+                    <p className="muted workshop-persistence-copy">
+                      Collection and Atelier run-state reset. Maison legacy, Nostalgia progression,
+                      and catalog achievements carry forward.
+                    </p>
                     {maisonResetArmed ? (
-                      <div className="workshop-confirm">
+                      <div className="workshop-confirm meta-action-controls">
                         <button
                           type="button"
                           disabled={!canPrestigeMaison}
@@ -117,14 +148,14 @@ export function MaisonTab({
                             onToggleMaisonResetArmed(false);
                           }}
                         >
-                          Confirm prestige
+                          Confirm reset
                         </button>
                         <button
                           type="button"
                           className="secondary"
                           onClick={() => onToggleMaisonResetArmed(false)}
                         >
-                          Cancel
+                          Keep current run
                         </button>
                       </div>
                     ) : (
@@ -135,14 +166,14 @@ export function MaisonTab({
                         onClick={() => onToggleMaisonResetArmed(true)}
                       >
                         <PrestigeIcon className="inline-icon" />
-                        Prestige atelier
+                        Review reset
                       </button>
                     )}
                     <p className="muted" aria-live="polite">
                       {maisonResetArmed
-                        ? "Confirming resets Collection + Atelier and grants Heritage & Reputation."
+                        ? "Review Current run, Next run keeps, and Delta, then confirm reset."
                         : canPrestigeMaison
-                          ? "Prestiging converts your enjoyment engine into Maison legacy."
+                          ? "Open reset review to compare what resets against what carries forward."
                           : "Requires reaching the enjoyment threshold."}
                     </p>
                   </fieldset>

@@ -66,7 +66,7 @@ describe("winding modal accessibility", () => {
     await openWindingModal(user);
 
     const surface = await screen.findByTestId("winding-surface");
-    expect(surface).toHaveFocus();
+    await waitFor(() => expect(surface).toHaveFocus());
 
     const legend = await screen.findByTestId("winding-band-legend");
     expect(legend).toBeInTheDocument();
@@ -79,7 +79,8 @@ describe("winding modal accessibility", () => {
     await user.tab();
     expect(document.activeElement).not.toBe(document.body);
 
-    await surface.focus();
+    surface.focus();
+    await waitFor(() => expect(surface).toHaveFocus());
     await user.keyboard("{Enter}");
     await waitFor(() =>
       expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i),
@@ -106,13 +107,12 @@ describe("winding modal accessibility", () => {
     const activeBand = legend.getAttribute("data-active-band");
 
     await user.click(surface);
-
-    await waitFor(() =>
-      expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i),
-    );
-    const outcome = await screen.findByTestId("winding-outcome");
-    expect(outcome).toBeInTheDocument();
-    expect(outcome.textContent).toMatch(/enjoyment/i);
+    await waitFor(() => {
+      expect(screen.getByTestId("winding-live")).toHaveTextContent(/Stopped at/i);
+      const outcome = screen.getByTestId("winding-outcome");
+      expect(outcome).toBeInTheDocument();
+      expect(outcome.textContent).toMatch(/enjoyment/i);
+    });
 
     if (activeBand) {
       const activeChip = screen.getByTestId(`winding-band-${activeBand}`);

@@ -1,0 +1,367 @@
+# Emily Idle - Consolidated Notes
+# Generated: 2026-02-07
+
+meta:
+  generated: "2026-02-07"
+  consolidated_from:
+    - NOTES.md
+    - NOTES.yaml
+    - NOTES-02-02-26.yaml
+  purpose: "Single status tracker aligned to current implementation."
+
+status_legend:
+  implemented: "Shipped and observable in current code."
+  partial: "Partially shipped; original request is only partly satisfied."
+  planned: "Not shipped yet."
+  wont_do: "Explicitly out of scope."
+
+resolved_conflicts:
+  - id: undiscovered-watch-visibility
+    status: implemented
+    decision: "Undiscovered watches stay visible with lock treatment and guidance."
+    evidence:
+      - src/ui/tabs/CatalogTab.tsx
+      - NOTES.yaml
+  - id: quartz-mini-game-reward
+    status: implemented
+    decision: "Quartz remains a cash-reward exception while winding/automatic are non-cash focused."
+    evidence:
+      - src/ui/components/QuartzMiniGameModal.tsx
+      - src/game/actions/interactions.ts
+  - id: crafting-scope
+    status: implemented
+    decision: "Core crafting is present; social/multiplayer/customization expansion remains out of scope."
+    evidence:
+      - src/game/actions/index.ts
+      - src/ui/tabs/WorkshopCraftingSection.tsx
+
+todo_status_updates:
+  - id: session_cooldown_redesign
+    previous_status: "planned (Phase 48)"
+    status: partial
+    update: "Escalating session premium exists, but hard cooldown still blocks sessions."
+    evidence:
+      - src/game/selectors/therapistSessions.ts
+      - src/game/actions/index.ts
+
+  - id: cooldown_timer_prominence
+    previous_status: "planned (Phase 48)"
+    status: implemented
+    update: "Circular cooldown ring is rendered near the session action."
+    evidence:
+      - src/ui/tabs/career/CareerPanel.tsx
+      - src/ui/components/CooldownRing.tsx
+
+  - id: winding_interactivity
+    previous_status: "planned (Phase 48)"
+    status: implemented
+    update: "Winding is drag-driven with live tension/progress feedback and outcome messaging."
+    evidence:
+      - src/ui/components/WindingMiniGameModal.tsx
+      - src/ui/components/winding/useWindingRun.ts
+
+  - id: winding_movement_restriction
+    previous_status: "planned (Phase 48)"
+    status: implemented
+    update: "Movement-specific interaction routing prevents automatic watches from using the winding modal."
+    evidence:
+      - src/App.tsx
+      - src/ui/tabs/CatalogTab.tsx
+
+  - id: atelier_bonus_scaling
+    previous_status: "planned (Phase 48)"
+    status: partial
+    update: "Atelier bonus systems are visible and active, but explicit balance target ('second run significantly faster') is not formally validated in notes/tests."
+    evidence:
+      - src/game/model/state.ts
+      - src/ui/tabs/WorkshopTab.tsx
+
+  - id: power_reserve_documentation
+    previous_status: "planned (Phase 48)"
+    status: implemented
+    update: "Power reserve is explained in UI/help and reflected in selectors."
+    evidence:
+      - src/ui/components/PowerReserveHint.tsx
+      - src/ui/help/helpContent.ts
+
+  - id: salary_expiration_alert
+    previous_status: "planned (Phase 48)"
+    status: implemented
+    update: "Salary expiry warning states are displayed in Career."
+    evidence:
+      - src/ui/tabs/career/CareerPanel.tsx
+      - src/game/selectors/therapistSalary.ts
+
+  - id: next_unlock_preview
+    previous_status: "planned (Phase 48)"
+    status: implemented
+    update: "Next unlock guidance exists in Collection and Career progression surfaces."
+    evidence:
+      - src/ui/components/NextUnlockPanel.tsx
+      - src/ui/components/CareerProgressCard.tsx
+
+  - id: upgrade_preview
+    previous_status: "planned (Phase 48)"
+    status: implemented
+    update: "Upgrade cards show before/after rates, deltas, and ROI/payback context."
+    evidence:
+      - src/ui/tabs/UpgradesTab.tsx
+      - tests/upgrades-preview.unit.test.tsx
+
+  - id: tab_ready_indicators
+    previous_status: "planned (Phase 49)"
+    status: implemented
+    update: "Tab readiness dots/badges are computed and rendered."
+    evidence:
+      - src/ui/navigation/tabReadiness.ts
+      - src/ui/navigation/PageTabRail.tsx
+
+  - id: horizontal_tab_bar
+    previous_status: "planned (Phase 49)"
+    status: implemented
+    update: "Tab bar is horizontal, scrollable, snap-enabled, and sticky-friendly."
+    evidence:
+      - src/ui/navigation/PageTabRail.tsx
+      - src/ui/navigation/pageTabRail.css
+
+  - id: keyboard_shortcuts
+    previous_status: "planned (Phase 49)"
+    status: implemented
+    update: "Digit shortcuts (1-8) switch tabs with modal/input guards."
+    evidence:
+      - src/App.tsx
+      - tests/tabs.spec.ts
+
+  - id: settings_restyling
+    previous_status: "planned (Phase 49)"
+    status: implemented
+    update: "Settings now uses themed section/control styling rather than browser-default fieldset appearance."
+    evidence:
+      - src/ui/tabs/SaveTab.tsx
+      - src/style.css
+
+  - id: mobile_touch_targets
+    previous_status: "planned (Phase 49)"
+    status: implemented
+    update: "Mini-game controls and interaction elements are covered by touch-target constraints/tests."
+    evidence:
+      - src/style.css
+      - tests/touch-targets.spec.ts
+
+  - id: help_modal_polish
+    previous_status: "planned (Phase 49)"
+    status: implemented
+    update: "Help modal includes search, improved keyboard handling, and robust focus trapping."
+    evidence:
+      - src/ui/help/HelpModal.tsx
+      - src/ui/help/helpSearch.ts
+
+  - id: career_timeline
+    previous_status: "planned (Phase 50)"
+    status: implemented
+    update: "Career timeline visualization is available within the Career stage view."
+    evidence:
+      - src/ui/components/CareerTimeline.tsx
+      - src/ui/tabs/career/CareerPanel.tsx
+
+  - id: watch_comparison
+    previous_status: "planned (Phase 50)"
+    status: implemented
+    update: "Catalog has side-by-side compare slots and controls."
+    evidence:
+      - src/ui/components/catalog/WatchComparePanel.tsx
+      - tests/catalog-compare.spec.ts
+
+  - id: collection_analytics
+    previous_status: "planned (Phase 50)"
+    status: implemented
+    update: "Collection analytics and distributions are surfaced."
+    evidence:
+      - src/ui/components/CollectionInsightsPanel.tsx
+      - src/game/selectors/collectionInsights.ts
+
+  - id: offline_progress
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Offline simulation applies capped progress and emits a summary toast."
+    evidence:
+      - src/game/runtime/useGameRuntime.ts
+      - src/App.tsx
+
+  - id: save_import_export
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Save export and import (text + file) are available in Settings."
+    evidence:
+      - src/ui/tabs/SaveTab.tsx
+      - src/game/persistence.ts
+
+  - id: undo_purchase
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Undo-last-purchase window is active in catalog flow."
+    evidence:
+      - src/game/actions/index.ts
+      - tests/purchase-undo-ui.unit.test.tsx
+
+  - id: favorites
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Favorites are persisted and filterable in Catalog/Collection."
+    evidence:
+      - src/game/actions/index.ts
+      - src/ui/tabs/CatalogTab.tsx
+
+  - id: notification_preferences
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Channel-level notification preferences are persisted and respected."
+    evidence:
+      - src/ui/tabs/SaveTab.tsx
+      - src/App.tsx
+
+  - id: achievement_toasts
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Achievement unlock toasts are emitted and can be disabled."
+    evidence:
+      - src/ui/components/ToastStack.tsx
+      - tests/achievements-toast.spec.ts
+
+  - id: achievement_expansion
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Achievement set has expanded beyond original baseline."
+    evidence:
+      - src/game/model/state.ts
+      - src/game/data/setBonuses.ts
+
+  - id: event_calendar
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Event calendar shows active/upcoming/ready groups."
+    evidence:
+      - src/ui/tabs/StatsTab.tsx
+      - tests/event-calendar.spec.ts
+
+  - id: mini_game_practice
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Mini-games support practice mode with no rewards."
+    evidence:
+      - src/ui/components/WindingMiniGameModal.tsx
+      - src/ui/components/AutomaticMiniGameModal.tsx
+
+  - id: tiered_difficulty
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Difficulty profiles vary by watch tier/item."
+    evidence:
+      - src/game/selectors/interactions.ts
+      - src/ui/components/WindingMiniGameModal.tsx
+
+  - id: streak_bonus
+    previous_status: "planned (Phase 51)"
+    status: implemented
+    update: "Perfect streak multiplier is tracked and applied."
+    evidence:
+      - src/game/selectors/interactions.ts
+      - src/game/actions/interactions.ts
+
+additional_status_updates:
+  - id: atelier_blueprint_cost_display
+    status: implemented
+    evidence:
+      - src/ui/components/BlueprintCostDetail.tsx
+      - src/ui/tabs/WorkshopTab.tsx
+
+  - id: dismantle_button_visibility
+    status: implemented
+    update: "Dismantle action is gated behind Atelier unlock state."
+    evidence:
+      - src/ui/tabs/CatalogTab.tsx
+
+  - id: career_default_landing
+    status: implemented
+    update: "New saves land on Career first."
+    evidence:
+      - src/ui/navigation/landing.ts
+
+  - id: tab_visual_grouping
+    status: implemented
+    evidence:
+      - src/ui/navigation/tabMeta.ts
+      - src/ui/navigation/PageTabRail.tsx
+
+  - id: default_catalog_sort_price_ascending
+    status: implemented
+    evidence:
+      - src/App.tsx
+
+  - id: stats_header_next_unlock_preview
+    status: partial
+    update: "Next unlock messaging exists, but not in the global header itself."
+    evidence:
+      - src/ui/components/NextUnlockPanel.tsx
+      - src/ui/components/StatsHeader.tsx
+
+  - id: catalog_filters_collapsed_button
+    status: planned
+    update: "Catalog still renders full filter controls instead of a single collapsed filter button."
+    evidence:
+      - src/ui/tabs/CatalogTab.tsx
+
+  - id: affordable_watch_highlight_glow
+    status: planned
+    update: "Readiness badges exist, but no dedicated affordable-card glow treatment is present."
+    evidence:
+      - src/ui/tabs/CatalogTab.tsx
+
+do_not_implement:
+  - id: multiplayer
+    reason: "Single-player scope."
+  - id: social-sharing
+    reason: "Out of scope."
+  - id: watch-trading
+    reason: "Requires multiplayer."
+  - id: augmented-reality
+    reason: "Out of scope."
+  - id: custom-watch-designs
+    reason: "Out of scope."
+  - id: virtual-exhibitions
+    reason: "Requires multiplayer."
+  - id: mentorship-system
+    reason: "Requires multiplayer."
+  - id: watch-clubs
+    reason: "Requires multiplayer."
+  - id: seasonal-events
+    reason: "Rejected by design."
+  - id: watch-customization
+    reason: "Out of scope."
+
+outstanding_questions:
+  - id: session-cooldown-final-model
+    question: "Should therapist sessions remove hard cooldown entirely and rely only on escalating enjoyment costs?"
+    current_state: "Hybrid model: hard cooldown plus escalating premium."
+
+  - id: atelier-balance-target
+    question: "What numeric target defines 'second run significantly faster' for Atelier progression?"
+    current_state: "Bonuses are active, but explicit success criteria are not documented."
+
+  - id: watch-tier-movement-matching
+    question: "Should tier assignment be movement-driven or stay curated by catalog tier tags?"
+    current_state: "Tier assignment is tag/curation-based, not movement-derived."
+
+  - id: next-unlock-placement
+    question: "Do we want next-unlock preview in the top header, or is Collection/Career placement sufficient?"
+    current_state: "Preview exists in Collection/Career, not in global header."
+
+  - id: catalog-filter-density
+    question: "Should catalog filters move to a collapsed button (with active count badge), especially on mobile?"
+    current_state: "Full filter row remains visible."
+
+technical_debt:
+  - "Split large modules like src/ui/tabs/CatalogTab.tsx and src/game/selectors/index.ts."
+  - "Consolidate duplicate crafted multiplier constants."
+  - "Continue adding edge-case coverage for persistence and progression boundaries."
+  - "Rerun catalog image contract checks whenever BASE_URL/deployment path changes."

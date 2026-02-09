@@ -1,12 +1,34 @@
-import { test, expect } from "@playwright/test";
+import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { openCareerPanel } from "./helpers/careerProgression";
+import { clickLocatorSafely } from "./helpers/interactions";
 
-test("Career sessions available pre-track selection", async ({ page }) => {
-  // Clear localStorage for fresh save
-  await page.goto("/");
-  await page.evaluate(() => localStorage.clear());
+async function gotoApp(page: Page) {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await page.goto("/", { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
+        timeout: 20_000,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 3) {
+        break;
+      }
+      await page.goto("about:blank", { waitUntil: "commit", timeout: 10_000 }).catch(() => {});
+      await page.waitForTimeout(150 * attempt);
+    }
+  }
+  throw lastError;
+}
 
-  // Navigate to app fresh
-  await page.goto("/");
+test("Career sessions available pre-track selection", async ({ page }, testInfo: TestInfo) => {
+  // Clear localStorage for a fresh save before app bootstrap.
+  await page.addInitScript(() => localStorage.clear());
+  await gotoApp(page);
+
+  await openCareerPanel(page);
 
   // Ensure Career panel is visible
   const careerPanel = page.locator('[data-testid="career-panel"]');
@@ -16,10 +38,7 @@ test("Career sessions available pre-track selection", async ({ page }) => {
   const startButton = page.locator('[data-testid="career-next-action-start"]');
   await expect(startButton).toBeVisible();
   await expect(startButton).toHaveText("Enter program");
-  await startButton.click();
-
-  // Wait for career to start and sessions UI to appear
-  await page.waitForTimeout(500);
+  await clickLocatorSafely(startButton);
 
   // Verify sessions are supported pre-track:
   // The run session button should be enabled
@@ -34,24 +53,28 @@ test("Career sessions available pre-track selection", async ({ page }) => {
 
   // Capture screenshot: sessions available
   await page.screenshot({
-    path: ".planning/uat-artifacts/35/10-career-started-sessions-available.png",
+    path: testInfo.outputPath("10-career-started-sessions-available.png"),
     fullPage: false,
   });
 
   // Click Run session button
-  await runSessionButton.click();
+  await clickLocatorSafely(runSessionButton);
 
-  // Wait for session to process
-  await page.waitForTimeout(500);
+  await expect
+    .poll(async () => {
+      const text = (await careerPanel.textContent()) ?? "";
+      return text.includes("cooldown") || text.includes("XP") || text.includes("session");
+    })
+    .toBeTruthy();
 
   // Capture screenshot: after running session
   await page.screenshot({
-    path: ".planning/uat-artifacts/35/11-after-pretrack-session.png",
+    path: testInfo.outputPath("11-after-pretrack-session.png"),
     fullPage: false,
   });
 
   // Verify state changed (XP or cooldown/status should be visible)
-  const updatedText = await careerPanel.textContent() ?? "";
+  const updatedText = (await careerPanel.textContent()) ?? "";
   // Should show some session-related state (XP, cooldown, or status)
   const hasStateChange =
     updatedText.includes("XP") ||

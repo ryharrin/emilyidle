@@ -6,3 +6,37 @@ Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
   writable: true,
   configurable: true,
 });
+
+const evaluateMediaQuery = (query: string): boolean => {
+  if (/\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i.test(query)) {
+    return true;
+  }
+
+  const maxWidthMatch = /max-width:\s*(\d+)px/i.exec(query);
+  const minWidthMatch = /min-width:\s*(\d+)px/i.exec(query);
+  const width = window.innerWidth;
+  const matchesMax = maxWidthMatch ? width <= Number(maxWidthMatch[1]) : true;
+  const matchesMin = minWidthMatch ? width >= Number(minWidthMatch[1]) : true;
+
+  return matchesMax && matchesMin;
+};
+
+const createMediaQueryList = (query: string): MediaQueryList =>
+  ({
+    get matches() {
+      return evaluateMediaQuery(query);
+    },
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  }) as MediaQueryList;
+
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  configurable: true,
+  value: (query: string) => createMediaQueryList(query),
+});

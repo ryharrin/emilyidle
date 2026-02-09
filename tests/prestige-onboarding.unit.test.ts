@@ -62,6 +62,9 @@ describe("prestige onboarding copy", () => {
       expect.objectContaining({ tabId: "workshop", label: expect.any(String) }),
     );
     expect(workshop.body).toContain("+3");
+    expect(workshop.carryForward.length).toBeGreaterThan(0);
+    expect(workshop.resets.length).toBeGreaterThan(0);
+    expect(workshop.recoveryHint).toContain("Blueprint");
 
     const maison = getPrestigeOnboardingContent({
       tier: "maison",
@@ -73,6 +76,9 @@ describe("prestige onboarding copy", () => {
     );
     expect(maison.body).toContain("+2");
     expect(maison.body).toContain("+1");
+    expect(maison.carryForward.length).toBeGreaterThan(0);
+    expect(maison.resets.length).toBeGreaterThan(0);
+    expect(maison.recoveryHint).toContain("Collection");
 
     const nostalgia = getPrestigeOnboardingContent({
       tier: "nostalgia",
@@ -83,5 +89,8 @@ describe("prestige onboarding copy", () => {
       expect.objectContaining({ tabId: "nostalgia", label: expect.any(String) }),
     );
     expect(nostalgia.body).toContain("+4");
+    expect(nostalgia.carryForward.length).toBeGreaterThan(0);
+    expect(nostalgia.resets.length).toBeGreaterThan(0);
+    expect(nostalgia.recoveryHint).toContain("Nostalgia unlocks");
   });
 });

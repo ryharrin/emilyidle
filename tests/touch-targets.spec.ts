@@ -2,11 +2,23 @@ import { CATALOG_ENTRIES } from "../src/game/catalog";
 import type { GameState } from "../src/game/state";
 import { createInitialState } from "../src/game/state";
 import { expect, type Locator, type Page, test } from "@playwright/test";
+import {
+  openCatalogInteractionModal,
+  openCatalogTab,
+  resolveCatalogInteractCandidates,
+  switchCatalogToOwned,
+} from "./helpers/catalogFilters";
+import { clickLocatorSafely, findFirstVisible } from "./helpers/interactions";
 
 const MOBILE_VIEWPORTS = [
   { name: "iPhone 12", viewport: { width: 390, height: 844 } },
   { name: "Pixel 5", viewport: { width: 393, height: 851 } },
 ];
+const STARTER_MODEL_ID = "rolex-calibrorolex";
+const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ref-16700";
+const CHRONOGRAPH_MODEL_ID = "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta";
+const TOURBILLON_MODEL_ID =
+  "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
 
 const buildSeededState = (): GameState => {
   const base = createInitialState();
@@ -23,6 +35,13 @@ const buildSeededState = (): GameState => {
       classic: Math.max(base.items.classic ?? 0, 2),
       chronograph: Math.max(base.items.chronograph ?? 0, 2),
       tourbillon: Math.max(base.items.tourbillon ?? 0, 1),
+    },
+    watchModels: {
+      ...base.watchModels,
+      [STARTER_MODEL_ID]: 3,
+      [CLASSIC_MODEL_ID]: 2,
+      [CHRONOGRAPH_MODEL_ID]: 2,
+      [TOURBILLON_MODEL_ID]: 1,
     },
     discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
   };
@@ -52,9 +71,38 @@ const expectTouchTarget = async (locator: Locator, label: string) => {
   expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
 };
 
+const expectVisibleTouchTargets = async (
+  locator: Locator,
+  labelPrefix: string,
+  maxCount: number,
+) => {
+  const count = await locator.count();
+  let asserted = 0;
+  for (let index = 0; index < count && asserted < maxCount; index += 1) {
+    const candidate = locator.nth(index);
+    if (!(await candidate.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    await expectTouchTarget(candidate, `${labelPrefix} ${asserted}`);
+    asserted += 1;
+  }
+
+  expect(asserted).toBeGreaterThan(0);
+};
+
 const openCatalogFromCollection = async (page: Page) => {
-  await page.getByRole("tab", { name: "Catalog" }).click();
-  await expect(page.getByTestId("catalog-grid")).toBeVisible();
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await openCatalogTab(page);
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(120);
+    }
+  }
+
+  throw (lastError ?? new Error("Failed to open Catalog tab after retries"));
 };
 
 const defineTouchTargetTests = (
@@ -95,22 +143,17 @@ const defineTouchTargetTests = (
     });
 
     test("catalog purchases and collection interactions meet touch minimum", async ({ page }) => {
-      await openCatalogFromCollection(page);
+      const catalogPanel = await openCatalogFromCollection(page);
       const buyButtons = page.locator('[data-testid^="catalog-buy-"]');
-      const buyCount = await buyButtons.count();
-      expect(buyCount).toBeGreaterThan(0);
-      for (let index = 0; index < Math.min(buyCount, 3); index += 1) {
-        await expectTouchTarget(buyButtons.nth(index), `catalog buy ${index}`);
-      }
+      await expectVisibleTouchTargets(buyButtons, "catalog buy", 3);
 
-      const interactButtons = page.locator(
+      await switchCatalogToOwned(page, catalogPanel);
+      const interactButtons = await resolveCatalogInteractCandidates(
+        page,
         '[data-testid^="watch-wear-"], [data-testid^="vault-interact-"]',
+        catalogPanel,
       );
-      const interactCount = await interactButtons.count();
-      expect(interactCount).toBeGreaterThan(0);
-      for (let index = 0; index < Math.min(interactCount, 3); index += 1) {
-        await expectTouchTarget(interactButtons.nth(index), `collection button ${index}`);
-      }
+      await expectVisibleTouchTargets(interactButtons, "collection button", 3);
 
       await page.getByTestId("help-open").click();
       await expect(page.getByTestId("help-modal")).toBeVisible();
@@ -119,24 +162,45 @@ const defineTouchTargetTests = (
     });
 
     test("catalog details button opens bottom sheet", async ({ page }) => {
-      await openCatalogFromCollection(page);
-      const detailsButton = page.locator('[data-testid^="catalog-details-button-"]').first();
+      test.slow();
+
+      const catalogPanel = await openCatalogFromCollection(page);
+      const detailsButtons = catalogPanel.locator('[data-testid^="catalog-details-button-"]');
+      const detailsButton = await findFirstVisible(detailsButtons);
+      expect(detailsButton).not.toBeNull();
+      if (detailsButton === null) {
+        throw new Error("Expected at least one visible catalog details button");
+      }
+
       await expectTouchTarget(detailsButton, "catalog details button");
-      await detailsButton.click();
-      await expect(page.getByTestId("catalog-details-sheet")).toBeVisible();
+      await clickLocatorSafely(detailsButton);
+      const detailsSheet = page.getByTestId("catalog-details-sheet");
+      if (!(await detailsSheet.isVisible().catch(() => false))) {
+        await clickLocatorSafely(detailsButton);
+      }
+      await expect(detailsSheet).toBeVisible();
       await page.keyboard.press("Escape");
-      await expect(page.getByTestId("catalog-details-sheet")).toHaveCount(0);
+      await expect(detailsSheet).toHaveCount(0);
     });
 
     test("interaction modals keep their buttons at 44px", async ({ page }) => {
-      await openCatalogFromCollection(page);
+      test.slow();
+      const catalogPanel = await openCatalogFromCollection(page);
+      await switchCatalogToOwned(page, catalogPanel);
 
-      const manualButton = page
-        .locator(
-          'button[data-testid^="vault-interact-chronograph"]:not([disabled]), button[data-testid^="vault-interact-tourbillon"]:not([disabled])',
-        )
-        .first();
-      await manualButton.click();
+      const manualCandidates = await resolveCatalogInteractCandidates(
+        page,
+        'button[data-testid^="vault-interact-chronograph"]:not([disabled]), button[data-testid^="vault-interact-tourbillon"]:not([disabled])',
+        catalogPanel,
+      );
+      const manualButton = await findFirstVisible(manualCandidates);
+      expect(manualButton).not.toBeNull();
+      if (manualButton === null) {
+        throw new Error("Expected a visible manual interaction button");
+      }
+
+      await clickLocatorSafely(manualButton);
+      await expect(page.getByTestId("winding-modal")).toBeVisible();
       await expectTouchTarget(page.getByTestId("winding-track"), "winding track");
       const surface = page.getByTestId("winding-surface");
       await expectTouchTarget(surface, "winding surface");
@@ -144,12 +208,14 @@ const defineTouchTargetTests = (
       await page.getByTestId("winding-close").click();
       await expect(page.getByTestId("winding-modal")).toHaveCount(0);
 
-      const automaticCandidates = page.locator(
+      const automaticOpened = await openCatalogInteractionModal(
+        page,
         '[data-testid="vault-interact-classic"]:not([disabled])',
+        "automatic-modal",
+        catalogPanel,
       );
-      if ((await automaticCandidates.count()) > 0) {
-        const automaticButton = automaticCandidates.first();
-        await automaticButton.click();
+      if (automaticOpened) {
+        await expect(page.getByTestId("automatic-modal")).toBeVisible();
         await expectTouchTarget(page.getByTestId("automatic-left"), "automatic left");
         await expectTouchTarget(page.getByTestId("automatic-right"), "automatic right");
         await expectTouchTarget(page.getByTestId("automatic-close"), "automatic close");
@@ -157,12 +223,14 @@ const defineTouchTargetTests = (
         await expect(page.getByTestId("automatic-modal")).toHaveCount(0);
       }
 
-      const quartzCandidates = page.locator(
+      const quartzOpened = await openCatalogInteractionModal(
+        page,
         '[data-testid="vault-interact-starter"]:not([disabled])',
+        "quartz-modal",
+        catalogPanel,
       );
-      if ((await quartzCandidates.count()) > 0) {
-        const quartzButton = quartzCandidates.first();
-        await quartzButton.click();
+      if (quartzOpened) {
+        await expect(page.getByTestId("quartz-modal")).toBeVisible();
         await expectTouchTarget(page.getByTestId("quartz-action"), "quartz set");
         await expectTouchTarget(page.getByTestId("quartz-close"), "quartz close");
         await page.getByTestId("quartz-close").click();

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openCatalogTab, switchCatalogToOwned } from "./helpers/catalogFilters";
 
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
@@ -63,6 +64,18 @@ test("collection shows next unlocks panel for hidden systems", async ({ page }) 
   await expect(lockedItemHint).toBeVisible();
 
   await page.getByRole("tab", { name: "Upgrades" }).click();
+  const collectionDisclosure = page.getByTestId("upgrades-group-collection");
+  const workshopDisclosure = page.getByTestId("upgrades-group-workshop");
+  const maisonDisclosure = page.getByTestId("upgrades-group-maison");
+  expect(
+    await collectionDisclosure.evaluate((element) => (element as HTMLDetailsElement).open),
+  ).toBe(true);
+  expect(await workshopDisclosure.evaluate((element) => (element as HTMLDetailsElement).open)).toBe(
+    false,
+  );
+  expect(await maisonDisclosure.evaluate((element) => (element as HTMLDetailsElement).open)).toBe(
+    false,
+  );
   await expect(page.getByTestId("locked-upgrade-hint-assembly-jigs")).toBeVisible();
 });
 
@@ -122,9 +135,9 @@ test("catalog empty state CTA stays in catalog", async ({ page }) => {
   );
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Catalog" }).click();
+  const catalogPanel = await openCatalogTab(page);
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
-  await page.getByRole("tab", { name: "Owned", exact: true }).click();
+  await switchCatalogToOwned(page, catalogPanel);
   await expect(page.getByTestId("catalog-owned-empty")).toBeVisible();
   await page.getByRole("button", { name: "Build collection" }).click();
 

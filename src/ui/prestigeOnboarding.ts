@@ -81,6 +81,9 @@ export function detectPrestigeEvent(
 export function getPrestigeOnboardingContent(event: PrestigeEvent): {
   title: string;
   body: string;
+  carryForward: string[];
+  resets: string[];
+  recoveryHint: string;
   recommended: {
     label: string;
     tabId: "collection" | "workshop" | "maison" | "nostalgia";
@@ -91,6 +94,13 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
     return {
       title: "Atelier reset complete",
       body: `You gained +${gained} Blueprints. Spend them to install Atelier upgrades for your next run.`,
+      carryForward: [
+        "Atelier upgrades already installed",
+        "Crafting boosts and parts",
+        "Maison and Nostalgia legacy resources",
+      ],
+      resets: ["Collection cash/enjoyment", "Collection watch ownership and upgrades"],
+      recoveryHint: "Spend Blueprints first, then rebuild Collection to recover reset momentum.",
       recommended: {
         label: "Spend your Blueprints on an Atelier upgrade",
         tabId: "workshop",
@@ -104,6 +114,17 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
     return {
       title: "Maison prestige complete",
       body: `You gained +${heritage} Heritage and +${reputation} Reputation. Your collection is reset, but Maison legacy remains.`,
+      carryForward: [
+        "Maison upgrades and active lines",
+        "Nostalgia points and unlock purchases",
+        "Catalog discoveries and achievements",
+      ],
+      resets: [
+        "Collection cash/enjoyment and watch ownership",
+        "Atelier Blueprints and Workshop run progress",
+      ],
+      recoveryHint:
+        "Rebuild Collection flow first, then loop back into Atelier for the next Maison gain.",
       recommended: {
         label: "Return to Collection and rebuild enjoyment for the next legacy",
         tabId: "collection",
@@ -115,6 +136,18 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
   return {
     title: "Nostalgia prestige complete",
     body: `You gained +${nostalgia} Nostalgia. Your collection carries forward; rebuild the collection and spend points on permanent unlocks.`,
+    carryForward: [
+      "Owned watches and catalog discoveries",
+      "Tier bonuses and achievements",
+      "Nostalgia unlock store purchases",
+    ],
+    resets: [
+      "Cash/enjoyment and Collection upgrades",
+      "Career progress and cooldown state",
+      "Atelier + Maison resources and upgrades",
+    ],
+    recoveryHint:
+      "Use Nostalgia unlocks early, then re-open Collection and Career loops in that order.",
     recommended: {
       label: "Visit the Unlock store to spend Nostalgia",
       tabId: "nostalgia",

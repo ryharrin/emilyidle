@@ -212,7 +212,7 @@ test.describe("icon cues", () => {
     const workshopPanel = page.getByTestId("workshop-panel");
     await expect(workshopPanel).toBeVisible();
 
-    const resetButton = workshopPanel.getByRole("button", { name: "Reset atelier" });
+    const resetButton = workshopPanel.getByRole("button", { name: "Review reset" });
     await expect(resetButton).toBeVisible();
     await expect(resetButton.locator("svg")).toHaveCount(1);
   });

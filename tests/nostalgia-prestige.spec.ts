@@ -114,7 +114,7 @@ test("nostalgia prestige flow", async ({ page }) => {
   });
   await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
 
-  await page.getByRole("button", { name: "Cancel" }).evaluate((button) => {
+  await page.getByRole("button", { name: "Keep current run" }).evaluate((button) => {
     (button as HTMLButtonElement).click();
   });
   await expect(page.getByTestId("nostalgia-modal")).toHaveCount(0);
@@ -130,27 +130,26 @@ test("nostalgia prestige flow", async ({ page }) => {
   });
 
   await expect(page.getByTestId("prestige-onboarding-modal")).toBeVisible();
-  await page.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("button", { name: "Keep current tab" }).click();
 
   await expect(page.getByTestId("nostalgia-results")).toBeVisible();
-  await page.waitForSelector('[data-testid="nostalgia-floating-delta"]', {
-    state: "visible",
-    timeout: 2000,
-  });
+  await expect(page.getByTestId("nostalgia-floating-delta")).toBeVisible({ timeout: 5_000 });
   const toastStack = page.getByTestId("toast-stack");
-  await expect(toastStack).toBeVisible();
-  await expect(toastStack).toContainText(/\+\d+ Nostalgia/);
-  await expectNoOverlap(toastStack, page.getByRole("button", { name: /^Unlock \(1\)$/ }).first());
   const dismissButton = page.getByRole("button", {
     name: /dismiss nostalgia prestige toast/i,
   });
+  const nostalgiaToast = toastStack.getByTestId("toast-item").filter({ has: dismissButton });
+  await expect(toastStack).toBeVisible();
+  await expect(nostalgiaToast).toContainText(/\+\d+ Nostalgia/);
+  const unlockButton = page.getByRole("button", { name: /^Unlock \(1\)$/ }).first();
+  if (await unlockButton.isVisible().catch(() => false)) {
+    await expectNoOverlap(toastStack, unlockButton);
+  }
   await dismissButton.click();
   await expect(page.getByRole("button", { name: /dismiss nostalgia prestige toast/i })).toHaveCount(
     0,
   );
-  if ((await toastStack.count()) > 0) {
-    await expect(toastStack).not.toContainText(/\+\d+ Nostalgia/);
-  }
+  await expect(nostalgiaToast).toHaveCount(0);
   const finalSave = await page.evaluate(() => {
     const raw = window.localStorage.getItem("emily-idle:save");
     return raw ? JSON.parse(raw).state : null;

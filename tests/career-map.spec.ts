@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openCareerProgression } from "./helpers/careerProgression";
 
 type CareerMapViewport = { scale: number };
 
@@ -29,12 +30,16 @@ test.describe("career map canvas", () => {
     });
 
     await page.goto("/");
+    await openCareerProgression(page);
 
     await expect(page.getByTestId("career-panel")).toBeVisible();
     await expect(page.getByTestId("career-map-viewport")).toBeVisible();
 
     const viewport = page.getByTestId("career-map-viewport");
     const stageLane = page.getByTestId("career-stages-card");
+    if (!(await stageLane.isVisible().catch(() => false))) {
+      await openCareerProgression(page);
+    }
     await expect(stageLane).toBeVisible();
 
     const viewportBox = await viewport.boundingBox();
@@ -66,6 +71,7 @@ test.describe("career map canvas", () => {
     await expect(page.getByTestId("career-map-viewport")).toBeVisible();
 
     await page.setViewportSize({ width: 420, height: 780 });
+    await openCareerProgression(page);
     await expect(page.getByTestId("career-map-viewport")).toBeVisible();
     await expect(page.getByTestId("career-stages-card")).toBeVisible();
   });
@@ -76,6 +82,7 @@ test.describe("career map canvas", () => {
     });
 
     await page.goto("/");
+    await openCareerProgression(page);
     await expect(page.getByTestId("career-map-viewport")).toBeVisible();
 
     const viewport = page.getByTestId("career-map-viewport");
@@ -139,6 +146,7 @@ test.describe("career map canvas", () => {
     });
 
     await page.goto("/");
+    await openCareerProgression(page);
     await expect(page.getByTestId("career-map-viewport")).toBeVisible();
     await expect(page.getByTestId("career-stages-card")).toBeVisible();
   });
@@ -147,6 +155,7 @@ test.describe("career map canvas", () => {
     await page.addInitScript(() => window.localStorage.clear());
     await page.setViewportSize({ width: 420, height: 780 });
     await page.goto("/");
+    await openCareerProgression(page);
 
     const timeline = page.getByTestId("career-timeline");
     await expect(timeline).toBeVisible();

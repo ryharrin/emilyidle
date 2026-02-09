@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 test("fresh save shows catalog buy buttons in collection shop", async ({ page }) => {
   await page.addInitScript(() => {
@@ -6,9 +7,11 @@ test("fresh save shows catalog buy buttons in collection shop", async ({ page })
   });
 
   await page.goto("/");
-  await page.getByRole("tab", { name: "Collection" }).click();
+  await clickLocatorSafely(page.getByRole("tab", { name: "Collection" }));
 
-  await page.getByTestId("next-unlock-cta-career").click();
+  const nextUnlockCareerCta = page.getByTestId("next-unlock-cta-career");
+  await nextUnlockCareerCta.scrollIntoViewIfNeeded();
+  await clickLocatorSafely(nextUnlockCareerCta);
 
   await expect(page.getByTestId("catalog-collection-context")).toBeVisible();
   await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();

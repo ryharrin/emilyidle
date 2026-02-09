@@ -111,6 +111,18 @@
 - [x] UXFLOW-07: Harden mobile tab rail label legibility and active-tab discoverability on narrow viewports.
 - [x] UXFLOW-08: Surface first-session cause/effect feedback (recent gains + next threshold) and guard with end-to-end flow checks.
 
+## Completed (v4.5 Full UI Audit Remediation)
+
+- [x] UXAUDIT-01: Keep primary tab order `Career -> Catalog -> Collection` and ensure tab labels remain fully discoverable on narrow mobile viewports.
+- [x] UXAUDIT-02: Enforce one dominant first-viewport CTA per tab and standardize secondary/tertiary action demotion.
+- [x] UXAUDIT-03: Prevent toast/modal/help overlays from occluding primary-action zones during active play loops.
+- [x] UXAUDIT-04: Simplify Catalog card controls and blocked-state guidance to reduce repetitive interaction overhead.
+- [x] UXAUDIT-05: Improve Collection first-viewport objective clarity and reduce low-signal empty/blank panel presentation.
+- [x] UXAUDIT-06: Reframe Upgrades around recommendation + ROI/payback context for faster decisions.
+- [x] UXAUDIT-07: Standardize Workshop/Maison/Nostalgia reset/unlock messaging with explicit before/after/delta and persistence rules.
+- [x] UXAUDIT-08: Improve Stats/Settings scanability and isolate destructive controls for safer flows.
+- [x] UXAUDIT-09: Maintain full UI screenshot coverage harness with per-tab manifests and review-index artifacts.
+
 ## Out of Scope
 
 - Multiplayer, social sharing, watch trading, AR, custom watch design, virtual exhibitions, mentorship systems, watch clubs, seasonal events, watch customization — remain explicitly rejected (see NOTES-02-02-26).
@@ -200,6 +212,15 @@
 | UXFLOW-06 | Phase 55 | Complete |
 | UXFLOW-07 | Phase 55 | Complete |
 | UXFLOW-08 | Phase 55 | Complete |
+| UXAUDIT-01 | Phase 56 | Complete |
+| UXAUDIT-02 | Phase 56 | Complete |
+| UXAUDIT-03 | Phase 56 | Complete |
+| UXAUDIT-04 | Phase 56 | Complete |
+| UXAUDIT-05 | Phase 56 | Complete |
+| UXAUDIT-06 | Phase 56 | Complete |
+| UXAUDIT-07 | Phase 56 | Complete |
+| UXAUDIT-08 | Phase 56 | Complete |
+| UXAUDIT-09 | Phase 56 | Complete |
 
 **Coverage:**
 - v1 requirements: 74 total
@@ -208,4 +229,4 @@
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-06 after Phase 55 execution and closeout summary*
+*Last updated: 2026-02-07 after Phase 56 execution closeout and audit-index publication*

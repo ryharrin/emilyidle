@@ -15,32 +15,34 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
     return null;
   }
 
+  const [visibleToast] = toasts;
+
   return (
     <div
       className="toast-stack"
       data-testid="toast-stack"
+      data-overlay-kind="non-blocking"
+      data-overlay-queue-depth={String(toasts.length)}
       role="status"
       aria-live="polite"
       aria-atomic="true"
     >
-      {toasts.map((toast) => (
-        <article key={toast.id} className="toast-stack__toast" data-testid="toast-item">
-          <div className="toast-stack__content">
-            <p className="toast-stack__title">{toast.title}</p>
-            <p className="toast-stack__message">{toast.message}</p>
-            {toast.detail && <p className="toast-stack__detail">{toast.detail}</p>}
-          </div>
-          <button
-            type="button"
-            className="toast-stack__close"
-            aria-label={`Dismiss ${toast.title.toLowerCase()} toast`}
-            onClick={() => onDismiss(toast.id)}
-            data-testid={`toast-close-${toast.id}`}
-          >
-            ×
-          </button>
-        </article>
-      ))}
+      <article key={visibleToast.id} className="toast-stack__toast" data-testid="toast-item">
+        <div className="toast-stack__content">
+          <p className="toast-stack__title">{visibleToast.title}</p>
+          <p className="toast-stack__message">{visibleToast.message}</p>
+          {visibleToast.detail && <p className="toast-stack__detail">{visibleToast.detail}</p>}
+        </div>
+        <button
+          type="button"
+          className="toast-stack__close action-priority-tertiary"
+          aria-label={`Dismiss ${visibleToast.title.toLowerCase()} toast`}
+          onClick={() => onDismiss(visibleToast.id)}
+          data-testid={`toast-close-${visibleToast.id}`}
+        >
+          ×
+        </button>
+      </article>
     </div>
   );
 }
