@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { InteractionMiniGameMode, WatchItemId } from "../../game/state";
 import {
   getInteractionDifficultyProfile,
   getInteractionPerfectStreakBonusMultiplierFromStreak,
   resolveInteractionOutcomeTier,
 } from "../../game/state";
+import { useModalAccessibility } from "./useModalAccessibility";
 
 export type AutomaticOutcomeTier = "miss" | "good" | "perfect";
 
@@ -128,6 +129,17 @@ export function AutomaticMiniGameModal({
   onClose,
   helpAction,
 }: AutomaticMiniGameModalProps): JSX.Element | null {
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalId = useId();
+  const titleId = `${modalId}-title`;
+  const descriptionId = `${modalId}-description`;
+
+  useModalAccessibility({
+    open,
+    modalRef,
+    onClose,
+  });
+
   const [needle, setNeedle] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [inBandMs, setInBandMs] = useState(0);
@@ -247,7 +259,6 @@ export function AutomaticMiniGameModal({
   const liveMessageText = getAutomaticLiveMessage({ result, targetPercent });
   const liveState = result ? "resolved" : "running";
 
-  const reserveGain = result ? Math.round((RESERVE_GAIN_BY_TIER[result.tier] ?? 0) * 100) : 0;
   const difficultyProfile = useMemo(() => getInteractionDifficultyProfile(itemId), [itemId]);
   const streakMultiplier =
     result && mode === "normal" && result.tier === "perfect"
@@ -266,15 +277,20 @@ export function AutomaticMiniGameModal({
     <div
       className="nostalgia-modal automatic-modal"
       data-testid="automatic-modal"
+      ref={modalRef}
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
     >
       <div className="nostalgia-modal-card automatic-modal-card">
         <header className="winding-modal-header">
           <div>
             <p className="eyebrow">Automatic</p>
-            <h3>{itemLabel}</h3>
-            <p className="muted winding-modal-subtitle">Hold the needle near center for 10s.</p>
+            <h3 id={titleId}>{itemLabel}</h3>
+            <p id={descriptionId} className="muted winding-modal-subtitle">
+              Hold the needle near center for 10s.
+            </p>
             <p className="muted winding-modal-subtitle" data-testid="automatic-difficulty">
               Difficulty: {difficultyProfile.label}
             </p>

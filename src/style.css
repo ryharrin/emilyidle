@@ -28,6 +28,10 @@
   --action-priority-tertiary-border: rgba(255, 255, 255, 0.24);
   --action-priority-tertiary-text: #dbe5f5;
   --collection-nav-offset: 112px;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
   font-family:
     "Sora",
     "Space Grotesk",
@@ -186,7 +190,7 @@ strong {
 
 .page-nav {
   position: sticky;
-  top: 0;
+  top: var(--safe-area-top);
   z-index: 10;
   background: #0f1115; /* Match body background */
   align-self: start;
@@ -194,6 +198,8 @@ strong {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
 }
 
 [data-theme="light"] .page-nav {
@@ -444,7 +450,7 @@ strong {
 
 .collection-section-nav {
   position: sticky;
-  top: calc(var(--collection-nav-offset) - 8px);
+  top: calc(var(--collection-nav-offset) - 8px + var(--safe-area-top));
   z-index: 4;
   background: rgba(15, 17, 21, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -500,7 +506,7 @@ strong {
 }
 
 .collection-section {
-  scroll-margin-top: calc(var(--collection-nav-offset) + 24px);
+  scroll-margin-top: calc(var(--collection-nav-offset) + var(--safe-area-top) + 24px);
 }
 
 .collection-section + .collection-section {
@@ -575,7 +581,7 @@ strong {
 
 @media (max-width: 800px) {
   .collection-section-nav {
-    top: calc(var(--collection-nav-offset) - 16px);
+    top: calc(var(--collection-nav-offset) - 16px + var(--safe-area-top));
   }
 
   .onboarding-coachmark {
@@ -655,8 +661,18 @@ strong {
 .stats-priority-card h3 {
   margin: 0;
   font-size: 0.8rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.stats-priority-card p {
+  margin: 0;
+  color: #d7deea;
+}
+
+.stats-priority-card .muted {
+  color: #aeb7c4;
+  opacity: 0.9;
 }
 
 .stats-summary-strip__card {
@@ -668,10 +684,18 @@ strong {
   gap: 4px;
 }
 
+.stats-summary-strip__card .eyebrow {
+  margin: 0;
+  color: #b7c0ce;
+  letter-spacing: 0.14em;
+}
+
 .stats-summary-strip__value {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
+  line-height: 1.2;
+  color: #f5f8fc;
 }
 
 .stats-disclosure {
@@ -692,8 +716,14 @@ strong {
   align-items: center;
   gap: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.stats-disclosure summary .muted {
+  color: #a6afbd;
+  opacity: 0.9;
 }
 
 .stats-disclosure summary::-webkit-details-marker {
@@ -772,7 +802,7 @@ strong {
 .stats-breakdown__softcap h4 {
   margin: 0 0 6px;
   font-size: 0.75rem;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -819,9 +849,31 @@ strong {
   background: rgba(255, 255, 255, 0.9);
 }
 
+[data-theme="light"] .stats-summary-strip__card .eyebrow {
+  color: #64594d;
+}
+
+[data-theme="light"] .stats-summary-strip__value {
+  color: #2a2f3b;
+}
+
 [data-theme="light"] .stats-priority-card {
   border-color: #d7cfc5;
   background: rgba(255, 255, 255, 0.92);
+}
+
+[data-theme="light"] .stats-priority-card p {
+  color: #2f394a;
+}
+
+[data-theme="light"] .stats-priority-card .muted {
+  color: #615548;
+  opacity: 0.9;
+}
+
+[data-theme="light"] .stats-disclosure summary .muted {
+  color: #675c4f;
+  opacity: 0.88;
 }
 
 [data-theme="light"] .card {
@@ -2875,7 +2927,7 @@ textarea:focus-visible {
 
 .catalog-filters {
   position: sticky;
-  top: 12px;
+  top: calc(12px + var(--safe-area-top));
   z-index: 2;
   margin-bottom: 22px;
   padding: 16px;
@@ -2906,7 +2958,7 @@ textarea:focus-visible {
 @media (max-width: 720px) {
   .catalog-quick-actions {
     position: sticky;
-    top: 12px;
+    top: calc(12px + var(--safe-area-top));
     z-index: 3;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2915,7 +2967,7 @@ textarea:focus-visible {
   }
 
   .catalog-filters {
-    top: 72px;
+    top: calc(72px + var(--safe-area-top));
   }
 }
 
@@ -3118,7 +3170,7 @@ textarea:focus-visible {
   gap: 12px;
   align-items: center;
   position: sticky;
-  top: 8px;
+  top: calc(8px + var(--safe-area-top));
   z-index: 1;
   background: linear-gradient(180deg, rgba(12, 14, 18, 0.94), rgba(12, 14, 18, 0.7));
   padding: 8px 0 12px;
@@ -3320,7 +3372,9 @@ button[data-testid^="vault-interact-"] {
   bottom: 0;
   border-radius: 22px 22px 0 0;
   padding: 24px;
-  padding-bottom: 32px;
+  padding-right: calc(24px + var(--safe-area-right));
+  padding-bottom: calc(32px + var(--safe-area-bottom));
+  padding-left: calc(24px + var(--safe-area-left));
   background: linear-gradient(180deg, rgba(18, 20, 26, 0.98), rgba(12, 14, 18, 0.95));
   box-shadow: 0 -20px 40px rgba(2, 4, 8, 0.8);
   max-height: 88vh;
@@ -5020,7 +5074,7 @@ button[data-testid^="catalog-buy-"]:disabled {
 
   .career-mobile-now-rail {
     position: sticky;
-    bottom: 12px;
+    bottom: calc(12px + var(--safe-area-bottom));
     z-index: 10;
     margin-top: 14px;
     padding: 10px 12px;
@@ -5051,6 +5105,35 @@ button[data-testid^="catalog-buy-"]:disabled {
   .career-mobile-now-rail-copy p:not(.eyebrow) {
     font-size: 0.85rem;
     color: #f5f5f6;
+  }
+}
+
+@media (pointer: coarse) {
+  .help-open-button,
+  .explain-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .collection-section-nav__link {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .onboarding-coachmark__dismiss {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  .toast-stack__close {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 10px;
+  }
+
+  .stats-disclosure summary {
+    min-height: 50px;
   }
 }
 
@@ -6232,6 +6315,23 @@ button[data-testid^="catalog-buy-"]:disabled {
   .help-modal-sections {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .stats-header__metric-label {
+    font-size: 0.78rem !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .stats-summary-strip__card .eyebrow,
+  .stats-priority-card h3,
+  .stats-disclosure summary,
+  .stats-breakdown__softcap h4 {
+    text-transform: none;
+    letter-spacing: 0.05em;
+  }
+
+  .stats-summary-strip__value {
+    font-size: 1rem;
   }
 
   .help-section-button {

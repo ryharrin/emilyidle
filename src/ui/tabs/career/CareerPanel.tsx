@@ -195,7 +195,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           <p className="eyebrow">Money generation</p>
           <h3 id="career-title">Therapist career</h3>
           <p className="muted">
-            Build your career track, earn salary, and choose when to run sessions for bursts of
+            Start here on fresh saves: enter the program, earn salary, and run sessions for burst
             cash.
           </p>
         </div>
@@ -211,10 +211,8 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
         >
           <header className="career-priority-header">
             <p className="eyebrow">Now</p>
-            <h4>Primary action lane</h4>
-            <p className="muted">
-              One canonical action summary, then supporting diagnostics underneath.
-            </p>
+            <h4>What to do now</h4>
+            <p className="muted">Top recommended action first, then the key numbers behind it.</p>
           </header>
           <div className="card-stack career-stack career-stack-now">
             <CareerNextActionCard
@@ -226,7 +224,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
             <article className="card career-economy-summary" data-testid="career-economy-summary">
               <header className="career-economy-summary-header">
                 <h4>Session value snapshot</h4>
-                <p className="muted">Short-horizon payout, cost, and unlock timing at a glance.</p>
+                <p className="muted">Payout, cost, and unlock timing at a glance.</p>
               </header>
               <dl className="career-economy-summary-grid" data-testid="session-delta-breakdown">
                 <div>
@@ -271,8 +269,8 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
             <div className="card career-session">
               <div className="career-session-header">
                 <div>
-                  <h4>Session execution</h4>
-                  <p className="muted">Run focused sessions for cash bursts and career XP.</p>
+                  <h4>Run session</h4>
+                  <p className="muted">Run sessions for burst cash and career XP.</p>
                 </div>
                 <div className="career-session-note">{sessionCostNote}</div>
               </div>
@@ -346,7 +344,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   sectionId={HELP_SECTION_IDS.careerProgression}
                   label="Explain career progression"
                 />
-                <span className="muted">Career progression + sessions</span>
+                <span className="muted">Career help</span>
               </div>
               <div className="card-actions">
                 {showCooldownRing && (
@@ -395,7 +393,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               <header className="career-priority-header">
                 <p className="eyebrow">Next</p>
                 <h4>Progress and choices</h4>
-                <p className="muted">Confirm near-term unlocks before using advanced planners.</p>
+                <p className="muted">Check upcoming unlocks and stage choices.</p>
               </header>
               <div className="card-stack career-stack career-stack-next">
                 <CareerProgressCard state={state} nowMs={nowMs} />
@@ -412,7 +410,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           data-testid="career-deep-details"
         >
           <summary data-testid="career-deep-details-toggle">
-            <span>Deep details</span>
+            <span>Detailed planning</span>
             <span className="muted">{deepDetailsOpen ? "Collapse" : "Expand"}</span>
           </summary>
           <div className="career-deep-details-body">

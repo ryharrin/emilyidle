@@ -619,6 +619,67 @@ describe("catalog filters", () => {
     expect(ownedTab.getAttribute("aria-selected")).toBe("false");
   });
 
+  it("supports roving focus keys for the catalog ownership tablist", async () => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
+    const unownedTab = within(tabList).getByRole("tab", { name: /Unowned/i });
+    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned/ });
+
+    unownedTab.focus();
+    expect(document.activeElement).toBe(unownedTab);
+    expect(unownedTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{ArrowRight}");
+
+    expect(document.activeElement).toBe(ownedTab);
+    expect(unownedTab.getAttribute("aria-selected")).toBe("true");
+    expect(ownedTab.getAttribute("aria-selected")).toBe("false");
+    expect(unownedTab.getAttribute("tabindex")).toBe("-1");
+    expect(ownedTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{Home}");
+    expect(document.activeElement).toBe(unownedTab);
+    expect(unownedTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{End}");
+    expect(document.activeElement).toBe(ownedTab);
+    expect(ownedTab.getAttribute("tabindex")).toBe("0");
+
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(unownedTab);
+    expect(unownedTab.getAttribute("tabindex")).toBe("0");
+  });
+
+  it.each([
+    ["Enter", "{Enter}"],
+    ["Space", " "],
+  ])("activates the focused catalog ownership tab with %s", async (_label, key) => {
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
+    const unownedTab = within(tabList).getByRole("tab", { name: /Unowned/i });
+    const ownedTab = within(tabList).getByRole("tab", { name: /^Owned/ });
+
+    unownedTab.focus();
+    await user.keyboard("{ArrowRight}");
+
+    expect(document.activeElement).toBe(ownedTab);
+    expect(ownedTab.getAttribute("aria-selected")).toBe("false");
+
+    await user.keyboard(key);
+
+    expect(ownedTab.getAttribute("aria-selected")).toBe("true");
+    expect(unownedTab.getAttribute("aria-selected")).toBe("false");
+
+    const unownedPanel = document.getElementById("catalog-unowned");
+    const ownedPanel = document.getElementById("catalog-owned");
+    if (!unownedPanel || !ownedPanel) {
+      throw new Error("Expected catalog ownership tabpanels to exist.");
+    }
+
+    expect(unownedPanel.hidden).toBe(true);
+    expect(ownedPanel.hidden).toBe(false);
+  });
+
   it("defaults to compact mobile density and exposes quick action controls", async () => {
     const originalMatchMedia = window.matchMedia;
     window.matchMedia = createMatchMediaMock(390);
@@ -1650,14 +1711,12 @@ describe("quartz minigame", () => {
     cleanup();
   });
 
-  it(
-    "opens the quartz modal and applies a cash reward",
-    async () => {
-      const user = userEvent.setup();
+  it("opens the quartz modal and applies a cash reward", async () => {
+    const user = userEvent.setup();
 
-      const beforeRaw = localStorage.getItem("emily-idle:save");
-      expect(beforeRaw).toBeTruthy();
-      const before = beforeRaw
+    const beforeRaw = localStorage.getItem("emily-idle:save");
+    expect(beforeRaw).toBeTruthy();
+    const before = beforeRaw
       ? (JSON.parse(beforeRaw) as { state: { currencyCents: number } })
       : null;
     if (!before) {
@@ -1685,10 +1744,8 @@ describe("quartz minigame", () => {
       return;
     }
 
-      expect(after.state.currencyCents).toBeGreaterThan(before.state.currencyCents);
-    },
-    10_000,
-  );
+    expect(after.state.currencyCents).toBeGreaterThan(before.state.currencyCents);
+  }, 10_000);
 });
 
 describe("audio toggles", () => {

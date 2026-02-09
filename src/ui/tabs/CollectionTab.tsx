@@ -42,7 +42,6 @@ import type {
   GameState,
   MaisonLineDefinition,
   MilestoneDefinition,
-  SetBonusDefinition,
   WatchItemId,
 } from "../../game/state";
 
@@ -164,7 +163,6 @@ export function CollectionTab({
   isActive,
   state,
   onNavigate,
-  watchItemLabels,
   autoBuyUnlocked,
   autoBuyEnabled,
   onToggleAutoBuy,
@@ -468,7 +466,7 @@ export function CollectionTab({
                 <div id="collection-overview" className="collection-section collection-overview">
                   <h2>Collection</h2>
                   <p className="muted">
-                    Build your collection: buy, wear, and interact with watches.
+                    Manage your owned watches here. Start in Career for cash, then buy in Catalog.
                   </p>
                   <div className="inline-icon-button">
                     <ExplainButton
@@ -586,8 +584,8 @@ export function CollectionTab({
                       <p className="eyebrow">Catalog</p>
                       <h3>Shop in Catalog</h3>
                       <p className="muted">
-                        Buy watches directly from catalog cards. The Collection focuses on owned
-                        watches and upgrades once you own them.
+                        Purchases happen in Catalog. Collection focuses on owned-watch management,
+                        bonuses, and progression.
                       </p>
                     </div>
                     <div className="card-actions">
@@ -818,7 +816,8 @@ export function CollectionTab({
                           <p>{achievement.description}</p>
                           <p className="muted">{categoryLabel}</p>
                           <p className="muted">
-                            {progress.current.toLocaleString()} / {progress.threshold.toLocaleString()}
+                            {progress.current.toLocaleString()} /{" "}
+                            {progress.threshold.toLocaleString()}
                           </p>
                           <p className="muted" aria-live="polite">
                             {unlocked ? "Unlocked" : "Locked"}

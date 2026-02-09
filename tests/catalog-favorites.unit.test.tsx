@@ -75,9 +75,6 @@ describe("catalog favorites experience", () => {
       );
     });
 
-    const filteredCards = within(catalogPanel)
-      .getAllByTestId("catalog-card")
-      .filter((card) => isVisibleInPanel(card as HTMLElement));
     await waitFor(() => {
       const visibleFilteredCards = within(catalogPanel)
         .getAllByTestId("catalog-card")

@@ -6,7 +6,6 @@ const SAVE_KEY = "emily-idle:save";
 const LEGACY_SAVE_KEY = "watch-idle:save";
 const CURRENT_SAVE_VERSION = 3 as const;
 type LegacySaveVersion = 1 | 2;
-type SupportedSaveVersion = LegacySaveVersion | typeof CURRENT_SAVE_VERSION;
 
 type SaveV3 = {
   version: typeof CURRENT_SAVE_VERSION;

@@ -218,6 +218,108 @@ const CATALOG_SORT_LABELS: Record<CatalogTabProps["catalogSort"], string> = {
   tier: "Tier",
 };
 
+type CatalogOwnershipTabId = CatalogTabProps["catalogTab"];
+
+const CATALOG_OWNERSHIP_TABS = [
+  { id: "unowned", label: "Unowned" },
+  { id: "owned", label: "Owned" },
+] as const satisfies ReadonlyArray<{ id: CatalogOwnershipTabId; label: string }>;
+
+const focusCatalogOwnershipTabById = (tabId: CatalogOwnershipTabId) => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.getElementById(`catalog-${tabId}-tab`)?.focus();
+};
+
+function useCatalogOwnershipTabKeyboard(
+  catalogTab: CatalogOwnershipTabId,
+  onCatalogTabChange: (next: CatalogOwnershipTabId) => void,
+) {
+  const [focusedCatalogTab, setFocusedCatalogTab] =
+    React.useState<CatalogOwnershipTabId>(catalogTab);
+
+  React.useEffect(() => {
+    setFocusedCatalogTab(catalogTab);
+  }, [catalogTab]);
+
+  const moveCatalogTabFocus = React.useCallback(
+    (direction: -1 | 1) => {
+      const currentIndex = CATALOG_OWNERSHIP_TABS.findIndex((tab) => tab.id === focusedCatalogTab);
+      const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
+      const nextIndex =
+        (safeCurrentIndex + direction + CATALOG_OWNERSHIP_TABS.length) %
+        CATALOG_OWNERSHIP_TABS.length;
+      const nextTab = CATALOG_OWNERSHIP_TABS[nextIndex];
+      if (!nextTab) {
+        return;
+      }
+
+      setFocusedCatalogTab(nextTab.id);
+      focusCatalogOwnershipTabById(nextTab.id);
+    },
+    [focusedCatalogTab],
+  );
+
+  const focusCatalogTabEdge = React.useCallback((edge: "first" | "last") => {
+    const nextTab =
+      edge === "first"
+        ? CATALOG_OWNERSHIP_TABS[0]
+        : CATALOG_OWNERSHIP_TABS[CATALOG_OWNERSHIP_TABS.length - 1];
+    if (!nextTab) {
+      return;
+    }
+
+    setFocusedCatalogTab(nextTab.id);
+    focusCatalogOwnershipTabById(nextTab.id);
+  }, []);
+
+  const handleCatalogTabKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      switch (event.key) {
+        case "ArrowLeft":
+        case "ArrowUp": {
+          event.preventDefault();
+          moveCatalogTabFocus(-1);
+          return;
+        }
+        case "ArrowRight":
+        case "ArrowDown": {
+          event.preventDefault();
+          moveCatalogTabFocus(1);
+          return;
+        }
+        case "Home": {
+          event.preventDefault();
+          focusCatalogTabEdge("first");
+          return;
+        }
+        case "End": {
+          event.preventDefault();
+          focusCatalogTabEdge("last");
+          return;
+        }
+        case "Enter":
+        case " ": {
+          event.preventDefault();
+          onCatalogTabChange(focusedCatalogTab);
+          return;
+        }
+        default:
+          return;
+      }
+    },
+    [focusCatalogTabEdge, focusedCatalogTab, moveCatalogTabFocus, onCatalogTabChange],
+  );
+
+  return {
+    focusedCatalogTab,
+    setFocusedCatalogTab,
+    handleCatalogTabKeyDown,
+  };
+}
+
 type CatalogDensity = "compact" | "expanded";
 
 export type PurchaseMeta = {
@@ -295,6 +397,8 @@ export function CatalogPurchasePanel({
     showFacts: boolean;
   } | null>(null);
   const detailsTriggerRef = React.useRef<HTMLButtonElement | null>(null);
+  const { focusedCatalogTab, setFocusedCatalogTab, handleCatalogTabKeyDown } =
+    useCatalogOwnershipTabKeyboard(catalogTab, onCatalogTabChange);
 
   const openDetailsSheet = React.useCallback(
     (entryId: string, showFacts: boolean, trigger: HTMLButtonElement | null) => {
@@ -753,7 +857,6 @@ export function CatalogPurchasePanel({
           : null);
     const canInteract = movementGate.available && interactionHint === null;
     const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
-    const gate = getWatchModelPurchaseGate(state, entry.id);
     const showSecondaryInteract = canShowInteract && ownedCount > 0;
     const isFavorite = favoriteSet.has(entry.id);
     const isCompared = comparedEntries.has(entry.id);
@@ -1488,12 +1591,7 @@ export function CatalogPurchasePanel({
               role="tablist"
               aria-label={embeddedInVault ? "Shop view" : "Catalog ownership"}
             >
-              {(
-                [
-                  { id: "unowned", label: "Unowned" },
-                  { id: "owned", label: "Owned" },
-                ] as const
-              ).map((tab) => (
+              {CATALOG_OWNERSHIP_TABS.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
@@ -1502,7 +1600,9 @@ export function CatalogPurchasePanel({
                   aria-selected={catalogTab === tab.id}
                   aria-controls={`catalog-${tab.id}`}
                   id={`catalog-${tab.id}-tab`}
-                  tabIndex={catalogTab === tab.id ? 0 : -1}
+                  tabIndex={focusedCatalogTab === tab.id ? 0 : -1}
+                  onFocus={() => setFocusedCatalogTab(tab.id)}
+                  onKeyDown={handleCatalogTabKeyDown}
                   onClick={() => onCatalogTabChange(tab.id)}
                 >
                   {tab.label}
@@ -1574,7 +1674,7 @@ export function CatalogPurchasePanel({
                   body={
                     embeddedInVault
                       ? "Buy watches to start filling your shelf with owned references."
-                      : "Build your collection to start filling your archive shelf with owned references."
+                      : "Buy watches in Catalog to start filling your archive shelf with owned references."
                   }
                   ctaLabel={embeddedInVault ? "Browse watches" : "Build collection"}
                   onCta={
@@ -1635,6 +1735,8 @@ export function CatalogTabLegacy({
   const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
   const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
   const purchaseHighlightTimeouts = React.useRef<Map<string, number>>(new Map());
+  const { focusedCatalogTab, setFocusedCatalogTab, handleCatalogTabKeyDown } =
+    useCatalogOwnershipTabKeyboard(catalogTab, onCatalogTabChange);
 
   const filterSignature = React.useMemo(
     () =>
@@ -1771,8 +1873,7 @@ export function CatalogTabLegacy({
               <p className="eyebrow">Archive</p>
               <h2>Catalog</h2>
               <p className="muted">
-                Archive reference pieces and licensing sources. The Shop in Collection handles
-                purchases.
+                Buy watches in Catalog, then review reference details and licensing sources.
               </p>
             </div>
             <div className="catalog-header-actions">
@@ -1892,12 +1993,7 @@ export function CatalogTabLegacy({
             <div className="filter-field" data-testid="catalog-owned-tabs">
               <span className="filter-label">View</span>
               <div className="catalog-tablist" role="tablist" aria-label="Catalog ownership">
-                {(
-                  [
-                    { id: "unowned", label: "Unowned" },
-                    { id: "owned", label: "Owned" },
-                  ] as const
-                ).map((tab) => (
+                {CATALOG_OWNERSHIP_TABS.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
@@ -1906,7 +2002,9 @@ export function CatalogTabLegacy({
                     aria-selected={catalogTab === tab.id}
                     aria-controls={`catalog-${tab.id}`}
                     id={`catalog-${tab.id}-tab`}
-                    tabIndex={catalogTab === tab.id ? 0 : -1}
+                    tabIndex={focusedCatalogTab === tab.id ? 0 : -1}
+                    onFocus={() => setFocusedCatalogTab(tab.id)}
+                    onKeyDown={handleCatalogTabKeyDown}
                     onClick={() => onCatalogTabChange(tab.id)}
                   >
                     {tab.label}
@@ -2041,7 +2139,7 @@ export function CatalogTabLegacy({
                   <div className="catalog-empty" data-testid="catalog-owned-empty">
                     <EmptyStateCTA
                       title="No owned references yet"
-                      body="Build your collection to start filling your archive shelf with owned references."
+                      body="Buy watches in Catalog to start filling your archive shelf with owned references."
                       ctaLabel="Build collection"
                       onCta={() => onNavigate("catalog", "catalog-shop")}
                     />

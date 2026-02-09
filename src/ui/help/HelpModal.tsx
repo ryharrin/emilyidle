@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 
+import { useModalAccessibility } from "../components/useModalAccessibility";
 import type { HelpSection } from "./helpContent";
 import { searchHelpSections } from "./helpSearch";
 
@@ -62,30 +63,17 @@ export function HelpModal({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const sectionButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const modalRef = useRef<HTMLDivElement>(null);
-  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const modalId = useId();
+  const titleId = `${modalId}-title`;
+  const descriptionId = `${modalId}-description`;
 
-  const focusableSelector =
-    "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
-
-  const getFocusableElements = useCallback(() => {
-    const modal = modalRef.current;
-    if (!modal) {
-      return [] as HTMLElement[];
-    }
-    return Array.from(modal.querySelectorAll<HTMLElement>(focusableSelector));
-  }, []);
-
-  const handleTopSentinel = () => {
-    const focusables = getFocusableElements();
-    focusables[focusables.length - 1]?.focus();
-  };
-
-  const handleBottomSentinel = () => {
-    const focusables = getFocusableElements();
-    focusables[0]?.focus();
-  };
+  useModalAccessibility({
+    open,
+    modalRef,
+    onClose,
+    initialFocusRef: searchInputRef,
+  });
 
   const activeSection = useMemo(() => {
     if (sections.length === 0) {
@@ -205,95 +193,6 @@ export function HelpModal({
       return;
     }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onClose, open]);
-
-  useEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-
-    const handleFocusIn = (event: FocusEvent) => {
-      const modal = modalRef.current;
-      if (!modal) {
-        return;
-      }
-      const { target } = event;
-      if (target instanceof Node && modal.contains(target)) {
-        return;
-      }
-      modal.focus();
-    };
-
-    document.addEventListener("focusin", handleFocusIn);
-
-    return () => {
-      document.removeEventListener("focusin", handleFocusIn);
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-
-    const handleFocusOut = () => {
-      const modal = modalRef.current;
-      if (!modal) {
-        return;
-      }
-
-      window.requestAnimationFrame(() => {
-        if (!modal.contains(document.activeElement)) {
-          modal.focus();
-        }
-      });
-    };
-
-    document.addEventListener("focusout", handleFocusOut, true);
-
-    return () => {
-      document.removeEventListener("focusout", handleFocusOut, true);
-    };
-  }, [open]);
-
-  useLayoutEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-
-    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-    modalRef.current?.focus();
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-
     const appRoot =
       document.getElementById("app-shell") ??
       document.getElementById("app") ??
@@ -308,9 +207,6 @@ export function HelpModal({
         appRoot.removeAttribute("inert");
         appRoot.removeAttribute("aria-hidden");
       }
-      const previousFocus = previouslyFocusedRef.current;
-      previousFocus?.focus();
-      previouslyFocusedRef.current = null;
     };
   }, [open]);
 
@@ -327,18 +223,14 @@ export function HelpModal({
       data-overlay-kind="blocking"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
     >
       <div className="help-modal-card" ref={modalRef} tabIndex={-1}>
-        <button
-          type="button"
-          className="help-focus-sentinel visually-hidden"
-          aria-label="Help modal focus guard"
-          onFocus={handleTopSentinel}
-        />
         <header className="help-modal-header">
           <div>
             <p className="eyebrow">Glossary</p>
-            <h2>Help</h2>
+            <h2 id={titleId}>Help</h2>
           </div>
           <div className="help-modal-header-actions">
             <div className="help-modal-search">
@@ -364,13 +256,12 @@ export function HelpModal({
               data-testid="help-close"
               onClick={onClose}
               onKeyDown={handleCloseKeyDown}
-              ref={closeButtonRef}
             >
               Close
             </button>
           </div>
         </header>
-        <div className="help-modal-meta" data-testid="help-search-count">
+        <div id={descriptionId} className="help-modal-meta" data-testid="help-search-count">
           <span>{filteredSections.length} sections</span>
           <span className="muted">
             {normalizedSearchTerm.length > 0
@@ -435,12 +326,6 @@ export function HelpModal({
             <p className="muted">No help content available yet.</p>
           )}
         </div>
-        <button
-          type="button"
-          className="help-focus-sentinel visually-hidden"
-          aria-label="Help modal focus guard"
-          onFocus={handleBottomSentinel}
-        />
       </div>
     </div>
   );

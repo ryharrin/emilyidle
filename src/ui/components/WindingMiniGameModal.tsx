@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { formatMoneyFromCents } from "../../game/format";
 import type { InteractionMiniGameMode, WatchItemId } from "../../game/state";
@@ -7,6 +15,7 @@ import {
   getInteractionPerfectStreakBonusMultiplierFromStreak,
   resolveInteractionOutcomeTier,
 } from "../../game/state";
+import { useModalAccessibility } from "./useModalAccessibility";
 import { getOutcomeTierFromBand, getWindingBandLabel, WindingBand } from "./winding/windingMath";
 import { useWindingRun } from "./winding/useWindingRun";
 import { WindingCrown } from "./winding/WindingCrown";
@@ -102,9 +111,6 @@ export function getWindingRewardCopy(
   };
 }
 
-const focusableSelector =
-  "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
-
 const BAND_ORDER: WindingBand[] = ["under", "good", "perfect", "over"];
 
 function usePrefersReducedMotion() {
@@ -156,7 +162,6 @@ export function WindingMiniGameModal({
     band,
     phase,
     stop,
-    progressVelocity,
     velocity01,
     softPenalty,
     strictPenalty,
@@ -173,9 +178,11 @@ export function WindingMiniGameModal({
   const hintCallbackRef = useRef(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
-  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const prevOpenRef = useRef(open);
   const runStartStreakRef = useRef(currentPerfectStreak);
+  const modalId = useId();
+  const titleId = `${modalId}-title`;
+  const descriptionId = `${modalId}-description`;
 
   useEffect(() => {
     setHintDismissed(!showTapHint);
@@ -197,6 +204,14 @@ export function WindingMiniGameModal({
     persistHintDismissed();
     onClose();
   }, [onClose, persistHintDismissed]);
+
+  useModalAccessibility({
+    open,
+    modalRef,
+    onClose: handleClose,
+    initialFocusRef: surfaceRef,
+    lockScroll: false,
+  });
 
   const handleStop = useCallback(() => {
     if (result) {
@@ -225,33 +240,6 @@ export function WindingMiniGameModal({
     }
     prevOpenRef.current = open;
   }, [currentPerfectStreak, open]);
-
-  useLayoutEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-    surfaceRef.current?.focus();
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || typeof document === "undefined") {
-      return;
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        handleClose();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      if (!open) {
-        previouslyFocusedRef.current?.focus();
-      }
-    };
-  }, [handleClose, open]);
 
   useEffect(() => {
     if (!open || typeof document === "undefined") {
@@ -294,24 +282,6 @@ export function WindingMiniGameModal({
     [bind, handleStop],
   );
 
-  const getFocusableElements = () => {
-    const modal = modalRef.current;
-    if (!modal) {
-      return [] as HTMLElement[];
-    }
-    return Array.from(modal.querySelectorAll<HTMLElement>(focusableSelector));
-  };
-
-  const handleTopSentinel = () => {
-    const focusables = getFocusableElements();
-    focusables[focusables.length - 1]?.focus();
-  };
-
-  const handleBottomSentinel = () => {
-    const focusables = getFocusableElements();
-    focusables[0]?.focus();
-  };
-
   const difficultyProfile = useMemo(() => getInteractionDifficultyProfile(itemId), [itemId]);
   const appliedRewardMultiplier =
     result && mode === "normal" && result.tier === "perfect"
@@ -337,9 +307,9 @@ export function WindingMiniGameModal({
   const outcomeState = result ? "resolved" : "running";
   const crownGlowTier = result ? result.tier : getOutcomeTierFromBand(band);
   const trackStyle = {
-    ["--winding-progress" as "--winding-progress"]: progress01,
-    ["--winding-velocity" as "--winding-velocity"]: velocityPulse,
-    ["--winding-tension" as "--winding-tension"]: tension01,
+    ["--winding-progress" as const]: progress01,
+    ["--winding-velocity" as const]: velocityPulse,
+    ["--winding-tension" as const]: tension01,
   } as React.CSSProperties;
 
   return open ? (
@@ -349,13 +319,16 @@ export function WindingMiniGameModal({
         ref={modalRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
       >
-        <span tabIndex={0} className="winding-focus-sentinel" onFocus={handleTopSentinel} />
         <header className="winding-modal-header">
           <div>
             <p className="eyebrow">Winding</p>
-            <h3>{itemLabel}</h3>
-            <p className="muted winding-modal-subtitle">Reward: {rewardRangeLabel}</p>
+            <h3 id={titleId}>{itemLabel}</h3>
+            <p id={descriptionId} className="muted winding-modal-subtitle">
+              Reward: {rewardRangeLabel}
+            </p>
             <p className="muted winding-modal-subtitle" data-testid="winding-difficulty">
               Difficulty: {difficultyProfile.label}
             </p>
@@ -541,15 +514,6 @@ export function WindingMiniGameModal({
             </div>
           )}
         </div>
-
-        <button
-          type="button"
-          className="visually-hidden"
-          aria-label="Trap focus"
-          tabIndex={0}
-          onFocus={() => surfaceRef.current?.focus()}
-        />
-        <span tabIndex={0} className="winding-focus-sentinel" onFocus={handleBottomSentinel} />
       </div>
     </div>
   ) : null;

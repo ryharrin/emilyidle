@@ -1,6 +1,7 @@
 import React from "react";
 
 import { createPortal } from "react-dom";
+import { useModalAccessibility } from "./useModalAccessibility";
 
 type ConfirmModalProps = {
   open: boolean;
@@ -27,12 +28,20 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps): JSX.Element | null {
+  const modalRef = React.useRef<HTMLDivElement | null>(null);
+  const modalId = React.useId();
+  const titleId = `${modalId}-title`;
+  const descriptionId = `${modalId}-description`;
+
+  useModalAccessibility({
+    open,
+    modalRef,
+    onClose: onCancel,
+  });
+
   if (!open) {
     return null;
   }
-
-  const titleId = "confirm-modal-title";
-  const descriptionId = "confirm-modal-description";
 
   return createPortal(
     <div
@@ -43,7 +52,7 @@ export function ConfirmModal({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className="nostalgia-modal-card confirm-modal-card">
+      <div className="nostalgia-modal-card confirm-modal-card" ref={modalRef}>
         <h3 id={titleId}>{title}</h3>
         <p id={descriptionId} className="muted">
           {description}

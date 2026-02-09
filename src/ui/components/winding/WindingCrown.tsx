@@ -30,15 +30,15 @@ export function WindingCrown({
   const springGaugeProgress = clamp01(displayTension * 0.6 + normalizedProgress * 0.4);
   const penaltyIntensity = band === "over" ? 1 : 0;
   const style = {
-    ["--winding-angle" as "--winding-angle"]: `${angleDeg}deg`,
-    ["--winding-progress" as "--winding-progress"]: normalizedProgress,
-    ["--winding-tension" as "--winding-tension"]: normalizedTension,
-    ["--winding-velocity" as "--winding-velocity"]: normalizedVelocity,
-    ["--winding-glow" as "--winding-glow"]: glowIntensity,
-    ["--winding-display-tension" as "--winding-display-tension"]: displayTension,
-    ["--winding-gauge-progress" as "--winding-gauge-progress"]: normalizedProgress,
-    ["--winding-spring-progress" as "--winding-spring-progress"]: springGaugeProgress,
-    ["--winding-penalty" as "--winding-penalty"]: penaltyIntensity,
+    ["--winding-angle" as const]: `${angleDeg}deg`,
+    ["--winding-progress" as const]: normalizedProgress,
+    ["--winding-tension" as const]: normalizedTension,
+    ["--winding-velocity" as const]: normalizedVelocity,
+    ["--winding-glow" as const]: glowIntensity,
+    ["--winding-display-tension" as const]: displayTension,
+    ["--winding-gauge-progress" as const]: normalizedProgress,
+    ["--winding-spring-progress" as const]: springGaugeProgress,
+    ["--winding-penalty" as const]: penaltyIntensity,
   } as React.CSSProperties;
 
   return (

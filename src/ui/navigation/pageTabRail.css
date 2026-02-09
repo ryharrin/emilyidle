@@ -43,6 +43,8 @@
   overflow-x: auto;
   scroll-snap-type: x proximity;
   padding-bottom: 4px;
+  scroll-padding-left: 10px;
+  scroll-padding-right: 10px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -62,6 +64,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 600;
+  line-height: 1.12;
   background: rgba(27, 30, 38, 0.6);
   transition:
     transform 120ms ease,
@@ -183,6 +186,7 @@
   flex-direction: column;
   gap: 4px;
   width: 100%;
+  min-width: 0;
 }
 
 .page-tab-rail__skeleton-wrapper {
@@ -243,19 +247,32 @@
 @media (max-width: 640px) {
   .page-tab-rail__scroll {
     gap: 8px;
+    padding-left: max(2px, env(safe-area-inset-left, 0px));
+    padding-right: max(2px, env(safe-area-inset-right, 0px));
+    scroll-padding-left: max(8px, env(safe-area-inset-left, 0px));
+    scroll-padding-right: max(8px, env(safe-area-inset-right, 0px));
   }
 
   .page-tab-rail__tab {
-    min-width: fit-content;
+    min-width: 96px;
+    max-width: 138px;
     padding: 10px 12px;
     padding-top: 13px;
     font-size: 0.78rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
   }
 
   .page-tab-rail__tab[data-bucket-start="true"]::before {
     font-size: 0.54rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.12em;
+  }
+
+  .page-tab-rail__badge {
+    letter-spacing: 0.12em;
   }
 }
 
@@ -266,6 +283,13 @@
 
   .page-tab-rail__tab {
     padding-top: 10px;
-    min-height: 46px;
+    min-height: 48px;
+    max-width: 124px;
+  }
+}
+
+@media (pointer: coarse) {
+  .page-tab-rail__tab {
+    min-height: 50px;
   }
 }

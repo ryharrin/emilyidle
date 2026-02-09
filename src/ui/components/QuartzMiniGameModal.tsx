@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { formatMoneyFromCents } from "../../game/format";
 import type { InteractionMiniGameMode, WatchItemId } from "../../game/state";
@@ -7,6 +7,7 @@ import {
   getInteractionPerfectStreakBonusMultiplierFromStreak,
   resolveInteractionOutcomeTier,
 } from "../../game/state";
+import { useModalAccessibility } from "./useModalAccessibility";
 
 export type QuartzOutcomeTier = "miss" | "good" | "perfect";
 
@@ -141,12 +142,6 @@ const QUARTZ_REWARD_INFO: Record<QuartzOutcomeTier, { prefix: string; detail: st
   },
 };
 
-const QUARTZ_TIER_LABELS: Record<QuartzOutcomeTier, string> = {
-  miss: "Miss",
-  good: "Good",
-  perfect: "Perfect",
-};
-
 export function getQuartzRewardCopy(
   tier: QuartzOutcomeTier,
   rewardMultiplier = 1,
@@ -175,6 +170,17 @@ export function QuartzMiniGameModal({
   onClose,
   helpAction,
 }: QuartzMiniGameModalProps): JSX.Element | null {
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const modalId = useId();
+  const titleId = `${modalId}-title`;
+  const descriptionId = `${modalId}-description`;
+
+  useModalAccessibility({
+    open,
+    modalRef,
+    onClose,
+  });
+
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<null | QuartzOutcome>(null);
   const [targetTime, setTargetTime] = useState<{ hour: number; minute: number } | null>(null);
@@ -203,13 +209,18 @@ export function QuartzMiniGameModal({
   }, []);
 
   useEffect(() => {
+    if (open) {
+      runStartStreakRef.current = currentPerfectStreak;
+    }
+  }, [currentPerfectStreak, open]);
+
+  useEffect(() => {
     if (!open) {
       resetRun();
       return;
     }
 
     resetRun();
-    runStartStreakRef.current = currentPerfectStreak;
     // Generate new target time
     setTargetTime(generateTargetTime());
 
@@ -244,7 +255,7 @@ export function QuartzMiniGameModal({
         rafIdRef.current = null;
       }
     };
-  }, [currentPerfectStreak, open, prefersReducedMotion, resetRun]);
+  }, [open, prefersReducedMotion, resetRun]);
 
   const difficultyProfile = useMemo(() => getInteractionDifficultyProfile(itemId), [itemId]);
 
@@ -264,12 +275,7 @@ export function QuartzMiniGameModal({
       ? getInteractionPerfectStreakBonusMultiplierFromStreak(runStartStreakRef.current)
       : 1;
   const rewardCopy =
-    result && mode === "normal"
-      ? getQuartzRewardCopy(
-          result.tier,
-          streakMultiplier,
-        )
-      : null;
+    result && mode === "normal" ? getQuartzRewardCopy(result.tier, streakMultiplier) : null;
   const outcomeState = result ? "resolved" : "running";
 
   const handleSet = () => {
@@ -292,15 +298,20 @@ export function QuartzMiniGameModal({
     <div
       className="nostalgia-modal quartz-modal"
       data-testid="quartz-modal"
+      ref={modalRef}
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
     >
       <div className="nostalgia-modal-card quartz-modal-card">
         <header className="winding-modal-header">
           <div>
             <p className="eyebrow">Quartz</p>
-            <h3>{itemLabel}</h3>
-            <p className="muted winding-modal-subtitle">Reward: {rewardRangeLabel}</p>
+            <h3 id={titleId}>{itemLabel}</h3>
+            <p id={descriptionId} className="muted winding-modal-subtitle">
+              Reward: {rewardRangeLabel}
+            </p>
             <p className="muted winding-modal-subtitle" data-testid="quartz-difficulty">
               Difficulty: {difficultyProfile.label}
             </p>

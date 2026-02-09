@@ -27,12 +27,7 @@ import { TabSwitchSkeleton } from "./ui/navigation/TabSwitchSkeleton";
 import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
 
-import {
-  formatDurationFromMs,
-  formatMoneyFromCents,
-  formatRateFromCentsPerSec,
-  formatSoftcapEfficiency,
-} from "./game/format";
+import { formatDurationFromMs, formatMoneyFromCents, formatSoftcapEfficiency } from "./game/format";
 import {
   clearLocalStorageSave,
   decodeSaveString,
@@ -78,7 +73,6 @@ import {
   getWatchItems,
   getWatchModels,
   getUpgrades,
-  getSetBonuses,
   getInteractionStreakDetail,
   getEvents,
   getMaisonUpgrades,
@@ -1210,7 +1204,7 @@ export default function App() {
       {
         id: "vault-basics",
         title: "Collection basics",
-        text: "Buy watches for enjoyment and memories. Career earns cash. Interact to trigger special moments.",
+        text: "Start in Career to begin earning cash, then buy watches in Catalog for enjoyment and memories. Interact to trigger special moments.",
       },
       {
         id: "catalog-archive",

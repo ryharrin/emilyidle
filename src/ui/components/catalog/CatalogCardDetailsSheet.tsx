@@ -1,7 +1,8 @@
 import React from "react";
 import { createPortal } from "react-dom";
 import type { CatalogEntry } from "../../../game/catalog";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { useModalAccessibility } from "../useModalAccessibility";
 
 type CatalogCardDetailsSheetProps = {
   entry: CatalogEntry;
@@ -21,30 +22,14 @@ export function CatalogCardDetailsSheet({
   children,
 }: CatalogCardDetailsSheetProps) {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!show || typeof document === "undefined") {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    closeButtonRef.current?.focus();
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [show, onClose]);
+  useModalAccessibility({
+    open: show,
+    modalRef,
+    onClose,
+    initialFocusRef: closeButtonRef,
+  });
 
   if (!show || typeof document === "undefined") {
     return null;
@@ -72,13 +57,17 @@ export function CatalogCardDetailsSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${SHEET_ID}-title`}
+        aria-describedby={`${SHEET_ID}-description`}
         id={SHEET_ID}
+        ref={modalRef}
       >
         <div className="catalog-card-details-sheet__header">
           <div>
             <p className="catalog-card-details-sheet__brand">{entry.brand}</p>
             <h3 id={`${SHEET_ID}-title`}>{entry.model}</h3>
-            <p className="catalog-card-details-sheet__tags">{tags.join(" · ")}</p>
+            <p id={`${SHEET_ID}-description`} className="catalog-card-details-sheet__tags">
+              {tags.join(" · ")}
+            </p>
           </div>
           <button
             type="button"
