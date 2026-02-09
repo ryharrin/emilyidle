@@ -9,13 +9,12 @@
 # These items have contradictions or unclear requirements. Ask the user before proceeding.
 
 unanswered_questions:
-
   - id: undiscovered-watch-visibility
     priority: HIGH
     question: "How should undiscovered watches appear in the catalog?"
     status: "RESOLVED in v3.2 (2026-02-02)"
     resolution: "Shows greyed-out with lock icon + contextual explanation"
-    reference: ".planning/MILESTONES.md (v3.2 completion)\""
+    reference: '.planning/MILESTONES.md (v3.2 completion)"'
     contradiction:
       - "NOTES.md line 112: 'Undiscovered watches should not appear at all until they are unlocked'"
       - "NOTES.md line 114: 'All watches should be visible, but undiscovered ones should be greyed out with a lock icon'"
@@ -23,7 +22,7 @@ unanswered_questions:
     options:
       a: "Hide undiscovered watches completely"
       b: "Show all watches, grey out undiscovered with lock icon [CHOSEN - Implemented]"
-      c: "Keep current 'Undiscovered' badge behavior" 
+      c: "Keep current 'Undiscovered' badge behavior"
 
   - id: quartz-mini-game-reward
     priority: MEDIUM
@@ -107,12 +106,10 @@ do_not_implement:
 # ============================================================================
 
 todo:
-
   # --------------------------------------------------------------------------
   # HIGH PRIORITY - Core gameplay improvements
   # --------------------------------------------------------------------------
   high_priority:
-
     - id: session-cooldown-redesign
       description: "Session cost increases instead of hard cooldown"
       rationale: "Allows strategic choice vs arbitrary waiting"
@@ -170,7 +167,6 @@ todo:
   # MEDIUM PRIORITY - UX polish
   # --------------------------------------------------------------------------
   medium_priority:
-
     - id: tab-ready-indicators
       description: "Badge/dot on tabs with available actions"
       examples:
@@ -222,7 +218,6 @@ todo:
   # LOW PRIORITY - Nice to have
   # --------------------------------------------------------------------------
   low_priority:
-
     - id: tab-visual-grouping
       description: "Visual grouping: Primary/Progression/System"
 
@@ -317,7 +312,6 @@ todo:
 # Reference only. These features exist and work. Do not duplicate effort.
 
 already_complete:
-
   core_systems:
     - "Dual currency (enjoyment + cash)"
     - "Nostalgia points as permanent unlock currency"
@@ -412,12 +406,10 @@ architecture:
 # ============================================================================
 
 tech_debt:
-
   # --------------------------------------------------------------------------
   # HIGH PRIORITY - Code quality issues
   # --------------------------------------------------------------------------
   high_priority:
-
     - id: catalog-tab-split
       description: "Split CatalogTab.tsx (1647 lines) into smaller components"
       rationale: "File is too large to maintain effectively"
@@ -450,7 +442,6 @@ tech_debt:
   # MEDIUM PRIORITY - Maintainability
   # --------------------------------------------------------------------------
   medium_priority:
-
     - id: app-tsx-size
       description: "Extract more logic from App.tsx"
       rationale: "Main component handles too many concerns"
@@ -485,7 +476,6 @@ tech_debt:
   # LOW PRIORITY - Nice to have
   # --------------------------------------------------------------------------
   low_priority:
-
     - id: comments-documentation
       description: "Add JSDoc comments to exported functions"
       status: ONGOING
@@ -505,7 +495,6 @@ tech_debt:
 # ============================================================================
 
 proposed_fixes:
-
   - id: power-reserve-decay
     priority: MEDIUM
     description: "Power reserve should decay over time for automatic watches"
@@ -547,12 +536,10 @@ proposed_fixes:
 # ============================================================================
 
 proposed_features:
-
   # --------------------------------------------------------------------------
   # Gameplay Depth
   # --------------------------------------------------------------------------
   gameplay:
-
     - id: set-bonus-progress
       priority: HIGH
       description: "Show progress toward completing set bonuses"
@@ -606,7 +593,6 @@ proposed_features:
   # Quality of Life
   # --------------------------------------------------------------------------
   quality_of_life:
-
     - id: offline-progress
       priority: HIGH
       description: "Calculate progress made while game was closed"
@@ -666,7 +652,6 @@ proposed_features:
   # Mini-Game Enhancements
   # --------------------------------------------------------------------------
   mini_games:
-
     - id: mini-game-practice
       priority: LOW
       description: "Practice mode for mini-games (no rewards)"
@@ -696,7 +681,6 @@ proposed_features:
   # Events & Achievements
   # --------------------------------------------------------------------------
   events_achievements:
-
     - id: achievement-notifications
       priority: MEDIUM
       description: "Toast notifications when achievements unlock"
@@ -732,7 +716,6 @@ proposed_features:
 # ============================================================================
 
 completed_milestones:
-
   v32_catalog_vault_consolidation:
     milestone: "v3.2 Catalog/Vault Consolidation"
     shipped: "2026-02-02"

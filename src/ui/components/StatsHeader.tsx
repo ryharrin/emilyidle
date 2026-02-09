@@ -42,7 +42,10 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
                 <CurrencyIcon className="inline-icon" />
                 Dollars
               </dt>
-              <dd id="currency" className="stats-header__metric-value stats-header__metric-value--hero">
+              <dd
+                id="currency"
+                className="stats-header__metric-value stats-header__metric-value--hero"
+              >
                 <ValueTicker
                   value={stats.cash}
                   formatValue={formatMoneyFromCents}
@@ -55,7 +58,10 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
                 <CurrencyIcon className="inline-icon" />
                 Dollars / sec
               </dt>
-              <dd id="income" className="stats-header__metric-value stats-header__metric-value--hero">
+              <dd
+                id="income"
+                className="stats-header__metric-value stats-header__metric-value--hero"
+              >
                 <ValueTicker
                   value={stats.cashRate}
                   formatValue={formatRateFromCentsPerSec}

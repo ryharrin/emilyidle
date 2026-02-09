@@ -1314,10 +1314,7 @@ export function getCatalogImageUrl(entry: CatalogEntry): string {
     const localPath = LOCAL_CATALOG_OVERRIDES[relativePath] ?? relativePath;
     return resolveCatalogAssetUrl(localPath);
   }
-  if (
-    entry.image.url.startsWith("/catalog/") ||
-    entry.image.url.startsWith("catalog/")
-  ) {
+  if (entry.image.url.startsWith("/catalog/") || entry.image.url.startsWith("catalog/")) {
     return resolveCatalogAssetUrl(entry.image.url);
   }
   return entry.image.url;

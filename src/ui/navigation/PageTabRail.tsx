@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import type { TabBucket, TabId, TabMeta } from "./tabMeta";
 import type { TabReadinessMap } from "./tabReadiness";
@@ -76,7 +70,8 @@ export function PageTabRail({
     }
 
     const maxScrollLeft = Math.max(0, scrollNode.scrollWidth - scrollNode.clientWidth);
-    const centeredLeft = selectedTab.offsetLeft - (scrollNode.clientWidth - selectedTab.offsetWidth) / 2;
+    const centeredLeft =
+      selectedTab.offsetLeft - (scrollNode.clientWidth - selectedTab.offsetWidth) / 2;
     const nextLeft = Math.min(maxScrollLeft, Math.max(0, centeredLeft));
 
     if (Math.abs(scrollNode.scrollLeft - nextLeft) <= 2) {

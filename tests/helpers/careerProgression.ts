@@ -44,7 +44,9 @@ export async function openCareerProgression(page: Page) {
 
 export async function selectCareerView(page: Page, view: "stages" | "upgrades") {
   await openCareerProgression(page);
-  const viewButton = page.getByTestId(view === "stages" ? "career-view-stages" : "career-view-upgrades");
+  const viewButton = page.getByTestId(
+    view === "stages" ? "career-view-stages" : "career-view-upgrades",
+  );
   await clickLocatorSafely(viewButton);
   await expect(viewButton).toHaveClass(/career-view-active/);
 }

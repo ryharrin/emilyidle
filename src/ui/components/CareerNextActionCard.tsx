@@ -40,7 +40,10 @@ export function CareerNextActionCard({
           <p className="eyebrow">Primary action</p>
           <h4>{cue.label}</h4>
         </div>
-        <p className="results-count career-next-action-status" data-testid="career-next-action-status">
+        <p
+          className="results-count career-next-action-status"
+          data-testid="career-next-action-status"
+        >
           {statusLabel}
         </p>
       </header>

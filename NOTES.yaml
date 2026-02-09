@@ -4,13 +4,13 @@
 
 resolved:
   - id: undiscovered-watch-visibility
-    resolution: "Resolved in v3.2 (2026-02-02): undiscovered watches stay visible with greyed-out lock overlays, contextual explanations, and no missing entries.
+    resolution: "Resolved in v3.2 (2026-02-02): undiscovered watches stay visible with greyed-out lock overlays, contextual explanations, and no missing entries."
     decision_source: ".planning/MILESTONES.md v3.2 archive"
   - id: quartz-mini-game-reward
-    resolution: "Quartz stays the exception and continues to reward cash while winding rewards enjoyment (v4.0).
+    resolution: "Quartz stays the exception and continues to reward cash while winding rewards enjoyment (v4.0)."
     decision_source: "NOTES-02-02-26 + v4.0 release"
   - id: focus-trap-webkit
-    resolution: "Implemented throughout Phase 47 with inert background + manual Tab/Shift+Tab handling in HelpModal.
+    resolution: "Implemented throughout Phase 47 with inert background + manual Tab/Shift+Tab handling in HelpModal."
     decision_source: "NOTES-02-02-26 question resolution"
 
 do_not_implement:

@@ -77,13 +77,19 @@ function inferRubricTags(tabId, label) {
   ) {
     tags.add("nav");
   }
-  if (/\b(button|buy|import|export|run|upgrade|open|review|confirm|cancel|clear|toggle|action)\b/.test(text)) {
+  if (
+    /\b(button|buy|import|export|run|upgrade|open|review|confirm|cancel|clear|toggle|action)\b/.test(
+      text,
+    )
+  ) {
     tags.add("cta");
   }
   if (/\b(overlay|modal|sheet|help|dialog)\b/.test(text)) {
     tags.add("overlay");
   }
-  if (/\b(expanded-full|entry-full|final-full|compact|density|details|board|summary)\b/.test(text)) {
+  if (
+    /\b(expanded-full|entry-full|final-full|compact|density|details|board|summary)\b/.test(text)
+  ) {
     tags.add("density");
   }
   if (/\b(lock|unlock|gating|blocked|danger|reset|prestige|affordable|ready)\b/.test(text)) {
@@ -241,7 +247,8 @@ function buildChecklistMarkdown(project, tabId, rows) {
 function buildContactSheetHtml(title, rows) {
   const cards = rows
     .map(
-      (row) => `\n      <figure class="shot">\n        <img src="${escapeHtml(row.reviewRelativePath)}" alt="${escapeHtml(row.label)}" loading="lazy" />\n        <figcaption>\n          <strong>${escapeHtml(row.label)}</strong><br />\n          <span>${escapeHtml(row.tags.join(", "))}</span>\n        </figcaption>\n      </figure>`,
+      (row) =>
+        `\n      <figure class="shot">\n        <img src="${escapeHtml(row.reviewRelativePath)}" alt="${escapeHtml(row.label)}" loading="lazy" />\n        <figcaption>\n          <strong>${escapeHtml(row.label)}</strong><br />\n          <span>${escapeHtml(row.tags.join(", "))}</span>\n        </figcaption>\n      </figure>`,
     )
     .join("\n");
 
@@ -300,8 +307,15 @@ async function writeProjectArtifacts(rootDir, projectData) {
 
     combinedRows.push(...rows.map((row) => ({ ...row, tabId: tab.tabId })));
 
-    const checklistPath = path.join(reviewSheetsDir, `${projectData.project}-${tab.tabId}-checklist.md`);
-    await writeFile(checklistPath, buildChecklistMarkdown(projectData.project, tab.tabId, rows), "utf8");
+    const checklistPath = path.join(
+      reviewSheetsDir,
+      `${projectData.project}-${tab.tabId}-checklist.md`,
+    );
+    await writeFile(
+      checklistPath,
+      buildChecklistMarkdown(projectData.project, tab.tabId, rows),
+      "utf8",
+    );
 
     const contactSheetPath = path.join(reviewSheetsDir, `${projectData.project}-${tab.tabId}.html`);
     await writeFile(
@@ -331,12 +345,20 @@ async function writeProjectArtifacts(rootDir, projectData) {
   const combinedRecords = projectData.tabs
     .flatMap((tab) => tab.records)
     .sort((left, right) => String(left.file).localeCompare(String(right.file)));
-  await writeFile(path.join(projectData.projectDir, "manifest.json"), JSON.stringify(combinedRecords, null, 2), "utf8");
+  await writeFile(
+    path.join(projectData.projectDir, "manifest.json"),
+    JSON.stringify(combinedRecords, null, 2),
+    "utf8",
+  );
 
   const coverageByTab = Object.fromEntries(
     projectData.tabs.map((tab) => [tab.tabId, tab.coverage]),
   );
-  await writeFile(path.join(projectData.projectDir, "coverage.json"), JSON.stringify(coverageByTab, null, 2), "utf8");
+  await writeFile(
+    path.join(projectData.projectDir, "coverage.json"),
+    JSON.stringify(coverageByTab, null, 2),
+    "utf8",
+  );
 
   const tabsDir = path.join(projectData.projectDir, "tabs");
   await mkdir(tabsDir, { recursive: true });
@@ -388,15 +410,23 @@ async function writeProjectArtifacts(rootDir, projectData) {
   ];
 
   for (const tab of tabSummaries) {
-    const checklistPath = toPosix(path.relative(projectData.projectDir, path.join(rootDir, tab.checklist)));
-    const sheetPath = toPosix(path.relative(projectData.projectDir, path.join(rootDir, tab.contactSheet)));
+    const checklistPath = toPosix(
+      path.relative(projectData.projectDir, path.join(rootDir, tab.checklist)),
+    );
+    const sheetPath = toPosix(
+      path.relative(projectData.projectDir, path.join(rootDir, tab.contactSheet)),
+    );
     projectIndexMdLines.push(
       `| ${tab.tabId} | ${tab.captures} | ${tab.representedPercent} | [checklist](${checklistPath}) | [sheet](${sheetPath}) |`,
     );
   }
 
   projectIndexMdLines.push("", "");
-  await writeFile(path.join(projectData.projectDir, "index.md"), `${projectIndexMdLines.join("\n")}`, "utf8");
+  await writeFile(
+    path.join(projectData.projectDir, "index.md"),
+    `${projectIndexMdLines.join("\n")}`,
+    "utf8",
+  );
 
   return projectIndex;
 }

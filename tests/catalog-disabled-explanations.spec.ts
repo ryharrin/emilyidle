@@ -68,7 +68,9 @@ test.describe("catalog disabled explanations", () => {
     await page.getByTestId(`catalog-why-${CLASSIC_MODEL_ID}`).click();
     const explainer = page.getByTestId(`catalog-explain-${CLASSIC_MODEL_ID}`);
     await expect(explainer).toBeVisible();
-    await expect(explainer.getByTestId(`catalog-reason-${CLASSIC_MODEL_ID}-undiscovered`)).toBeVisible();
+    await expect(
+      explainer.getByTestId(`catalog-reason-${CLASSIC_MODEL_ID}-undiscovered`),
+    ).toBeVisible();
     await expect(explainer.getByTestId(`catalog-reason-${CLASSIC_MODEL_ID}-funds`)).toBeVisible();
     await expect(explainer).toContainText(/Funds|Enjoyment/);
     await expect(explainer).toContainText(/Next:/);

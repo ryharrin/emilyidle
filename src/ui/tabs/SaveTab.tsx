@@ -144,7 +144,12 @@ export function SaveTab({
                 onChange={(event) => onImportTextChange(event.target.value)}
               ></textarea>
               <div className="control-row control-row--end">
-                <button id="import-save" type="button" data-testid="import-save-trigger" onClick={onImport}>
+                <button
+                  id="import-save"
+                  type="button"
+                  data-testid="import-save-trigger"
+                  onClick={onImport}
+                >
                   Import
                 </button>
               </div>

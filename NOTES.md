@@ -157,9 +157,10 @@ UI/UX Improvements (visual review 2026-02-02):
 - Stats breakdown: group modifiers (Prestige / Upgrades / Events / Sets / Catalog / Crafted) and show subtotals to reduce the long bullet list on mobile.
 - Naming: rename "Vault" tab to "Collection" consistently (UI + copy) to match intent and reduce ambiguity.
 - Watch levels (like 'starter quartz') should match what type of watch the actual watch is. (e.g., 'Rolex
-Calibrorolex') should not be a 'starter quartz' since it isn't a quartz watch.
+  Calibrorolex') should not be a 'starter quartz' since it isn't a quartz watch.
 
-tech debt: 
+tech debt:
+
 - Refactor all code for readability and maintainability, ensuring clear separation between core game logic, UI components, and data/models. Organize files into appropriate directories and keep them small and focused.
 - Add comprehensive comments and documentation throughout the codebase to aid future development and onboarding of new contributors.
 - Rewrite complex functions and modules to improve clarity and reduce cognitive load for future maintainers.

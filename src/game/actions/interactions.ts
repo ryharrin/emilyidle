@@ -60,8 +60,7 @@ function applyInteractionTracking(
   const interactionRunsTotal = state.interactionRunsTotal + 1;
   const interactionPerfectRuns =
     outcome === "perfect" ? state.interactionPerfectRuns + 1 : state.interactionPerfectRuns;
-  const interactionPerfectStreak =
-    outcome === "perfect" ? state.interactionPerfectStreak + 1 : 0;
+  const interactionPerfectStreak = outcome === "perfect" ? state.interactionPerfectStreak + 1 : 0;
   const interactionBestPerfectStreak = Math.max(
     state.interactionBestPerfectStreak,
     interactionPerfectStreak,
