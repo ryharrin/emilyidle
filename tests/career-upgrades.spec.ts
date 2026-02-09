@@ -20,19 +20,7 @@ test("career and upgrades surfaces are reachable with preview markers", async ({
   await upgradesTab.click();
   const upgradesPanel = page.getByTestId("upgrades-panel");
   await expect(upgradesPanel).toBeVisible();
-
-  await expect(upgradesPanel.getByTestId("upgrades-recommendations")).toBeVisible();
-  const recommendationCards = upgradesPanel.getByTestId("upgrade-recommendation-card");
-  const recommendationCount = await recommendationCards.count();
-  expect(recommendationCount).toBeLessThanOrEqual(3);
-  if (recommendationCount > 0) {
-    await expect(recommendationCards.first()).toBeVisible();
-  } else {
-    await expect(
-      upgradesPanel.getByText("No actionable recommendations yet. Keep progressing unlocks."),
-    ).toBeVisible();
-  }
-  await expect(upgradesPanel.getByTestId("upgrade-intent-buckets")).toBeVisible();
+  await expect(upgradesPanel.getByText("Recommended next upgrades")).toHaveCount(0);
 
   const firstUpgradeCard = upgradesPanel.getByTestId("upgrade-card").first();
   await expect(firstUpgradeCard.getByTestId("upgrade-impact-summary")).toBeVisible();

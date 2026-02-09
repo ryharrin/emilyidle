@@ -63,7 +63,7 @@ describe("career-first economy", () => {
     expect(breakdown.totalCentsPerSec).toBeCloseTo(effectiveRate, 6);
   });
 
-  it("honors free-first sessions and cooldown timing", () => {
+  it("allows rushing sessions during cooldown only when the rush cost is affordable", () => {
     const baseState = createInitialState();
     const nowMs = 1_700_000_000_000;
     const sessionState = {
@@ -82,10 +82,23 @@ describe("career-first economy", () => {
 
     const afterSession = performTherapistSession(sessionState, nowMs);
     const policy = getTherapistSessionPolicy(sessionState, nowMs);
+    const cooldownRushPolicy = getTherapistSessionPolicy(
+      afterSession,
+      nowMs + policy.cooldownMs - 1,
+    );
 
     expect(afterSession.therapistCareer.freeSessionAvailable).toBe(false);
     expect(afterSession.enjoymentCents).toBe(sessionState.enjoymentCents);
-    expect(canPerformTherapistSession(afterSession, nowMs + policy.cooldownMs - 1)).toBe(false);
+    expect(cooldownRushPolicy.cooldownRemainingMs).toBeGreaterThan(0);
+    expect(canPerformTherapistSession(afterSession, nowMs + policy.cooldownMs - 1)).toBe(true);
+
+    const lowEnjoymentState = {
+      ...afterSession,
+      enjoymentCents: Math.max(0, cooldownRushPolicy.effectiveEnjoymentCostCents - 1),
+    };
+    expect(canPerformTherapistSession(lowEnjoymentState, nowMs + policy.cooldownMs - 1)).toBe(
+      false,
+    );
   });
 
   it("allows therapist sessions across tracks", () => {

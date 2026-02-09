@@ -92,15 +92,17 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       }
       return activeTrack ? "Sessions unavailable" : "Select a track";
     }
+    if (cooldownSeconds > 0) {
+      return canPerform
+        ? `Cooldown ${cooldownSeconds}s · Rush available`
+        : `Cooldown ${cooldownSeconds}s`;
+    }
     if (canPerform) {
       return "Ready";
     }
-    if (cooldownSeconds > 0) {
-      return `Cooldown ${cooldownSeconds}s`;
-    }
     if (
       !career.freeSessionAvailable &&
-      state.enjoymentCents < sessionPolicy.premiumEnjoymentCostCents
+      state.enjoymentCents < sessionPolicy.effectiveEnjoymentCostCents
     ) {
       return "Need more enjoyment";
     }
@@ -119,11 +121,32 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
         ? "Sessions are unavailable for your current career stage."
         : "Select a track to unlock sessions.";
     }
-    const normalCost = formatMoneyFromCents(sessionPolicy.enjoymentCostCents);
     if (career.freeSessionAvailable) {
-      return `Next session costs 0 enjoyment (first session free). After that: ${normalCost} enjoyment.`;
+      return "First session is free. Additional sessions spend enjoyment.";
     }
-    return `Next session costs ${normalCost} enjoyment.`;
+    if (sessionPolicy.cooldownRemainingMs > 0 && sessionPolicy.cooldownRushExtraCents > 0) {
+      return "Cooldown rush is active. Running now adds a rush fee.";
+    }
+    return "Running again before cooldown ends adds a rush fee.";
+  })();
+
+  const runNowCostLabel = (() => {
+    if (career.careerStartId === null) {
+      return "Run now: unavailable until career starts.";
+    }
+    if (!sessionPolicy.supportsSessions) {
+      return "Run now: unavailable until sessions unlock.";
+    }
+    if (career.freeSessionAvailable) {
+      return "Run now: 0 enjoyment (first session free).";
+    }
+
+    const sessionCost = formatMoneyFromCents(sessionPolicy.premiumEnjoymentCostCents);
+    const totalCost = formatMoneyFromCents(sessionPolicy.effectiveEnjoymentCostCents);
+    if (sessionPolicy.cooldownRushExtraCents > 0) {
+      return `Run now total: ${totalCost} (${sessionCost} session cost + ${formatMoneyFromCents(sessionPolicy.cooldownRushExtraCents)} rush fee).`;
+    }
+    return `Run now total: ${totalCost} (${sessionCost} session cost).`;
   })();
 
   React.useEffect(() => {
@@ -175,7 +198,12 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
 
     if (nextActionCue.id === "perform-session") {
       return {
-        label: canPerform ? "Run session" : "Run session (locked)",
+        label:
+          canPerform && sessionPolicy.cooldownRemainingMs > 0
+            ? "Run session (rush)"
+            : canPerform
+              ? "Run session"
+              : "Run session (locked)",
         disabled: !sessionPolicy.supportsSessions || !canPerform,
         onClick: () => onPurchase(performTherapistSession(state, nowMs)),
       };
@@ -224,7 +252,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
             <article className="card career-economy-summary" data-testid="career-economy-summary">
               <header className="career-economy-summary-header">
                 <h4>Session value snapshot</h4>
-                <p className="muted">Payout, cost, and unlock timing at a glance.</p>
+                <p className="muted">Payout, cooldown, and pacing modifiers.</p>
               </header>
               <dl className="career-economy-summary-grid" data-testid="session-delta-breakdown">
                 <div>
@@ -235,11 +263,11 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   </dd>
                 </div>
                 <div>
-                  <dt>Session enjoyment</dt>
+                  <dt>Run now cost</dt>
                   <dd>
                     {sessionValueSummary.isFreeSession
                       ? "0 (free)"
-                      : `-${formatMoneyFromCents(sessionValueSummary.enjoymentCostCents)}`}
+                      : `-${formatMoneyFromCents(sessionValueSummary.effectiveEnjoymentCostCents)}`}
                   </dd>
                 </div>
                 <div>
@@ -247,10 +275,18 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   <dd>{formatDuration(sessionValueSummary.cooldownMs)}</dd>
                 </div>
                 <div>
-                  <dt>Premium</dt>
+                  <dt>Cadence premium</dt>
                   <dd>
                     {sessionValueSummary.premiumCount > 0
-                      ? `x${sessionValueSummary.premiumMultiplier.toFixed(2)}`
+                      ? `+${Math.max(0, Math.round((sessionValueSummary.premiumMultiplier - 1) * 100))}%`
+                      : "None"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Cooldown rush</dt>
+                  <dd>
+                    {sessionValueSummary.cooldownRushExtraCents > 0
+                      ? `+${formatMoneyFromCents(sessionValueSummary.cooldownRushExtraCents)}`
                       : "None"}
                   </dd>
                 </div>
@@ -322,22 +358,6 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                     </p>
                   </div>
                 )}
-                <div>
-                  <p className="workshop-label">Session payout</p>
-                  <p className="workshop-value">
-                    {sessionPolicy.supportsSessions
-                      ? `${formatMoneyFromCents(sessionPolicy.cashPayoutCents)} cash`
-                      : "Unavailable"}
-                  </p>
-                </div>
-                <div>
-                  <p className="workshop-label">Cooldown</p>
-                  <p className="workshop-value">
-                    {sessionPolicy.supportsSessions
-                      ? `${Math.round(sessionPolicy.cooldownMs / 1000)}s`
-                      : "Unavailable"}
-                  </p>
-                </div>
               </div>
               <div className="inline-icon-button">
                 <ExplainButton
@@ -346,6 +366,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                 />
                 <span className="muted">Career help</span>
               </div>
+              <p className="career-session-run-now-cost" data-testid="career-session-run-now-cost">
+                {runNowCostLabel}
+              </p>
               <div className="card-actions">
                 {showCooldownRing && (
                   <div
@@ -361,7 +384,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   disabled={!sessionPolicy.supportsSessions || !canPerform}
                   onClick={() => onPurchase(performTherapistSession(state, nowMs))}
                 >
-                  Run session
+                  {canPerform && sessionPolicy.cooldownRemainingMs > 0
+                    ? "Run session (rush)"
+                    : "Run session"}
                 </button>
               </div>
             </div>

@@ -28,7 +28,7 @@ export function CareerNextActionCard({
       return "Open deep details and lock in your next permanent choice.";
     }
     if (cue.id === "perform-session") {
-      return "Use Run session in the Sessions card when the action is ready.";
+      return "Use Run session in the Sessions card.";
     }
     return null;
   })();

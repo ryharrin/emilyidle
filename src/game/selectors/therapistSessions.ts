@@ -31,6 +31,7 @@ export type TherapistSessionPolicy = {
   supportsSessions: boolean;
   enjoymentCostCents: number;
   premiumEnjoymentCostCents: number;
+  effectiveEnjoymentCostCents: number;
   premiumMultiplier: number;
   premiumCount: number;
   premiumLabel: string;
@@ -38,6 +39,9 @@ export type TherapistSessionPolicy = {
   premiumWindowMs: number;
   cashPayoutCents: number;
   cooldownMs: number;
+  cooldownRemainingMs: number;
+  cooldownRushMultiplier: number;
+  cooldownRushExtraCents: number;
 };
 
 function resolveTherapistSessionTrackId(state: GameState): CareerTrackId | null {
@@ -112,6 +116,7 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
       supportsSessions: false,
       enjoymentCostCents: 0,
       premiumEnjoymentCostCents: 0,
+      effectiveEnjoymentCostCents: 0,
       premiumMultiplier: 1,
       premiumCount: 0,
       premiumLabel: "",
@@ -119,6 +124,9 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
       premiumWindowMs: 0,
       cashPayoutCents: 0,
       cooldownMs: 0,
+      cooldownRemainingMs: 0,
+      cooldownRushMultiplier: 1,
+      cooldownRushExtraCents: 0,
     };
   }
 
@@ -142,11 +150,24 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
       ? SESSION_PREMIUM_LABELS[Math.min(premiumCount - 1, SESSION_PREMIUM_LABELS.length - 1)]
       : "";
   const premiumNote = premiumCount > 0 ? SESSION_PREMIUM_NOTE : "";
+  const cooldownRemainingMs = Math.max(0, state.therapistCareer.nextAvailableAtMs - clampedNowMs);
+  const cooldownRushProgress01 =
+    cooldownMs > 0 ? Math.max(0, Math.min(1, cooldownRemainingMs / cooldownMs)) : 0;
+  const cooldownRushMultiplier = 1 + cooldownRushProgress01;
+  const effectiveEnjoymentCostCents = Math.max(
+    0,
+    Math.floor(premiumEnjoymentCostCents * cooldownRushMultiplier),
+  );
+  const cooldownRushExtraCents = Math.max(
+    0,
+    effectiveEnjoymentCostCents - premiumEnjoymentCostCents,
+  );
 
   return {
     supportsSessions,
     enjoymentCostCents: baseEnjoymentCost,
     premiumEnjoymentCostCents,
+    effectiveEnjoymentCostCents,
     premiumMultiplier,
     premiumCount,
     premiumLabel,
@@ -154,6 +175,9 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
     premiumWindowMs,
     cashPayoutCents,
     cooldownMs,
+    cooldownRemainingMs,
+    cooldownRushMultiplier,
+    cooldownRushExtraCents,
   };
 }
 
@@ -166,7 +190,10 @@ export function getTherapistSessionCostLabel(state: GameState, nowMs: number): s
   if (career.freeSessionAvailable) {
     return "Free first session";
   }
-  return `${formatMoneyFromCents(policy.premiumEnjoymentCostCents)} enjoyment`;
+  if (policy.cooldownRemainingMs > 0 && policy.cooldownRushExtraCents > 0) {
+    return `${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment (includes cooldown rush fee)`;
+  }
+  return `${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment`;
 }
 
 export function canPerformTherapistSession(state: GameState, nowMs: number): boolean {
@@ -175,13 +202,10 @@ export function canPerformTherapistSession(state: GameState, nowMs: number): boo
   if (!policy.supportsSessions) {
     return false;
   }
-  if (nowMs < career.nextAvailableAtMs) {
-    return false;
-  }
 
   if (career.freeSessionAvailable) {
     return true;
   }
 
-  return state.enjoymentCents >= policy.premiumEnjoymentCostCents;
+  return state.enjoymentCents >= policy.effectiveEnjoymentCostCents;
 }

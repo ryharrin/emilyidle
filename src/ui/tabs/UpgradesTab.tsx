@@ -747,12 +747,6 @@ export function UpgradesTab({
     .sort(compareRecommendations)
     .slice(0, 3);
   const recommendedKeys = new Set(topRecommendations.map((recommendation) => recommendation.key));
-  const intentBucketCounts = (Object.keys(UPGRADE_INTENT_META) as UpgradeIntent[])
-    .map((intent) => ({
-      intent,
-      count: topRecommendations.filter((recommendation) => recommendation.intent === intent).length,
-    }))
-    .filter((bucket) => bucket.count > 0);
 
   return (
     <section
@@ -780,69 +774,6 @@ export function UpgradesTab({
               </div>
             </div>
           </header>
-
-          <section
-            className="panel upgrades-recommendations"
-            data-testid="upgrades-recommendations"
-          >
-            <header className="panel-header">
-              <div>
-                <p className="eyebrow">Top opportunities</p>
-                <h3>Recommended next upgrades</h3>
-                <p className="muted">
-                  The top three actionable upgrades are ranked by immediate impact and payback.
-                </p>
-              </div>
-            </header>
-
-            <div className="upgrade-intent-buckets" data-testid="upgrade-intent-buckets">
-              {intentBucketCounts.length > 0 ? (
-                intentBucketCounts.map((bucket) => (
-                  <div
-                    key={bucket.intent}
-                    className="upgrade-intent-chip"
-                    data-testid={`upgrade-intent-bucket-${bucket.intent}`}
-                  >
-                    <strong>{UPGRADE_INTENT_META[bucket.intent].label}</strong>
-                    <span>{bucket.count} recommendation(s)</span>
-                  </div>
-                ))
-              ) : (
-                <p className="muted">
-                  No actionable recommendations yet. Keep progressing unlocks.
-                </p>
-              )}
-            </div>
-
-            {topRecommendations.length > 0 && (
-              <div
-                className="upgrade-recommendation-grid"
-                data-testid="upgrade-recommendation-grid"
-              >
-                {topRecommendations.map((recommendation, index) => (
-                  <article
-                    key={recommendation.key}
-                    className="card upgrade-recommendation-card"
-                    data-testid="upgrade-recommendation-card"
-                  >
-                    <div className="upgrade-recommendation-header">
-                      <p className="eyebrow">#{index + 1}</p>
-                      <p className="muted">{recommendation.sourceLabel}</p>
-                    </div>
-                    <h4>{recommendation.name}</h4>
-                    <p>{getRecommendationReason(recommendation)}</p>
-                    {renderDeltaChips(recommendation.preview)}
-                    {renderRoiSummary(
-                      recommendation.costLabel,
-                      recommendation.paybackSeconds,
-                      recommendation.status,
-                      recommendation.intent,
-                    )}
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
 
           <section className="panel upgrades-group" aria-labelledby="upgrades-cash-title">
             <details

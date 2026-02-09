@@ -55,9 +55,7 @@ describe("upgrades preview", () => {
     const state = createSeededState();
 
     renderUpgradesTab(state);
-
-    expect(screen.getByTestId("upgrades-recommendations")).toBeTruthy();
-    expect(screen.getByTestId("upgrade-intent-buckets")).toBeTruthy();
+    expect(screen.queryByText("Recommended next upgrades")).toBeNull();
 
     const [firstCard] = screen.getAllByTestId("upgrade-card");
     expect(firstCard).toBeTruthy();
@@ -105,19 +103,5 @@ describe("upgrades preview", () => {
     const collectionAfter = within(collectionLine).getByTestId("upgrade-effect-value-after");
 
     expect(collectionBefore.textContent).not.toBe(collectionAfter.textContent);
-  });
-
-  it("highlights up to three actionable recommendations", () => {
-    const state = createSeededState();
-
-    renderUpgradesTab(state);
-
-    const recommendationCards = screen.getAllByTestId("upgrade-recommendation-card");
-    expect(recommendationCards.length).toBeGreaterThan(0);
-    expect(recommendationCards.length).toBeLessThanOrEqual(3);
-
-    for (const card of recommendationCards) {
-      expect(within(card).getByTestId("upgrade-roi-summary")).toBeTruthy();
-    }
   });
 });

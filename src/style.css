@@ -5562,6 +5562,12 @@ button[data-testid^="catalog-buy-"]:disabled {
   max-width: 320px;
 }
 
+.career-session-run-now-cost {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #d4dae2;
+}
+
 .career-salary-alert {
   margin: 6px 0;
   padding: 10px 12px;
@@ -5656,7 +5662,8 @@ button[data-testid^="catalog-buy-"]:disabled {
 }
 
 [data-theme="light"] .career-track-lock,
-[data-theme="light"] .career-session-note {
+[data-theme="light"] .career-session-note,
+[data-theme="light"] .career-session-run-now-cost {
   color: #5b5348;
 }
 

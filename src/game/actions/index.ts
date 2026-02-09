@@ -525,7 +525,7 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
     return state;
   }
   const isFreeSession = career.freeSessionAvailable;
-  const cost = isFreeSession ? 0 : policy.premiumEnjoymentCostCents;
+  const cost = isFreeSession ? 0 : policy.effectiveEnjoymentCostCents;
   const payout = policy.cashPayoutCents;
 
   let nextLevel = career.level;

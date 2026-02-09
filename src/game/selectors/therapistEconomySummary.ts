@@ -14,7 +14,11 @@ export type TherapistSessionValueDeltaSummary = {
   isFreeSession: boolean;
   cashPayoutCents: number;
   enjoymentCostCents: number;
+  effectiveEnjoymentCostCents: number;
   cooldownMs: number;
+  cooldownRemainingMs: number;
+  cooldownRushMultiplier: number;
+  cooldownRushExtraCents: number;
   premiumCount: number;
   premiumMultiplier: number;
 };
@@ -46,7 +50,11 @@ export function getTherapistSessionValueDeltaSummary(
       isFreeSession: false,
       cashPayoutCents: 0,
       enjoymentCostCents: 0,
+      effectiveEnjoymentCostCents: 0,
       cooldownMs: 0,
+      cooldownRemainingMs: 0,
+      cooldownRushMultiplier: 1,
+      cooldownRushExtraCents: 0,
       premiumCount: 0,
       premiumMultiplier: 1,
     };
@@ -58,7 +66,11 @@ export function getTherapistSessionValueDeltaSummary(
     isFreeSession,
     cashPayoutCents: policy.cashPayoutCents,
     enjoymentCostCents: isFreeSession ? 0 : policy.premiumEnjoymentCostCents,
+    effectiveEnjoymentCostCents: isFreeSession ? 0 : policy.effectiveEnjoymentCostCents,
     cooldownMs: policy.cooldownMs,
+    cooldownRemainingMs: policy.cooldownRemainingMs,
+    cooldownRushMultiplier: policy.cooldownRushMultiplier,
+    cooldownRushExtraCents: policy.cooldownRushExtraCents,
     premiumCount: policy.premiumCount,
     premiumMultiplier: policy.premiumMultiplier,
   };
