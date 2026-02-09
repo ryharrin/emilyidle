@@ -3,11 +3,7 @@
 
 meta:
   generated: "2026-02-07"
-  consolidated_from:
-    - NOTES.md
-    - NOTES.yaml
-    - NOTES-02-02-26.yaml
-  purpose: "Single status tracker aligned to current implementation."
+  purpose: "Single tracker used to track completed work and upcoming work. Updated both manually and via agents that scan commits, PRs, and project management tools for relevant changes. Serves as a source of truth for what has been done, what is planned, and what has been explicitly ruled out."
 
 status_legend:
   implemented: "Shipped and observable in current code."
@@ -339,26 +335,50 @@ do_not_implement:
   - id: watch-customization
     reason: "Out of scope."
 
+upcoming_major_milestones:
+  - id: v5
+    description: "Major version 5.0 release, targeting comprehensive feature set completion and polish."
+    criteria:
+      - Many more watches in catalog and collection. 
+      - Improvements to watch variety, depth, and progression, as well as improved amount and display of watch information.
+      - Easier navigation and access to key information across the app, including better tab organization, readiness indicators, and next unlock guidance.
+      - Reduced clutter and improved usability of key flows like catalog browsing, crafting, and career progression.
+
+upcoming_features: []
+
+upcoming_bug_fixes: 
+  - id: catalog_image_contract
+    description: "Implement contract checks for catalog image URLs to prevent broken images due to BASE_URL changes."
+    status: planned
+    evidence:
+      - src/ui/tabs/CatalogTab.tsx
+      - src/game/data/catalog.ts
+
 outstanding_questions:
   - id: session-cooldown-final-model
     question: "Should therapist sessions remove hard cooldown entirely and rely only on escalating enjoyment costs?"
     current_state: "Hybrid model: hard cooldown plus escalating premium."
+    answer: "Yes, but with caveats: hard cooldown remains for now to prevent abuse, but premium escalation is active and will eventually be the primary lever."
 
   - id: atelier-balance-target
     question: "What numeric target defines 'second run significantly faster' for Atelier progression?"
     current_state: "Bonuses are active, but explicit success criteria are not documented."
+    answer: "A 50% improvement over the first run is a reasonable target for significant speedup, but this may be adjusted based on playtesting and player feedback."
 
   - id: watch-tier-movement-matching
     question: "Should tier assignment be movement-driven or stay curated by catalog tier tags?"
     current_state: "Tier assignment is tag/curation-based, not movement-derived."
+    answer: "Tier assignment should be stricly based on the actual movements used in the watch, as this matches the actual watch behavior and player expectations more closely. This will require adjustments to the catalog tagging and curation process to ensure consistency. More metadata about each watch's movement may be needed to support this."
 
   - id: next-unlock-placement
     question: "Do we want next-unlock preview in the top header, or is Collection/Career placement sufficient?"
     current_state: "Preview exists in Collection/Career, not in global header."
+    answer: Remove the next-unlock preview completely from all places. It adds unnecessary complexity and can lead to confusion if the information is not consistent across different views. 
 
   - id: catalog-filter-density
     question: "Should catalog filters move to a collapsed button (with active count badge), especially on mobile?"
     current_state: "Full filter row remains visible."
+    answer: "Yes, collapsing the filters into a single button with an active count badge would improve usability, especially on mobile devices where screen real estate is limited. This approach would streamline the interface while still providing access to filtering options when needed."
 
 technical_debt:
   - "Split large modules like src/ui/tabs/CatalogTab.tsx and src/game/selectors/index.ts."

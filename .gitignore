@@ -4,6 +4,7 @@ node_modules
 dist
 *.log
 test-results/
+output/
 tmp/
 target/
 .worktrees/
