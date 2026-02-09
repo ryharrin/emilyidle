@@ -4,6 +4,8 @@ import { createInitialState } from "../src/game/state";
 import { expect, test } from "@playwright/test";
 import type { Locator, Page } from "@playwright/test";
 import { clickLocatorSafely } from "./helpers/interactions";
+import { gotoAppWithNavigationReady } from "./helpers/navigation";
+import { seedStorage } from "./helpers/storageSeed";
 
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 
@@ -28,40 +30,11 @@ const buildSeededState = (): GameState => {
 };
 
 const seedState = async (page: Page) => {
-  const seededState = buildSeededState();
-  await page.addInitScript(
-    ({ seededState }) => {
-      const payload = {
-        version: 2,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
-        state: seededState,
-      };
-      window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+  await seedStorage(page, {
+    save: {
+      state: buildSeededState(),
     },
-    { seededState },
-  );
-};
-
-const gotoApp = async (page: Page) => {
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
-    try {
-      await page.goto("/", { waitUntil: "domcontentloaded", timeout: 30_000 });
-      await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
-        timeout: 15_000,
-      });
-      return;
-    } catch (error) {
-      lastError = error;
-      if (attempt === 2) {
-        break;
-      }
-      await page.goto("about:blank", { waitUntil: "commit", timeout: 10_000 }).catch(() => {});
-      await page.waitForTimeout(100);
-    }
-  }
-  throw lastError;
+  });
 };
 
 const openCatalogFromCollection = async (page: Page) => {
@@ -150,7 +123,7 @@ test.describe("Help modal interactions", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await seedState(page);
-    await gotoApp(page);
+    await gotoAppWithNavigationReady(page);
   });
 
   test("locks scroll, traps focus, and restores focus on mobile", async ({ page }) => {
@@ -242,7 +215,7 @@ test.describe("Interaction modals", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await seedState(page);
-    await gotoApp(page);
+    await gotoAppWithNavigationReady(page);
   });
 
   test("winding, automatic, and quartz modals lock scroll and trap focus", async ({ page }) => {
@@ -412,18 +385,13 @@ test.describe("Interaction modals", () => {
       lastSessionAtMs: nowMs - 1_000,
     };
 
-    await page.addInitScript(
-      ({ seededState, nowMs }) => {
-        const payload = {
-          version: 2,
-          savedAt: new Date(nowMs).toISOString(),
-          lastSimulatedAtMs: nowMs,
-          state: seededState,
-        };
-        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+    await seedStorage(page, {
+      save: {
+        state: sessionState,
+        lastSimulatedAtMs: nowMs,
+        savedAtIso: new Date(nowMs).toISOString(),
       },
-      { seededState: sessionState, nowMs },
-    );
+    });
 
     await page.goto("/");
     await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));

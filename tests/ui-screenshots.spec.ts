@@ -1,5 +1,6 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { clickLocatorSafely } from "./helpers/interactions";
+import { gotoAppWithNavigationReady } from "./helpers/navigation";
 
 const tabs = [
   { name: "01-career", label: "Career" },
@@ -12,27 +13,6 @@ const tabs = [
   { name: "08-stats", label: "Stats" },
   { name: "09-settings", label: "Settings" },
 ];
-
-const gotoApp = async (page: Page) => {
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
-    try {
-      await page.goto("/", { waitUntil: "domcontentloaded", timeout: 30_000 });
-      await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
-        timeout: 15_000,
-      });
-      return;
-    } catch (error) {
-      lastError = error;
-      if (attempt === 2) {
-        break;
-      }
-      await page.goto("about:blank", { waitUntil: "commit", timeout: 10_000 }).catch(() => {});
-      await page.waitForTimeout(120);
-    }
-  }
-  throw lastError;
-};
 
 const capture = async (page: Page, testInfo: TestInfo, filename: string) => {
   for (let attempt = 1; attempt <= 2; attempt += 1) {
@@ -53,7 +33,7 @@ const capture = async (page: Page, testInfo: TestInfo, filename: string) => {
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`! Skipped screenshot ${filename}: ${message}`);
       await testInfo.attach(`screenshot-skip-${filename}.txt`, {
-        body: Buffer.from(message),
+        body: message,
         contentType: "text/plain",
       });
     }
@@ -62,7 +42,7 @@ const capture = async (page: Page, testInfo: TestInfo, filename: string) => {
 
 test.describe("UI Screenshots", () => {
   test("capture all tabs", async ({ page }, testInfo) => {
-    await gotoApp(page);
+    await gotoAppWithNavigationReady(page);
 
     for (const tab of tabs) {
       const tabButton = page.getByRole("tab", { name: tab.label });
@@ -81,7 +61,7 @@ test.describe("UI Screenshots", () => {
 
   test("capture mobile views", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await gotoApp(page);
+    await gotoAppWithNavigationReady(page);
 
     // Mobile career
     await capture(page, testInfo, "10-mobile-career.png");

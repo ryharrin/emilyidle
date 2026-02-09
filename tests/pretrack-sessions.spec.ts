@@ -1,32 +1,16 @@
-import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type TestInfo } from "@playwright/test";
 import { openCareerPanel } from "./helpers/careerProgression";
 import { clickLocatorSafely } from "./helpers/interactions";
-
-async function gotoApp(page: Page) {
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    try {
-      await page.goto("/", { waitUntil: "domcontentloaded", timeout: 30_000 });
-      await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
-        timeout: 20_000,
-      });
-      return;
-    } catch (error) {
-      lastError = error;
-      if (attempt === 3) {
-        break;
-      }
-      await page.goto("about:blank", { waitUntil: "commit", timeout: 10_000 }).catch(() => {});
-      await page.waitForTimeout(150 * attempt);
-    }
-  }
-  throw lastError;
-}
+import { gotoAppWithNavigationReady } from "./helpers/navigation";
 
 test("Career sessions available pre-track selection", async ({ page }, testInfo: TestInfo) => {
   // Clear localStorage for a fresh save before app bootstrap.
   await page.addInitScript(() => localStorage.clear());
-  await gotoApp(page);
+  await gotoAppWithNavigationReady(page, {
+    maxAttempts: 3,
+    navigationVisibleTimeoutMs: 20_000,
+    retryDelayMs: (attempt) => 150 * attempt,
+  });
 
   await openCareerPanel(page);
 

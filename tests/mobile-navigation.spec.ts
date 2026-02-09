@@ -1,15 +1,11 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { gotoAppWithNavigationReady } from "./helpers/navigation";
 
 const MOBILE_VIEWPORTS = [
   { name: "iPhone 12", viewport: { width: 390, height: 844 } },
   { name: "Pixel 5", viewport: { width: 393, height: 851 } },
 ];
-
-const gotoApp = async (page: Page) => {
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible();
-};
 
 const openHelpModal = async (page: Page) => {
   const helpButton = page.getByTestId("help-open");
@@ -29,7 +25,7 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
   test.describe(`${name} viewport`, () => {
     test.beforeEach(async ({ page }) => {
       await page.setViewportSize(viewport);
-      await gotoApp(page);
+      await gotoAppWithNavigationReady(page);
     });
 
     test("maintains horizontal scroll snap and sticky tabs", async ({ page }) => {
@@ -48,9 +44,11 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
       }
 
       await page.evaluate(() => window.scrollBy(0, 800));
-      await page.waitForTimeout(150);
-      const stickyTop = await navTabs.evaluate((el) => el.getBoundingClientRect().top);
-      expect(stickyTop).toBeLessThanOrEqual(6);
+      await expect
+        .poll(async () => navTabs.evaluate((el) => el.getBoundingClientRect().top), {
+          timeout: 2_000,
+        })
+        .toBeLessThanOrEqual(6);
     });
 
     test("supports tab clicks and help modal entry", async ({ page }) => {
@@ -101,7 +99,6 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
 
       await careerTab.click();
       await expect(skeleton).toHaveAttribute("data-visible", "true");
-      await page.waitForTimeout(320);
       await expect(skeleton).toHaveAttribute("data-visible", "false");
 
       const helpButton = page.getByTestId("help-open");

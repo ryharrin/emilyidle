@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { createInitialState } from "../src/game/state";
 import { openCatalogFilters } from "./helpers/catalogFilters";
 import { clickLocatorSafely } from "./helpers/interactions";
+import { seedStorage } from "./helpers/storageSeed";
 
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
@@ -16,26 +17,18 @@ test("selector contract anchors remain reachable", async ({ page }) => {
     starter: 0,
   };
 
-  await page.addInitScript(
-    ({ state, lastSimulatedAtMs }) => {
-      window.localStorage.clear();
-      window.localStorage.setItem(
-        "emily-idle:save",
-        JSON.stringify({
-          version: 2,
-          savedAt: new Date(0).toISOString(),
-          lastSimulatedAtMs,
-          state,
-        }),
-      );
-      window.localStorage.setItem("emily-idle:settings", JSON.stringify({ hiddenTabs: [] }));
-      window.localStorage.setItem(
-        "emily-idle:navigation",
-        JSON.stringify({ lastTabId: "collection" }),
-      );
+  await seedStorage(page, {
+    clearLocalStorage: true,
+    save: {
+      state: seededState,
     },
-    { state: seededState, lastSimulatedAtMs: Date.now() },
-  );
+    settings: {
+      hiddenTabs: [],
+    },
+    navigation: {
+      lastTabId: "collection",
+    },
+  });
 
   await page.goto("/");
   await expect(page.getByTestId("tab-ready-collection")).toBeVisible();
@@ -72,7 +65,12 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await clickLocatorSafely(page.getByRole("tab", { name: "Settings" }));
   await expect(page.getByTestId("settings-clear-save")).toBeVisible();
   await clickLocatorSafely(page.getByTestId("settings-clear-save"));
-  if (!(await page.getByTestId("settings-clear-save-confirm").isVisible().catch(() => false))) {
+  if (
+    !(await page
+      .getByTestId("settings-clear-save-confirm")
+      .isVisible()
+      .catch(() => false))
+  ) {
     await clickLocatorSafely(page.getByTestId("settings-clear-save"));
   }
   await expect(page.getByTestId("settings-clear-save-confirm")).toBeVisible();

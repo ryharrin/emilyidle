@@ -1,28 +1,14 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { clickLocatorSafely } from "./helpers/interactions";
-
-type SeededSave = {
-  state: Record<string, unknown>;
-  lastSimulatedAtMs: number;
-};
-
-async function seedSave(page: Page, seeded: SeededSave) {
-  await page.addInitScript(({ state, lastSimulatedAtMs }: SeededSave) => {
-    const payload = {
-      version: 2,
-      savedAt: new Date(0).toISOString(),
-      lastSimulatedAtMs,
-      state,
-    };
-    window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-  }, seeded);
-}
+import { seedStorage } from "./helpers/storageSeed";
 
 async function clickExplainTrigger(page: Page, testId: string) {
   if (testId.startsWith("explain-career-")) {
     const deepDetails = page.getByTestId("career-deep-details");
     if ((await deepDetails.count()) > 0) {
-      const isOpen = await deepDetails.evaluate((node) => (node as HTMLDetailsElement).open);
+      const isOpen = await deepDetails.evaluate(
+        (node: Element) => (node as HTMLDetailsElement).open,
+      );
       if (!isOpen) {
         await clickLocatorSafely(page.getByTestId("career-deep-details-toggle"));
       }
@@ -32,7 +18,7 @@ async function clickExplainTrigger(page: Page, testId: string) {
   const trigger = page.locator(`[data-testid="${testId}"]:visible`).first();
   await expect(trigger).toBeVisible();
   await trigger.scrollIntoViewIfNeeded();
-  await trigger.evaluate((element) => (element as HTMLButtonElement).click());
+  await trigger.evaluate((element: Element) => (element as HTMLButtonElement).click());
 }
 
 test("currency explain trigger opens currencies help", async ({ page }) => {
@@ -79,7 +65,11 @@ test("catalog help opens shopping guidance", async ({ page }) => {
     catalogTierUnlocks: [],
   };
 
-  await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
+  await seedStorage(page, {
+    save: {
+      state: seededState,
+    },
+  });
 
   await page.goto("/");
   await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
@@ -162,7 +152,11 @@ test("stats rate breakdown disclosures render line items", async ({ page }) => {
     catalogTierUnlocks: [],
   };
 
-  await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
+  await seedStorage(page, {
+    save: {
+      state: seededState,
+    },
+  });
 
   await page.goto("/");
   const statsTab = page.getByRole("tab", { name: "Stats" });
@@ -244,7 +238,11 @@ test("nostalgia unlock order explain trigger opens nostalgia help", async ({ pag
     },
   };
 
-  await seedSave(page, { state: seededState, lastSimulatedAtMs: Date.now() });
+  await seedStorage(page, {
+    save: {
+      state: seededState,
+    },
+  });
 
   await page.goto("/");
   await clickLocatorSafely(page.getByTestId("nostalgia-tab"));
@@ -253,7 +251,12 @@ test("nostalgia unlock order explain trigger opens nostalgia help", async ({ pag
 
   const explainUnlocks = page.locator('[data-testid="explain-nostalgia-unlocks"]:visible').first();
   await clickLocatorSafely(explainUnlocks);
-  if (!(await page.getByTestId("help-modal").isVisible().catch(() => false))) {
+  if (
+    !(await page
+      .getByTestId("help-modal")
+      .isVisible()
+      .catch(() => false))
+  ) {
     await clickLocatorSafely(explainUnlocks);
   }
   await expect(page.getByTestId("help-modal")).toBeVisible();

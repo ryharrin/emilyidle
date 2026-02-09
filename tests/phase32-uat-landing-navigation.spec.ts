@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { clickLocatorSafely } from "./helpers/interactions";
+import { gotoAppWithNavigationReady } from "./helpers/navigation";
 
 const seededState = {
   currencyCents: 1000,
@@ -78,25 +79,15 @@ async function expectTabSelected(page: Page, name: string) {
 }
 
 async function gotoApp(page: Page, path: string = "/") {
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    await page.request.get(path, { timeout: 10_000, failOnStatusCode: false }).catch(() => {});
-    try {
-      await page.goto(path, { waitUntil: "domcontentloaded", timeout: 30_000 });
-      await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
-        timeout: 20_000,
-      });
-      return;
-    } catch (error) {
-      lastError = error;
-      if (attempt === 3) {
-        break;
-      }
-      await page.goto("about:blank", { waitUntil: "commit", timeout: 10_000 }).catch(() => {});
-      await page.waitForTimeout(attempt * 150);
-    }
+  if (path === "/") {
+    await gotoAppWithNavigationReady(page);
+    return;
   }
-  throw lastError;
+
+  await page.goto(path, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
+    timeout: 20_000,
+  });
 }
 
 async function captureBestEffort(page: Page, path: string) {
@@ -149,9 +140,6 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
 
       await gotoApp(page);
 
-      const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-      const saveTab = tabList.getByRole("tab", { name: "Settings" });
-
       await expectTabSelected(page, "Settings");
     });
 
@@ -162,10 +150,6 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
 
       // First visit - should land on Settings
       await gotoApp(page);
-
-      const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-      const saveTab = tabList.getByRole("tab", { name: "Settings" });
-      const careerTab = tabList.getByRole("tab", { name: "Career" });
 
       await expectTabSelected(page, "Settings");
 
@@ -194,9 +178,6 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       await seedExistingSave(page, "save");
 
       await gotoApp(page, "/?tab=catalog");
-
-      const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-      const catalogTab = tabList.getByRole("tab", { name: "Catalog" });
 
       await expectTabSelected(page, "Catalog");
     });
@@ -245,10 +226,6 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
 
       // First visit - should land on Settings
       await gotoApp(page);
-
-      const tabList = page.getByRole("tablist", { name: "Primary navigation" });
-      const saveTab = tabList.getByRole("tab", { name: "Settings" });
-      const careerTab = tabList.getByRole("tab", { name: "Career" });
 
       await expectTabSelected(page, "Settings");
 

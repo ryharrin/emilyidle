@@ -1,26 +1,5 @@
 import { test, expect } from "@playwright/test";
-import type { Page } from "@playwright/test";
-
-const seedSave = async (page: Page, state: Record<string, unknown>) => {
-  await page.addInitScript(
-    ({
-      seededState,
-      lastSimulatedAtMs,
-    }: {
-      seededState: Record<string, unknown>;
-      lastSimulatedAtMs: number;
-    }) => {
-      const payload = {
-        version: 2,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs,
-        state: seededState,
-      };
-      window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-    },
-    { seededState: state, lastSimulatedAtMs: Date.now() },
-  );
-};
+import { seedStorage } from "./helpers/storageSeed";
 
 test.describe("help entry point", () => {
   test("opens help, switches section, and remembers last view", async ({ page }) => {
@@ -77,7 +56,11 @@ test.describe("help entry point", () => {
       catalogTierUnlocks: [],
     };
 
-    await seedSave(page, seededState);
+    await seedStorage(page, {
+      save: {
+        state: seededState,
+      },
+    });
     await page.goto("/");
 
     await page.getByRole("tab", { name: "Atelier" }).click();
@@ -161,7 +144,11 @@ test.describe("icon cues", () => {
       catalogTierUnlocks: [],
     };
 
-    await seedSave(page, seededState);
+    await seedStorage(page, {
+      save: {
+        state: seededState,
+      },
+    });
     await page.goto("/");
     await page.getByTestId("nostalgia-tab").click();
 
@@ -205,7 +192,11 @@ test.describe("icon cues", () => {
       catalogTierUnlocks: [],
     };
 
-    await seedSave(page, seededState);
+    await seedStorage(page, {
+      save: {
+        state: seededState,
+      },
+    });
     await page.goto("/");
     await page.getByRole("tab", { name: "Atelier" }).click();
 

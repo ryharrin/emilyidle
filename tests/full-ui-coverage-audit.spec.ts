@@ -29,6 +29,32 @@ const MAX_BUTTON_INTERACTIONS_PER_TAB = 90;
 const MAX_BUTTON_PASSES_PER_TAB = 6;
 const CATALOG_BUTTON_INTERACTIONS_CAP = 40;
 const CATALOG_BUTTON_PASSES_CAP = 3;
+const CATALOG_FLOW_SHARDS = [
+  {
+    id: "slice-1",
+    maxInteractions: 10,
+    maxPasses: 1,
+    skipInteractions: 0,
+  },
+  {
+    id: "slice-2",
+    maxInteractions: 10,
+    maxPasses: 2,
+    skipInteractions: 6,
+  },
+  {
+    id: "slice-3",
+    maxInteractions: 10,
+    maxPasses: 2,
+    skipInteractions: 12,
+  },
+  {
+    id: "slice-4",
+    maxInteractions: 10,
+    maxPasses: 3,
+    skipInteractions: 18,
+  },
+] as const;
 const STEP_TIMEOUT_MS = 120_000;
 const CATALOG_STEP_TIMEOUT_MS = 120_000;
 const ROOT_SCREENSHOT_DIR = `output/playwright/full-ui-coverage-audit-${new Date()
@@ -50,6 +76,12 @@ type TabCoverage = {
 type CaptureResult = {
   records: ScreenshotRecord[];
   coverageByTab: Record<string, TabCoverage>;
+};
+
+type ButtonExerciseOptions = {
+  maxPasses?: number;
+  maxInteractions?: number;
+  skipInteractions?: number;
 };
 
 const getErrorMessage = (error: unknown): string =>
@@ -417,15 +449,18 @@ async function exerciseVisibleButtons(
   options?: {
     maxPasses?: number;
     maxInteractions?: number;
+    skipInteractions?: number;
     traceLines?: string[];
   },
 ): Promise<TabCoverage> {
   const maxPasses = options?.maxPasses ?? MAX_BUTTON_PASSES_PER_TAB;
   const maxInteractions = options?.maxInteractions ?? MAX_BUTTON_INTERACTIONS_PER_TAB;
+  const skipInteractions = options?.skipInteractions ?? 0;
   const traceLines = options?.traceLines;
   const handledKeys = new Set<string>();
   let candidateCount = 0;
   let actions = 0;
+  let skippedActions = 0;
 
   for (let pass = 0; pass < maxPasses; pass += 1) {
     let progressed = false;
@@ -477,6 +512,10 @@ async function exerciseVisibleButtons(
       if (descriptor.disabled || descriptor.key.includes("settings-clear-save-confirm")) {
         continue;
       }
+      if (skippedActions < skipInteractions) {
+        skippedActions += 1;
+        continue;
+      }
 
       candidateCount += 1;
       await candidate.scrollIntoViewIfNeeded({ timeout: 1_000 }).catch(() => {});
@@ -522,6 +561,7 @@ async function captureAllTabScreens(
     tabs?: ReadonlyArray<(typeof TABS)[number]>;
     includeHome?: boolean;
     traceLines?: string[];
+    buttonExerciseOptions?: ButtonExerciseOptions;
   },
 ): Promise<CaptureResult> {
   const tabs = options?.tabs ?? TABS;
@@ -539,9 +579,12 @@ async function captureAllTabScreens(
     try {
       const tabStepTimeout = tab.id === "catalog" ? CATALOG_STEP_TIMEOUT_MS : STEP_TIMEOUT_MS;
       const maxInteractions =
-        tab.id === "catalog" ? CATALOG_BUTTON_INTERACTIONS_CAP : MAX_BUTTON_INTERACTIONS_PER_TAB;
+        options?.buttonExerciseOptions?.maxInteractions ??
+        (tab.id === "catalog" ? CATALOG_BUTTON_INTERACTIONS_CAP : MAX_BUTTON_INTERACTIONS_PER_TAB);
       const maxPasses =
-        tab.id === "catalog" ? CATALOG_BUTTON_PASSES_CAP : MAX_BUTTON_PASSES_PER_TAB;
+        options?.buttonExerciseOptions?.maxPasses ??
+        (tab.id === "catalog" ? CATALOG_BUTTON_PASSES_CAP : MAX_BUTTON_PASSES_PER_TAB);
+      const skipInteractions = options?.buttonExerciseOptions?.skipInteractions ?? 0;
 
       await runTabStep({
         tabId: tab.id,
@@ -619,6 +662,7 @@ async function captureAllTabScreens(
           await exerciseVisibleButtons(auditPage, panel, outputDir, records, captureIndex, tab.id, {
             maxPasses,
             maxInteractions,
+            skipInteractions,
             traceLines,
           }),
       });
@@ -735,6 +779,52 @@ test.describe("full UI coverage audit", () => {
   test.setTimeout(1_500_000);
 
   for (const tab of TABS) {
+    if (tab.id === "catalog") {
+      for (const shard of CATALOG_FLOW_SHARDS) {
+        test(`captures ${tab.label} tab flows (${shard.id}) with per-tab manifest coverage`, async ({
+          page,
+        }, testInfo) => {
+          const projectDir = await ensureProjectOutput(testInfo.project.name);
+          const seedState = buildSeedState();
+          const traceLines: string[] = [];
+          const scopedTabId = `${tab.id}-${shard.id}`;
+          appendTrace(traceLines, `[meta] project=${testInfo.project.name}`);
+          appendTrace(traceLines, `[meta] route=tab-${scopedTabId}`);
+          const result = await captureAllTabScreens(page, testInfo, seedState, {
+            tabs: [tab],
+            includeHome: false,
+            traceLines,
+            buttonExerciseOptions: {
+              maxPasses: shard.maxPasses,
+              maxInteractions: shard.maxInteractions,
+              skipInteractions: shard.skipInteractions,
+            },
+          });
+          const coverage = result.coverageByTab[tab.id] ?? {
+            candidateCount: 0,
+            interactedCount: 0,
+          };
+
+          await writeTabManifest(
+            projectDir,
+            testInfo.project.name,
+            scopedTabId,
+            result.records,
+            coverage,
+          );
+          await rebuildProjectManifest(projectDir);
+          await testInfo.attach(`audit-trace-${scopedTabId}`, {
+            body: traceLines.join("\n"),
+            contentType: "text/plain",
+          });
+
+          expect(result.records.length).toBeGreaterThan(2);
+          expect(coverage.interactedCount).toBeLessThanOrEqual(shard.maxInteractions);
+        });
+      }
+      continue;
+    }
+
     test(`captures ${tab.label} tab flows with per-tab manifest coverage`, async ({
       page,
     }, testInfo) => {

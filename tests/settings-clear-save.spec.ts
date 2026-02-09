@@ -1,4 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { gotoAppWithNavigationReady } from "./helpers/navigation";
+import { seedStorage } from "./helpers/storageSeed";
 
 type SeededState = {
   currencyCents: number;
@@ -8,40 +10,24 @@ type SeededState = {
   };
 };
 
-async function seedSave(page: Page, args: { state: SeededState; lastTabId: string }) {
-  await page.addInitScript(({ state, lastTabId }: { state: SeededState; lastTabId: string }) => {
-    if (window.sessionStorage.getItem("settings-clear-save-seeded") === "1") {
-      return;
-    }
-
-    window.sessionStorage.setItem("settings-clear-save-seeded", "1");
-    window.localStorage.clear();
-    window.localStorage.setItem(
-      "emily-idle:save",
-      JSON.stringify({
-        version: 2,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
-        state,
-      }),
-    );
-    window.localStorage.setItem("emily-idle:navigation", JSON.stringify({ lastTabId }));
-  }, args);
-}
-
 test.describe("settings clear save", () => {
   test("cancel keeps the existing save", async ({ page }) => {
-    await seedSave(page, {
-      lastTabId: "save",
-      state: {
-        currencyCents: 999_999,
-        workshopPrestigeCount: 7,
-        therapistCareer: { careerStartId: "phd-program" },
+    await seedStorage(page, {
+      oncePerSessionKey: "settings-clear-save-seeded",
+      clearLocalStorage: true,
+      save: {
+        state: {
+          currencyCents: 999_999,
+          workshopPrestigeCount: 7,
+          therapistCareer: { careerStartId: "phd-program" },
+        } satisfies SeededState,
+      },
+      navigation: {
+        lastTabId: "save",
       },
     });
 
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await gotoAppWithNavigationReady(page);
 
     await page.getByRole("tab", { name: "Settings" }).click();
     await expect(page.getByTestId("settings-save-safety")).toBeVisible();
@@ -77,17 +63,22 @@ test.describe("settings clear save", () => {
   });
 
   test("confirm clears save and produces a fresh run", async ({ page }) => {
-    await seedSave(page, {
-      lastTabId: "save",
-      state: {
-        currencyCents: 999_999,
-        workshopPrestigeCount: 7,
-        therapistCareer: { careerStartId: "phd-program" },
+    await seedStorage(page, {
+      oncePerSessionKey: "settings-clear-save-seeded",
+      clearLocalStorage: true,
+      save: {
+        state: {
+          currencyCents: 999_999,
+          workshopPrestigeCount: 7,
+          therapistCareer: { careerStartId: "phd-program" },
+        } satisfies SeededState,
+      },
+      navigation: {
+        lastTabId: "save",
       },
     });
 
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await gotoAppWithNavigationReady(page);
 
     await page.getByRole("tab", { name: "Settings" }).click();
     await expect(page.getByTestId("settings-save-safety")).toBeVisible();

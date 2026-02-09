@@ -7,6 +7,7 @@ const WIKIMEDIA_PREFIX = "https://upload.wikimedia.org/wikipedia/commons/";
 const CATALOG_SRC_PATH = "/emilyidle/catalog/";
 const DECODE_SAMPLE_SIZE = 3;
 const DECODE_POLL_TIMEOUT_MS = 20_000;
+const URL_CHECK_CONCURRENCY = 8;
 const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
   "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo%2C_met%C3%A0_anni_Novanta.jpg":
     "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo,_meta_anni_Novanta.jpg",
@@ -51,6 +52,11 @@ const pickDeterministicSubset = (
   }
 
   return [...picks];
+};
+
+const resolveCatalogImageUrl = (catalogRoot: string, relative: string): string => {
+  const localRelative = LOCAL_CATALOG_OVERRIDES[relative] ?? relative;
+  return new URL(localRelative, catalogRoot).toString();
 };
 
 test("catalog images exist under public catalog", async ({ page }) => {
@@ -117,34 +123,6 @@ test("catalog images exist under public catalog", async ({ page }) => {
   );
 
   await page.goto("http://127.0.0.1:5177/emilyidle/");
-  const shouldReseed = await page.evaluate((starterCount) => {
-    try {
-      const raw = window.localStorage.getItem("emily-idle:save");
-      if (!raw) {
-        return true;
-      }
-      const parsed = JSON.parse(raw);
-      return parsed?.state?.items?.starter !== starterCount;
-    } catch {
-      return true;
-    }
-  }, seededState.items.starter);
-  if (shouldReseed) {
-    await page.evaluate(
-      ({ state, lastSimulatedAtMs, settings }) => {
-        const payload = {
-          version: 2,
-          savedAt: new Date(0).toISOString(),
-          lastSimulatedAtMs,
-          state,
-        };
-        window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-        window.localStorage.setItem("emily-idle:settings", JSON.stringify(settings));
-      },
-      { state: seededState, lastSimulatedAtMs: Date.now(), settings: seededSettings },
-    );
-    await page.reload();
-  }
   const catalogTab = page.getByRole("tab", { name: "Catalog" });
   await expect(catalogTab).toHaveCount(1);
   await clickLocatorSafely(catalogTab);
@@ -160,21 +138,30 @@ test("catalog images exist under public catalog", async ({ page }) => {
   const expectedRelatives = await getCatalogImageRelatives();
   const missing: string[] = [];
 
-  for (const relative of expectedRelatives) {
-    const localRelative = LOCAL_CATALOG_OVERRIDES[relative] ?? relative;
-    const url = new URL(localRelative, catalogRoot).toString();
-    expect(url).toContain(CATALOG_SRC_PATH);
-    let response: Awaited<ReturnType<typeof page.request.get>>;
-    try {
-      response = await page.request.get(url, { timeout: 5_000 });
-    } catch {
-      missing.push(relative);
-      continue;
-    }
-    const contentType = response.headers()["content-type"] ?? "";
+  for (let index = 0; index < expectedRelatives.length; index += URL_CHECK_CONCURRENCY) {
+    const batch = expectedRelatives.slice(index, index + URL_CHECK_CONCURRENCY);
+    const batchResults = await Promise.all(
+      batch.map(async (relative) => {
+        const url = resolveCatalogImageUrl(catalogRoot, relative);
+        expect(url).toContain(CATALOG_SRC_PATH);
 
-    if (response.status() !== 200 || !contentType.startsWith("image/")) {
-      missing.push(relative);
+        try {
+          const response = await page.request.get(url, { timeout: 5_000 });
+          const contentType = response.headers()["content-type"] ?? "";
+          return response.status() === 200 && contentType.startsWith("image/");
+        } catch {
+          return false;
+        }
+      }),
+    );
+
+    for (const [batchIndex, found] of batchResults.entries()) {
+      if (!found) {
+        const relative = batch[batchIndex];
+        if (relative) {
+          missing.push(relative);
+        }
+      }
     }
   }
 
@@ -184,8 +171,7 @@ test("catalog images exist under public catalog", async ({ page }) => {
 
   const decodeRelatives = pickDeterministicSubset(expectedRelatives, DECODE_SAMPLE_SIZE);
   for (const relative of decodeRelatives) {
-    const localRelative = LOCAL_CATALOG_OVERRIDES[relative] ?? relative;
-    const url = new URL(localRelative, catalogRoot).toString();
+    const url = resolveCatalogImageUrl(catalogRoot, relative);
     await expect
       .poll(
         () =>

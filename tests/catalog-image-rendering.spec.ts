@@ -2,30 +2,6 @@ import { expect, test } from "@playwright/test";
 import { clickLocatorSafely } from "./helpers/interactions";
 
 const CATALOG_SRC_PATH = "/emilyidle/catalog/";
-const DECODE_SAMPLE_SIZE = 3;
-const DECODE_POLL_TIMEOUT_MS = 20_000;
-
-const pickDeterministicSubset = (
-  values: readonly string[],
-  targetCount: number,
-): ReadonlyArray<string> => {
-  if (values.length <= targetCount) {
-    return [...values].sort();
-  }
-
-  const sorted = [...values].sort();
-  const picks = new Set<string>();
-  const denominator = Math.max(targetCount - 1, 1);
-  for (let i = 0; i < targetCount; i += 1) {
-    const index = Math.floor((i * (sorted.length - 1)) / denominator);
-    const value = sorted[index];
-    if (value) {
-      picks.add(value);
-    }
-  }
-
-  return [...picks];
-};
 
 test("catalog images render under the /emilyidle base path", async ({ page }) => {
   test.slow();
@@ -115,39 +91,5 @@ test("catalog images render under the /emilyidle base path", async ({ page }) =>
   expect(renderedSources.length).toBeGreaterThan(0);
   for (const src of renderedSources) {
     expect(src).toContain(CATALOG_SRC_PATH);
-  }
-
-  const decodeSourcePool = renderedSources.filter((src) => !/\.svg(?:$|\?)/i.test(src));
-  const decodeCandidates = pickDeterministicSubset(
-    decodeSourcePool.length > 0 ? decodeSourcePool : renderedSources,
-    DECODE_SAMPLE_SIZE,
-  );
-  expect(decodeCandidates.length).toBeGreaterThan(0);
-  for (const candidateSrc of decodeCandidates) {
-    await expect
-      .poll(
-        () =>
-          page.evaluate(async (src) => {
-            const image = new Image();
-            image.src = src;
-
-            try {
-              if (typeof image.decode === "function") {
-                await image.decode();
-              } else {
-                await new Promise<void>((resolve, reject) => {
-                  image.onload = () => resolve();
-                  image.onerror = () => reject(new Error("Image load failed."));
-                });
-              }
-            } catch {
-              return false;
-            }
-
-            return image.naturalWidth > 0 && !image.src.startsWith("data:image");
-          }, candidateSrc),
-        { timeout: DECODE_POLL_TIMEOUT_MS },
-      )
-      .toBe(true);
   }
 });

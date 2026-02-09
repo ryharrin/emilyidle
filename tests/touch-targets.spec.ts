@@ -9,6 +9,8 @@ import {
   switchCatalogToOwned,
 } from "./helpers/catalogFilters";
 import { clickLocatorSafely, findFirstVisible } from "./helpers/interactions";
+import { gotoAppWithNavigationReady } from "./helpers/navigation";
+import { seedStorage } from "./helpers/storageSeed";
 
 const MOBILE_VIEWPORTS = [
   { name: "iPhone 12", viewport: { width: 390, height: 844 } },
@@ -48,19 +50,11 @@ const buildSeededState = (): GameState => {
 };
 
 const seedState = async (page: Page) => {
-  const seededState = buildSeededState();
-  await page.addInitScript(
-    ({ seededState }) => {
-      const payload = {
-        version: 2,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
-        state: seededState,
-      };
-      window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+  await seedStorage(page, {
+    save: {
+      state: buildSeededState(),
     },
-    { seededState },
-  );
+  });
 };
 
 const expectTouchTarget = async (locator: Locator, label: string) => {
@@ -102,7 +96,7 @@ const openCatalogFromCollection = async (page: Page) => {
     }
   }
 
-  throw (lastError ?? new Error("Failed to open Catalog tab after retries"));
+  throw lastError ?? new Error("Failed to open Catalog tab after retries");
 };
 
 const defineTouchTargetTests = (
@@ -113,7 +107,7 @@ const defineTouchTargetTests = (
     test.beforeEach(async ({ page }) => {
       await page.setViewportSize(viewportSize);
       await seedState(page);
-      await page.goto("/");
+      await gotoAppWithNavigationReady(page);
     });
 
     test("nav tabs and settings controls stay above 44px", async ({ page }) => {

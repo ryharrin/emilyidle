@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createInitialState } from "../src/game/state";
 import { openCatalogFilters } from "./helpers/catalogFilters";
+import { seedStorage } from "./helpers/storageSeed";
 
 test("tabs respect hidden preferences", async ({ page }) => {
   const seededState = {
@@ -44,19 +45,12 @@ test("tabs respect hidden preferences", async ({ page }) => {
     coachmarksDismissed: {},
   };
 
-  await page.addInitScript(
-    ({ state, lastSimulatedAtMs, nextSettings }) => {
-      const payload = {
-        version: 2,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs,
-        state,
-      };
-      window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-      window.localStorage.setItem("emily-idle:settings", JSON.stringify(nextSettings));
+  await seedStorage(page, {
+    save: {
+      state: seededState,
     },
-    { state: seededState, lastSimulatedAtMs: Date.now(), nextSettings: settings },
-  );
+    settings,
+  });
 
   await page.goto("/");
 
@@ -81,19 +75,12 @@ test("tabs surface readiness badges and honor numeric shortcuts", async ({ page 
     coachmarksDismissed: {},
   };
 
-  await page.addInitScript(
-    ({ state, lastSimulatedAtMs, nextSettings }) => {
-      const payload = {
-        version: 2,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs,
-        state,
-      };
-      window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-      window.localStorage.setItem("emily-idle:settings", JSON.stringify(nextSettings));
+  await seedStorage(page, {
+    save: {
+      state: seededState,
     },
-    { state: seededState, lastSimulatedAtMs: Date.now(), nextSettings: settings },
-  );
+    settings,
+  });
 
   await page.goto("/");
 
