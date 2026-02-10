@@ -9,6 +9,12 @@ import {
   performTherapistSession,
   type GameState,
 } from "../src/game/state";
+import type {
+  CareerExpansionFocusId,
+  CareerModalityId,
+  CareerOperatingStyleId,
+  CareerTrackId,
+} from "../src/game/model/types";
 
 describe("therapist economy summary selectors", () => {
   it("returns locked session summary before the career starts", () => {
@@ -69,5 +75,49 @@ describe("therapist economy summary selectors", () => {
 
     expect(unlockImpact.kind).toBe("choice");
     expect(unlockImpact.detail.toLowerCase()).toContain("choose");
+  });
+
+  it("provides summary text for ready choices", () => {
+    const nowMs = 5_000;
+    const started = enterPhdProgram(createInitialState(), nowMs);
+    const readyChoice = {
+      ...started,
+      therapistCareer: {
+        ...started.therapistCareer,
+        primaryTrackId: null,
+        activeTrackId: null,
+        modalityId: null,
+        operatingStyleId: null,
+        expansionFocusId: null,
+        level: 6,
+      },
+    };
+    const unlockImpact = getTherapistNearTermUnlockImpact(readyChoice);
+
+    expect(unlockImpact.kind).toBe("choice");
+    expect(unlockImpact.summaryText.toLowerCase()).toContain("choose");
+    expect(unlockImpact.detail).toContain("Spend points");
+  });
+
+  it("provides summary text describing the next stage", () => {
+    const nowMs = 7_000;
+    const started = enterPhdProgram(createInitialState(), nowMs);
+    const stageState = {
+      ...started,
+      therapistCareer: {
+        ...started.therapistCareer,
+        primaryTrackId: "va-hospital" as CareerTrackId,
+        activeTrackId: "va-hospital" as CareerTrackId,
+        modalityId: "psychodynamic" as CareerModalityId,
+        operatingStyleId: "high-volume" as CareerOperatingStyleId,
+        expansionFocusId: "referrals" as CareerExpansionFocusId,
+        level: 5,
+      },
+    };
+    const unlockImpact = getTherapistNearTermUnlockImpact(stageState);
+
+    expect(unlockImpact.kind).toBe("stage");
+    expect(unlockImpact.summaryText).toMatch(/reach level \d+/i);
+    expect(unlockImpact.detail).toContain("Reach level");
   });
 });

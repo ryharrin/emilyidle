@@ -38,6 +38,7 @@ export type TherapistNearTermUnlockImpact = {
   detail: string;
   levelsRemaining: number;
   xpToNextLevel: number;
+  summaryText: string;
 };
 
 export function getTherapistSessionValueDeltaSummary(
@@ -106,6 +107,7 @@ export function getTherapistNearTermUnlockImpact(state: GameState): TherapistNea
       detail: "Enter the PhD program to begin salary windows and session payouts.",
       levelsRemaining: 0,
       xpToNextLevel: 0,
+      summaryText: "Start the PhD program",
     };
   }
 
@@ -120,6 +122,7 @@ export function getTherapistNearTermUnlockImpact(state: GameState): TherapistNea
       detail: `${nextUnlock.label}. Spend points to lock in your next multiplier package.`,
       levelsRemaining: 0,
       xpToNextLevel,
+      summaryText: nextUnlock.label,
     };
   }
 
@@ -132,6 +135,7 @@ export function getTherapistNearTermUnlockImpact(state: GameState): TherapistNea
       detail: `Reach level ${nextUnlock.unlockLevel} to unlock ${stageLabel ?? nextUnlock.label}.`,
       levelsRemaining,
       xpToNextLevel,
+      summaryText: `Reach level ${nextUnlock.unlockLevel}`,
     };
   }
 
@@ -142,6 +146,7 @@ export function getTherapistNearTermUnlockImpact(state: GameState): TherapistNea
       detail: nextUnlock.label,
       levelsRemaining: 0,
       xpToNextLevel,
+      summaryText: nextUnlock.label,
     };
   }
 
@@ -151,5 +156,6 @@ export function getTherapistNearTermUnlockImpact(state: GameState): TherapistNea
     detail: "Current career stage is capped. Use sessions and upgrades to optimize payout cadence.",
     levelsRemaining: 0,
     xpToNextLevel,
+    summaryText: "Career stage maxed",
   };
 }
