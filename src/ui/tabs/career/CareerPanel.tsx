@@ -255,8 +255,12 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
             </article>
             <article className="career-complication" data-testid="career-complication-date-wheel">
               <p className="career-complication-label">Date wheel</p>
-              <p className="career-complication-value">{nearTermUnlock.title}</p>
-              <p className="career-complication-detail">{nearTermUnlock.detail}</p>
+              <p className="career-complication-value" data-testid="career-near-term-summary">
+                {nearTermUnlock.summaryText}
+              </p>
+              <p className="career-complication-detail">
+                <strong>{nearTermUnlock.title}:</strong> {nearTermUnlock.detail}
+              </p>
             </article>
             <article className="career-complication" data-testid="career-complication-moonphase">
               <p className="career-complication-label">Moonphase</p>
@@ -341,7 +345,11 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                 ({formatDuration(salaryWindowSummary.windowMs)} base refresh).
               </p>
               <p className="career-economy-summary-note" data-testid="near-term-unlock-summary">
-                <strong>{nearTermUnlock.title}:</strong> {nearTermUnlock.detail}
+                <strong>{nearTermUnlock.title}</strong>
+                <span className="career-economy-summary-note-summary">
+                  {nearTermUnlock.summaryText}
+                </span>
+                <span className="career-economy-summary-note-detail">{nearTermUnlock.detail}</span>
               </p>
             </article>
             <div className="card career-session">
