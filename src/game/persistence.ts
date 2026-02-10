@@ -43,6 +43,19 @@ function getSafeSavedAtIso(savedAt: string): string {
   return new Date().toISOString();
 }
 
+function buildCanonicalSave(
+  state: GameState,
+  lastSimulatedAtMs: number,
+  savedAtIso: string,
+): SaveV3 {
+  return {
+    version: CURRENT_SAVE_VERSION,
+    savedAt: getSafeSavedAtIso(savedAtIso),
+    lastSimulatedAtMs,
+    state,
+  };
+}
+
 function sanitizeState(value: unknown): GameState | null {
   if (typeof value !== "object" || value === null) {
     return null;
@@ -249,12 +262,7 @@ export function encodeSaveString(
   lastSimulatedAtMs: number,
   savedAt: Date = new Date(),
 ): string {
-  const save: SaveV3 = {
-    version: CURRENT_SAVE_VERSION,
-    savedAt: getSafeSavedAtIso(savedAt.toISOString()),
-    lastSimulatedAtMs,
-    state,
-  };
+  const save = buildCanonicalSave(state, lastSimulatedAtMs, savedAt.toISOString());
 
   return JSON.stringify(save);
 }
@@ -298,15 +306,11 @@ function decodeSavePayload(raw: string): SaveParseResult {
   }
 
   const migratedFromVersion = version === CURRENT_SAVE_VERSION ? undefined : (version as 1 | 2);
+  const save = buildCanonicalSave(state, lastSimulatedAtMs, savedAt);
 
   return {
     ok: true,
-    save: {
-      version: CURRENT_SAVE_VERSION,
-      savedAt,
-      lastSimulatedAtMs,
-      state,
-    },
+    save,
     migratedFromVersion,
   };
 }
