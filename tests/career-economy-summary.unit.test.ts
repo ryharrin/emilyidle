@@ -46,6 +46,7 @@ describe("therapist economy summary selectors", () => {
     expect(salaryWindow.isActive).toBe(true);
     expect(salaryWindow.remainingMs).toBeGreaterThan(0);
     expect(salaryWindow.windowMs).toBeGreaterThan(0);
+    expect(salaryWindow.statusLabel).toBe("active");
 
     const expired = getTherapistSalaryWindowSummary(
       started,
@@ -53,6 +54,7 @@ describe("therapist economy summary selectors", () => {
     );
     expect(expired.isActive).toBe(false);
     expect(expired.remainingMs).toBe(0);
+    expect(expired.statusLabel).toBe("inactive");
 
     const choiceReady: GameState = {
       ...started,

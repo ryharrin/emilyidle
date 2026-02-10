@@ -29,6 +29,7 @@ export type TherapistSalaryWindowSummary = {
   windowMs: number;
   expiresAtMs: number;
   alertLevel: "none" | "soon" | "urgent";
+  statusLabel: "active" | "inactive";
 };
 
 export type TherapistNearTermUnlockImpact = {
@@ -85,12 +86,14 @@ export function getTherapistSalaryWindowSummary(
   const expiresAtMs = Math.max(0, state.therapistCareer.salaryActiveUntilMs);
   const remainingMs = Math.max(0, expiresAtMs - clampedNowMs);
   const alert = getTherapistSalaryExpirationAlert(state, clampedNowMs);
+  const isActive = remainingMs > 0;
   return {
-    isActive: remainingMs > 0,
+    isActive,
     remainingMs,
     windowMs,
     expiresAtMs,
     alertLevel: alert.level,
+    statusLabel: isActive ? "active" : "inactive",
   };
 }
 
