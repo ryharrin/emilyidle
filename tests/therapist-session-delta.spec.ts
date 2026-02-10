@@ -162,4 +162,9 @@ test("therapist sessions apply cash/enjoyment deltas and expose cooldown state",
   expect(afterSession.enjoymentCents).toBeLessThan(beforeSession.enjoymentCents);
   expect(afterSession.xp).toBeGreaterThan(beforeSession.xp);
   expect(afterSession.nextAvailableAtMs).toBeGreaterThan(0);
+  expect(afterSession.nextAvailableAtMs).toBeGreaterThan(beforeSession.nextAvailableAtMs);
+  expect(afterSession.freeSessionAvailable).toBe(false);
+
+  const legacySave = await page.evaluate(() => window.localStorage.getItem("watch-idle:save"));
+  expect(legacySave).toBeNull();
 });
