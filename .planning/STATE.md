@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-07 closeout sync)
 
 ## Current Position
 
-Phase: 53 re-executing (3/6 complete)
-Plan: 53-03 (therapist session delta e2e)
-Status: Phase 53 replay now includes dedicated therapist session delta e2e coverage for persisted deltas and cooldown cues.
-Last activity: 2026-02-10 — Completed Phase 53 plan 3 (therapist session delta e2e) and captured the summary.
-Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 re-executing (3/6) [███---], Phase 54 complete (7/7) [██████████], Phase 55 complete (8/8) [██████████], Phase 56 complete (9/9) [██████████]
-Next Phase: Continue Phase 53 re-execution (plan 53-04 next).
+Phase: 53 re-executing (4/6 complete)
+Plan: 53-04 (career clarity messaging)
+Status: Near-term messaging now highlights summary text and detail both in the complication stack and in the economy card.
+Last activity: 2026-02-10 — Completed Phase 53 plan 4 (career clarity messaging) and captured the summary.
+Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 re-executing (4/6) [████----], Phase 54 complete (7/7) [██████████], Phase 55 complete (8/8) [██████████], Phase 56 complete (9/9) [██████████]
+Next Phase: Continue Phase 53 re-execution (plan 53-05 next).
 
 ## Accumulated Context
 
@@ -122,6 +122,6 @@ Next Phase: Continue Phase 53 re-execution (plan 53-04 next).
 
 ## Session Continuity
 
-Last session: 2026-02-10T21:30:09Z
-Stopped at: Completed Phase 53 plan 3 (therapist session delta e2e) and published the summary.
+Last session: 2026-02-10T21:48:31Z
+Stopped at: Completed Phase 53 plan 4 (career clarity messaging) and published the summary.
 Resume file: None
