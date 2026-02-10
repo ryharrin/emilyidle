@@ -1206,8 +1206,7 @@ button:not(:disabled):active {
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background:
-    linear-gradient(180deg, rgba(32, 37, 47, 0.78), rgba(17, 20, 27, 0.84)),
-    rgba(15, 17, 21, 0.72);
+    linear-gradient(180deg, rgba(32, 37, 47, 0.78), rgba(17, 20, 27, 0.84)), rgba(15, 17, 21, 0.72);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   padding: 12px;
   gap: 8px;
@@ -1314,8 +1313,7 @@ button:not(:disabled):active {
   padding: 12px;
   gap: 8px;
   background:
-    linear-gradient(180deg, rgba(31, 36, 46, 0.74), rgba(15, 18, 25, 0.84)),
-    rgba(15, 17, 21, 0.66);
+    linear-gradient(180deg, rgba(31, 36, 46, 0.74), rgba(15, 18, 25, 0.84)), rgba(15, 17, 21, 0.66);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition:
     border-color 160ms ease,
@@ -1490,8 +1488,7 @@ button:not(:disabled):active {
 .toast-stack__toast {
   --toast-accent: rgba(167, 184, 208, 0.8);
   background:
-    linear-gradient(168deg, rgba(25, 31, 43, 0.98), rgba(12, 16, 24, 0.98)),
-    rgba(9, 12, 18, 0.95);
+    linear-gradient(168deg, rgba(25, 31, 43, 0.98), rgba(12, 16, 24, 0.98)), rgba(9, 12, 18, 0.95);
   border: 1px solid rgba(159, 178, 203, 0.32);
   border-radius: 14px;
   padding: 11px 12px;
@@ -1676,8 +1673,7 @@ button:not(:disabled):active {
 .modal-panel-card {
   border-color: rgba(150, 170, 196, 0.26);
   background:
-    linear-gradient(180deg, rgba(26, 34, 48, 0.96), rgba(11, 15, 22, 0.95)),
-    rgba(11, 15, 22, 0.95);
+    linear-gradient(180deg, rgba(26, 34, 48, 0.96), rgba(11, 15, 22, 0.95)), rgba(11, 15, 22, 0.95);
   box-shadow:
     inset 0 0 0 1px rgba(189, 207, 228, 0.05),
     0 18px 36px rgba(6, 8, 12, 0.5);
@@ -1721,8 +1717,7 @@ button:not(:disabled):active {
   border-radius: 14px;
   padding: 12px;
   background:
-    linear-gradient(180deg, rgba(22, 31, 46, 0.64), rgba(10, 15, 23, 0.76)),
-    rgba(10, 15, 23, 0.72);
+    linear-gradient(180deg, rgba(22, 31, 46, 0.64), rgba(10, 15, 23, 0.76)), rgba(10, 15, 23, 0.72);
 }
 
 .modal-instrument-strip {
@@ -1733,8 +1728,7 @@ button:not(:disabled):active {
 .modal-live-readout {
   border-color: rgba(151, 171, 198, 0.28);
   background:
-    linear-gradient(180deg, rgba(25, 36, 54, 0.5), rgba(11, 17, 27, 0.74)),
-    rgba(11, 16, 25, 0.68);
+    linear-gradient(180deg, rgba(25, 36, 54, 0.5), rgba(11, 17, 27, 0.74)), rgba(11, 16, 25, 0.68);
 }
 
 .mini-game-modal-card {
@@ -1783,8 +1777,7 @@ button:not(:disabled):active {
   border: 1px solid rgba(145, 165, 192, 0.24);
   border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(28, 38, 56, 0.46), rgba(12, 18, 28, 0.66)),
-    rgba(12, 17, 26, 0.62);
+    linear-gradient(180deg, rgba(28, 38, 56, 0.46), rgba(12, 18, 28, 0.66)), rgba(12, 17, 26, 0.62);
   padding: 12px;
 }
 
@@ -2818,8 +2811,7 @@ button:not(:disabled):active {
   width: min(760px, 94vw);
   border-color: rgba(153, 173, 199, 0.28);
   background:
-    linear-gradient(180deg, rgba(25, 34, 49, 0.95), rgba(10, 14, 22, 0.96)),
-    rgba(10, 14, 22, 0.95);
+    linear-gradient(180deg, rgba(25, 34, 49, 0.95), rgba(10, 14, 22, 0.96)), rgba(10, 14, 22, 0.95);
 }
 
 .help-modal-header {
@@ -2971,8 +2963,7 @@ button[data-testid="help-close"] {
   border-radius: 14px;
   padding: 12px;
   background:
-    linear-gradient(180deg, rgba(26, 35, 51, 0.5), rgba(10, 16, 26, 0.72)),
-    rgba(10, 16, 26, 0.66);
+    linear-gradient(180deg, rgba(26, 35, 51, 0.5), rgba(10, 16, 26, 0.72)), rgba(10, 16, 26, 0.66);
 }
 
 .help-modal-body h3 {
@@ -3366,11 +3357,15 @@ button[data-testid="help-close"] {
     0 -16px 28px rgba(88, 74, 60, 0.2);
 }
 
-[data-theme="light"] .catalog-card-details-sheet.catalog-card-details-sheet-cluster .catalog-card-details-sheet__brand {
+[data-theme="light"]
+  .catalog-card-details-sheet.catalog-card-details-sheet-cluster
+  .catalog-card-details-sheet__brand {
   color: #6f6559;
 }
 
-[data-theme="light"] .catalog-card-details-sheet.catalog-card-details-sheet-cluster .catalog-card-details-sheet__tags {
+[data-theme="light"]
+  .catalog-card-details-sheet.catalog-card-details-sheet-cluster
+  .catalog-card-details-sheet__tags {
   color: #5b5348;
 }
 
@@ -4177,8 +4172,7 @@ button[data-testid^="vault-interact-"] {
   padding-bottom: calc(24px + var(--safe-area-bottom));
   padding-left: calc(20px + var(--safe-area-left));
   background:
-    linear-gradient(180deg, rgba(26, 31, 40, 0.97), rgba(14, 17, 23, 0.95)),
-    rgba(15, 17, 21, 0.92);
+    linear-gradient(180deg, rgba(26, 31, 40, 0.97), rgba(14, 17, 23, 0.95)), rgba(15, 17, 21, 0.92);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 -16px 32px rgba(2, 4, 8, 0.56);
@@ -4257,7 +4251,8 @@ button[data-testid^="vault-interact-"] {
   margin-top: 20px;
 }
 
-.catalog-card-details-sheet.catalog-card-details-sheet-cluster .catalog-card-details-sheet__content {
+.catalog-card-details-sheet.catalog-card-details-sheet-cluster
+  .catalog-card-details-sheet__content {
   margin-top: 14px;
   gap: 12px;
 }
@@ -5501,8 +5496,7 @@ button[data-testid^="catalog-buy-"]:disabled {
   border-radius: 16px;
   border-color: rgba(255, 255, 255, 0.1);
   background:
-    linear-gradient(180deg, rgba(31, 36, 46, 0.74), rgba(16, 19, 26, 0.84)),
-    rgba(15, 17, 21, 0.72);
+    linear-gradient(180deg, rgba(31, 36, 46, 0.74), rgba(16, 19, 26, 0.84)), rgba(15, 17, 21, 0.72);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   padding: 14px;
   gap: 10px;
@@ -5609,6 +5603,13 @@ button[data-testid^="catalog-buy-"]:disabled {
   margin: 0;
   font-size: 0.83rem;
   color: #d7dde8;
+}
+
+.career-economy-summary-note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #cbd2db;
+  line-height: 1.35;
 }
 
 .career-deep-details {
@@ -5863,6 +5864,14 @@ button[data-testid^="catalog-buy-"]:disabled {
 @media (max-width: 900px) {
   .career-timeline-list {
     flex-wrap: nowrap;
+  }
+
+  .career-economy-summary {
+    gap: 8px;
+  }
+
+  .career-economy-summary-grid div {
+    padding: 10px;
   }
 }
 
@@ -6174,8 +6183,7 @@ button[data-testid^="catalog-buy-"]:disabled {
   border-radius: 14px;
   border-color: rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(180deg, rgba(31, 36, 46, 0.74), rgba(16, 19, 26, 0.84)),
-    rgba(15, 17, 21, 0.72);
+    linear-gradient(180deg, rgba(31, 36, 46, 0.74), rgba(16, 19, 26, 0.84)), rgba(15, 17, 21, 0.72);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   padding: 12px;
   gap: 6px;
