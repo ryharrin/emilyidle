@@ -7,9 +7,9 @@ import { createInitialState, getWatchModels } from "../src/game/state";
 
 function seedSaveForStarterPurchase() {
   const base = createInitialState();
-  const starterModel = getWatchModels().find((model) => model.tierId === "starter");
+  const starterModel = getWatchModels().find((model) => model.tierId === "quartz");
   if (!starterModel) {
-    throw new Error("Missing starter model");
+    throw new Error("Missing quartz model");
   }
 
   const state = {
@@ -18,7 +18,7 @@ function seedSaveForStarterPurchase() {
     unlockedMilestones: ["collector-shelf", "showcase"],
     items: {
       ...base.items,
-      starter: 2,
+      quartz: 2,
     },
     watchModels: {
       [starterModel.id]: 2,

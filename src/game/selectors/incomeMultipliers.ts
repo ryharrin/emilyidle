@@ -47,8 +47,8 @@ export function getCraftedBoostIncomeMultiplier(state: GameState): number {
 }
 
 export function getWatchAbilityIncomeMultiplier(state: GameState): number {
-  const starterCount = getItemCount(state, "starter");
-  const chronographCount = getItemCount(state, "chronograph");
+  const starterCount = getItemCount(state, "quartz");
+  const chronographCount = getItemCount(state, "manual");
 
   const starterBonus = starterCount >= 10 ? 1.02 : 1;
   const chronographBonus = chronographCount >= 5 ? 1.05 : 1;

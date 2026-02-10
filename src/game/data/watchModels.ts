@@ -1,6 +1,5 @@
 import {
   CATALOG_ENTRIES,
-  getCatalogEntryTags,
   type CatalogBrand,
   type CatalogEntry,
 } from "../catalog";
@@ -18,20 +17,8 @@ export type WatchModelDefinition = {
   tierBadge: TierBadgeDefinition;
 };
 
-const CATALOG_TIER_IDS: ReadonlyArray<CatalogTierId> = [
-  "starter",
-  "classic",
-  "chronograph",
-  "tourbillon",
-];
-
-function isCatalogTierId(value: string): value is CatalogTierId {
-  return (CATALOG_TIER_IDS as ReadonlyArray<string>).includes(value);
-}
-
 function getTierIdForCatalogEntry(entry: CatalogEntry): CatalogTierId {
-  const tierTag = getCatalogEntryTags(entry).find(isCatalogTierId);
-  return tierTag ?? "starter";
+  return entry.movementType;
 }
 
 // Phase 46 adds new low/mid/lux models so each lane carries narrative metadata and steady pacing:

@@ -67,8 +67,8 @@ describe("persistence compatibility", () => {
       enjoymentCents: 6_789,
       items: {
         ...baseState.items,
-        starter: 5,
-        classic: 1,
+        quartz: 5,
+        automatic: 1,
       },
       upgrades: {
         ...baseState.upgrades,
@@ -99,8 +99,8 @@ describe("persistence compatibility", () => {
 
     expect(loaded.save.state.currencyCents).toBe(12_345);
     expect(loaded.save.state.enjoymentCents).toBe(6_789);
-    expect(loaded.save.state.items.starter).toBe(5);
-    expect(loaded.save.state.items.classic).toBe(1);
+    expect(loaded.save.state.items.quartz).toBe(5);
+    expect(loaded.save.state.items.automatic).toBe(1);
     expect(loaded.save.state.upgrades["polishing-tools"]).toBe(1);
     expect(loaded.save.state.unlockedMilestones).toContain("collector-shelf");
   });

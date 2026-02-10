@@ -17,9 +17,9 @@ const WATCH_MODEL_LOOKUP = new Map(WATCH_MODELS.map((model) => [model.id, model]
 const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
 
 const WORN_WATCH_ENJOYMENT_MULTIPLIERS: Record<WatchItemId, number> = {
-  starter: 1.02,
-  classic: 1.05,
-  chronograph: 1.08,
+  quartz: 1.02,
+  automatic: 1.05,
+  manual: 1.08,
   tourbillon: 1.12,
 };
 

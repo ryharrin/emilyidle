@@ -25,7 +25,7 @@ test.describe("help entry point", () => {
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 800_000,
-      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
+      items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
       workshopBlueprints: 0,
@@ -68,20 +68,22 @@ test.describe("help entry point", () => {
     await expect(page.getByTestId("help-modal")).toBeVisible();
   });
 
-  test("tier keyword search surfaces tier badge help and related chips", async ({ page }) => {
+  test("movement keyword search surfaces movement badge help and related chips", async ({
+    page,
+  }) => {
     await page.goto("/");
 
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
 
     const searchInput = page.getByTestId("help-search");
-    await searchInput.fill("tier");
+    await searchInput.fill("movement");
 
     const firstSectionButton = page.locator(".help-modal-sections button").first();
-    await expect(firstSectionButton).toHaveText(/Tier badges/);
+    await expect(firstSectionButton).toHaveText(/Movement badges/);
     await firstSectionButton.click();
 
-    await expect(page.getByTestId("help-active-section")).toHaveText(/Tier badges/);
+    await expect(page.getByTestId("help-active-section")).toHaveText(/Movement badges/);
 
     const catalogChip = page.getByTestId("help-related-chip-catalog-shop");
     await expect(catalogChip).toBeVisible();
@@ -113,7 +115,7 @@ test.describe("icon cues", () => {
       nostalgiaEnjoymentEarnedCents: 0,
       nostalgiaLastGain: 0,
       nostalgiaLastPrestigedAtMs: 0,
-      items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
+      items: { quartz: 5, automatic: 0, manual: 0, tourbillon: 0 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: ["collector-shelf"],
       workshopBlueprints: 0,
@@ -152,7 +154,7 @@ test.describe("icon cues", () => {
     await page.goto("/");
     await page.getByTestId("nostalgia-tab").click();
 
-    const unlockCard = page.getByTestId("nostalgia-unlock-card-classic");
+    const unlockCard = page.getByTestId("nostalgia-unlock-card-automatic");
     await expect(unlockCard).toBeVisible();
     await expect(unlockCard.locator("svg.lucide-lock")).toHaveCount(1);
   });
@@ -161,7 +163,7 @@ test.describe("icon cues", () => {
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 800_000,
-      items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
+      items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
       workshopBlueprints: 0,

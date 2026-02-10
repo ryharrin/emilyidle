@@ -144,13 +144,15 @@ test.describe("UAT Screenshot Inspection", () => {
     await clickLocatorSafely(vaultTab);
     await page.waitForTimeout(500);
 
-    // Click "Buy watches" CTA if present
-    const buyWatchesCta = page.getByTestId("next-unlock-cta-career");
+    // Click collection catalog callout CTA if present
+    const buyWatchesCta = page.getByTestId("catalog-shop-callout").getByRole("button", {
+      name: "Open Catalog",
+    });
     if (await buyWatchesCta.isVisible().catch(() => false)) {
       await clickLocatorSafely(buyWatchesCta);
       await page.waitForTimeout(500);
 
-      // Screenshot 9: After clicking Buy watches CTA
+      // Screenshot 9: After clicking the collection catalog CTA
       await page.screenshot({
         path: `${SCREENSHOT_DIR}/09-after-cta-click.png`,
         fullPage: false,

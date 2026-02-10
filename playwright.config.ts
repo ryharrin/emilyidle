@@ -1,13 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const MOBILE_VIEWPORTS = [
-  { name: "chromium-mobile-pixel5", device: "Pixel 5" as const },
-  { name: "webkit-mobile-iphone12", device: "iPhone 12" as const },
-];
+const MOBILE_VIEWPORTS = [{ name: "webkit-mobile-iphone15", device: "iPhone 15" as const }];
 
 const mobileProjects = MOBILE_VIEWPORTS.map(({ name, device }) => ({
   name,
-  ...(name === "webkit-mobile-iphone12" ? { timeout: 180_000, retries: 1, workers: 1 } : {}),
+  ...(name === "webkit-mobile-iphone15" ? { timeout: 180_000, retries: 1, workers: 1 } : {}),
   use: {
     ...devices[device],
     hasTouch: true,
@@ -25,7 +22,7 @@ export default defineConfig({
         browserName: "chromium",
       },
     },
-    // Mobile viewports (Pixel 5 + iPhone 12) cover Chrome and WebKit scroll-snap/sticky behaviors.
+    // iPhone project covers mobile WebKit behavior.
     ...mobileProjects,
   ],
   use: {

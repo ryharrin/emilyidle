@@ -16,7 +16,7 @@ async function seedQuartzSave(page: Page, args: SeedArgs) {
     const state = {
       currencyCents: 0,
       enjoymentCents: 0,
-      items: { starter: 1 },
+      items: { quartz: 1 },
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
@@ -39,7 +39,7 @@ async function openQuartzModal(page: Page) {
 
   const quartzOpened = await openCatalogInteractionModal(
     page,
-    '[data-testid="vault-interact-starter"]:not([disabled])',
+    '[data-testid="vault-interact-quartz"]:not([disabled])',
     "quartz-modal",
     catalogPanel,
   );

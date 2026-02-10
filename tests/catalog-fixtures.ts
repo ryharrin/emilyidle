@@ -1,10 +1,10 @@
 export const NEW_WATCH_IDS = [
-  "omega-aurora-frost",
-  "omega-seashore-drift",
-  "jaeger-lecoultre-atmos-vsp",
-  "cartier-ballon-de-lumiere-chrono",
-  "audemars-piguet-luminous-tourbillon",
-  "rolex-celestial-tourbillon",
+  "grand-seiko-sbgx261",
+  "seiko-astron-gps-solar-ssj003",
+  "rolex-rolex-gmt-master-ii-ref-126713grnr",
+  "omega-speedmaster-moonwatch-professional-31030425001001",
+  "breguet-classique-tourbillon-3357",
+  "tag-heuer-carrera-tourbillon-heuer-02t-cbu2050-fc8316",
 ];
 
 export const BASE_CATALOG_SEEDED_STATE = {
@@ -35,9 +35,9 @@ export const BASE_CATALOG_SEEDED_STATE = {
   interactionNextAvailableAtMsByItem: {},
   powerReserveByItem: {},
   items: {
-    starter: 3,
-    classic: 2,
-    chronograph: 1,
+    quartz: 3,
+    automatic: 2,
+    manual: 1,
     tourbillon: 0,
   },
   watchModels: {
@@ -82,7 +82,7 @@ export const BASE_CATALOG_SEEDED_STATE = {
     wind: { activeUntilMs: 0, nextAvailableAtMs: 0 },
   },
   discoveredCatalogEntries: NEW_WATCH_IDS,
-  catalogTierUnlocks: ["starter", "classic", "chronograph", "tourbillon"],
+  catalogTierUnlocks: ["quartz", "automatic", "manual", "tourbillon"],
   craftingParts: 0,
   craftedBoosts: {
     "polished-tools": 0,

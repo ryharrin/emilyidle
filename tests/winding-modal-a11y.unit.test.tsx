@@ -21,7 +21,7 @@ const openWindingModal = async (user: ReturnType<typeof userEvent.setup>) => {
   const interactButtons = await screen.findAllByTestId(/vault-interact-/i);
   const manualInteract = interactButtons.find((button) => {
     const testId = button.getAttribute("data-testid") ?? "";
-    const isManual = /vault-interact-(chronograph|tourbillon)/i.test(testId);
+    const isManual = /vault-interact-(manual|tourbillon)/i.test(testId);
     return isManual && !(button as HTMLButtonElement).disabled;
   });
   const interact =
@@ -44,8 +44,8 @@ describe("winding modal accessibility", () => {
           ...baseState,
           items: {
             ...baseState.items,
-            starter: 1,
-            chronograph: 1,
+            quartz: 1,
+            manual: 1,
           },
           upgrades: {
             ...baseState.upgrades,

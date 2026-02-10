@@ -20,9 +20,9 @@ const buildSeededState = (): GameState => {
     ),
     items: {
       ...base.items,
-      starter: Math.max(base.items.starter ?? 0, 3),
-      classic: Math.max(base.items.classic ?? 0, 2),
-      chronograph: Math.max(base.items.chronograph ?? 0, 2),
+      quartz: Math.max(base.items.quartz ?? 0, 3),
+      automatic: Math.max(base.items.automatic ?? 0, 2),
+      manual: Math.max(base.items.manual ?? 0, 2),
       tourbillon: Math.max(base.items.tourbillon ?? 0, 1),
     },
     discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
@@ -224,7 +224,7 @@ test.describe("Interaction modals", () => {
     const manualCandidates = await resolveInteractCandidates(
       page,
       catalogPanel,
-      '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
+      '[data-testid^="vault-interact-manual"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
     );
     if ((await manualCandidates.count()) > 0) {
       const windingModal = page.getByTestId("winding-modal");
@@ -260,7 +260,7 @@ test.describe("Interaction modals", () => {
     const automaticCandidates = await resolveInteractCandidates(
       page,
       catalogPanel,
-      '[data-testid="vault-interact-classic"]:not([disabled])',
+      '[data-testid="vault-interact-automatic"]:not([disabled])',
     );
     if ((await automaticCandidates.count()) > 0) {
       const automaticModal = page.getByTestId("automatic-modal");
@@ -291,7 +291,7 @@ test.describe("Interaction modals", () => {
     const quartzCandidates = await resolveInteractCandidates(
       page,
       catalogPanel,
-      '[data-testid="vault-interact-starter"]:not([disabled])',
+      '[data-testid="vault-interact-quartz"]:not([disabled])',
     );
     if ((await quartzCandidates.count()) > 0) {
       const quartzModal = page.getByTestId("quartz-modal");
@@ -326,7 +326,7 @@ test.describe("Interaction modals", () => {
     const manualCandidates = await resolveInteractCandidates(
       page,
       catalogPanel,
-      '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
+      '[data-testid^="vault-interact-manual"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
     );
     const manualCount = await manualCandidates.count();
     test.skip(manualCount === 0, "No manual winding candidate available");

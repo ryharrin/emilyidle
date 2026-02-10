@@ -22,9 +22,9 @@ describe("rate breakdown selectors", () => {
     const watchModels = getWatchModels();
 
     const buckets = [
-      { tierId: "starter" as const, expectedMultiplier: 1.02 },
-      { tierId: "classic" as const, expectedMultiplier: 1.05 },
-      { tierId: "chronograph" as const, expectedMultiplier: 1.08 },
+      { tierId: "quartz" as const, expectedMultiplier: 1.02 },
+      { tierId: "automatic" as const, expectedMultiplier: 1.05 },
+      { tierId: "manual" as const, expectedMultiplier: 1.08 },
       { tierId: "tourbillon" as const, expectedMultiplier: 1.12 },
     ];
 
@@ -56,7 +56,7 @@ describe("rate breakdown selectors", () => {
   it("updates worn-watch term when switching worn watch", () => {
     const baseState = createInitialState();
     const watchModels = getWatchModels();
-    const starterModel = watchModels.find((entry) => entry.tierId === "starter");
+    const starterModel = watchModels.find((entry) => entry.tierId === "quartz");
     const tourbillonModel = watchModels.find((entry) => entry.tierId === "tourbillon");
 
     expect(starterModel).toBeTruthy();
@@ -97,8 +97,8 @@ describe("rate breakdown selectors", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
-        classic: 3,
+        quartz: 10,
+        automatic: 3,
       },
       workshopPrestigeCount: 1,
     };
@@ -120,9 +120,9 @@ describe("rate breakdown selectors", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 25,
-        classic: 8,
-        chronograph: 2,
+        quartz: 25,
+        automatic: 8,
+        manual: 2,
       },
       upgrades: {
         ...baseState.upgrades,

@@ -7,17 +7,17 @@ import { getPerWatchStatsRows } from "../src/game/selectors/perWatchStats";
 
 import { NEW_WATCH_IDS } from "./catalog-fixtures";
 
-const EXPECTED_TIER_BY_ID: Record<string, "starter" | "classic" | "chronograph" | "tourbillon"> = {
-  "omega-aurora-frost": "starter",
-  "omega-seashore-drift": "starter",
-  "jaeger-lecoultre-atmos-vsp": "classic",
-  "cartier-ballon-de-lumiere-chrono": "chronograph",
-  "audemars-piguet-luminous-tourbillon": "tourbillon",
-  "rolex-celestial-tourbillon": "tourbillon",
+const EXPECTED_TIER_BY_ID: Record<string, "quartz" | "automatic" | "manual" | "tourbillon"> = {
+  "grand-seiko-sbgx261": "quartz",
+  "seiko-astron-gps-solar-ssj003": "quartz",
+  "rolex-rolex-gmt-master-ii-ref-126713grnr": "automatic",
+  "omega-speedmaster-moonwatch-professional-31030425001001": "manual",
+  "breguet-classique-tourbillon-3357": "tourbillon",
+  "tag-heuer-carrera-tourbillon-heuer-02t-cbu2050-fc8316": "tourbillon",
 };
 
 describe("catalog expansion guardrails", () => {
-  it("keeps third-wave model metadata mapped to expected tiers", () => {
+  it("keeps movement reference model metadata mapped to expected tiers", () => {
     const watchModelById = new Map(getWatchModels().map((model) => [model.id, model] as const));
 
     const tiers = new Set<string>();
@@ -33,10 +33,10 @@ describe("catalog expansion guardrails", () => {
       expect(model.tierId).toBe(EXPECTED_TIER_BY_ID[modelId]);
     }
 
-    expect(tiers).toEqual(new Set(["starter", "classic", "chronograph", "tourbillon"]));
+    expect(tiers).toEqual(new Set(["quartz", "automatic", "manual", "tourbillon"]));
   });
 
-  it("exposes readable enjoyment and cash rates for each third-wave model", () => {
+  it("exposes readable enjoyment and cash rates for each movement reference model", () => {
     const rowsById = new Map(
       getPerWatchStatsRows(createInitialState(), 0, 1).map((row) => [row.modelId, row] as const),
     );

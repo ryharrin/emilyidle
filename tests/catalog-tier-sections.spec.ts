@@ -3,7 +3,9 @@ import { BASE_CATALOG_SEEDED_STATE } from "./catalog-fixtures";
 
 const seededState = BASE_CATALOG_SEEDED_STATE;
 
-test("catalog tier lanes highlight the low/mid/lux wave", async ({ page }) => {
+test("catalog movement sections highlight quartz, automatic, manual, and tourbillon groups", async ({
+  page,
+}) => {
   await page.addInitScript(
     ({ state, lastSimulatedAtMs }) => {
       window.localStorage.clear();
@@ -31,21 +33,32 @@ test("catalog tier lanes highlight the low/mid/lux wave", async ({ page }) => {
   const filters = page.getByTestId("catalog-filters");
   await expect(filters).toBeVisible();
 
-  const lowLane = page.getByTestId("catalog-tier-low");
-  const midLane = page.getByTestId("catalog-tier-mid");
-  const luxLane = page.getByTestId("catalog-tier-lux");
+  const quartzLane = page.getByTestId("catalog-tier-quartz");
+  const automaticLane = page.getByTestId("catalog-tier-automatic");
+  const manualLane = page.getByTestId("catalog-tier-manual");
+  const tourbillonLane = page.getByTestId("catalog-tier-tourbillon");
 
-  await expect(lowLane).toBeVisible();
-  await expect(lowLane.getByText("Aurora Frost")).toBeVisible();
-  await expect(lowLane.locator(".catalog-lane-title")).toHaveText("Starter lane");
+  await expect(quartzLane).toBeVisible();
+  await expect(quartzLane.getByRole("heading", { name: "SBGX261" })).toBeVisible();
+  await expect(quartzLane.locator(".catalog-lane-title")).toHaveText("Quartz movement");
 
-  await expect(midLane).toBeVisible();
-  await expect(midLane.locator(".catalog-lane-title")).toHaveText("Mid-tier lane");
-  await expect(midLane.getByText("Ballon de Lumière Chrono")).toBeVisible();
+  await expect(automaticLane).toBeVisible();
+  await expect(automaticLane.locator(".catalog-lane-title")).toHaveText("Automatic movement");
+  await expect(
+    automaticLane.getByRole("heading", { name: /GMT-Master II ref\. 126713GRNR/ }),
+  ).toBeVisible();
 
-  await expect(luxLane).toBeVisible();
-  await expect(luxLane.locator(".catalog-lane-title")).toHaveText("Luxury lane");
-  await expect(luxLane.getByText("Luminous Tourbillon")).toBeVisible();
+  await expect(manualLane).toBeVisible();
+  await expect(manualLane.locator(".catalog-lane-title")).toHaveText("Manual movement");
+  await expect(
+    manualLane.getByRole("heading", { name: /Speedmaster Moonwatch Professional/ }),
+  ).toBeVisible();
+
+  await expect(tourbillonLane).toBeVisible();
+  await expect(tourbillonLane.locator(".catalog-lane-title")).toHaveText("Tourbillon movement");
+  await expect(
+    tourbillonLane.getByRole("heading", { name: "Classique Tourbillon 3357" }),
+  ).toBeVisible();
 
   await page.evaluate(() => window.scrollBy(0, 400));
   await expect(filters).toBeVisible();
@@ -57,9 +70,9 @@ test("catalog ownership tabs surface readiness badges", async ({ page }) => {
     currencyCents: 1_000_000_000_000,
     enjoymentCents: 1_000_000_000_000,
     interactionNextAvailableAtMsByItem: {
-      starter: 0,
-      classic: 0,
-      chronograph: 0,
+      quartz: 0,
+      automatic: 0,
+      manual: 0,
       tourbillon: 0,
     },
   };

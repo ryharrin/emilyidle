@@ -20,7 +20,7 @@ test("nostalgia unlocks flow", async ({ page }) => {
       xp: 0,
       nextAvailableAtMs: 0,
     },
-    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 0 },
     upgrades: {
       "polishing-tools": 0,
       "assembly-jigs": 0,
@@ -84,10 +84,10 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await clickLocatorSafely(page.getByTestId("nostalgia-tab"));
 
   await expect(page.getByTestId("nostalgia-unlocks")).toBeVisible();
-  await expect(page.getByTestId("nostalgia-unlock-buy-classic")).toBeEnabled();
-  await expect(page.getByTestId("nostalgia-unlock-buy-chronograph")).toBeDisabled();
+  await expect(page.getByTestId("nostalgia-unlock-buy-automatic")).toBeEnabled();
+  await expect(page.getByTestId("nostalgia-unlock-buy-manual")).toBeDisabled();
 
-  await clickLocatorSafely(page.getByTestId("nostalgia-unlock-buy-classic"));
+  await clickLocatorSafely(page.getByTestId("nostalgia-unlock-buy-automatic"));
 
   const unlockModal = page.getByTestId("nostalgia-unlock-modal");
   try {
@@ -97,8 +97,8 @@ test("nostalgia unlocks flow", async ({ page }) => {
     // Confirmation toggle may be disabled; no modal appears.
   }
 
-  await expect(page.getByTestId("nostalgia-unlock-buy-classic")).toBeDisabled();
-  await expect(page.getByTestId("nostalgia-unlock-refund-classic")).toBeEnabled();
+  await expect(page.getByTestId("nostalgia-unlock-buy-automatic")).toBeDisabled();
+  await expect(page.getByTestId("nostalgia-unlock-refund-automatic")).toBeEnabled();
   await expect(page.getByTestId("nostalgia-balance")).toHaveText(/0 Nostalgia/);
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
@@ -116,8 +116,8 @@ test("nostalgia unlocks flow", async ({ page }) => {
   await page.reload({ waitUntil: "domcontentloaded" });
 
   await clickLocatorSafely(page.getByTestId("nostalgia-tab"));
-  await expect(page.getByTestId("nostalgia-unlock-buy-classic")).toBeDisabled();
-  await expect(page.getByTestId("nostalgia-unlock-refund-classic")).toBeEnabled();
+  await expect(page.getByTestId("nostalgia-unlock-buy-automatic")).toBeDisabled();
+  await expect(page.getByTestId("nostalgia-unlock-refund-automatic")).toBeEnabled();
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();

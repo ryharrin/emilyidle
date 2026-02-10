@@ -154,23 +154,23 @@ export const MAISON_LINES: ReadonlyArray<MaisonLineDefinition> = [
 
 export const CATALOG_TIER_BONUSES: CatalogTierBonusDefinition[] = [
   {
-    id: "starter",
+    id: "quartz",
     name: "Starter archive",
-    description: "Archive 3 starter references to boost enjoyment output.",
+    description: "Archive 3 quartz references to boost enjoyment output.",
     requiredCount: 3,
     incomeMultiplier: 1.03,
   },
   {
-    id: "classic",
+    id: "automatic",
     name: "Classic index",
-    description: "Discover 4 classic icons to amplify collection earnings.",
+    description: "Discover 4 automatic icons to amplify collection earnings.",
     requiredCount: 4,
     incomeMultiplier: 1.05,
   },
   {
-    id: "chronograph",
+    id: "manual",
     name: "Chronograph dossier",
-    description: "Collect 3 chronograph references for a lasting enjoyment lift.",
+    description: "Collect 3 manual references for a lasting enjoyment lift.",
     requiredCount: 3,
     incomeMultiplier: 1.07,
   },
@@ -333,9 +333,9 @@ export function getDiscoveredCatalogEntries(state: GameState): CatalogEntry[] {
 
 export function getCatalogTierProgress(state: GameState): Record<CatalogTierId, number> {
   const progress: Record<CatalogTierId, number> = {
-    starter: 0,
-    classic: 0,
-    chronograph: 0,
+    quartz: 0,
+    automatic: 0,
+    manual: 0,
     tourbillon: 0,
   };
 
@@ -430,7 +430,7 @@ export function getNostalgiaUnlockIds(): WatchItemId[] {
 }
 
 export function createInitialState(): GameState {
-  const starterPriceCents = WATCH_ITEM_LOOKUP.get("starter")?.basePriceCents ?? 0;
+  const starterPriceCents = WATCH_ITEM_LOOKUP.get("quartz")?.basePriceCents ?? 0;
 
   return {
     currencyCents: starterPriceCents,

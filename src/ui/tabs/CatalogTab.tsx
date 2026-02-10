@@ -18,7 +18,6 @@ import {
   WatchComparePanel,
   type CompareSlotPayload,
 } from "../components/catalog/WatchComparePanel";
-import type { TierBadgeCategory } from "../../game/tierBadges";
 import { PowerReserveHint } from "../components/PowerReserveHint";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
@@ -82,8 +81,8 @@ type CatalogTabProps = {
   onCatalogSortChange: (next: "default" | "brand" | "year" | "tier") => void;
   catalogEra: "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown";
   onCatalogEraChange: (next: "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown") => void;
-  catalogType: "all" | "gmt" | "chronograph" | "dress" | "diver";
-  onCatalogTypeChange: (next: "all" | "gmt" | "chronograph" | "dress" | "diver") => void;
+  catalogType: "all" | "gmt" | "manual" | "dress" | "diver";
+  onCatalogTypeChange: (next: "all" | "gmt" | "manual" | "dress" | "diver") => void;
   catalogTab: "unowned" | "owned";
   onCatalogTabChange: (next: "unowned" | "owned") => void;
   catalogBrands: ReadonlyArray<string>;
@@ -158,44 +157,37 @@ function formatMovementLabel(movement?: string): string {
   return `${movement.charAt(0).toUpperCase()}${movement.slice(1)} movement`;
 }
 
-type CatalogLaneId = "low" | "mid" | "lux";
-
-type CatalogLaneDefinition = {
-  id: CatalogLaneId;
+type CatalogMovementSectionDefinition = {
+  id: CatalogTierId;
   title: string;
   description: string;
-  badge: TierBadgeCategory;
   note: string;
 };
 
-const CATALOG_TIER_TO_LANE: Record<CatalogTierId, CatalogLaneId> = {
-  starter: "low",
-  classic: "mid",
-  chronograph: "mid",
-  tourbillon: "lux",
-};
-
-const CATALOG_LANES: ReadonlyArray<CatalogLaneDefinition> = [
+const CATALOG_MOVEMENT_SECTIONS: ReadonlyArray<CatalogMovementSectionDefinition> = [
   {
-    id: "low",
-    title: "Starter lane",
-    description: "Low-tier quartz discoveries tuned for consistent enjoyment flow.",
-    badge: "starter",
-    note: "Accessible pricing and gentle pacing keep the lane approachable.",
+    id: "quartz",
+    title: "Quartz movement",
+    description: "Battery-powered watches focused on precision and easy entry progression.",
+    note: "Reliable pacing and low friction make this the quickest movement family to scale.",
   },
   {
-    id: "mid",
-    title: "Mid-tier lane",
-    description: "Classic automatics and chronographs that mix enjoyment with cash.",
-    badge: "mid",
-    note: "Mechanical craftsmanship with predictable pricing helps comparison.",
+    id: "automatic",
+    title: "Automatic movement",
+    description: "Rotor-driven mechanical watches with balanced reward pacing.",
+    note: "Automatic references maintain reserve through wear and reward steady ownership.",
   },
   {
-    id: "lux",
-    title: "Luxury lane",
-    description: "Tourbillons reserved for prestige, featuring high enjoyment and cachet.",
-    badge: "lux",
-    note: "Premium tags and storytelling reinforce the high tier narrative.",
+    id: "manual",
+    title: "Manual movement",
+    description: "Hand-wound mechanical watches emphasizing interaction depth and craft.",
+    note: "Manual references reward active winding and detail-oriented collecting.",
+  },
+  {
+    id: "tourbillon",
+    title: "Tourbillon movement",
+    description: "High-complication tourbillons reserved for prestige collection goals.",
+    note: "Tourbillon references sit at the top of progression and provide premium bonuses.",
   },
 ];
 
@@ -1244,14 +1236,14 @@ export function CatalogPurchasePanel({
       return a.model.localeCompare(b.model);
     });
 
-    const laneMap = new Map<CatalogLaneId, CatalogEntry[]>();
-    for (const lane of CATALOG_LANES) {
-      laneMap.set(lane.id, []);
+    const sectionMap = new Map<CatalogTierId, CatalogEntry[]>();
+    for (const section of CATALOG_MOVEMENT_SECTIONS) {
+      sectionMap.set(section.id, []);
     }
 
     for (const entry of sortedEntries) {
-      const laneId = CATALOG_TIER_TO_LANE[getWatchModelTierId(entry.id)];
-      laneMap.get(laneId)?.push(entry);
+      const movementType = getWatchModelTierId(entry.id);
+      sectionMap.get(movementType)?.push(entry);
     }
 
     return (
@@ -1260,27 +1252,36 @@ export function CatalogPurchasePanel({
         data-testid="catalog-grid"
         data-density={catalogDensity}
       >
-        {CATALOG_LANES.map((lane) => {
-          const laneEntries = laneMap.get(lane.id) ?? [];
+        {CATALOG_MOVEMENT_SECTIONS.map((section) => {
+          const movementEntries = sectionMap.get(section.id) ?? [];
           return (
-            <section key={lane.id} className="catalog-lane" data-testid={`catalog-tier-${lane.id}`}>
+            <section
+              key={section.id}
+              className="catalog-lane"
+              data-testid={`catalog-tier-${section.id}`}
+            >
               <header
                 className="catalog-lane-header"
-                data-testid={`catalog-tier-header-${lane.id}`}
+                data-testid={`catalog-tier-header-${section.id}`}
               >
-                <TierBadge tier={lane.badge} showLabel label={lane.title} description={lane.note} />
+                <TierBadge
+                  tier={section.id}
+                  showLabel
+                  label={section.title}
+                  description={section.note}
+                />
                 <div>
-                  <p className="catalog-lane-title">{lane.title}</p>
-                  <p className="catalog-lane-description">{lane.description}</p>
+                  <p className="catalog-lane-title">{section.title}</p>
+                  <p className="catalog-lane-description">{section.description}</p>
                 </div>
-                <span className="catalog-lane-note">{lane.note}</span>
+                <span className="catalog-lane-note">{section.note}</span>
               </header>
-              {laneEntries.length > 0 ? (
+              {movementEntries.length > 0 ? (
                 <div className="catalog-lane-grid">
-                  {laneEntries.map((entry) => renderCatalogCard(entry, showFacts))}
+                  {movementEntries.map((entry) => renderCatalogCard(entry, showFacts))}
                 </div>
               ) : (
-                <p className="catalog-lane-empty" data-testid={`catalog-tier-empty-${lane.id}`}>
+                <p className="catalog-lane-empty" data-testid={`catalog-tier-empty-${section.id}`}>
                   No catalog entries match these filters.
                 </p>
               )}
@@ -1532,7 +1533,7 @@ export function CatalogPurchasePanel({
               <option value="default">Default</option>
               <option value="brand">Brand (A→Z)</option>
               <option value="year">Year (newest→oldest)</option>
-              <option value="tier">Tier (starter→tourbillon)</option>
+              <option value="tier">Movement (quartz→tourbillon)</option>
             </select>
           </div>
           <div className="filter-field">
@@ -1564,7 +1565,7 @@ export function CatalogPurchasePanel({
             >
               <option value="all">All</option>
               <option value="gmt">GMT</option>
-              <option value="chronograph">Chronograph</option>
+              <option value="manual">Manual</option>
               <option value="dress">Dress</option>
               <option value="diver">Diver</option>
             </select>
@@ -1953,7 +1954,7 @@ export function CatalogTabLegacy({
                 <option value="default">Default</option>
                 <option value="brand">Brand (A→Z)</option>
                 <option value="year">Year (newest→oldest)</option>
-                <option value="tier">Tier (starter→tourbillon)</option>
+                <option value="tier">Movement (quartz→tourbillon)</option>
               </select>
             </div>
             <div className="filter-field">
@@ -1985,7 +1986,7 @@ export function CatalogTabLegacy({
               >
                 <option value="all">All</option>
                 <option value="gmt">GMT</option>
-                <option value="chronograph">Chronograph</option>
+                <option value="manual">Manual</option>
                 <option value="dress">Dress</option>
                 <option value="diver">Diver</option>
               </select>

@@ -9,9 +9,10 @@ test("fresh save shows catalog buy buttons in collection shop", async ({ page })
   await page.goto("/");
   await clickLocatorSafely(page.getByRole("tab", { name: "Collection" }));
 
-  const nextUnlockCareerCta = page.getByTestId("next-unlock-cta-career");
-  await nextUnlockCareerCta.scrollIntoViewIfNeeded();
-  await clickLocatorSafely(nextUnlockCareerCta);
+  const callout = page.getByTestId("catalog-shop-callout");
+  await callout.scrollIntoViewIfNeeded();
+  const openCatalog = callout.getByRole("button", { name: "Open Catalog" });
+  await clickLocatorSafely(openCatalog);
 
   await expect(page.getByTestId("catalog-collection-context")).toBeVisible();
   await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();

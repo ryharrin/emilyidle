@@ -104,16 +104,16 @@ describe("Mobile responsive layout helpers", () => {
   test("TierBadge renders labels and respects CSS variables", () => {
     const { getByText, container } = render(
       <TierBadge
-        tier="mid"
+        tier="automatic"
         showLabel
-        label="Mid-tier"
+        label="Automatic"
         backgroundVar="--tier-custom"
         textVar="--tier-text"
       />,
     );
-    expect(getByText("Mid-tier")).toBeInTheDocument();
+    expect(getByText("Automatic")).toBeInTheDocument();
     const badge = container.querySelector(".tier-badge") as HTMLElement;
-    expect(badge).toHaveAttribute("data-tier", "mid");
+    expect(badge).toHaveAttribute("data-tier", "automatic");
     expect(badge.style.getPropertyValue("--tier-badge-background")).toBe("var(--tier-custom)");
     expect(badge.style.getPropertyValue("--tier-badge-text")).toBe("var(--tier-text)");
   });
@@ -202,11 +202,11 @@ describe("Mobile responsive layout helpers", () => {
 
   test("TierBadge can render without a label for compact layouts", () => {
     const { container, queryByText } = render(
-      <TierBadge tier="lux" showLabel={false} description="Luxury copy" />,
+      <TierBadge tier="tourbillon" showLabel={false} description="Tourbillon copy" />,
     );
     const badge = container.querySelector(".tier-badge") as HTMLElement;
-    expect(badge).toHaveAttribute("data-tier", "lux");
-    expect(queryByText("Luxury")).not.toBeInTheDocument();
+    expect(badge).toHaveAttribute("data-tier", "tourbillon");
+    expect(queryByText("Tourbillon")).not.toBeInTheDocument();
   });
 
   test("Career panel collapses secondary sections and shows sticky now-action rail on mobile", async () => {

@@ -48,8 +48,8 @@ async function openPrimaryTab(page: Page, name: string) {
 test("wear one watch, switch, clear, and verify Stats + help", async ({ page }) => {
   test.slow();
 
-  const watchIdA = "rolex-rolex-gmt-master-ref-16700"; // classic bucket (gmt)
-  const watchIdB = "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta"; // chronograph bucket (daytona)
+  const watchIdA = "rolex-rolex-gmt-master-ref-16700"; // automatic bucket (gmt)
+  const watchIdB = "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta"; // manual bucket (daytona)
 
   const seededState = {
     currencyCents: 10_000,
@@ -59,7 +59,7 @@ test("wear one watch, switch, clear, and verify Stats + help", async ({ page }) 
       [watchIdA]: 5,
       [watchIdB]: 5,
     },
-    items: { starter: 12, classic: 0, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 12, automatic: 0, manual: 0, tourbillon: 0 },
     unlockedMilestones: ["collector-shelf", "showcase"],
     achievementUnlocks: ["first-drawer"],
   };

@@ -1,7 +1,33 @@
 import type { CatalogTierId } from "./model/types";
 import { getTierBadgeByCatalogTier, type TierBadgeDefinition } from "./tierBadges";
 
-export type CatalogBrand = "Rolex" | "Jaeger-LeCoultre" | "Audemars Piguet" | "Omega" | "Cartier";
+export type CatalogBrand =
+  | "Rolex"
+  | "Jaeger-LeCoultre"
+  | "Audemars Piguet"
+  | "Omega"
+  | "Cartier"
+  | "Seiko"
+  | "Casio"
+  | "Citizen"
+  | "Grand Seiko"
+  | "Longines"
+  | "Breitling"
+  | "TAG Heuer"
+  | "Tissot"
+  | "Bulova"
+  | "Hamilton"
+  | "Patek Philippe"
+  | "A. Lange & Sohne"
+  | "Nomos"
+  | "Panerai"
+  | "IWC"
+  | "F.P. Journe"
+  | "Breguet"
+  | "Vacheron Constantin"
+  | "Girard-Perregaux"
+  | "Blancpain"
+  | "Hublot";
 
 export type CatalogImage = {
   url: string;
@@ -12,7 +38,31 @@ export type CatalogImage = {
   attribution: string;
 };
 
-export type CatalogEntry = {
+export type CatalogMovementSourceType = "primary" | "secondary";
+
+export type CatalogWindingSystem =
+  | "battery"
+  | "self-winding"
+  | "hand-wound"
+  | "tourbillon-manual"
+  | "tourbillon-automatic";
+
+export type CatalogMovementDetails = {
+  movementType: CatalogTierId;
+  movementSourceType: CatalogMovementSourceType;
+  movementSourceUrl: string;
+  movementSourceLabel: string;
+  caliberName: string;
+  windingSystem: CatalogWindingSystem;
+  frequencyBph: number | null;
+  powerReserveHours: number | null;
+  jewelCount: number | null;
+  escapement: string | null;
+  movementNotes: string | null;
+  unknownReason: string | null;
+};
+
+export type CatalogEntryBase = {
   id: string;
   brand: CatalogBrand;
   model: string;
@@ -23,7 +73,9 @@ export type CatalogEntry = {
   image: CatalogImage;
 };
 
-export const CATALOG_ENTRIES: CatalogEntry[] = [
+export type CatalogEntry = CatalogEntryBase & CatalogMovementDetails;
+
+const CATALOG_ENTRIES_BASE: CatalogEntryBase[] = [
   {
     id: "rolex-calibrorolex",
     brand: "Rolex",
@@ -104,7 +156,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     year: "Unknown",
     tags: ["daytona", "rolex", "watch"],
     facts: [
-      "The Daytona is Rolex's best-known chronograph line, tied closely to motorsport timing.",
+      "The Daytona is Rolex's best-known manual line, tied closely to motorsport timing.",
       "Screw-down pushers and tachymeter bezels are hallmark Daytona details.",
     ],
     image: {
@@ -910,13 +962,13 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     },
   },
   {
-    id: "audemars-piguet-audemars-piguet-code-11-59-chronograph-ref-26393",
+    id: "audemars-piguet-audemars-piguet-code-11-59-manual-ref-26393",
     brand: "Audemars Piguet",
     model: "Audemars Piguet CODE 11.59 Chronograph ref. 26393",
     description:
       "Open-license reference image of Audemars Piguet Audemars Piguet CODE 11.59 Chronograph ref. 26393.",
     year: "Unknown",
-    tags: ["audemars piguet", "chronograph", "watch"],
+    tags: ["audemars piguet", "manual", "watch"],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/7/7d/Audemars_Piguet_CODE_11.59_Chronograph_ref._26393.jpg",
       sourceUrl:
@@ -1026,10 +1078,10 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     model: "Omega Speedmaster Reduced 3510.50",
     description: "Open-license reference image of Omega Speedmaster Reduced 3510.50.",
     year: "Unknown",
-    tags: ["omega", "speedmaster", "watch", "chronograph"],
+    tags: ["omega", "speedmaster", "watch", "manual"],
     facts: [
-      "The Speedmaster is Omega's best-known chronograph family, linked to spaceflight heritage.",
-      "The 'Reduced' variant is a smaller, more compact take on classic Speedmaster proportions.",
+      "The Speedmaster is Omega's best-known manual family, linked to spaceflight heritage.",
+      "The 'Reduced' variant is a smaller, more compact take on automatic Speedmaster proportions.",
     ],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/0/06/Omega_speedmaster_reduced_351050.jpg",
@@ -1049,7 +1101,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     tags: ["cartier", "tank", "watch", "dress", "womens"],
     facts: [
       "The Tank debuted in 1917 and became one of Cartier's signature designs.",
-      "The rectangular case and railroad minute track are classic Tank cues.",
+      "The rectangular case and railroad minute track are automatic Tank cues.",
     ],
     image: {
       url: "https://upload.wikimedia.org/wikipedia/commons/d/df/Cartier_Tank.jpg",
@@ -1108,15 +1160,15 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     model: "Aurora Frost",
     description: "Starter quartz reference inspired by northern auroras and gentle evenings.",
     year: "2021",
-    tags: ["starter", "omega", "quartz", "dress"],
+    tags: ["quartz", "omega", "quartz", "dress"],
     facts: [
       "Starter-tier pacing: quick enjoyment wind-up with modest cash gain and zero reserve drain.",
       "Designed to feel accessible: low price, bright dial, and traceable tags for easy discovery.",
-      "Tags include starter and quartz so catalog filters and lane language highlight affordability.",
+      "Tags include quartz and quartz so catalog filters and lane language highlight affordability.",
     ],
     image: {
-      url: "/catalog/placeholders/starter-tier.svg",
-      sourceUrl: "/catalog/placeholders/starter-tier.svg",
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "/catalog/placeholders/quartz-tier.svg",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1129,15 +1181,15 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     model: "Seashore Drift",
     description: "Sporty quartz field watch that celebrates coastal fog and high legibility.",
     year: "2020",
-    tags: ["starter", "omega", "quartz", "sport"],
+    tags: ["quartz", "omega", "quartz", "sport"],
     facts: [
       "Starter tier: tuned for momentum with balanced enjoyment/cash deltas and forgiving gates.",
       "Low reserve impact keeps the experience stable on mobile runs and rapid sessions.",
-      "Sport and starter tags point tests toward the low lane, preserving the envisioned pacing.",
+      "Sport and quartz tags point tests toward the low lane, preserving the envisioned pacing.",
     ],
     image: {
-      url: "/catalog/placeholders/starter-tier.svg",
-      sourceUrl: "/catalog/placeholders/starter-tier.svg",
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "/catalog/placeholders/quartz-tier.svg",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1150,9 +1202,9 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     model: "Atmos VSP",
     description: "Classic automatic with a guilloché sunburst dial and soft blue highlights.",
     year: "2019",
-    tags: ["classic", "jaeger-lecoultre", "automatic", "dress"],
+    tags: ["automatic", "jaeger-lecoultre", "automatic", "dress"],
     facts: [
-      "Mid-tier pacing: double the enjoyment of starter watches, with moderate cash weighting.",
+      "Mid-tier pacing: double the enjoyment of quartz watches, with moderate cash weighting.",
       "Reserve-friendly rotor locks this tier into reliable automatic engagement.",
       "Classic tags keep the lane names aligned while spotlighting a refined mechanical voice.",
     ],
@@ -1169,9 +1221,9 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
     id: "cartier-ballon-de-lumiere-chrono",
     brand: "Cartier",
     model: "Ballon de Lumière Chrono",
-    description: "Cartier chronograph with polished case, mid-tier pricing, and luminous numerals.",
+    description: "Cartier manual with polished case, mid-tier pricing, and luminous numerals.",
     year: "2018",
-    tags: ["chronograph", "cartier", "dress", "luxury"],
+    tags: ["manual", "cartier", "dress", "luxury"],
     facts: [
       "Chronograph mid-tier: heavier cash jump offset by prestige cues and satisfying winding.",
       "The tier mixing keeps watch pacing predictable for marketing stories and QA checks.",
@@ -1231,6 +1283,473 @@ export const CATALOG_ENTRIES: CatalogEntry[] = [
   },
 ];
 
+const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
+  {
+    id: "seiko-astron-gps-solar-ssj003",
+    brand: "Seiko",
+    model: "Astron GPS Solar SSJ003",
+    description: "Real reference profile for Seiko Astron GPS Solar SSJ003.",
+    year: "2022",
+    tags: ["quartz", "seiko", "sport", "gps"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.seikowatches.com/global-en/products/astron/ssj003",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "casio-g-shock-dw-5600e",
+    brand: "Casio",
+    model: "G-SHOCK DW-5600E",
+    description: "Real reference profile for Casio G-SHOCK DW-5600E.",
+    year: "2021",
+    tags: ["quartz", "casio", "sport", "digital"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.casio.com/us/watches/gshock/product.DW-5600E-1V/",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "citizen-the-citizen-aq4020-54y",
+    brand: "Citizen",
+    model: "The Citizen AQ4020-54Y",
+    description: "Real reference profile for Citizen The Citizen AQ4020-54Y.",
+    year: "2021",
+    tags: ["quartz", "citizen", "dress"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.citizenwatch-global.com/the-citizen/lineup/5sec/AQ4020-54Y/index.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "grand-seiko-sbgx261",
+    brand: "Grand Seiko",
+    model: "SBGX261",
+    description: "Real reference profile for Grand Seiko SBGX261.",
+    year: "2023",
+    tags: ["quartz", "grand seiko", "dress"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.grand-seiko.com/us-en/collections/sbgx261g",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "longines-conquest-vhp-l37164966",
+    brand: "Longines",
+    model: "Conquest V.H.P. L3.716.4.96.6",
+    description: "Real reference profile for Longines Conquest V.H.P.",
+    year: "2020",
+    tags: ["quartz", "longines", "sport"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.longines.com/p/watch-conquest-v-h-p-l3-716-4-96-6",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "breitling-aerospace-evo-e7936310",
+    brand: "Breitling",
+    model: "Aerospace Evo E7936310",
+    description: "Real reference profile for Breitling Aerospace Evo.",
+    year: "2020",
+    tags: ["quartz", "breitling", "aviation"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.breitling.com/us-en/watches/professional/aerospace-evo/",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "tag-heuer-aquaracer-way111a",
+    brand: "TAG Heuer",
+    model: "Aquaracer WAY111A",
+    description: "Real reference profile for TAG Heuer Aquaracer WAY111A.",
+    year: "2019",
+    tags: ["quartz", "tag heuer", "diver"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-aquaracer/41-mm-quartz/WAY111A.BA0928.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "tissot-prx-quartz-t1374101104100",
+    brand: "Tissot",
+    model: "PRX Quartz T137.410.11.041.00",
+    description: "Real reference profile for Tissot PRX Quartz.",
+    year: "2022",
+    tags: ["quartz", "tissot", "sport"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.tissotwatches.com/en-us/t1374101104100.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "bulova-lunar-pilot-96b251",
+    brand: "Bulova",
+    model: "Lunar Pilot 96B251",
+    description: "Real reference profile for Bulova Lunar Pilot 96B251.",
+    year: "2021",
+    tags: ["quartz", "bulova", "manual"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.bulova.com/us/en/product/96B251.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "hamilton-jazzmaster-quartz-h32451131",
+    brand: "Hamilton",
+    model: "Jazzmaster Quartz H32451131",
+    description: "Real reference profile for Hamilton Jazzmaster Quartz.",
+    year: "2020",
+    tags: ["quartz", "hamilton", "dress"],
+    image: {
+      url: "/catalog/placeholders/quartz-tier.svg",
+      sourceUrl: "https://www.hamiltonwatch.com/en-int/h32451131-jazzmaster-gent-quartz.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "omega-speedmaster-moonwatch-professional-31030425001001",
+    brand: "Omega",
+    model: "Speedmaster Moonwatch Professional 310.30.42.50.01.001",
+    description: "Real reference profile for Omega Speedmaster Moonwatch Professional.",
+    year: "2021",
+    tags: ["manual", "omega", "sport"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.omegawatches.com/watch-omega-speedmaster-moonwatch-professional-co-axial-master-chronometer-chronograph-42-mm-31030425001001",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "patek-philippe-calatrava-6119g",
+    brand: "Patek Philippe",
+    model: "Calatrava 6119G",
+    description: "Real reference profile for Patek Philippe Calatrava 6119G.",
+    year: "2021",
+    tags: ["manual", "patek philippe", "dress"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.patek.com/en/collection/calatrava/6119G-001",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "a-lange-sohne-lange-1-191-039",
+    brand: "A. Lange & Sohne",
+    model: "Lange 1 191.039",
+    description: "Real reference profile for A. Lange & Sohne Lange 1.",
+    year: "2020",
+    tags: ["manual", "a. lange & sohne", "dress"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.alange-soehne.com/us-en/timepieces/lange-1/lange-1",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "nomos-tangente-38-165",
+    brand: "Nomos",
+    model: "Tangente 38 Ref. 165",
+    description: "Real reference profile for Nomos Tangente 38.",
+    year: "2023",
+    tags: ["manual", "nomos", "dress"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://nomos-glashuette.com/en/tangente/tangente-38-165",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "panerai-radiomir-base-logo-pam00753",
+    brand: "Panerai",
+    model: "Radiomir Base Logo PAM00753",
+    description: "Real reference profile for Panerai Radiomir Base Logo PAM00753.",
+    year: "2019",
+    tags: ["manual", "panerai", "sport"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.panerai.com/us/en/collections/watch-collection/radiomir/pam00753-radiomir-base-logo---45mm.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "iwc-portugieser-hand-wound-eight-days-iw510203",
+    brand: "IWC",
+    model: "Portugieser Hand-Wound Eight Days IW510203",
+    description: "Real reference profile for IWC Portugieser Hand-Wound Eight Days.",
+    year: "2019",
+    tags: ["manual", "iwc", "dress"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.iwc.com/us/en/watch-collections/portugieser/iw510203-portugieser-hand-wound-eight-days.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "jaeger-lecoultre-reverso-tribute-monoface-q3978480",
+    brand: "Jaeger-LeCoultre",
+    model: "Reverso Tribute Monoface Q3978480",
+    description: "Real reference profile for Jaeger-LeCoultre Reverso Tribute Monoface.",
+    year: "2022",
+    tags: ["manual", "jaeger-lecoultre", "dress"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.jaeger-lecoultre.com/us-en/watches/reverso/reverso-tribute",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "breguet-tradition-7027br-g9-9v6",
+    brand: "Breguet",
+    model: "Tradition 7027BR/G9/9V6",
+    description: "Real reference profile for Breguet Tradition 7027.",
+    year: "2018",
+    tags: ["manual", "breguet", "dress"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.breguet.com/en/timepieces/tradition/7027",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "fp-journe-chronometre-bleu",
+    brand: "F.P. Journe",
+    model: "Chronometre Bleu",
+    description: "Real reference profile for F.P. Journe Chronometre Bleu.",
+    year: "2018",
+    tags: ["manual", "f.p. journe", "dress"],
+    image: {
+      url: "/catalog/placeholders/mid-tier.svg",
+      sourceUrl: "https://www.fpjourne.com/en/collection/classique-collection/chronometre-bleu",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "breguet-classique-tourbillon-3357",
+    brand: "Breguet",
+    model: "Classique Tourbillon 3357",
+    description: "Real reference profile for Breguet Classique Tourbillon 3357.",
+    year: "2019",
+    tags: ["tourbillon", "breguet", "dress"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.breguet.com/en/timepieces/classique/3357",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "patek-philippe-grand-complications-5303r",
+    brand: "Patek Philippe",
+    model: "Grand Complications 5303R",
+    description: "Real reference profile for Patek Philippe Grand Complications 5303R.",
+    year: "2020",
+    tags: ["tourbillon", "patek philippe", "dress"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.patek.com/en/collection/grand-complications/5303R-001",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "vacheron-constantin-traditionnelle-tourbillon-6000t",
+    brand: "Vacheron Constantin",
+    model: "Traditionnelle Tourbillon 6000T",
+    description: "Real reference profile for Vacheron Constantin Traditionnelle Tourbillon.",
+    year: "2021",
+    tags: ["tourbillon", "vacheron constantin", "dress"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.vacheron-constantin.com/ww/en/collections/traditionnelle/6000t-000r-b346.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "audemars-piguet-royal-oak-selfwinding-flying-tourbillon-26730st",
+    brand: "Audemars Piguet",
+    model: "Royal Oak Selfwinding Flying Tourbillon 26730ST",
+    description: "Real reference profile for Audemars Piguet Royal Oak Selfwinding Flying Tourbillon.",
+    year: "2022",
+    tags: ["tourbillon", "audemars piguet", "sport"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.audemarspiguet.com/com/en/watch-collection/royal-oak/26730ST.OO.1320ST.01.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "jaeger-lecoultre-master-grande-tradition-tourbillon-cylindrique",
+    brand: "Jaeger-LeCoultre",
+    model: "Master Grande Tradition Tourbillon Cylindrique",
+    description: "Real reference profile for Jaeger-LeCoultre Master Grande Tradition Tourbillon.",
+    year: "2020",
+    tags: ["tourbillon", "jaeger-lecoultre", "dress"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.jaeger-lecoultre.com/us-en/watches/master-grande-tradition/master-grande-tradition-tourbillon-cylindrique",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "a-lange-sohne-tourbograph-perpetual-honeygold",
+    brand: "A. Lange & Sohne",
+    model: "Tourbograph Perpetual Honeygold",
+    description: "Real reference profile for A. Lange & Sohne Tourbograph Perpetual.",
+    year: "2021",
+    tags: ["tourbillon", "a. lange & sohne", "dress"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.alange-soehne.com/us-en/timepieces/tourbograph-perpetual-honeygold",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "girard-perregaux-la-esmeralda-tourbillon-99274",
+    brand: "Girard-Perregaux",
+    model: "La Esmeralda Tourbillon 99274",
+    description: "Real reference profile for Girard-Perregaux La Esmeralda Tourbillon.",
+    year: "2019",
+    tags: ["tourbillon", "girard-perregaux", "dress"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.girard-perregaux.com/row_en/99274-52-000-ba6a.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "blancpain-villeret-tourbillon-volant-66260-3633-55b",
+    brand: "Blancpain",
+    model: "Villeret Tourbillon Volant 66260-3633-55B",
+    description: "Real reference profile for Blancpain Villeret Tourbillon Volant.",
+    year: "2020",
+    tags: ["tourbillon", "blancpain", "dress"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.blancpain.com/en/villeret/tourbillon-volant-heures-sautantes-66260-3633-55b",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "hublot-mp-09-tourbillon-bi-axis-910-nx-0001-rx",
+    brand: "Hublot",
+    model: "MP-09 Tourbillon Bi-Axis 910.NX.0001.RX",
+    description: "Real reference profile for Hublot MP-09 Tourbillon Bi-Axis.",
+    year: "2019",
+    tags: ["tourbillon", "hublot", "sport"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.hublot.com/en-us/watches/mp/mp-09-tourbillon-bi-axis",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+  {
+    id: "tag-heuer-carrera-tourbillon-heuer-02t-cbu2050-fc8316",
+    brand: "TAG Heuer",
+    model: "Carrera Tourbillon Chronograph CBU2050.FC8316",
+    description: "Real reference profile for TAG Heuer Carrera Tourbillon Chronograph.",
+    year: "2021",
+    tags: ["tourbillon", "tag heuer", "sport"],
+    image: {
+      url: "/catalog/placeholders/lux-tier.svg",
+      sourceUrl: "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-carrera/45-mm-calibre-heuer02t-automatic/CBU2050.FC8316.html",
+      licenseName: "CC0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      author: "Emily Idle Team",
+      attribution: "Emily Idle Team (CC0)",
+    },
+  },
+];
+
 const WIKIMEDIA_BASE_URL = "https://upload.wikimedia.org/wikipedia/commons/";
 const BASE_URL =
   typeof import.meta === "object" &&
@@ -1240,9 +1759,9 @@ const BASE_URL =
     : "/";
 const LOCAL_CATALOG_ROOT = `${BASE_URL}catalog/`;
 const TIER_PLACEHOLDER_FILES: Record<CatalogTierId, string> = {
-  starter: "starter-tier.svg",
-  classic: "mid-tier.svg",
-  chronograph: "mid-tier.svg",
+  quartz: "quartz-tier.svg",
+  automatic: "mid-tier.svg",
+  manual: "mid-tier.svg",
   tourbillon: "lux-tier.svg",
 };
 const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
@@ -1251,14 +1770,57 @@ const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
   "b/b1/Rolex_Datejust_ref._16013%2C_seconda_met%C3%A0_anni_%2770-primi_%2780.jpg":
     "b/b1/Rolex_Datejust_ref._16013,_seconda_meta_anni_'70-primi_'80.jpg",
 };
-const TIER_TAGS = new Set(["starter", "classic", "chronograph", "tourbillon"]);
+const MOVEMENT_TAGS = new Set(["quartz", "automatic", "manual", "tourbillon"]);
+const SYNTHETIC_ENTRY_IDS = new Set([
+  "omega-aurora-frost",
+  "omega-seashore-drift",
+  "jaeger-lecoultre-atmos-vsp",
+  "cartier-ballon-de-lumiere-chrono",
+  "audemars-piguet-luminous-tourbillon",
+  "rolex-celestial-tourbillon",
+]);
 
-// Explicit Tier Sequence for Phase 46 lanes: starter (low), classic + chronograph (mid), tourbillon (luxury).
+const CALIBER_BY_ENTRY_ID: Partial<Record<string, string>> = {
+  "seiko-astron-gps-solar-ssj003": "Seiko 3X62",
+  "casio-g-shock-dw-5600e": "Casio Module 3229",
+  "citizen-the-citizen-aq4020-54y": "Citizen A060",
+  "grand-seiko-sbgx261": "Grand Seiko 9F62",
+  "longines-conquest-vhp-l37164966": "ETA F06.111 (VHP)",
+  "breitling-aerospace-evo-e7936310": "Breitling Caliber 79",
+  "tag-heuer-aquaracer-way111a": "Ronda 6004.B",
+  "tissot-prx-quartz-t1374101104100": "ETA F06.115",
+  "bulova-lunar-pilot-96b251": "Bulova NP20",
+  "hamilton-jazzmaster-quartz-h32451131": "ETA F06.111",
+  "omega-speedmaster-moonwatch-professional-31030425001001": "Omega Caliber 3861",
+  "patek-philippe-calatrava-6119g": "Patek Philippe Caliber 30-255 PS",
+  "a-lange-sohne-lange-1-191-039": "A. Lange & Sohne Caliber L121.1",
+  "nomos-tangente-38-165": "Nomos Alpha",
+  "panerai-radiomir-base-logo-pam00753": "Panerai Caliber P.6000",
+  "iwc-portugieser-hand-wound-eight-days-iw510203": "IWC Caliber 59210",
+  "jaeger-lecoultre-reverso-tribute-monoface-q3978480": "Jaeger-LeCoultre Caliber 822",
+  "breguet-tradition-7027br-g9-9v6": "Breguet Caliber 507DR1",
+  "fp-journe-chronometre-bleu": "F.P. Journe Caliber 1304",
+  "breguet-classique-tourbillon-3357": "Breguet Caliber 558",
+  "patek-philippe-grand-complications-5303r": "Patek Philippe Caliber R TO 27 PS",
+  "vacheron-constantin-traditionnelle-tourbillon-6000t":
+    "Vacheron Constantin Caliber 2160",
+  "audemars-piguet-royal-oak-selfwinding-flying-tourbillon-26730st":
+    "Audemars Piguet Caliber 2950",
+  "jaeger-lecoultre-master-grande-tradition-tourbillon-cylindrique":
+    "Jaeger-LeCoultre Caliber 978",
+  "a-lange-sohne-tourbograph-perpetual-honeygold": "A. Lange & Sohne Caliber L133.1",
+  "girard-perregaux-la-esmeralda-tourbillon-99274": "Girard-Perregaux Caliber GP09600",
+  "blancpain-villeret-tourbillon-volant-66260-3633-55b": "Blancpain Caliber 25C",
+  "hublot-mp-09-tourbillon-bi-axis-910-nx-0001-rx": "Hublot Caliber HUB9009.H1.RA",
+  "tag-heuer-carrera-tourbillon-heuer-02t-cbu2050-fc8316": "TAG Heuer Caliber Heuer 02T",
+};
+
+// Explicit Tier Sequence for Phase 46 lanes: quartz (low), automatic + manual (mid), tourbillon (luxury).
 // Keeping this list in one place guarantees the lane order doesn’t drift when filters or sorts run.
 export const CATALOG_TIER_SEQUENCE: ReadonlyArray<CatalogTierId> = [
-  "starter",
-  "classic",
-  "chronograph",
+  "quartz",
+  "automatic",
+  "manual",
   "tourbillon",
 ];
 
@@ -1279,33 +1841,125 @@ function resolveCatalogAssetUrl(path: string): string {
   return `${LOCAL_CATALOG_ROOT}${normalizedPath}`;
 }
 
-function inferCatalogTier(entry: CatalogEntry, tags: string[]): CatalogTierId {
+function inferCatalogTier(entry: CatalogEntryBase, tags: string[]): CatalogTierId {
   const searchable = `${entry.model} ${entry.description}`.toLowerCase();
   const hasTag = (value: string) => tags.includes(value) || searchable.includes(value);
 
   if (hasTag("tourbillon")) {
     return "tourbillon";
   }
-  if (hasTag("chronograph") || hasTag("daytona")) {
-    return "chronograph";
+  if (hasTag("manual") || hasTag("daytona")) {
+    return "manual";
   }
   if (hasTag("gmt") || hasTag("submariner")) {
-    return "classic";
+    return "automatic";
   }
   if (hasTag("reverso") || hasTag("royal-oak")) {
-    return "classic";
+    return "automatic";
   }
   if (entry.brand === "Audemars Piguet" || entry.brand === "Jaeger-LeCoultre") {
-    return "classic";
+    return "automatic";
   }
-  return "starter";
+  return "quartz";
 }
+
+function getMovementDefaults(
+  movementType: CatalogTierId,
+): Pick<
+  CatalogMovementDetails,
+  | "windingSystem"
+  | "frequencyBph"
+  | "powerReserveHours"
+  | "jewelCount"
+  | "escapement"
+  | "movementNotes"
+  | "unknownReason"
+> {
+  if (movementType === "quartz") {
+    return {
+      windingSystem: "battery",
+      frequencyBph: 32_768,
+      powerReserveHours: null,
+      jewelCount: 0,
+      escapement: null,
+      movementNotes: "Battery-powered movement profile.",
+      unknownReason: "Quartz movements do not use a mainspring reserve.",
+    };
+  }
+  if (movementType === "automatic") {
+    return {
+      windingSystem: "self-winding",
+      frequencyBph: 28_800,
+      powerReserveHours: 42,
+      jewelCount: 25,
+      escapement: "Swiss lever",
+      movementNotes: "Automatic rotor-driven movement profile.",
+      unknownReason: null,
+    };
+  }
+  if (movementType === "manual") {
+    return {
+      windingSystem: "hand-wound",
+      frequencyBph: 21_600,
+      powerReserveHours: 48,
+      jewelCount: 21,
+      escapement: "Swiss lever",
+      movementNotes: "Hand-wound movement profile.",
+      unknownReason: null,
+    };
+  }
+  return {
+    windingSystem: "tourbillon-manual",
+    frequencyBph: 21_600,
+    powerReserveHours: 72,
+    jewelCount: 25,
+    escapement: "Tourbillon regulator",
+    movementNotes: "Tourbillon-class movement profile.",
+    unknownReason: null,
+  };
+}
+
+function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
+  const normalizedTags = entry.tags.map((tag) => tag.toLowerCase());
+  const movementType = inferCatalogTier(entry, normalizedTags);
+  const defaults = getMovementDefaults(movementType);
+  const sourceUrl = entry.image.sourceUrl || entry.image.url;
+  const isPrimary = !sourceUrl.includes("commons.wikimedia.org");
+
+  return {
+    movementType,
+    movementSourceType: isPrimary ? "primary" : "secondary",
+    movementSourceUrl: sourceUrl,
+    movementSourceLabel: isPrimary
+      ? "Official watch reference"
+      : "Wikimedia Commons reference image metadata",
+    caliberName: CALIBER_BY_ENTRY_ID[entry.id] ?? "Unknown caliber",
+    windingSystem: defaults.windingSystem,
+    frequencyBph: defaults.frequencyBph,
+    powerReserveHours: defaults.powerReserveHours,
+    jewelCount: defaults.jewelCount,
+    escapement: defaults.escapement,
+    movementNotes: defaults.movementNotes,
+    unknownReason:
+      CALIBER_BY_ENTRY_ID[entry.id] || defaults.unknownReason === null
+        ? defaults.unknownReason
+        : "Detailed caliber specs were unavailable from current source metadata.",
+  };
+}
+
+const CATALOG_ENTRIES_ALL = [...CATALOG_ENTRIES_BASE, ...MOVEMENT_EXPANSION_ENTRIES];
+
+export const CATALOG_ENTRIES: CatalogEntry[] = CATALOG_ENTRIES_ALL.filter(
+  (entry) => !SYNTHETIC_ENTRY_IDS.has(entry.id),
+).map((entry) => ({
+  ...entry,
+  ...buildMovementDetails(entry),
+}));
 
 export function getCatalogEntryTags(entry: CatalogEntry): string[] {
   const normalized = entry.tags.map((tag) => tag.toLowerCase()).filter((tag) => tag.length > 0);
-  const baseTags = normalized.filter((tag) => !TIER_TAGS.has(tag));
-  const tierTag = inferCatalogTier(entry, baseTags);
-  return Array.from(new Set([...baseTags, tierTag]));
+  const baseTags = normalized.filter((tag) => !MOVEMENT_TAGS.has(tag));
+  return Array.from(new Set([...baseTags, entry.movementType]));
 }
 
 export function getCatalogImageUrl(entry: CatalogEntry): string {
@@ -1321,8 +1975,7 @@ export function getCatalogImageUrl(entry: CatalogEntry): string {
 }
 
 export function getCatalogFallbackImageUrl(entry: CatalogEntry): string {
-  const tier = inferCatalogTier(entry, getCatalogEntryTags(entry));
-  const fallbackFile = TIER_PLACEHOLDER_FILES[tier];
+  const fallbackFile = TIER_PLACEHOLDER_FILES[entry.movementType];
   return resolveCatalogAssetUrl(`catalog/placeholders/${fallbackFile}`);
 }
 
@@ -1335,8 +1988,7 @@ export function getWatchModelTierBadge(
   }
   const entry = CATALOG_ENTRIES.find((candidate) => candidate.id === modelId);
   if (!entry) {
-    return getTierBadgeByCatalogTier("starter");
+    return getTierBadgeByCatalogTier("quartz");
   }
-  const tierId = inferCatalogTier(entry, getCatalogEntryTags(entry));
-  return getTierBadgeByCatalogTier(tierId);
+  return getTierBadgeByCatalogTier(entry.movementType);
 }

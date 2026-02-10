@@ -70,7 +70,7 @@ describe("winding band legend", () => {
     render(
       <WindingMiniGameModal
         open
-        itemId="chronograph"
+        itemId="manual"
         itemLabel="Prototype"
         mode="normal"
         onModeChange={vi.fn()}

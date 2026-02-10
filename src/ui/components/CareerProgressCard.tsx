@@ -4,7 +4,6 @@ import { formatMoneyFromCents } from "../../game/format";
 import {
   getCareerNextActionCue,
   getCareerNextStageProgress,
-  getCareerNextUnlock,
   getTherapistSessionValueDeltaSummary,
 } from "../../game/state";
 import type { GameState } from "../../game/state";
@@ -15,7 +14,6 @@ type CareerProgressCardProps = {
 };
 
 export function CareerProgressCard({ state, nowMs }: CareerProgressCardProps) {
-  const nextUnlock = getCareerNextUnlock(state);
   const progress = getCareerNextStageProgress(state);
   const nextActionCue = getCareerNextActionCue(state, nowMs);
   const sessionSummary = getTherapistSessionValueDeltaSummary(state, nowMs);
@@ -25,16 +23,10 @@ export function CareerProgressCard({ state, nowMs }: CareerProgressCardProps) {
   const showRecentSessionFeedback = lastSessionAtMs > 0 && recentSessionAgeMs <= 45_000;
 
   const message = (() => {
-    if (!nextUnlock) {
-      return "All career stages unlocked.";
+    if (levelsRemaining === 0) {
+      return "Career threshold reached. Continue sessions to keep momentum.";
     }
-    if (nextUnlock.kind === "start") {
-      return "Start your career: enter the PhD program to begin earning salary.";
-    }
-    if (nextUnlock.kind === "choice") {
-      return `Permanent choice available: ${nextUnlock.label}.`;
-    }
-    return `Next stage: ${nextUnlock.label} (level ${nextUnlock.unlockLevel}+).`;
+    return `Progress toward career level ${progress.nextUnlockLevel}.`;
   })();
 
   const feedbackPrimary = showRecentSessionFeedback
@@ -44,28 +36,22 @@ export function CareerProgressCard({ state, nowMs }: CareerProgressCardProps) {
     ? sessionSummary.isFreeSession
       ? "Cost 0 enjoyment (free)"
       : `Cost ${formatMoneyFromCents(sessionSummary.enjoymentCostCents)} enjoyment`
-    : nextUnlock
-      ? levelsRemaining === 0
-        ? "Threshold reached"
-        : `Next threshold: level ${Math.max(1, Math.ceil(state.therapistCareer.level + levelsRemaining))}`
-      : "All thresholds complete";
+    : levelsRemaining === 0
+      ? "Threshold reached"
+      : `Current target: level ${progress.nextUnlockLevel}`;
 
   return (
     <div className="card" data-testid="career-progress-card">
       <div className="career-track-header">
         <div>
           <h4>Progress</h4>
-          <p className="muted" data-testid="career-next-unlock">
+          <p className="muted" data-testid="career-progress-message">
             {message}
           </p>
         </div>
-        {nextUnlock ? (
-          <div className="career-track-level" data-testid="career-next-unlock-levels">
-            {levelsRemaining === 0
-              ? "Ready"
-              : `${levelsRemaining} level${levelsRemaining === 1 ? "" : "s"}`}
-          </div>
-        ) : null}
+        <div className="career-track-level" data-testid="career-progress-levels">
+          {levelsRemaining === 0 ? "Ready" : `${levelsRemaining} level${levelsRemaining === 1 ? "" : "s"}`}
+        </div>
       </div>
       <progress
         data-testid="career-progress-bar"

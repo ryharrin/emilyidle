@@ -25,7 +25,7 @@ test("atelier back-out keeps stats, confirm shows onboarding", async ({ page }) 
   const seededState = {
     currencyCents: 12_345,
     enjoymentCents: 800_000,
-    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
+    items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
     workshopBlueprints: 0,
@@ -89,7 +89,7 @@ test("maison back-out keeps stats, confirm shows onboarding", async ({ page }) =
   const seededState = {
     currencyCents: 23_456,
     enjoymentCents: 4_000_000,
-    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
+    items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
     workshopBlueprints: 3,

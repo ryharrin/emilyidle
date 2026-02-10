@@ -23,14 +23,6 @@ type UnlockHintProps = {
   cta?: UnlockHintCta;
 };
 
-type NextUnlockItem = UnlockHintProps & {
-  id: string;
-};
-
-type NextUnlockPanelProps = {
-  items: ReadonlyArray<NextUnlockItem>;
-};
-
 type EmptyStateCTAProps = {
   title: string;
   body: string;
@@ -48,42 +40,6 @@ async function importOrFail<T>(importer: () => Promise<T>): Promise<T> {
 }
 
 describe("unlock UI components", () => {
-  it("renders NextUnlockPanel with stable test ids", async () => {
-    const modulePath = "../src/ui/components/" + "NextUnlockPanel";
-    const mod = await importOrFail(() => import(/* @vite-ignore */ modulePath));
-    const NextUnlockPanel = (mod as unknown as { NextUnlockPanel: React.FC<NextUnlockPanelProps> })
-      .NextUnlockPanel;
-
-    render(
-      <NextUnlockPanel
-        items={[
-          {
-            id: "collector-shelf",
-            eyebrow: "Locked",
-            title: "Collector shelf",
-            detail: "Own 5 total items",
-            currentLabel: "3",
-            thresholdLabel: "5",
-            ratio: 0.6,
-          },
-          {
-            id: "showcase",
-            eyebrow: "Next unlock",
-            title: "Vault showcase",
-            detail: "Reach $25,000 Memories",
-            currentLabel: "$10,000",
-            thresholdLabel: "$25,000",
-            ratio: 0.4,
-          },
-        ]}
-      />,
-    );
-
-    expect(screen.queryByTestId("next-unlocks")).not.toBeNull();
-    expect(screen.queryByTestId("next-unlock-collector-shelf")).not.toBeNull();
-    expect(screen.queryByTestId("next-unlock-showcase")).not.toBeNull();
-  });
-
   it("invokes UnlockHint CTA on click", async () => {
     const modulePath = "../src/ui/components/" + "UnlockHint";
     const mod = await importOrFail(() => import(/* @vite-ignore */ modulePath));

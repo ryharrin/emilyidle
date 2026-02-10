@@ -5,7 +5,7 @@ import { gotoAppWithNavigationReady } from "./helpers/navigation";
 const seededState = {
   currencyCents: 1000,
   enjoymentCents: 500,
-  items: { starter: 15, classic: 5, chronograph: 1, tourbillon: 0 },
+  items: { quartz: 15, automatic: 5, manual: 1, tourbillon: 0 },
   upgrades: { "polishing-tools": 1, "assembly-jigs": 0, "guild-contracts": 0 },
   unlockedMilestones: ["showcase", "first-drawer"],
   workshopBlueprints: 0,
@@ -79,14 +79,9 @@ async function expectTabSelected(page: Page, name: string) {
 }
 
 async function gotoApp(page: Page, path: string = "/") {
-  if (path === "/") {
-    await gotoAppWithNavigationReady(page);
-    return;
-  }
-
-  await page.goto(path, { waitUntil: "domcontentloaded", timeout: 30_000 });
-  await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
-    timeout: 20_000,
+  await gotoAppWithNavigationReady(page, {
+    path,
+    navigationVisibleTimeoutMs: 20_000,
   });
 }
 

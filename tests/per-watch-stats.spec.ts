@@ -31,9 +31,9 @@ const seededState = {
   interactionNextAvailableAtMsByItem: {},
   powerReserveByItem: {},
   items: {
-    starter: 5,
-    classic: 3,
-    chronograph: 1,
+    quartz: 5,
+    automatic: 3,
+    manual: 1,
     tourbillon: 0,
   },
   watchModels: {
@@ -74,7 +74,7 @@ const seededState = {
     wind: { activeUntilMs: 0, nextAvailableAtMs: 0 },
   },
   discoveredCatalogEntries: [WATCH_ROW_1, WATCH_ROW_2],
-  catalogTierUnlocks: ["starter", "classic", "chronograph", "tourbillon"],
+  catalogTierUnlocks: ["quartz", "automatic", "manual", "tourbillon"],
   craftingParts: 0,
   craftedBoosts: {
     "polished-tools": 0,

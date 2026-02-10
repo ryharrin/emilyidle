@@ -4,16 +4,16 @@ export const MILESTONES: ReadonlyArray<MilestoneDefinition> = [
   {
     id: "collector-shelf",
     name: "Collector shelf",
-    description: "Showcase five pieces to unlock classic automatics.",
+    description: "Showcase five pieces to unlock automatic movements.",
     requirement: { type: "totalItems", threshold: 5 },
-    unlocks: { items: ["classic"], upgrades: ["assembly-jigs"] },
+    unlocks: { items: ["automatic"], upgrades: ["assembly-jigs"] },
   },
   {
     id: "showcase",
     name: "Collection showcase",
-    description: "Reach $25k Memories to unlock chronographs.",
+    description: "Reach $25k Memories to unlock manual movements.",
     requirement: { type: "collectionValue", thresholdCents: 25_000 },
-    unlocks: { items: ["chronograph"], upgrades: ["guild-contracts"] },
+    unlocks: { items: ["manual"], upgrades: ["guild-contracts"] },
   },
   {
     id: "atelier",

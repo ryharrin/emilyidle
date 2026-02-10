@@ -12,9 +12,10 @@ type TierBadgeProps = {
 };
 
 const DEFAULT_LABELS: Record<TierBadgeCategory, string> = {
-  starter: "Starter",
-  mid: "Mid-tier",
-  lux: "Luxury",
+  quartz: "Quartz",
+  automatic: "Automatic",
+  manual: "Manual",
+  tourbillon: "Tourbillon",
 };
 
 type TierBadgeStyle = CSSProperties & {

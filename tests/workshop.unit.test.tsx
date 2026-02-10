@@ -35,8 +35,8 @@ describe("workshop prestige", () => {
       enjoymentCents: 120_000,
       items: {
         ...baseState.items,
-        starter: 4,
-        classic: 1,
+        quartz: 4,
+        automatic: 1,
       },
       upgrades: {
         ...baseState.upgrades,
@@ -85,12 +85,12 @@ describe("workshop prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        classic: 2,
+        automatic: 2,
       },
     };
 
-    const nextState = dismantleItem(seededState, "classic", 1);
-    expect(nextState.items.classic).toBe(1);
+    const nextState = dismantleItem(seededState, "automatic", 1);
+    expect(nextState.items.automatic).toBe(1);
     expect(getCraftingParts(nextState)).toBe(2);
   });
 
@@ -114,14 +114,14 @@ describe("workshop prestige", () => {
       lastSimulatedAtMs: 0,
       state: {
         ...baseState,
-        catalogTierUnlocks: ["starter"],
+        catalogTierUnlocks: ["quartz"],
       },
     });
 
     const decoded = decodeSaveString(legacySave);
     expect(decoded.ok).toBe(true);
     if (decoded.ok) {
-      expect(decoded.save.state.catalogTierUnlocks).toContain("starter");
+      expect(decoded.save.state.catalogTierUnlocks).toContain("quartz");
     }
   });
 

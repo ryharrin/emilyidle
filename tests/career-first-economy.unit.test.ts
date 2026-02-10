@@ -30,9 +30,9 @@ describe("career-first economy", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 12,
-        classic: 4,
-        chronograph: 2,
+        quartz: 12,
+        automatic: 4,
+        manual: 2,
       },
       watchModels: firstModel
         ? { ...baseState.watchModels, [firstModel.id]: 2 }

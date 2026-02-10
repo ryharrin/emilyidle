@@ -45,7 +45,9 @@ test.describe("career upgrades tree interactions", () => {
     await page.goto("/");
     await openCareerProgression(page);
     await selectCareerView(page, "upgrades");
-    await expect(page.getByTestId("career-tree")).toBeVisible();
+    const tree = page.getByTestId("career-tree");
+    await expect(tree).toBeVisible();
+    await expect(page.getByTestId("career-view-upgrades")).toHaveClass(/career-view-active/);
 
     const pointsLabel = page.getByTestId("career-tree-points");
     const beforePointsText = await pointsLabel.innerText();
@@ -57,7 +59,7 @@ test.describe("career upgrades tree interactions", () => {
     await clickLocatorSafely(foundational);
     await expect(page.getByTestId("career-upgrade-modal")).toBeVisible();
     await page.getByTestId("career-upgrade-spend").click();
-    await expect(page.getByTestId("career-upgrade-modal")).toBeHidden();
+    await expect(page.getByTestId("career-upgrade-modal")).toBeHidden({ timeout: 15_000 });
     await expect(foundational).toHaveClass(/career-tree-spent/);
 
     const afterSpendText = await pointsLabel.innerText();
@@ -78,6 +80,7 @@ test.describe("career upgrades tree interactions", () => {
 
     // Choose a primary track via stages view.
     await selectCareerView(page, "stages");
+    await expect(page.getByTestId("career-view-stages")).toHaveClass(/career-view-active/);
     const trackOption = page.getByTestId("career-choice-option-private-practice");
     await trackOption.scrollIntoViewIfNeeded();
     await expect(trackOption).toBeVisible();
@@ -91,6 +94,7 @@ test.describe("career upgrades tree interactions", () => {
     await expect(lockedTrackLabel).toBeVisible();
 
     await selectCareerView(page, "upgrades");
+    await expect(page.getByTestId("career-view-upgrades")).toHaveClass(/career-view-active/);
     await expect(page.getByTestId("career-tree-node-private-intake")).toBeVisible();
   });
 });

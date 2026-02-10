@@ -70,7 +70,7 @@ const clampPercent = (value: number) => Math.max(0, Math.min(100, Math.round(val
 
 const formatLevelsRemaining = (levelsRemaining: number) => {
   if (levelsRemaining <= 0) {
-    return "Ready for next unlock";
+    return "Ready for next threshold";
   }
   const remaining = Math.max(1, Math.ceil(levelsRemaining));
   return `${remaining} level${remaining === 1 ? "" : "s"} remaining`;
@@ -159,7 +159,7 @@ export function CareerTimeline({ state }: CareerTimelineProps) {
   const levelsRemainingCopy = formatLevelsRemaining(progress.levelsRemaining);
   const nextUnlockLabel =
     progress.nextUnlockLevel > progress.currentLevel
-      ? `Next unlock level ${progress.nextUnlockLevel}`
+      ? `Next target level ${progress.nextUnlockLevel}`
       : "Final stage reached";
   const upcomingChoices = getTherapistCareerChoiceStatus(state)
     .map((status) => {

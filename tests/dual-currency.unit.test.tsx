@@ -12,7 +12,7 @@ import {
 describe("dual-currency acquisition", () => {
   it("prioritizes enjoyment when both requirements fail", () => {
     const state = createInitialState();
-    const gate = getWatchPurchaseGate(state, "classic", 1);
+    const gate = getWatchPurchaseGate(state, "automatic", 1);
 
     expect(gate.ok).toBe(false);
     if (gate.ok) {
@@ -23,8 +23,8 @@ describe("dual-currency acquisition", () => {
 
   it("allows purchases when cash and enjoyment are met", () => {
     const baseState = createInitialState();
-    const baselineGate = getWatchPurchaseGate(baseState, "classic", 1);
-    const price = getItemPriceCents(baseState, "classic", 1);
+    const baselineGate = getWatchPurchaseGate(baseState, "automatic", 1);
+    const price = getItemPriceCents(baseState, "automatic", 1);
 
     const state = {
       ...baseState,
@@ -32,14 +32,14 @@ describe("dual-currency acquisition", () => {
       enjoymentCents: baselineGate.enjoymentRequiredCents,
     };
 
-    const gate = getWatchPurchaseGate(state, "classic", 1);
+    const gate = getWatchPurchaseGate(state, "automatic", 1);
     expect(gate.ok).toBe(true);
   });
 
   it("spends cash but keeps enjoyment intact", () => {
     const baseState = createInitialState();
-    const baselineGate = getWatchPurchaseGate(baseState, "classic", 1);
-    const price = getItemPriceCents(baseState, "classic", 1);
+    const baselineGate = getWatchPurchaseGate(baseState, "automatic", 1);
+    const price = getItemPriceCents(baseState, "automatic", 1);
 
     const unlockedMilestones: MilestoneId[] = ["collector-shelf"];
     const state = {
@@ -49,7 +49,7 @@ describe("dual-currency acquisition", () => {
       unlockedMilestones,
     };
 
-    const nextState = buyItem(state, "classic", 1);
+    const nextState = buyItem(state, "automatic", 1);
 
     expect(nextState.currencyCents).toBe(state.currencyCents - price);
     expect(nextState.enjoymentCents).toBe(state.enjoymentCents);
@@ -65,6 +65,6 @@ describe("dual-currency acquisition", () => {
       unlockedMilestones,
     };
 
-    expect(getMaxAffordableItemCount(state, "classic")).toBe(0);
+    expect(getMaxAffordableItemCount(state, "automatic")).toBe(0);
   });
 });

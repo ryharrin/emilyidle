@@ -3,6 +3,7 @@ import { expect, type Page } from "@playwright/test";
 type RetryDelayMs = number | ((attempt: number) => number);
 
 export type GotoAppWithNavigationReadyOptions = {
+  path?: string;
   maxAttempts?: number;
   gotoTimeoutMs?: number;
   navigationVisibleTimeoutMs?: number;
@@ -19,6 +20,7 @@ export async function gotoAppWithNavigationReady(
   options: GotoAppWithNavigationReadyOptions = {},
 ) {
   const {
+    path = "/",
     maxAttempts = 2,
     gotoTimeoutMs = 30_000,
     navigationVisibleTimeoutMs = 15_000,
@@ -30,7 +32,7 @@ export async function gotoAppWithNavigationReady(
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      await page.goto("/", { waitUntil: "domcontentloaded", timeout: gotoTimeoutMs });
+      await page.goto(path, { waitUntil: "domcontentloaded", timeout: gotoTimeoutMs });
       await expect(page.getByRole("tablist", { name: "Primary navigation" })).toBeVisible({
         timeout: navigationVisibleTimeoutMs,
       });

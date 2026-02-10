@@ -1,6 +1,6 @@
-export type WatchItemId = "starter" | "classic" | "chronograph" | "tourbillon";
+export type WatchItemId = "quartz" | "automatic" | "manual" | "tourbillon";
 
-export type WatchMovement = "quartz" | "manual" | "automatic";
+export type WatchMovement = "quartz" | "manual" | "automatic" | "tourbillon";
 export type UpgradeId = "polishing-tools" | "assembly-jigs" | "guild-contracts" | "archive-guides";
 export type MilestoneId = "collector-shelf" | "showcase" | "atelier" | "archive-curator";
 export type CareerTrackId = "private-practice" | "va-hospital" | "research-teaching";
@@ -19,7 +19,7 @@ export type TherapistCareerEffectMultipliers = {
 };
 
 export type SetBonusId =
-  | "starter-set"
+  | "quartz-set"
   | "precision-set"
   | "complication-set"
   | "oyster-society"
@@ -157,7 +157,7 @@ export type EventId = "auction-weekend" | "emily-birthday" | "wind-up";
 
 export type CraftedBoostId = "polished-tools" | "heritage-springs" | "artisan-jig";
 
-export type CatalogTierId = "starter" | "classic" | "chronograph" | "tourbillon";
+export type CatalogTierId = "quartz" | "automatic" | "manual" | "tourbillon";
 
 export type EventTrigger =
   | { type: "collectionValue"; thresholdCents: number }

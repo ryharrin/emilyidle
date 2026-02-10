@@ -3,12 +3,12 @@ import type { Locator } from "@playwright/test";
 
 import { BASE_CATALOG_SEEDED_STATE } from "./catalog-fixtures";
 
-const COMPARE_IDS = ["omega-aurora-frost", "jaeger-lecoultre-atmos-vsp"];
+const COMPARE_IDS = ["grand-seiko-sbgx261", "seiko-astron-gps-solar-ssj003"];
 
 const compareState = {
   ...BASE_CATALOG_SEEDED_STATE,
-  currencyCents: 1_000_000,
-  enjoymentCents: 1_000_000,
+  currencyCents: 1_000_000_000_000,
+  enjoymentCents: 1_000_000_000_000,
   watchModels: {
     ...BASE_CATALOG_SEEDED_STATE.watchModels,
     [COMPARE_IDS[0]]: 0,
@@ -43,8 +43,8 @@ test("catalog compare panel surfaces two watches with stats", async ({ page }) =
   await page.getByTestId(`catalog-compare-toggle-${COMPARE_IDS[1]}`).click();
 
   const comparePanel = page.getByTestId("catalog-compare-panel");
-  await expect(comparePanel.getByText("Aurora Frost")).toBeVisible();
-  await expect(comparePanel.getByText("Atmos VSP")).toBeVisible();
+  await expect(comparePanel.getByRole("heading", { name: /SBGX261/ })).toBeVisible();
+  await expect(comparePanel.getByRole("heading", { name: /Astron GPS Solar SSJ003/ })).toBeVisible();
   await expect(comparePanel.getByText("Ready to buy").first()).toBeVisible();
   await expect(comparePanel.getByText(/Enjoyment \/ sec/).first()).toBeVisible();
   await expect(comparePanel.getByText(/Cash \/ sec/).first()).toBeVisible();

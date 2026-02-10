@@ -3,11 +3,11 @@ import { openCatalogTab, switchCatalogToOwned } from "./helpers/catalogFilters";
 
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 
-test("collection shows next unlocks panel for hidden systems", async ({ page }) => {
+test("collection keeps catalog callouts while hidden systems remain locked", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
-    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 0 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
     workshopBlueprints: 0,
@@ -54,9 +54,10 @@ test("collection shows next unlocks panel for hidden systems", async ({ page }) 
   await page.goto("/");
 
   await page.getByRole("tab", { name: "Collection" }).click();
-  await expect(page.getByTestId("next-unlocks")).toBeVisible();
-  await expect(page.getByTestId("next-unlock-career")).toBeVisible();
-  await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();
+  await expect(page.getByTestId("next-unlocks")).toHaveCount(0);
+  const callout = page.getByTestId("catalog-shop-callout");
+  await expect(callout).toBeVisible();
+  await expect(callout.getByRole("button", { name: "Open Catalog" })).toBeVisible();
 
   await page.getByRole("tab", { name: "Catalog" }).click();
   const lockedItemHint = page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`);
@@ -83,7 +84,7 @@ test("catalog empty state CTA stays in catalog", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
-    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 0 },
     watchModels: {},
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],

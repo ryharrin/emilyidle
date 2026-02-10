@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { BASE_CATALOG_SEEDED_STATE } from "./catalog-fixtures";
 
-test("catalog expansion lanes stay discoverable and filters stay sticky on mobile", async ({
+test("catalog movement sections stay discoverable and filters stay sticky on mobile", async ({
   page,
 }) => {
   await page.addInitScript(
@@ -31,18 +31,22 @@ test("catalog expansion lanes stay discoverable and filters stay sticky on mobil
   const filters = page.getByTestId("catalog-filters");
   await expect(filters).toBeVisible();
 
-  const lowLane = page.getByTestId("catalog-tier-low");
-  const midLane = page.getByTestId("catalog-tier-mid");
-  const luxLane = page.getByTestId("catalog-tier-lux");
+  const quartzLane = page.getByTestId("catalog-tier-quartz");
+  const automaticLane = page.getByTestId("catalog-tier-automatic");
+  const manualLane = page.getByTestId("catalog-tier-manual");
+  const tourbillonLane = page.getByTestId("catalog-tier-tourbillon");
 
-  await expect(lowLane).toBeVisible();
-  await expect(lowLane.getByText("Aurora Frost")).toBeVisible();
+  await expect(quartzLane).toBeVisible();
+  await expect(quartzLane.getByText("SBGX261")).toBeVisible();
 
-  await expect(midLane).toBeVisible();
-  await expect(midLane.getByText("Ballon de Lumière Chrono")).toBeVisible();
+  await expect(automaticLane).toBeVisible();
+  await expect(automaticLane.getByText("GMT-Master II ref. 126713GRNR")).toBeVisible();
 
-  await expect(luxLane).toBeVisible();
-  await expect(luxLane.getByText("Luminous Tourbillon")).toBeVisible();
+  await expect(manualLane).toBeVisible();
+  await expect(manualLane.getByText("Speedmaster Moonwatch Professional")).toBeVisible();
+
+  await expect(tourbillonLane).toBeVisible();
+  await expect(tourbillonLane.getByText("Classique Tourbillon 3357")).toBeVisible();
 
   await page.evaluate(() => {
     window.scrollBy(0, 500);

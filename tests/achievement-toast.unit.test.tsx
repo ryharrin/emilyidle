@@ -7,9 +7,9 @@ import { createInitialState, getWatchModels } from "../src/game/state";
 
 function buildSeededState() {
   const base = createInitialState();
-  const starterModel = getWatchModels().find((model) => model.tierId === "starter");
+  const starterModel = getWatchModels().find((model) => model.tierId === "quartz");
   if (!starterModel) {
-    throw new Error("Missing starter model");
+    throw new Error("Missing quartz model");
   }
 
   return {
@@ -19,7 +19,7 @@ function buildSeededState() {
     unlockedMilestones: ["collector-shelf", "showcase"],
     items: {
       ...base.items,
-      starter: 11,
+      quartz: 11,
     },
     watchModels: {
       [starterModel.id]: 11,
@@ -59,9 +59,9 @@ function seedLocalStorage(options?: { achievementsEnabled?: boolean }) {
     }),
   );
 
-  const starterModel = getWatchModels().find((model) => model.tierId === "starter");
+  const starterModel = getWatchModels().find((model) => model.tierId === "quartz");
   if (!starterModel) {
-    throw new Error("Missing starter model");
+    throw new Error("Missing quartz model");
   }
   return starterModel.id;
 }

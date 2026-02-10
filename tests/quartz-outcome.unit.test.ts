@@ -14,27 +14,27 @@ describe("Quartz outcome math", () => {
     const target = 0; // 12 o'clock position
 
     // Direct hit on target
-    expect(getOutcomeTier(0, target, "starter")).toBe("perfect");
-    expect(getOutcomeTier(0.02, target, "starter")).toBe("perfect");
-    expect(getOutcomeTier(0.98, target, "starter")).toBe("perfect"); // wraps around
+    expect(getOutcomeTier(0, target, "quartz")).toBe("perfect");
+    expect(getOutcomeTier(0.02, target, "quartz")).toBe("perfect");
+    expect(getOutcomeTier(0.98, target, "quartz")).toBe("perfect"); // wraps around
 
-    // Within good window for starter difficulty.
-    expect(getOutcomeTier(0.15, target, "starter")).toBe("good");
-    expect(getOutcomeTier(0.85, target, "starter")).toBe("good"); // wraps around
+    // Within good window for quartz difficulty.
+    expect(getOutcomeTier(0.15, target, "quartz")).toBe("good");
+    expect(getOutcomeTier(0.85, target, "quartz")).toBe("good"); // wraps around
 
     // Miss - too far
-    expect(getOutcomeTier(0.5, target, "starter")).toBe("miss");
-    expect(getOutcomeTier(0.4, target, "starter")).toBe("miss");
+    expect(getOutcomeTier(0.5, target, "quartz")).toBe("miss");
+    expect(getOutcomeTier(0.4, target, "quartz")).toBe("miss");
   });
 
   it("works with different target positions", () => {
     // Target at 3 o'clock (0.25 = 3/12)
     const target3 = 0.25;
-    expect(getOutcomeTier(0.25, target3, "classic")).toBe("perfect");
-    expect(getOutcomeTier(0.27, target3, "classic")).toBe("perfect");
-    expect(getOutcomeTier(0.23, target3, "classic")).toBe("perfect");
-    expect(getOutcomeTier(0.1, target3, "classic")).toBe("good");
-    expect(getOutcomeTier(0.95, target3, "classic")).toBe("miss");
+    expect(getOutcomeTier(0.25, target3, "automatic")).toBe("perfect");
+    expect(getOutcomeTier(0.27, target3, "automatic")).toBe("perfect");
+    expect(getOutcomeTier(0.23, target3, "automatic")).toBe("perfect");
+    expect(getOutcomeTier(0.1, target3, "automatic")).toBe("good");
+    expect(getOutcomeTier(0.95, target3, "automatic")).toBe("miss");
 
     // Target at 6 o'clock (0.5 = 6/12)
     const target6 = 0.5;

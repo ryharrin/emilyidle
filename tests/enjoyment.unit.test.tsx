@@ -14,9 +14,9 @@ import {
 } from "../src/game/state";
 
 const MODEL_IDS = {
-  starter: "rolex-calibrorolex",
-  classic: "rolex-rolex-gmt-master-ii-ref-126713grnr",
-  chronograph: "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta",
+  quartz: "rolex-calibrorolex",
+  automatic: "rolex-rolex-gmt-master-ii-ref-126713grnr",
+  manual: "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta",
   tourbillon:
     "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997",
 } as const;
@@ -40,9 +40,9 @@ function getTierEnjoymentRate(tierId: string): number {
 describe("enjoyment tiers", () => {
   it("sums per-item enjoyment rates", () => {
     const baseState = createInitialState();
-    const starterModelId = getModelId(MODEL_IDS.starter);
-    const classicModelId = getModelId(MODEL_IDS.classic);
-    const chronographModelId = getModelId(MODEL_IDS.chronograph);
+    const starterModelId = getModelId(MODEL_IDS.quartz);
+    const classicModelId = getModelId(MODEL_IDS.automatic);
+    const chronographModelId = getModelId(MODEL_IDS.manual);
     const tourbillonModelId = getModelId(MODEL_IDS.tourbillon);
     const seededState = {
       ...baseState,
@@ -60,9 +60,9 @@ describe("enjoyment tiers", () => {
     );
 
     const expected =
-      (enjoymentRates.get("starter") ?? 0) * getDuplicateRewardSum(3) +
-      (enjoymentRates.get("classic") ?? 0) * getDuplicateRewardSum(2) +
-      (enjoymentRates.get("chronograph") ?? 0) * getDuplicateRewardSum(1) +
+      (enjoymentRates.get("quartz") ?? 0) * getDuplicateRewardSum(3) +
+      (enjoymentRates.get("automatic") ?? 0) * getDuplicateRewardSum(2) +
+      (enjoymentRates.get("manual") ?? 0) * getDuplicateRewardSum(1) +
       (enjoymentRates.get("tourbillon") ?? 0) * getDuplicateRewardSum(1);
 
     expect(getEnjoymentRateCentsPerSec(seededState)).toBe(expected);
@@ -72,8 +72,8 @@ describe("enjoyment tiers", () => {
     const persisted: PersistedGameState = {
       currencyCents: 0,
       items: {
-        starter: 2,
-        classic: 1,
+        quartz: 2,
+        automatic: 1,
       },
     };
 
@@ -89,9 +89,9 @@ describe("enjoyment tiers", () => {
       getWatchItems().map((item) => [item.id, getWatchItemEnjoymentRateCentsPerSec(item)]),
     );
 
-    const starterRate = enjoymentRates.get("starter") ?? 0;
-    const classicRate = enjoymentRates.get("classic") ?? 0;
-    const chronographRate = enjoymentRates.get("chronograph") ?? 0;
+    const starterRate = enjoymentRates.get("quartz") ?? 0;
+    const classicRate = enjoymentRates.get("automatic") ?? 0;
+    const chronographRate = enjoymentRates.get("manual") ?? 0;
     const tourbillonRate = enjoymentRates.get("tourbillon") ?? 0;
 
     expect(starterRate).toBeLessThan(classicRate);
@@ -101,7 +101,7 @@ describe("enjoyment tiers", () => {
 
   it("scales enjoyment/sec by the prestige legacy multiplier", () => {
     const baseState = createInitialState();
-    const classicModelId = getModelId(MODEL_IDS.classic);
+    const classicModelId = getModelId(MODEL_IDS.automatic);
     const seededState = {
       ...baseState,
       watchModels: {
@@ -111,7 +111,7 @@ describe("enjoyment tiers", () => {
       workshopPrestigeCount: 2,
     };
 
-    const baseRate = getTierEnjoymentRate("classic") * getDuplicateRewardSum(2);
+    const baseRate = getTierEnjoymentRate("automatic") * getDuplicateRewardSum(2);
 
     const legacyMultiplier = getPrestigeLegacyMultiplier(seededState);
     expect(legacyMultiplier).toBeGreaterThan(1);
@@ -120,7 +120,7 @@ describe("enjoyment tiers", () => {
 
   it("gives smaller enjoyment gains for duplicate copies", () => {
     const baseState = createInitialState();
-    const classicModelId = getModelId(MODEL_IDS.classic);
+    const classicModelId = getModelId(MODEL_IDS.automatic);
     const firstState = {
       ...baseState,
       watchModels: {

@@ -34,7 +34,7 @@ test("catalog help opens shopping guidance", async ({ page }) => {
   const seededState = {
     currencyCents: 1_000_000,
     enjoymentCents: 0,
-    items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 5, automatic: 0, manual: 0, tourbillon: 0 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: ["collector-shelf"],
     workshopBlueprints: 0,
@@ -121,7 +121,7 @@ test("stats rate breakdown disclosures render line items", async ({ page }) => {
   const seededState = {
     currencyCents: 10_000,
     enjoymentCents: 10_000,
-    items: { starter: 10, classic: 0, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 10, automatic: 0, manual: 0, tourbillon: 0 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
     workshopBlueprints: 0,
@@ -194,7 +194,7 @@ test("nostalgia unlock order explain trigger opens nostalgia help", async ({ pag
       xp: 0,
       nextAvailableAtMs: 0,
     },
-    items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 0 },
     upgrades: {
       "polishing-tools": 0,
       "assembly-jigs": 0,

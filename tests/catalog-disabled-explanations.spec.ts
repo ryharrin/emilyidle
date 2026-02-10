@@ -9,7 +9,7 @@ test.describe("catalog disabled explanations", () => {
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 0,
-      items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
+      items: { quartz: 5, automatic: 0, manual: 0, tourbillon: 0 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: ["collector-shelf", "showcase"],
       workshopBlueprints: 0,

@@ -21,9 +21,9 @@ const buildSeededState = (): GameState => {
     ),
     items: {
       ...base.items,
-      starter: Math.max(base.items.starter ?? 0, 3),
-      classic: Math.max(base.items.classic ?? 0, 2),
-      chronograph: Math.max(base.items.chronograph ?? 0, 2),
+      quartz: Math.max(base.items.quartz ?? 0, 3),
+      automatic: Math.max(base.items.automatic ?? 0, 2),
+      manual: Math.max(base.items.manual ?? 0, 2),
       tourbillon: Math.max(base.items.tourbillon ?? 0, 1),
     },
     discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
@@ -53,7 +53,7 @@ test("practice runs stay reward-free and keep streak state unchanged", async ({ 
 
   const manualCandidates = await resolveCatalogInteractCandidates(
     page,
-    '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
+    '[data-testid^="vault-interact-manual"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
   );
   const manualButton = await findFirstVisible(manualCandidates);
   expect(manualButton).not.toBeNull();
@@ -85,7 +85,7 @@ test("practice runs stay reward-free and keep streak state unchanged", async ({ 
 
   const manualCandidatesAfterRun = await resolveCatalogInteractCandidates(
     page,
-    '[data-testid^="vault-interact-chronograph"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
+    '[data-testid^="vault-interact-manual"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
   );
   const manualButtonAfterRun = await findFirstVisible(manualCandidatesAfterRun);
   expect(manualButtonAfterRun).not.toBeNull();

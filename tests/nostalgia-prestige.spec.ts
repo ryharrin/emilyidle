@@ -37,7 +37,7 @@ test("nostalgia prestige flow", async ({ page }) => {
       xp: 40,
       nextAvailableAtMs: 0,
     },
-    items: { starter: 12, classic: 3, chronograph: 0, tourbillon: 0 },
+    items: { quartz: 12, automatic: 3, manual: 0, tourbillon: 0 },
     upgrades: {
       "polishing-tools": 1,
       "assembly-jigs": 0,

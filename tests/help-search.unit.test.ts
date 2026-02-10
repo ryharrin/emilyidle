@@ -4,8 +4,8 @@ import { HELP_SECTION_IDS, HELP_SECTIONS } from "../src/ui/help/helpContent";
 import { searchHelpSections } from "../src/ui/help/helpSearch";
 
 describe("help search ranking", () => {
-  it("prioritizes tier badge metadata", () => {
-    const results = searchHelpSections(HELP_SECTIONS, "tier");
+  it("prioritizes movement badge metadata", () => {
+    const results = searchHelpSections(HELP_SECTIONS, "movement");
     expect(results[0]?.id).toBe(HELP_SECTION_IDS.tierBadges);
   });
 

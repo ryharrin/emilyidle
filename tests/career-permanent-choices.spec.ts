@@ -5,7 +5,7 @@ import { clickLocatorSafely } from "./helpers/interactions";
 const seededState = {
   currencyCents: 1_000_000,
   enjoymentCents: 1_000_000,
-  items: { starter: 15, classic: 5, chronograph: 1, tourbillon: 0 },
+  items: { quartz: 15, automatic: 5, manual: 1, tourbillon: 0 },
   upgrades: { "polishing-tools": 1, "assembly-jigs": 0, "guild-contracts": 0 },
   unlockedMilestones: ["showcase", "first-drawer"],
   workshopBlueprints: 0,

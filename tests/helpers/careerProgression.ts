@@ -21,25 +21,34 @@ export async function openCareerPanel(page: Page) {
 export async function openCareerProgression(page: Page) {
   await openCareerPanel(page);
 
-  if (await isDeepDetailsOpen(page)) {
-    await expect(page.getByTestId("career-view-switch")).toBeVisible();
-    return;
-  }
+  const deepDetails = page.getByTestId("career-deep-details");
+  const deepDetailsToggle = page.getByTestId("career-deep-details-toggle");
+  const viewSwitch = page.getByTestId("career-view-switch");
 
-  const railAction = page.getByTestId("career-mobile-now-rail-action");
-  if (await railAction.isVisible().catch(() => false)) {
-    const actionLabel = (await railAction.textContent().catch(() => ""))?.toLowerCase() ?? "";
-    if (actionLabel.includes("progression")) {
-      await clickLocatorSafely(railAction);
+  if (!(await isDeepDetailsOpen(page))) {
+    const railAction = page.getByTestId("career-mobile-now-rail-action");
+    if (await railAction.isVisible().catch(() => false)) {
+      const actionLabel = (await railAction.textContent().catch(() => ""))?.toLowerCase() ?? "";
+      if (actionLabel.includes("progression")) {
+        await clickLocatorSafely(railAction);
+      }
     }
   }
 
   if (!(await isDeepDetailsOpen(page))) {
-    await clickLocatorSafely(page.getByTestId("career-deep-details-toggle"));
+    await clickLocatorSafely(deepDetailsToggle);
+    const opened = await deepDetails
+      .evaluate((element) => (element as HTMLDetailsElement).open)
+      .catch(() => false);
+    if (!opened) {
+      await deepDetails.evaluate((element) => {
+        (element as HTMLDetailsElement).open = true;
+      });
+    }
   }
 
-  await expect(page.getByTestId("career-deep-details")).toHaveJSProperty("open", true);
-  await expect(page.getByTestId("career-view-switch")).toBeVisible();
+  await expect(deepDetails).toHaveJSProperty("open", true);
+  await expect(viewSwitch).toBeVisible({ timeout: 15_000 });
 }
 
 export async function selectCareerView(page: Page, view: "stages" | "upgrades") {

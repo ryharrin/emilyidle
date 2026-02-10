@@ -2,9 +2,9 @@ import type { WatchItemDefinition, WatchItemId } from "../model/types";
 
 export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
   {
-    id: "starter",
-    name: "Starter Quartz",
-    description: "Reliable entry pieces to seed the collection.",
+    id: "quartz",
+    name: "Quartz",
+    description: "Battery-powered references that seed your collection.",
     movement: "quartz",
     basePriceCents: 125,
     priceGrowth: 1.145,
@@ -13,9 +13,9 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     collectionValueCents: 140,
   },
   {
-    id: "classic",
-    name: "Classic Automatic",
-    description: "Self-winding classics with steady demand.",
+    id: "automatic",
+    name: "Automatic",
+    description: "Self-winding mechanical references with steady demand.",
     movement: "automatic",
     basePriceCents: 1_800,
     priceGrowth: 1.17,
@@ -25,9 +25,9 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     unlockMilestoneId: "collector-shelf",
   },
   {
-    id: "chronograph",
-    name: "Chronograph",
-    description: "Complications that attract serious collectors.",
+    id: "manual",
+    name: "Manual",
+    description: "Hand-wound mechanical references for dedicated collectors.",
     movement: "manual",
     basePriceCents: 12_500,
     priceGrowth: 1.18,
@@ -40,7 +40,7 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
     id: "tourbillon",
     name: "Tourbillon",
     description: "Prestige pieces for the collection centerpiece.",
-    movement: "manual",
+    movement: "tourbillon",
     basePriceCents: 150_000,
     priceGrowth: 1.195,
     incomeCentsPerSec: 980,
@@ -50,24 +50,24 @@ export const WATCH_ITEMS: ReadonlyArray<WatchItemDefinition> = [
   },
 ];
 
-export const NOSTALGIA_UNLOCK_ORDER: WatchItemId[] = ["classic", "chronograph", "tourbillon"];
+export const NOSTALGIA_UNLOCK_ORDER: WatchItemId[] = ["automatic", "manual", "tourbillon"];
 
 export const NOSTALGIA_UNLOCK_COSTS: Record<WatchItemId, number> = {
-  starter: 0,
-  classic: 1,
-  chronograph: 3,
+  quartz: 0,
+  automatic: 1,
+  manual: 3,
   tourbillon: 6,
 };
 
 export const WATCH_ENJOYMENT_REQUIREMENTS_CENTS: Record<WatchItemId, number> = {
-  starter: 0,
-  classic: 2_000,
-  chronograph: 15_000,
-  tourbillon: 60_000,
+  quartz: 0,
+  automatic: 1_000,
+  manual: 8_000,
+  tourbillon: 40_000,
 };
 
 export function getWatchBucket(id: string): WatchItemId | null {
-  if (id === "starter" || id === "classic" || id === "chronograph" || id === "tourbillon") {
+  if (id === "quartz" || id === "automatic" || id === "manual" || id === "tourbillon") {
     return id;
   }
 

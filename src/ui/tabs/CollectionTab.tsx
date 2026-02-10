@@ -1,7 +1,6 @@
 import React from "react";
 
 import { type PurchaseMeta } from "./CatalogTab";
-import { NextUnlockPanel, type NextUnlockItem } from "../components/NextUnlockPanel";
 import { CollectionInsightsPanel } from "../components/CollectionInsightsPanel";
 import {
   CollectionTierSegments,
@@ -18,15 +17,9 @@ import { formatMoneyFromCents } from "../../game/format";
 import {
   buyMaisonLine,
   canBuyMaisonLine,
-  getAchievementEffectSummary,
   getAchievementUnlockProgressDetail,
   getEventStatusLabel,
-  getMilestoneEffectSummary,
-  getMilestoneUnlockProgressDetail,
   getMilestoneRequirementLabel,
-  getPrestigeUnlockEffectSummary,
-  getPrestigeUnlockProgressDetail,
-  getUnlockRevealProgressRatio,
   getWatchModelOwnedCount,
   getWatchModels,
   getEquippedWatchContribution,
@@ -90,19 +83,23 @@ const COLLECTION_SECTION_NAV_LINKS: CollectionSectionNavLink[] = [
   },
   {
     id: "collection-tier-summary",
-    label: "Tier summary",
+    label: "Movement summary",
   },
   {
-    id: "collection-segment-starter",
-    label: "Starter",
+    id: "collection-segment-quartz",
+    label: "Quartz",
   },
   {
-    id: "collection-segment-mid",
-    label: "Mid-tier",
+    id: "collection-segment-automatic",
+    label: "Automatic",
   },
   {
-    id: "collection-segment-lux",
-    label: "Luxury",
+    id: "collection-segment-manual",
+    label: "Manual",
+  },
+  {
+    id: "collection-segment-tourbillon",
+    label: "Tourbillon",
   },
   {
     id: "collection-milestones",
@@ -190,7 +187,6 @@ export function CollectionTab({
   nowMs,
   onPurchase,
 }: CollectionTabProps) {
-  const formatCount = (value: number) => Math.floor(value).toLocaleString();
   const watchModels = getWatchModels();
   const watchModelById = new Map(watchModels.map((model) => [model.id, model]));
   const wornModel = state.wornWatchId ? (watchModelById.get(state.wornWatchId) ?? null) : null;
@@ -209,7 +205,12 @@ export function CollectionTab({
     [favoriteSet, watchModels],
   );
 
-  const tierCategories: ReadonlyArray<TierBadgeCategory> = ["starter", "mid", "lux"];
+  const tierCategories: ReadonlyArray<TierBadgeCategory> = [
+    "quartz",
+    "automatic",
+    "manual",
+    "tourbillon",
+  ];
   const tierSummary = React.useMemo<TierSegmentSummary[]>(() => {
     const discoveredSet = new Set(discoveredCatalogEntries);
     return tierCategories.map((category) => {
@@ -267,137 +268,6 @@ export function CollectionTab({
   );
 
   const equippedContribution = getEquippedWatchContribution(state, nowMs, currentEventMultiplier);
-
-  const nextUnlockItems: NextUnlockItem[] = [];
-  const collectionListCta = {
-    tabId: "catalog" as const,
-    scrollTargetId: "catalog-shop",
-  };
-
-  if (!state.unlockedMilestones.includes("collector-shelf")) {
-    const detail = getMilestoneUnlockProgressDetail(state, "collector-shelf");
-
-    nextUnlockItems.push({
-      id: "career",
-      eyebrow: "Next unlock",
-      title: "Career",
-      detail: detail.label,
-      currentLabel: formatCount(detail.current),
-      thresholdLabel: formatCount(detail.threshold),
-      ratio: detail.ratio,
-      effectSummary: getMilestoneEffectSummary("collector-shelf"),
-      cta: {
-        label: "Buy watches",
-        testId: "next-unlock-cta-career",
-        onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
-      },
-    });
-  }
-
-  {
-    const detail = getMilestoneUnlockProgressDetail(state, "showcase");
-    if (detail.ratio < 1) {
-      nextUnlockItems.push({
-        id: "catalog",
-        eyebrow: "Next unlock",
-        title: "Shop",
-        detail: detail.label,
-        currentLabel: formatMoneyFromCents(detail.current),
-        thresholdLabel: formatMoneyFromCents(detail.threshold),
-        ratio: getUnlockRevealProgressRatio(detail.ratio),
-        effectSummary: getMilestoneEffectSummary("showcase"),
-        cta: {
-          label: "Buy watches",
-          testId: "next-unlock-cta-catalog",
-          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
-        },
-      });
-    }
-  }
-
-  {
-    const detail = getAchievementUnlockProgressDetail(state, "first-drawer");
-    if (detail.ratio < 1) {
-      nextUnlockItems.push({
-        id: "stats",
-        eyebrow: "Next unlock",
-        title: "Stats",
-        detail: detail.label,
-        currentLabel: formatCount(detail.current),
-        thresholdLabel: formatCount(detail.threshold),
-        ratio: getUnlockRevealProgressRatio(detail.ratio),
-        effectSummary: getAchievementEffectSummary("first-drawer"),
-        cta: {
-          label: "Buy watches",
-          testId: "next-unlock-cta-stats",
-          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
-        },
-      });
-    }
-  }
-
-  {
-    const detail = getPrestigeUnlockProgressDetail(state, "workshop");
-    if (detail.ratio < 1) {
-      nextUnlockItems.push({
-        id: "workshop",
-        eyebrow: "Next unlock",
-        title: "Workshop",
-        detail: detail.label,
-        currentLabel: formatMoneyFromCents(detail.current),
-        thresholdLabel: formatMoneyFromCents(detail.threshold),
-        ratio: getUnlockRevealProgressRatio(detail.ratio),
-        effectSummary: getPrestigeUnlockEffectSummary("workshop"),
-        cta: {
-          label: "Build collection",
-          testId: "next-unlock-cta-workshop",
-          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
-        },
-      });
-    }
-  }
-
-  {
-    const detail = getPrestigeUnlockProgressDetail(state, "maison");
-    if (detail.ratio < 1) {
-      nextUnlockItems.push({
-        id: "maison",
-        eyebrow: "Next unlock",
-        title: "Maison",
-        detail: detail.label,
-        currentLabel: formatMoneyFromCents(detail.current),
-        thresholdLabel: formatMoneyFromCents(detail.threshold),
-        ratio: getUnlockRevealProgressRatio(detail.ratio),
-        effectSummary: getPrestigeUnlockEffectSummary("maison"),
-        cta: {
-          label: "Build collection",
-          testId: "next-unlock-cta-maison",
-          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
-        },
-      });
-    }
-  }
-
-  {
-    const detail = getPrestigeUnlockProgressDetail(state, "nostalgia");
-    if (detail.ratio < 1) {
-      nextUnlockItems.push({
-        id: "nostalgia",
-        eyebrow: "Next unlock",
-        title: "Nostalgia",
-        detail: detail.label,
-        currentLabel: formatMoneyFromCents(detail.current),
-        thresholdLabel: formatMoneyFromCents(detail.threshold),
-        ratio: getUnlockRevealProgressRatio(detail.ratio),
-        effectSummary: getPrestigeUnlockEffectSummary("nostalgia"),
-        cta: {
-          label: "Build collection",
-          testId: "next-unlock-cta-nostalgia",
-          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
-        },
-      });
-    }
-  }
 
   return (
     <section
@@ -466,7 +336,8 @@ export function CollectionTab({
                 <div id="collection-overview" className="collection-section collection-overview">
                   <h2>Collection</h2>
                   <p className="muted">
-                    Manage your owned watches here. Start in Career for cash, then buy in Catalog.
+                    Manage your owned watches here. Track movement coverage and optimize equipped
+                    output.
                   </p>
                   <div className="inline-icon-button">
                     <ExplainButton
@@ -475,7 +346,6 @@ export function CollectionTab({
                     />
                     <span className="muted">Interaction help</span>
                   </div>
-                  <NextUnlockPanel items={nextUnlockItems} />
                   <div className="collection-setup" data-testid="collection-setup">
                     <fieldset className="automation-toggle" data-testid="automation-controls">
                       <legend className="automation-label">Automation controls</legend>
@@ -495,8 +365,10 @@ export function CollectionTab({
                       <header className="panel-header">
                         <div>
                           <p className="eyebrow">Archive bonuses</p>
-                          <h3>Tier bonuses</h3>
-                          <p className="muted">Unlock archive tiers by discovering references.</p>
+                          <h3>Movement bonuses</h3>
+                          <p className="muted">
+                            Unlock movement groups by discovering watch references.
+                          </p>
                         </div>
                         <div className="results-count" data-testid="catalog-tier-count">
                           {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
@@ -557,8 +429,8 @@ export function CollectionTab({
                           <p className="eyebrow">Tier badges</p>
                           <h3>Catalog variety</h3>
                           <p className="muted">
-                            Starter, Mid-tier, and Luxury badges show the collection’s entry,
-                            progression, and prestige tiers.
+                            Quartz, Automatic, Manual, and Tourbillon badges summarize movement
+                            variety across your collection.
                           </p>
                         </div>
                         <div className="collection-tier-summary-help">

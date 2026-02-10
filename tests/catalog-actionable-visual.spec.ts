@@ -4,7 +4,7 @@ import type { Page } from "@playwright/test";
 const seededState = {
   currencyCents: 5_000_000_00,
   enjoymentCents: 5_000_000_00,
-  items: { starter: 150, classic: 0, chronograph: 0, tourbillon: 0 },
+  items: { quartz: 150, automatic: 0, manual: 0, tourbillon: 0 },
   upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
   unlockedMilestones: [],
   workshopBlueprints: 0,

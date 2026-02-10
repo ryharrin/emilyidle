@@ -33,9 +33,9 @@ const buildSeededState = (): GameState => {
     ),
     items: {
       ...base.items,
-      starter: Math.max(base.items.starter ?? 0, 3),
-      classic: Math.max(base.items.classic ?? 0, 2),
-      chronograph: Math.max(base.items.chronograph ?? 0, 2),
+      quartz: Math.max(base.items.quartz ?? 0, 3),
+      automatic: Math.max(base.items.automatic ?? 0, 2),
+      manual: Math.max(base.items.manual ?? 0, 2),
       tourbillon: Math.max(base.items.tourbillon ?? 0, 1),
     },
     watchModels: {
@@ -184,7 +184,7 @@ const defineTouchTargetTests = (
 
       const manualCandidates = await resolveCatalogInteractCandidates(
         page,
-        'button[data-testid^="vault-interact-chronograph"]:not([disabled]), button[data-testid^="vault-interact-tourbillon"]:not([disabled])',
+        'button[data-testid^="vault-interact-manual"]:not([disabled]), button[data-testid^="vault-interact-tourbillon"]:not([disabled])',
         catalogPanel,
       );
       const manualButton = await findFirstVisible(manualCandidates);
@@ -204,7 +204,7 @@ const defineTouchTargetTests = (
 
       const automaticOpened = await openCatalogInteractionModal(
         page,
-        '[data-testid="vault-interact-classic"]:not([disabled])',
+        '[data-testid="vault-interact-automatic"]:not([disabled])',
         "automatic-modal",
         catalogPanel,
       );
@@ -219,7 +219,7 @@ const defineTouchTargetTests = (
 
       const quartzOpened = await openCatalogInteractionModal(
         page,
-        '[data-testid="vault-interact-starter"]:not([disabled])',
+        '[data-testid="vault-interact-quartz"]:not([disabled])',
         "quartz-modal",
         catalogPanel,
       );

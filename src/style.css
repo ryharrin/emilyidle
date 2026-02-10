@@ -1,7 +1,7 @@
 :root {
   color-scheme: light dark;
   --focus-ring: rgba(72, 175, 255, 0.85);
-  --tier-starter: #a3c5a0;
+  --tier-quartz: #a3c5a0;
   --tier-mid: #ffd700;
   --tier-lux: #e74c3c;
   --tier-badge-text-light: #ffffff;
@@ -112,7 +112,7 @@ strong {
   text-transform: uppercase;
   font-weight: 600;
   line-height: 1;
-  --tier-badge-background: var(--tier-starter);
+  --tier-badge-background: var(--tier-quartz);
   --tier-badge-text: var(--tier-badge-text-light);
   --tier-badge-border: var(--tier-badge-border);
   background: var(--tier-badge-background);
@@ -153,7 +153,7 @@ strong {
   text-transform: uppercase;
   font-weight: 600;
   line-height: 1;
-  background: var(--tier-badge-background, var(--tier-starter));
+  background: var(--tier-badge-background, var(--tier-quartz));
   color: var(--tier-badge-text, var(--tier-badge-text-light));
   border: 1px solid rgba(255, 255, 255, 0.25);
   white-space: nowrap;
@@ -2732,72 +2732,6 @@ textarea:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #9da3ad;
-}
-
-.next-unlock-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.next-unlock-feature {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  border-radius: 20px;
-  padding: 14px 16px;
-  border: 1px solid #2a2f3b;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(18, 21, 29, 0.95)), #11131a;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 12px 24px rgba(4, 6, 10, 0.55);
-}
-
-[data-theme="light"] .next-unlock-feature {
-  border-color: #d6c9b9;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.65), rgba(247, 243, 235, 0.9)), #fbf7f0;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 12px 20px rgba(89, 78, 66, 0.24);
-}
-
-.next-unlock-feature-icon {
-  width: 0.8rem;
-  height: 0.8rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f7d6a4, #cba76a);
-  margin-top: 0.4rem;
-  flex-shrink: 0;
-  box-shadow: 0 0 6px rgba(255, 215, 130, 0.6);
-}
-
-.next-unlock-feature-body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.next-unlock-feature-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.next-unlock-feature-heading h4 {
-  margin: 0;
-}
-
-.next-unlock-feature-effect {
-  margin: 0;
-  color: #f0e5d0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.next-unlock-feature-progress {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #a1a7b4;
 }
 
 .catalog-panel {

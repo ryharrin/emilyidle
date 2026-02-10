@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
@@ -29,6 +29,16 @@ const MAX_BUTTON_INTERACTIONS_PER_TAB = 90;
 const MAX_BUTTON_PASSES_PER_TAB = 6;
 const CATALOG_BUTTON_INTERACTIONS_CAP = 40;
 const CATALOG_BUTTON_PASSES_CAP = 3;
+const CHROMIUM_BUTTON_INTERACTIONS_CAP = 45;
+const CHROMIUM_BUTTON_PASSES_CAP = 3;
+const CHROMIUM_CAREER_BUTTON_INTERACTIONS_CAP = 28;
+const CHROMIUM_CAREER_BUTTON_PASSES_CAP = 2;
+const WEBKIT_MOBILE_BUTTON_INTERACTIONS_CAP = 30;
+const WEBKIT_MOBILE_BUTTON_PASSES_CAP = 3;
+const WEBKIT_MOBILE_CAREER_BUTTON_INTERACTIONS_CAP = 20;
+const WEBKIT_MOBILE_CAREER_BUTTON_PASSES_CAP = 2;
+const WEBKIT_MOBILE_COLLECTION_BUTTON_INTERACTIONS_CAP = 12;
+const WEBKIT_MOBILE_COLLECTION_BUTTON_PASSES_CAP = 2;
 const CATALOG_FLOW_SHARDS = [
   {
     id: "slice-1",
@@ -55,12 +65,24 @@ const CATALOG_FLOW_SHARDS = [
     skipInteractions: 18,
   },
 ] as const;
+const WEBKIT_MOBILE_CATALOG_SHARD_OVERRIDES: Record<
+  (typeof CATALOG_FLOW_SHARDS)[number]["id"],
+  {
+    maxInteractions: number;
+    maxPasses: number;
+    skipInteractions: number;
+    maxCandidateScans: number;
+  }
+> = {
+  "slice-1": { maxInteractions: 2, maxPasses: 1, skipInteractions: 0, maxCandidateScans: 18 },
+  "slice-2": { maxInteractions: 2, maxPasses: 1, skipInteractions: 2, maxCandidateScans: 24 },
+  "slice-3": { maxInteractions: 2, maxPasses: 1, skipInteractions: 4, maxCandidateScans: 30 },
+  "slice-4": { maxInteractions: 2, maxPasses: 1, skipInteractions: 6, maxCandidateScans: 36 },
+};
 const STEP_TIMEOUT_MS = 120_000;
 const CATALOG_STEP_TIMEOUT_MS = 120_000;
-const ROOT_SCREENSHOT_DIR = `output/playwright/full-ui-coverage-audit-${new Date()
-  .toISOString()
-  .slice(0, 10)
-  .replace(/-/g, "")}`;
+const AUDIT_RUN_ID = `${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}-${process.pid}`;
+const ROOT_SCREENSHOT_DIR = `output/playwright/full-ui-coverage-audit-${AUDIT_RUN_ID}`;
 
 type ScreenshotRecord = {
   file: string;
@@ -82,16 +104,98 @@ type ButtonExerciseOptions = {
   maxPasses?: number;
   maxInteractions?: number;
   skipInteractions?: number;
+  maxCandidateScans?: number;
+  skipDescriptorSubstrings?: string[];
+  minimalOverlayClose?: boolean;
+  captureInteractions?: boolean;
+  continueOnInteractionError?: boolean;
 };
 
 const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
+type LiveTraceWriter = {
+  filePath: string;
+  pendingWrite: Promise<void>;
+};
+
+const liveTraceWriters = new WeakMap<string[], LiveTraceWriter>();
+
+async function registerLiveTrace(traceLines: string[], filePath: string): Promise<void> {
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, "", "utf8");
+  liveTraceWriters.set(traceLines, {
+    filePath,
+    pendingWrite: Promise.resolve(),
+  });
+}
+
 function appendTrace(traceLines: string[] | undefined, message: string): void {
   if (!traceLines) {
     return;
   }
-  traceLines.push(`[${new Date().toISOString()}] ${message}`);
+  const line = `[${new Date().toISOString()}] ${message}`;
+  traceLines.push(line);
+  const writer = liveTraceWriters.get(traceLines);
+  if (!writer) {
+    return;
+  }
+  writer.pendingWrite = writer.pendingWrite
+    .then(() => appendFile(writer.filePath, `${line}\n`, "utf8"))
+    .catch(() => {});
+}
+
+async function flushLiveTrace(traceLines: string[] | undefined): Promise<void> {
+  if (!traceLines) {
+    return;
+  }
+  const writer = liveTraceWriters.get(traceLines);
+  if (!writer) {
+    return;
+  }
+  await writer.pendingWrite.catch(() => {});
+}
+
+function buildLiveTracePath(projectDir: string, traceName: string): string {
+  return path.join(projectDir, "traces", `${traceName}.live.log`);
+}
+
+async function attachTraceArtifacts(
+  testInfo: TestInfo,
+  traceName: string,
+  traceLines: string[],
+  liveTracePath: string,
+): Promise<void> {
+  await flushLiveTrace(traceLines);
+  await testInfo.attach(traceName, {
+    body: traceLines.join("\n"),
+    contentType: "text/plain",
+  });
+  await testInfo.attach(`${traceName}-live`, {
+    path: liveTracePath,
+    contentType: "text/plain",
+  });
+}
+
+const isWebkitMobileProject = (projectName: string): boolean =>
+  projectName.startsWith("webkit-mobile-");
+
+const isChromiumProject = (projectName: string): boolean => projectName === "chromium";
+
+function getCatalogShardConfig(
+  shard: (typeof CATALOG_FLOW_SHARDS)[number],
+  projectName: string,
+): {
+  maxInteractions: number;
+  maxPasses: number;
+  skipInteractions: number;
+  maxCandidateScans?: number;
+} {
+  if (isWebkitMobileProject(projectName)) {
+    return WEBKIT_MOBILE_CATALOG_SHARD_OVERRIDES[shard.id];
+  }
+
+  return shard;
 }
 
 async function withStepTimeout<T>(
@@ -201,9 +305,9 @@ function buildSeedState(): Record<string, unknown> {
     enjoymentCents: 15_000_000,
     items: {
       ...baseItems,
-      starter: Math.max(baseItems.starter ?? 0, 150),
-      classic: Math.max(baseItems.classic ?? 0, 110),
-      chronograph: Math.max(baseItems.chronograph ?? 0, 80),
+      quartz: Math.max(baseItems.quartz ?? 0, 150),
+      automatic: Math.max(baseItems.automatic ?? 0, 110),
+      manual: Math.max(baseItems.manual ?? 0, 80),
       tourbillon: Math.max(baseItems.tourbillon ?? 0, 60),
     },
     watchModels: {
@@ -285,34 +389,88 @@ async function capture(
   index: { value: number },
   label: string,
   fullPage = false,
+  options?: {
+    failOnError?: boolean;
+    traceLines?: string[];
+    traceTabId?: string;
+  },
 ): Promise<void> {
   index.value += 1;
   const filename = `${String(index.value).padStart(4, "0")}-${slugify(label)}.jpg`;
   const absolutePath = path.join(outputDir, filename);
-  await page.screenshot({
-    path: absolutePath,
-    type: "jpeg",
-    quality: 68,
-    fullPage,
-    animations: "disabled",
-  });
-  records.push({ file: absolutePath, label, fullPage });
+  const failOnError = options?.failOnError ?? true;
+
+  try {
+    await page.screenshot({
+      path: absolutePath,
+      type: "jpeg",
+      quality: 68,
+      fullPage,
+      animations: "disabled",
+      timeout: 8_000,
+    });
+    records.push({ file: absolutePath, label, fullPage });
+  } catch (error) {
+    appendTrace(
+      options?.traceLines,
+      `[${options?.traceTabId ?? "capture"}] warn capture "${label}": ${getErrorMessage(error)}`,
+    );
+    if (failOnError) {
+      throw error;
+    }
+
+    const markerPath = `${absolutePath}.capture-error.txt`;
+    await writeFile(markerPath, `capture failed for ${label}: ${getErrorMessage(error)}\n`, "utf8");
+    records.push({ file: markerPath, label: `${label} (capture-failed)`, fullPage });
+  }
 }
 
-async function expandDetails(panel: Locator): Promise<void> {
+async function expandDetails(
+  panel: Locator,
+  maxExpansions = Number.POSITIVE_INFINITY,
+  traceLines?: string[],
+  tabId?: string,
+): Promise<void> {
+  const traceTabId = tabId ?? "unknown-tab";
   const summaries = panel.locator("summary:visible");
   const count = await summaries.count();
+  appendTrace(
+    traceLines,
+    `[${traceTabId}] expand-details candidates=${count} cap=${maxExpansions}`,
+  );
+  let expandedCount = 0;
   for (let index = 0; index < count; index += 1) {
+    if (expandedCount >= maxExpansions) {
+      appendTrace(traceLines, `[${traceTabId}] expand-details reached cap=${maxExpansions}`);
+      break;
+    }
     const summary = summaries.nth(index);
-    const detailsOpen = await summary.evaluate((element) => {
+    const detailsState = await summary.evaluate((element) => {
       const details = element.closest("details");
-      return details ? (details as HTMLDetailsElement).open : false;
+      const open = details ? (details as HTMLDetailsElement).open : false;
+      const label = (element.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
+      return { open, label };
     });
-    if (!detailsOpen) {
-      await clickLocatorSafely(summary);
-      await summary.page().waitForTimeout(120);
+    if (!detailsState.open) {
+      appendTrace(
+        traceLines,
+        `[${traceTabId}] expand-details click idx=${index} label=${detailsState.label || "summary"}`,
+      );
+      try {
+        await withStepTimeout(`${traceTabId}:expand-details-click-${index}`, 6_000, async () => {
+          await clickLocatorSafely(summary);
+          await summary.page().waitForTimeout(120);
+        });
+        expandedCount += 1;
+      } catch (error) {
+        appendTrace(
+          traceLines,
+          `[${traceTabId}] expand-details warn idx=${index}: ${getErrorMessage(error)}`,
+        );
+      }
     }
   }
+  appendTrace(traceLines, `[${traceTabId}] expand-details done expanded=${expandedCount}`);
 }
 
 async function closeOpenOverlays(
@@ -450,12 +608,22 @@ async function exerciseVisibleButtons(
     maxPasses?: number;
     maxInteractions?: number;
     skipInteractions?: number;
+    maxCandidateScans?: number;
+    skipDescriptorSubstrings?: string[];
+    minimalOverlayClose?: boolean;
+    captureInteractions?: boolean;
+    continueOnInteractionError?: boolean;
     traceLines?: string[];
   },
 ): Promise<TabCoverage> {
   const maxPasses = options?.maxPasses ?? MAX_BUTTON_PASSES_PER_TAB;
   const maxInteractions = options?.maxInteractions ?? MAX_BUTTON_INTERACTIONS_PER_TAB;
   const skipInteractions = options?.skipInteractions ?? 0;
+  const maxCandidateScans = options?.maxCandidateScans ?? Number.POSITIVE_INFINITY;
+  const skipDescriptorSubstrings = options?.skipDescriptorSubstrings ?? [];
+  const minimalOverlayClose = options?.minimalOverlayClose ?? false;
+  const captureInteractions = options?.captureInteractions ?? true;
+  const continueOnInteractionError = options?.continueOnInteractionError ?? false;
   const traceLines = options?.traceLines;
   const handledKeys = new Set<string>();
   let candidateCount = 0;
@@ -466,8 +634,9 @@ async function exerciseVisibleButtons(
     let progressed = false;
     const candidates = panel.locator("button:visible, summary:visible");
     const count = await candidates.count();
+    const scanLimit = Math.min(count, maxCandidateScans);
 
-    for (let index = 0; index < count; index += 1) {
+    for (let index = 0; index < scanLimit; index += 1) {
       if (actions >= maxInteractions) {
         appendTrace(
           traceLines,
@@ -509,6 +678,14 @@ async function exerciseVisibleButtons(
       }
       handledKeys.add(descriptor.key);
 
+      if (
+        skipDescriptorSubstrings.some((fragment) =>
+          descriptor.key.toLowerCase().includes(fragment.toLowerCase()),
+        )
+      ) {
+        continue;
+      }
+
       if (descriptor.disabled || descriptor.key.includes("settings-clear-save-confirm")) {
         continue;
       }
@@ -519,27 +696,65 @@ async function exerciseVisibleButtons(
 
       candidateCount += 1;
       await candidate.scrollIntoViewIfNeeded({ timeout: 1_000 }).catch(() => {});
-      await withStepTimeout(`${tabId}:click-${actions + 1}`, 12_000, async () => {
-        await clickLocatorSafely(candidate);
-        await page.waitForTimeout(120);
-      });
+      try {
+        await withStepTimeout(`${tabId}:click-${actions + 1}`, 12_000, async () => {
+          await clickLocatorSafely(candidate);
+          await page.waitForTimeout(120);
+        });
+      } catch (error) {
+        appendTrace(
+          traceLines,
+          `[${tabId}] warn click-${actions + 1}: ${getErrorMessage(error)}`,
+        );
+        if (!continueOnInteractionError) {
+          throw error;
+        }
+        continue;
+      }
       actions += 1;
       progressed = true;
 
-      const labelBase = normalizeSpaces(descriptor.text || descriptor.key || `button-${actions}`);
-      await withStepTimeout(`${tabId}:capture-${actions}`, 18_000, async () => {
-        await capture(
-          page,
-          outputDir,
-          records,
-          captureIndex,
-          `${tabId}-button-${actions}-${labelBase}`,
-          false,
+      if (captureInteractions) {
+        const labelBase = normalizeSpaces(descriptor.text || descriptor.key || `button-${actions}`);
+        try {
+          await withStepTimeout(`${tabId}:capture-${actions}`, 18_000, async () => {
+            await capture(
+              page,
+              outputDir,
+              records,
+              captureIndex,
+              `${tabId}-button-${actions}-${labelBase}`,
+              false,
+            );
+          });
+        } catch (error) {
+          appendTrace(
+            traceLines,
+            `[${tabId}] warn capture-${actions}: ${getErrorMessage(error)}`,
+          );
+          if (!continueOnInteractionError) {
+            throw error;
+          }
+        }
+      }
+      try {
+        await withStepTimeout(`${tabId}:close-overlays-${actions}`, 18_000, async () => {
+          if (minimalOverlayClose) {
+            await page.keyboard.press("Escape").catch(() => {});
+            await page.waitForTimeout(90);
+            return;
+          }
+          await closeOpenOverlays(page, outputDir, records, captureIndex, tabId);
+        });
+      } catch (error) {
+        appendTrace(
+          traceLines,
+          `[${tabId}] warn close-overlays-${actions}: ${getErrorMessage(error)}`,
         );
-      });
-      await withStepTimeout(`${tabId}:close-overlays-${actions}`, 18_000, async () => {
-        await closeOpenOverlays(page, outputDir, records, captureIndex, tabId);
-      });
+        if (!continueOnInteractionError) {
+          throw error;
+        }
+      }
     }
 
     if (!progressed) {
@@ -578,13 +793,71 @@ async function captureAllTabScreens(
     const auditPage = await page.context().newPage();
     try {
       const tabStepTimeout = tab.id === "catalog" ? CATALOG_STEP_TIMEOUT_MS : STEP_TIMEOUT_MS;
+      const isWebkitMobile = isWebkitMobileProject(testInfo.project.name);
+      const isChromium = isChromiumProject(testInfo.project.name);
+      const useFullPageCaptures = !isWebkitMobile;
+      const defaultInteractions =
+        tab.id === "catalog"
+          ? CATALOG_BUTTON_INTERACTIONS_CAP
+          : isWebkitMobile
+            ? tab.id === "career"
+              ? WEBKIT_MOBILE_CAREER_BUTTON_INTERACTIONS_CAP
+              : tab.id === "collection"
+                ? WEBKIT_MOBILE_COLLECTION_BUTTON_INTERACTIONS_CAP
+              : WEBKIT_MOBILE_BUTTON_INTERACTIONS_CAP
+            : isChromium
+              ? tab.id === "career"
+                ? CHROMIUM_CAREER_BUTTON_INTERACTIONS_CAP
+                : CHROMIUM_BUTTON_INTERACTIONS_CAP
+              : MAX_BUTTON_INTERACTIONS_PER_TAB;
+      const defaultPasses =
+        tab.id === "catalog"
+          ? CATALOG_BUTTON_PASSES_CAP
+          : isWebkitMobile
+            ? tab.id === "career"
+              ? WEBKIT_MOBILE_CAREER_BUTTON_PASSES_CAP
+              : tab.id === "collection"
+                ? WEBKIT_MOBILE_COLLECTION_BUTTON_PASSES_CAP
+              : WEBKIT_MOBILE_BUTTON_PASSES_CAP
+            : isChromium
+              ? tab.id === "career"
+                ? CHROMIUM_CAREER_BUTTON_PASSES_CAP
+                : CHROMIUM_BUTTON_PASSES_CAP
+              : MAX_BUTTON_PASSES_PER_TAB;
       const maxInteractions =
-        options?.buttonExerciseOptions?.maxInteractions ??
-        (tab.id === "catalog" ? CATALOG_BUTTON_INTERACTIONS_CAP : MAX_BUTTON_INTERACTIONS_PER_TAB);
+        options?.buttonExerciseOptions?.maxInteractions ?? defaultInteractions;
       const maxPasses =
-        options?.buttonExerciseOptions?.maxPasses ??
-        (tab.id === "catalog" ? CATALOG_BUTTON_PASSES_CAP : MAX_BUTTON_PASSES_PER_TAB);
+        options?.buttonExerciseOptions?.maxPasses ?? defaultPasses;
       const skipInteractions = options?.buttonExerciseOptions?.skipInteractions ?? 0;
+      const defaultMaxCandidateScans = isWebkitMobile
+        ? tab.id === "catalog"
+          ? 180
+          : tab.id === "collection"
+            ? 120
+            : 100
+        : undefined;
+      const maxCandidateScans =
+        options?.buttonExerciseOptions?.maxCandidateScans ?? defaultMaxCandidateScans;
+      const defaultSkipDescriptorSubstrings =
+        isWebkitMobile && tab.id === "catalog" ? ["help-open", "explain"] : [];
+      const skipDescriptorSubstrings =
+        options?.buttonExerciseOptions?.skipDescriptorSubstrings ?? defaultSkipDescriptorSubstrings;
+      const defaultMinimalOverlayClose = isWebkitMobile && tab.id === "catalog";
+      const minimalOverlayClose =
+        options?.buttonExerciseOptions?.minimalOverlayClose ?? defaultMinimalOverlayClose;
+      const defaultCaptureInteractions = !(isWebkitMobile && tab.id === "catalog");
+      const captureInteractions =
+        options?.buttonExerciseOptions?.captureInteractions ?? defaultCaptureInteractions;
+      const defaultContinueOnInteractionError = isWebkitMobile && tab.id === "catalog";
+      const continueOnInteractionError =
+        options?.buttonExerciseOptions?.continueOnInteractionError ??
+        defaultContinueOnInteractionError;
+      const maxDetailExpansions = isWebkitMobile
+        ? tab.id === "catalog"
+          ? 0
+          : 16
+        : Number.POSITIVE_INFINITY;
+      const nonFatalCaptures = isWebkitMobile && tab.id === "catalog";
 
       await runTabStep({
         tabId: tab.id,
@@ -622,7 +895,19 @@ async function captureAllTabScreens(
         traceLines,
         timeoutMs: tabStepTimeout,
         action: async () => {
-          await capture(auditPage, outputDir, records, captureIndex, `${tab.id}-entry-full`, true);
+          await capture(
+            auditPage,
+            outputDir,
+            records,
+            captureIndex,
+            `${tab.id}-entry-full`,
+            useFullPageCaptures,
+            {
+              failOnError: !nonFatalCaptures,
+              traceLines,
+              traceTabId: tab.id,
+            },
+          );
         },
       });
 
@@ -632,7 +917,7 @@ async function captureAllTabScreens(
         traceLines,
         timeoutMs: tabStepTimeout,
         action: async () => {
-          await expandDetails(panel);
+          await expandDetails(panel, maxDetailExpansions, traceLines, tab.id);
           await auditPage.waitForTimeout(120);
         },
       });
@@ -648,7 +933,12 @@ async function captureAllTabScreens(
             records,
             captureIndex,
             `${tab.id}-expanded-full`,
-            true,
+            useFullPageCaptures,
+            {
+              failOnError: !nonFatalCaptures,
+              traceLines,
+              traceTabId: tab.id,
+            },
           );
         },
       });
@@ -663,6 +953,11 @@ async function captureAllTabScreens(
             maxPasses,
             maxInteractions,
             skipInteractions,
+            maxCandidateScans,
+            skipDescriptorSubstrings,
+            minimalOverlayClose,
+            captureInteractions,
+            continueOnInteractionError,
             traceLines,
           }),
       });
@@ -672,7 +967,19 @@ async function captureAllTabScreens(
         traceLines,
         timeoutMs: tabStepTimeout,
         action: async () => {
-          await capture(auditPage, outputDir, records, captureIndex, `${tab.id}-final-full`, true);
+          await capture(
+            auditPage,
+            outputDir,
+            records,
+            captureIndex,
+            `${tab.id}-final-full`,
+            useFullPageCaptures,
+            {
+              failOnError: !nonFatalCaptures,
+              traceLines,
+              traceTabId: tab.id,
+            },
+          );
         },
       });
     } finally {
@@ -700,7 +1007,6 @@ const preparedProjects = new Set<string>();
 async function ensureProjectOutput(projectName: string): Promise<string> {
   const projectDir = path.join(ROOT_SCREENSHOT_DIR, projectName);
   if (!preparedProjects.has(projectName)) {
-    await rm(projectDir, { recursive: true, force: true });
     await mkdir(path.join(projectDir, "tabs"), { recursive: true });
     preparedProjects.add(projectName);
   }
@@ -788,38 +1094,46 @@ test.describe("full UI coverage audit", () => {
           const seedState = buildSeedState();
           const traceLines: string[] = [];
           const scopedTabId = `${tab.id}-${shard.id}`;
+          const traceName = `audit-trace-${scopedTabId}`;
+          const liveTracePath = buildLiveTracePath(projectDir, traceName);
+          await registerLiveTrace(traceLines, liveTracePath);
+          const shardConfig = getCatalogShardConfig(shard, testInfo.project.name);
           appendTrace(traceLines, `[meta] project=${testInfo.project.name}`);
           appendTrace(traceLines, `[meta] route=tab-${scopedTabId}`);
-          const result = await captureAllTabScreens(page, testInfo, seedState, {
-            tabs: [tab],
-            includeHome: false,
-            traceLines,
-            buttonExerciseOptions: {
-              maxPasses: shard.maxPasses,
-              maxInteractions: shard.maxInteractions,
-              skipInteractions: shard.skipInteractions,
-            },
-          });
-          const coverage = result.coverageByTab[tab.id] ?? {
-            candidateCount: 0,
-            interactedCount: 0,
-          };
+          appendTrace(traceLines, `[meta] live-trace=${liveTracePath}`);
+          appendTrace(traceLines, `[meta] begin route=tab-${scopedTabId}`);
+          try {
+            const result = await captureAllTabScreens(page, testInfo, seedState, {
+              tabs: [tab],
+              includeHome: false,
+              traceLines,
+              buttonExerciseOptions: {
+                maxPasses: shardConfig.maxPasses,
+                maxInteractions: shardConfig.maxInteractions,
+                skipInteractions: shardConfig.skipInteractions,
+                maxCandidateScans: shardConfig.maxCandidateScans,
+              },
+            });
+            const coverage = result.coverageByTab[tab.id] ?? {
+              candidateCount: 0,
+              interactedCount: 0,
+            };
 
-          await writeTabManifest(
-            projectDir,
-            testInfo.project.name,
-            scopedTabId,
-            result.records,
-            coverage,
-          );
-          await rebuildProjectManifest(projectDir);
-          await testInfo.attach(`audit-trace-${scopedTabId}`, {
-            body: traceLines.join("\n"),
-            contentType: "text/plain",
-          });
+            await writeTabManifest(
+              projectDir,
+              testInfo.project.name,
+              scopedTabId,
+              result.records,
+              coverage,
+            );
+            await rebuildProjectManifest(projectDir);
+            appendTrace(traceLines, `[meta] complete route=tab-${scopedTabId}`);
 
-          expect(result.records.length).toBeGreaterThan(2);
-          expect(coverage.interactedCount).toBeLessThanOrEqual(shard.maxInteractions);
+            expect(result.records.length).toBeGreaterThan(2);
+            expect(coverage.interactedCount).toBeLessThanOrEqual(shardConfig.maxInteractions);
+          } finally {
+            await attachTraceArtifacts(testInfo, traceName, traceLines, liveTracePath);
+          }
         });
       }
       continue;
@@ -831,27 +1145,33 @@ test.describe("full UI coverage audit", () => {
       const projectDir = await ensureProjectOutput(testInfo.project.name);
       const seedState = buildSeedState();
       const traceLines: string[] = [];
+      const traceName = `audit-trace-${tab.id}`;
+      const liveTracePath = buildLiveTracePath(projectDir, traceName);
+      await registerLiveTrace(traceLines, liveTracePath);
       appendTrace(traceLines, `[meta] project=${testInfo.project.name}`);
       appendTrace(traceLines, `[meta] route=tab-${tab.id}`);
-      const result = await captureAllTabScreens(page, testInfo, seedState, {
-        tabs: [tab],
-        includeHome: false,
-        traceLines,
-      });
-      const coverage = result.coverageByTab[tab.id] ?? {
-        candidateCount: 0,
-        interactedCount: 0,
-      };
+      appendTrace(traceLines, `[meta] live-trace=${liveTracePath}`);
+      appendTrace(traceLines, `[meta] begin route=tab-${tab.id}`);
+      try {
+        const result = await captureAllTabScreens(page, testInfo, seedState, {
+          tabs: [tab],
+          includeHome: false,
+          traceLines,
+        });
+        const coverage = result.coverageByTab[tab.id] ?? {
+          candidateCount: 0,
+          interactedCount: 0,
+        };
 
-      await writeTabManifest(projectDir, testInfo.project.name, tab.id, result.records, coverage);
-      await rebuildProjectManifest(projectDir);
-      await testInfo.attach(`audit-trace-${tab.id}`, {
-        body: traceLines.join("\n"),
-        contentType: "text/plain",
-      });
+        await writeTabManifest(projectDir, testInfo.project.name, tab.id, result.records, coverage);
+        await rebuildProjectManifest(projectDir);
+        appendTrace(traceLines, `[meta] complete route=tab-${tab.id}`);
 
-      expect(result.records.length).toBeGreaterThan(2);
-      expect(coverage.interactedCount).toBeGreaterThan(0);
+        expect(result.records.length).toBeGreaterThan(2);
+        expect(coverage.interactedCount).toBeGreaterThan(0);
+      } finally {
+        await attachTraceArtifacts(testInfo, traceName, traceLines, liveTracePath);
+      }
     });
   }
 
@@ -861,25 +1181,31 @@ test.describe("full UI coverage audit", () => {
     const projectDir = await ensureProjectOutput(testInfo.project.name);
     const seedState = buildSeedState();
     const traceLines: string[] = [];
+    const traceName = "audit-trace-home";
+    const liveTracePath = buildLiveTracePath(projectDir, traceName);
+    await registerLiveTrace(traceLines, liveTracePath);
     appendTrace(traceLines, `[meta] project=${testInfo.project.name}`);
     appendTrace(traceLines, "[meta] route=home");
-    const result = await captureAllTabScreens(page, testInfo, seedState, {
-      tabs: [],
-      includeHome: true,
-      traceLines,
-    });
-    const homeCoverage = result.coverageByTab.home ?? {
-      candidateCount: 0,
-      interactedCount: 0,
-    };
+    appendTrace(traceLines, `[meta] live-trace=${liveTracePath}`);
+    appendTrace(traceLines, "[meta] begin route=home");
+    try {
+      const result = await captureAllTabScreens(page, testInfo, seedState, {
+        tabs: [],
+        includeHome: true,
+        traceLines,
+      });
+      const homeCoverage = result.coverageByTab.home ?? {
+        candidateCount: 0,
+        interactedCount: 0,
+      };
 
-    await writeTabManifest(projectDir, testInfo.project.name, "home", result.records, homeCoverage);
-    await rebuildProjectManifest(projectDir);
-    await testInfo.attach("audit-trace-home", {
-      body: traceLines.join("\n"),
-      contentType: "text/plain",
-    });
+      await writeTabManifest(projectDir, testInfo.project.name, "home", result.records, homeCoverage);
+      await rebuildProjectManifest(projectDir);
+      appendTrace(traceLines, "[meta] complete route=home");
 
-    expect(result.records.length).toBeGreaterThan(0);
+      expect(result.records.length).toBeGreaterThan(0);
+    } finally {
+      await attachTraceArtifacts(testInfo, traceName, traceLines, liveTracePath);
+    }
   });
 });

@@ -132,9 +132,9 @@ const NOSTALGIA_PRESTIGE_THRESHOLD_CENTS = 12_000_000;
 const REVEAL_THRESHOLD_RATIO = 0.8;
 
 const CRAFTING_PARTS_PER_WATCH: Record<WatchItemId, number> = {
-  starter: 1,
-  classic: 2,
-  chronograph: 4,
+  quartz: 1,
+  automatic: 2,
+  manual: 4,
   tourbillon: 8,
 };
 

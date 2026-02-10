@@ -10,11 +10,11 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   const seededState = createInitialState();
   seededState.items = {
     ...seededState.items,
-    starter: 1,
+    quartz: 1,
   };
   seededState.interactionNextAvailableAtMsByItem = {
     ...seededState.interactionNextAvailableAtMsByItem,
-    starter: 0,
+    quartz: 0,
   };
 
   await seedStorage(page, {
@@ -40,10 +40,10 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.locator('[data-testid="help-modal"]')).toHaveCount(0);
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Collection" }));
-  await expect(page.getByTestId("next-unlock-preview")).toBeVisible();
-  await expect(page.getByTestId("next-unlock-lead")).toBeVisible();
-  await expect(page.getByTestId("next-unlock-cta-career")).toBeVisible();
-  await clickLocatorSafely(page.getByTestId("next-unlock-cta-career"));
+  const callout = page.getByTestId("catalog-shop-callout");
+  await expect(callout).toBeVisible();
+  const openCatalog = callout.getByRole("button", { name: "Open Catalog" });
+  await clickLocatorSafely(openCatalog);
   await expect(page.getByTestId("catalog-collection-context")).toBeVisible();
   await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();
 

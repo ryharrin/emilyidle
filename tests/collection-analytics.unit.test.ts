@@ -9,7 +9,7 @@ import {
 } from "../src/game/state";
 
 function requireModelIdForTier(
-  tierId: "starter" | "classic" | "chronograph" | "tourbillon",
+  tierId: "quartz" | "automatic" | "manual" | "tourbillon",
 ): string {
   const model = WATCH_MODELS.find((entry) => entry.tierId === tierId);
   if (!model) {
@@ -21,20 +21,20 @@ function requireModelIdForTier(
 describe("collection insight selectors", () => {
   it("computes set bonus progress counts and active transitions", () => {
     const baseState = createInitialState();
-    const starterSetId = "starter-set";
+    const starterSetId = "quartz-set";
 
     const partialState = {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 4,
-        classic: 1,
+        quartz: 4,
+        automatic: 1,
       },
     };
 
     const partialRow = getSetBonusProgressRows(partialState).find((row) => row.id === starterSetId);
     if (!partialRow) {
-      throw new Error("Expected starter-set row");
+      throw new Error("Expected quartz-set row");
     }
 
     expect(partialRow.requiredCount).toBe(6);
@@ -47,13 +47,13 @@ describe("collection insight selectors", () => {
       ...partialState,
       items: {
         ...partialState.items,
-        starter: 5,
+        quartz: 5,
       },
     };
 
     const activeRow = getSetBonusProgressRows(activeState).find((row) => row.id === starterSetId);
     if (!activeRow) {
-      throw new Error("Expected starter-set row");
+      throw new Error("Expected quartz-set row");
     }
 
     expect(activeRow.remainingCount).toBe(0);
@@ -87,8 +87,8 @@ describe("collection insight selectors", () => {
 
   it("produces deterministic analytics breakdowns and most valuable model", () => {
     const baseState = createInitialState();
-    const starterModelId = requireModelIdForTier("starter");
-    const chronographModelId = requireModelIdForTier("chronograph");
+    const starterModelId = requireModelIdForTier("quartz");
+    const chronographModelId = requireModelIdForTier("manual");
     const tourbillonModelId = requireModelIdForTier("tourbillon");
 
     const seededState = {
@@ -106,8 +106,8 @@ describe("collection insight selectors", () => {
     expect(snapshot.mostValuableModel?.modelId).toBe(tourbillonModelId);
     expect(snapshot.mostValuableModel?.tierId).toBe("tourbillon");
 
-    const starterTier = snapshot.tierDistribution.find((row) => row.id === "starter");
-    const chronoTier = snapshot.tierDistribution.find((row) => row.id === "chronograph");
+    const starterTier = snapshot.tierDistribution.find((row) => row.id === "quartz");
+    const chronoTier = snapshot.tierDistribution.find((row) => row.id === "manual");
     const tourbillonTier = snapshot.tierDistribution.find((row) => row.id === "tourbillon");
 
     expect(starterTier?.count).toBe(10);

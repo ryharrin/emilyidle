@@ -7,13 +7,13 @@ const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 function getClassicModelId(): string {
   const model = getWatchModels().find((entry) => entry.id === CLASSIC_MODEL_ID);
   if (!model) {
-    throw new Error(`Missing classic watch model: ${CLASSIC_MODEL_ID}`);
+    throw new Error(`Missing automatic watch model: ${CLASSIC_MODEL_ID}`);
   }
   return model.id;
 }
 
 describe("purchase gates", () => {
-  it("allows a starter purchase on a fresh save", () => {
+  it("allows a quartz purchase on a fresh save", () => {
     const baseState = createInitialState();
     const canBuyAny = getWatchModels().some(
       (model) => getWatchModelPurchaseGate(baseState, model.id).ok,

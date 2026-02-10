@@ -30,8 +30,8 @@ describe("automatic mini-game messaging helpers", () => {
   });
 
   it("maps precision to tier buckets", () => {
-    expect(getTier(0.82, "classic")).toBe("perfect");
-    expect(getTier(0.5, "classic")).toBe("good");
-    expect(getTier(0.1, "classic")).toBe("miss");
+    expect(getTier(0.82, "automatic")).toBe("perfect");
+    expect(getTier(0.5, "automatic")).toBe("good");
+    expect(getTier(0.1, "automatic")).toBe("miss");
   });
 });

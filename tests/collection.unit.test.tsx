@@ -21,12 +21,12 @@ describe("collection depth insights", () => {
     cleanup();
   });
 
-  it("renders Starter, Mid-tier, and Luxury segments with help copy", () => {
+  it("renders movement segments with help copy", () => {
     const summary = screen.getByTestId("collection-tier-summary");
     expect(summary).toBeInTheDocument();
     const segments = within(summary).getAllByTestId(/collection-segment-/);
-    expect(segments).toHaveLength(3);
-    const tierLabels = ["Starter", "Mid-tier", "Luxury"];
+    expect(segments).toHaveLength(4);
+    const tierLabels = ["Quartz", "Automatic", "Manual", "Tourbillon"];
     tierLabels.forEach((label) => {
       expect(within(summary).getByRole("heading", { name: label })).toBeVisible();
     });

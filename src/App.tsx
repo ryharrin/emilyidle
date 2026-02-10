@@ -326,7 +326,7 @@ export default function App() {
   const [catalogEra, setCatalogEra] = useState<
     "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown"
   >("all");
-  const [catalogType, setCatalogType] = useState<"all" | "gmt" | "chronograph" | "dress" | "diver">(
+  const [catalogType, setCatalogType] = useState<"all" | "gmt" | "manual" | "dress" | "diver">(
     "all",
   );
   const [catalogTab, setCatalogTab] = useState<"unowned" | "owned">("unowned");
@@ -667,7 +667,7 @@ export default function App() {
       return;
     }
 
-    if (item.movement === "manual") {
+    if (item.movement === "manual" || item.movement === "tourbillon") {
       setActiveInteraction({ kind: "winding", itemId });
       return;
     }
@@ -1296,13 +1296,13 @@ export default function App() {
 
     const sortByTierRank = (entry: (typeof catalogEntries)[number]) => {
       const tags = getCatalogEntryTags(entry);
-      if (tags.includes("starter")) {
+      if (tags.includes("quartz")) {
         return 0;
       }
-      if (tags.includes("classic")) {
+      if (tags.includes("automatic")) {
         return 1;
       }
-      if (tags.includes("chronograph")) {
+      if (tags.includes("manual")) {
         return 2;
       }
       if (tags.includes("tourbillon")) {
@@ -1726,7 +1726,7 @@ export default function App() {
           <WindingMiniGameModal
             open={activeInteraction?.kind === "winding"}
             itemId={
-              activeInteraction?.kind === "winding" ? activeInteraction.itemId : "chronograph"
+              activeInteraction?.kind === "winding" ? activeInteraction.itemId : "manual"
             }
             itemLabel={
               activeInteraction?.kind === "winding"
@@ -1762,7 +1762,7 @@ export default function App() {
 
           <AutomaticMiniGameModal
             open={activeInteraction?.kind === "automatic"}
-            itemId={activeInteraction?.kind === "automatic" ? activeInteraction.itemId : "classic"}
+            itemId={activeInteraction?.kind === "automatic" ? activeInteraction.itemId : "automatic"}
             itemLabel={
               activeInteraction?.kind === "automatic"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
@@ -1793,7 +1793,7 @@ export default function App() {
 
           <QuartzMiniGameModal
             open={activeInteraction?.kind === "quartz"}
-            itemId={activeInteraction?.kind === "quartz" ? activeInteraction.itemId : "starter"}
+            itemId={activeInteraction?.kind === "quartz" ? activeInteraction.itemId : "quartz"}
             itemLabel={
               activeInteraction?.kind === "quartz"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")

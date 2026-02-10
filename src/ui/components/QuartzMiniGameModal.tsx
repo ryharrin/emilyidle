@@ -134,7 +134,7 @@ const QUARTZ_REWARD_INFO: Record<QuartzOutcomeTier, { prefix: string; detail: st
   },
   good: {
     prefix: "Good timing rewards steady enjoyment",
-    detail: "Good hits keep the minute hand stable and deliver the dependable mid-tier reward.",
+    detail: "Good hits keep the minute hand stable and deliver the dependable quartz reward.",
   },
   perfect: {
     prefix: "Perfect timing pays 2×",

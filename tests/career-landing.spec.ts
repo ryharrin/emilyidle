@@ -18,7 +18,7 @@ test("deep links do not overwrite last-tab persistence for existing saves", asyn
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
-    items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+    items: { quartz: 15, automatic: 0, manual: 1, tourbillon: 0 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: ["showcase"],
     workshopBlueprints: 0,

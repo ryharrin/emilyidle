@@ -62,7 +62,7 @@ describe("purchase undo", () => {
       },
       items: {
         ...afterPurchase.items,
-        [afterPurchase.lastPurchase?.tierId ?? "starter"]: 0,
+        [afterPurchase.lastPurchase?.tierId ?? "quartz"]: 0,
       },
     };
 

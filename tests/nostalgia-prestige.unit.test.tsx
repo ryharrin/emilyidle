@@ -63,8 +63,8 @@ describe("nostalgia prestige", () => {
       nostalgiaEnjoymentEarnedCents: threshold,
       items: {
         ...baseState.items,
-        starter: 6,
-        classic: 2,
+        quartz: 6,
+        automatic: 2,
       },
       upgrades: {
         ...baseState.upgrades,

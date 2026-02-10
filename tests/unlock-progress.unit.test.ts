@@ -19,7 +19,7 @@ describe("unlock progress detail helpers", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 3,
+        quartz: 3,
       },
     };
 
@@ -37,7 +37,7 @@ describe("unlock progress detail helpers", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 12,
+        quartz: 12,
       },
     };
 
@@ -71,7 +71,7 @@ describe("unlock progress detail helpers", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
+        quartz: 10,
       },
     };
 

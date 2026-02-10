@@ -7,7 +7,7 @@ test("tabs respect hidden preferences", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
-    items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+    items: { quartz: 15, automatic: 0, manual: 1, tourbillon: 0 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: ["showcase"],
     workshopBlueprints: 0,
@@ -62,10 +62,10 @@ test("tabs respect hidden preferences", async ({ page }) => {
 
 test("tabs surface readiness badges and honor numeric shortcuts", async ({ page }) => {
   const seededState = createInitialState();
-  seededState.items.starter = 2;
+  seededState.items.quartz = 2;
   seededState.interactionNextAvailableAtMsByItem = {
     ...seededState.interactionNextAvailableAtMsByItem,
-    starter: 0,
+    quartz: 0,
   };
 
   const settings = {

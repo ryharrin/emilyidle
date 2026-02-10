@@ -19,16 +19,16 @@ describe("nostalgia unlocks", () => {
   it("keeps nostalgia unlock costs stable and unique", () => {
     const unlockIds = getNostalgiaUnlockIds();
 
-    expect(unlockIds).toEqual(["classic", "chronograph", "tourbillon"]);
-    expect(getNostalgiaUnlockCost("classic")).toBe(1);
-    expect(getNostalgiaUnlockCost("chronograph")).toBe(3);
+    expect(unlockIds).toEqual(["automatic", "manual", "tourbillon"]);
+    expect(getNostalgiaUnlockCost("automatic")).toBe(1);
+    expect(getNostalgiaUnlockCost("manual")).toBe(3);
     expect(getNostalgiaUnlockCost("tourbillon")).toBe(6);
   });
 
   it("gates unlock availability until the first nostalgia prestige", () => {
     const baseState = createInitialState();
 
-    expect(canBuyNostalgiaUnlock(baseState, "classic")).toBe(false);
+    expect(canBuyNostalgiaUnlock(baseState, "automatic")).toBe(false);
   });
 
   it("enforces unlock order and ignores milestone skips", () => {
@@ -41,12 +41,12 @@ describe("nostalgia unlocks", () => {
       unlockedMilestones: [...unlockedMilestones],
     };
 
-    expect(canBuyNostalgiaUnlock(seededState, "classic")).toBe(true);
-    expect(canBuyNostalgiaUnlock(seededState, "chronograph")).toBe(false);
+    expect(canBuyNostalgiaUnlock(seededState, "automatic")).toBe(true);
+    expect(canBuyNostalgiaUnlock(seededState, "manual")).toBe(false);
 
-    const afterClassic = buyNostalgiaUnlock(seededState, "classic");
+    const afterClassic = buyNostalgiaUnlock(seededState, "automatic");
 
-    expect(canBuyNostalgiaUnlock(afterClassic, "chronograph")).toBe(true);
+    expect(canBuyNostalgiaUnlock(afterClassic, "manual")).toBe(true);
     expect(canBuyNostalgiaUnlock(afterClassic, "tourbillon")).toBe(false);
   });
 
@@ -58,14 +58,14 @@ describe("nostalgia unlocks", () => {
       nostalgiaPoints: 10,
     };
 
-    const afterClassic = buyNostalgiaUnlock(seededState, "classic");
+    const afterClassic = buyNostalgiaUnlock(seededState, "automatic");
     expect(afterClassic.nostalgiaPoints).toBe(
-      seededState.nostalgiaPoints - getNostalgiaUnlockCost("classic"),
+      seededState.nostalgiaPoints - getNostalgiaUnlockCost("automatic"),
     );
-    expect(afterClassic.nostalgiaUnlockedItems).toEqual(["classic"]);
+    expect(afterClassic.nostalgiaUnlockedItems).toEqual(["automatic"]);
 
-    const afterChronograph = buyNostalgiaUnlock(afterClassic, "chronograph");
-    expect(afterChronograph.nostalgiaUnlockedItems).toEqual(["classic", "chronograph"]);
+    const afterChronograph = buyNostalgiaUnlock(afterClassic, "manual");
+    expect(afterChronograph.nostalgiaUnlockedItems).toEqual(["automatic", "manual"]);
   });
 
   it("allows refunds only on the most recent unlock and restores full cost", () => {
@@ -76,35 +76,35 @@ describe("nostalgia unlocks", () => {
       nostalgiaPoints: 10,
     };
 
-    const afterClassic = buyNostalgiaUnlock(seededState, "classic");
-    const afterChronograph = buyNostalgiaUnlock(afterClassic, "chronograph");
+    const afterClassic = buyNostalgiaUnlock(seededState, "automatic");
+    const afterChronograph = buyNostalgiaUnlock(afterClassic, "manual");
 
-    expect(canRefundNostalgiaUnlock(afterChronograph, "classic")).toBe(false);
-    expect(canRefundNostalgiaUnlock(afterChronograph, "chronograph")).toBe(true);
+    expect(canRefundNostalgiaUnlock(afterChronograph, "automatic")).toBe(false);
+    expect(canRefundNostalgiaUnlock(afterChronograph, "manual")).toBe(true);
 
-    const refunded = refundNostalgiaUnlock(afterChronograph, "chronograph");
+    const refunded = refundNostalgiaUnlock(afterChronograph, "manual");
     expect(refunded.nostalgiaPoints).toBe(
-      afterChronograph.nostalgiaPoints + getNostalgiaUnlockCost("chronograph"),
+      afterChronograph.nostalgiaPoints + getNostalgiaUnlockCost("manual"),
     );
-    expect(refunded.nostalgiaUnlockedItems).toEqual(["classic"]);
+    expect(refunded.nostalgiaUnlockedItems).toEqual(["automatic"]);
   });
 
   it("treats nostalgia unlocks as an OR gate for item availability", () => {
     const baseState = createInitialState();
-    const unlocked: WatchItemId[] = ["classic"];
+    const unlocked: WatchItemId[] = ["automatic"];
     const seededState = {
       ...baseState,
       nostalgiaUnlockedItems: unlocked,
     };
 
-    expect(isItemUnlocked(seededState, "classic")).toBe(true);
-    expect(isItemUnlocked(seededState, "chronograph")).toBe(false);
+    expect(isItemUnlocked(seededState, "automatic")).toBe(true);
+    expect(isItemUnlocked(seededState, "manual")).toBe(false);
   });
 
   it("preserves nostalgia unlocks after nostalgia prestige", () => {
     const baseState = createInitialState();
     const threshold = getNostalgiaPrestigeThresholdCents();
-    const unlocked: WatchItemId[] = ["classic"];
+    const unlocked: WatchItemId[] = ["automatic"];
     const seededState = {
       ...baseState,
       nostalgiaUnlockedItems: unlocked,
@@ -113,12 +113,12 @@ describe("nostalgia unlocks", () => {
 
     const afterPrestige = prestigeNostalgia(seededState, 1_234);
 
-    expect(afterPrestige.nostalgiaUnlockedItems).toEqual(["classic"]);
+    expect(afterPrestige.nostalgiaUnlockedItems).toEqual(["automatic"]);
   });
 
   it("persists nostalgia unlocks through save encode/decode", () => {
     const baseState = createInitialState();
-    const unlocked: WatchItemId[] = ["classic", "chronograph"];
+    const unlocked: WatchItemId[] = ["automatic", "manual"];
     const seededState = {
       ...baseState,
       nostalgiaUnlockedItems: unlocked,
@@ -129,7 +129,7 @@ describe("nostalgia unlocks", () => {
 
     expect(decoded.ok).toBe(true);
     if (decoded.ok) {
-      expect(decoded.save.state.nostalgiaUnlockedItems).toEqual(["classic", "chronograph"]);
+      expect(decoded.save.state.nostalgiaUnlockedItems).toEqual(["automatic", "manual"]);
     }
   });
 });

@@ -45,12 +45,12 @@ const createMatchMediaMock = (width: number): typeof window.matchMedia =>
 
 describe("interaction movement gating", () => {
   it("allows automatic watches for rotor interactions", () => {
-    expect(getInteractionMovementGate("classic")).toEqual({ available: true });
+    expect(getInteractionMovementGate("automatic")).toEqual({ available: true });
   });
 
   it("allows quartz and hand-wind watches", () => {
-    expect(getInteractionMovementGate("starter")).toEqual({ available: true });
-    expect(getInteractionMovementGate("chronograph")).toEqual({ available: true });
+    expect(getInteractionMovementGate("quartz")).toEqual({ available: true });
+    expect(getInteractionMovementGate("manual")).toEqual({ available: true });
   });
 });
 
@@ -62,10 +62,10 @@ describe("power reserve detail", () => {
         ...baseState,
         powerReserveByItem: {
           ...baseState.powerReserveByItem,
-          classic: 0.42,
+          automatic: 0.42,
         },
       },
-      "classic",
+      "automatic",
     );
 
     expect(detail.reserve01).toBeCloseTo(0.42, 8);
@@ -81,10 +81,10 @@ describe("power reserve detail", () => {
         ...baseState,
         powerReserveByItem: {
           ...baseState.powerReserveByItem,
-          classic: 2,
+          automatic: 2,
         },
       },
-      "classic",
+      "automatic",
     );
     expect(high.reservePercent).toBe(100);
 
@@ -93,17 +93,17 @@ describe("power reserve detail", () => {
         ...baseState,
         powerReserveByItem: {
           ...baseState.powerReserveByItem,
-          classic: -1,
+          automatic: -1,
         },
       },
-      "classic",
+      "automatic",
     );
     expect(low.reservePercent).toBe(0);
   });
 
   it("provides manual-specific explanation when the movement is wrist-driven", () => {
     const baseState = createInitialState();
-    const detail = getPowerReserveDetail(baseState, "starter");
+    const detail = getPowerReserveDetail(baseState, "quartz");
 
     expect(detail.explanation).toContain("Manual");
   });
@@ -333,7 +333,8 @@ describe("primary navigation tabs", () => {
       const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
       await user.click(vaultTab);
 
-      const buyCta = screen.getByTestId("next-unlock-cta-career");
+      const callout = screen.getByTestId("catalog-shop-callout");
+      const buyCta = within(callout).getByRole("button", { name: "Open Catalog" });
       await user.click(buyCta);
 
       await waitFor(() => {
@@ -409,7 +410,7 @@ describe("career tab unlock", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 5,
+        quartz: 5,
       },
     };
 
@@ -451,12 +452,12 @@ describe("catalog tier bonuses", () => {
   beforeEach(async () => {
     localStorage.clear();
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: 2,
+        manual: 2,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -495,7 +496,7 @@ describe("catalog tier bonuses", () => {
     const cards = within(panel).getAllByTestId("catalog-tier-card");
 
     expect(cards).toHaveLength(4);
-    expect(panel.textContent).toContain("Tier bonuses");
+    expect(panel.textContent).toContain("Movement bonuses");
   });
 });
 
@@ -507,9 +508,9 @@ describe("set bonuses", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 18,
-        classic: 4,
-        chronograph: 2,
+        quartz: 18,
+        automatic: 4,
+        manual: 2,
         tourbillon: 1,
       },
     };
@@ -559,13 +560,13 @@ describe("catalog filters", () => {
   beforeEach(async () => {
     localStorage.clear();
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
     const tourbillonModelId = getModelIdForTier("tourbillon");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: 2,
+        manual: 2,
         tourbillon: 1,
       },
       watchModels: {
@@ -867,14 +868,14 @@ describe("catalog filters", () => {
 
   it("renders catalog facts as details when present", async () => {
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
     const factsModelId = "rolex-rolex-gmt-master-ii-ref-126713grnr";
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 90,
-        chronograph: 2,
+        quartz: 90,
+        manual: 2,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -920,12 +921,12 @@ describe("catalog filters", () => {
 
   it("does not render collector notes for unowned entries", async () => {
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: 2,
+        manual: 2,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -984,7 +985,8 @@ describe("catalog filters", () => {
     const catalogGrid = screen.getByTestId("catalog-grid");
     const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
 
-    expect(cards[0]?.textContent).toContain("2021");
+    expect(cards[0]?.textContent).toContain("Year");
+    expect(cards[0]?.textContent).not.toContain("Unknown");
     expect(cards[cards.length - 1]?.textContent).toContain("Unknown");
   });
 
@@ -1073,14 +1075,14 @@ describe("catalog purchase CTA", () => {
   beforeEach(async () => {
     localStorage.clear();
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
     const seededState = {
       ...baseState,
       currencyCents: 2_000_000_00,
       enjoymentCents: 2_000_000_00,
       items: {
         ...baseState.items,
-        chronograph: 1,
+        manual: 1,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -1231,13 +1233,13 @@ describe("catalog card affordances", () => {
     cleanup();
     localStorage.clear();
     const baseState = createInitialState();
-    const starterModelId = getModelIdForTier("starter");
+    const starterModelId = getModelIdForTier("quartz");
     const seededState = {
       ...baseState,
       workshopBlueprints: 1,
       items: {
         ...baseState.items,
-        starter: 3,
+        quartz: 3,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -1384,12 +1386,12 @@ describe("catalog ownership tabs", () => {
   beforeEach(() => {
     localStorage.clear();
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
     const seededState = {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: 2,
+        manual: 2,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -1422,7 +1424,7 @@ describe("catalog ownership tabs", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
+        quartz: 10,
       },
       achievementUnlocks: ["first-drawer"],
       unlockedMilestones: ["collector-shelf", "showcase"],
@@ -1469,7 +1471,7 @@ describe("catalog ownership tabs", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
+        quartz: 10,
       },
       achievementUnlocks: ["first-drawer"],
       unlockedMilestones: ["collector-shelf", "showcase"],
@@ -1517,7 +1519,7 @@ describe("catalog ownership tabs", () => {
 
   it("shows owned tier entries when items are owned", async () => {
     const baseState = createInitialState();
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
     const tourbillonModelId = getModelIdForTier("tourbillon");
     const ownedPayload = {
       version: 2,
@@ -1525,7 +1527,7 @@ describe("catalog ownership tabs", () => {
       lastSimulatedAtMs: Date.now(),
       state: {
         ...baseState,
-        items: { starter: 1, classic: 0, chronograph: 2, tourbillon: 0 },
+        items: { quartz: 1, automatic: 0, manual: 2, tourbillon: 0 },
         watchModels: {
           ...baseState.watchModels,
           [chronographModelId]: 2,
@@ -1598,7 +1600,7 @@ describe("wind minigame", () => {
           ...baseState,
           items: {
             ...baseState.items,
-            chronograph: 1,
+            manual: 1,
             tourbillon: 1,
           },
           upgrades: {
@@ -1624,7 +1626,7 @@ describe("wind minigame", () => {
   it("opens and closes the wind session modal and resets progress", async () => {
     const user = userEvent.setup();
 
-    const chronographButtons = screen.getAllByTestId("vault-interact-chronograph");
+    const chronographButtons = screen.getAllByTestId("vault-interact-manual");
     const chronographInteract = chronographButtons.find(
       (button) => !(button as HTMLButtonElement).disabled,
     );
@@ -1686,7 +1688,7 @@ describe("quartz minigame", () => {
           ...baseState,
           items: {
             ...baseState.items,
-            starter: 1,
+            quartz: 1,
           },
           upgrades: {
             ...baseState.upgrades,
@@ -1723,7 +1725,7 @@ describe("quartz minigame", () => {
       return;
     }
 
-    const quartzButtons = screen.getAllByTestId("vault-interact-starter");
+    const quartzButtons = screen.getAllByTestId("vault-interact-quartz");
     const quartzInteract = quartzButtons.find((button) => !(button as HTMLButtonElement).disabled);
     expect(quartzInteract).toBeTruthy();
 

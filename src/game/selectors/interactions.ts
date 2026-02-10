@@ -16,23 +16,23 @@ export type InteractionDifficultyProfile = {
 };
 
 const INTERACTION_DIFFICULTY_BY_ITEM: Record<WatchItemId, InteractionDifficultyProfile> = {
-  starter: {
-    id: "starter",
-    label: "Starter tuning",
+  quartz: {
+    id: "quartz",
+    label: "Quartz tuning",
     note: "Forgiving timing windows for practice and onboarding.",
     goodThreshold: 0.4,
     perfectThreshold: 0.72,
   },
-  classic: {
-    id: "classic",
-    label: "Classic calibration",
+  automatic: {
+    id: "automatic",
+    label: "Automatic calibration",
     note: "Balanced timing windows with moderate precision pressure.",
     goodThreshold: 0.48,
     perfectThreshold: 0.8,
   },
-  chronograph: {
-    id: "chronograph",
-    label: "Chronograph challenge",
+  manual: {
+    id: "manual",
+    label: "Manual challenge",
     note: "Tighter windows reward steadier control.",
     goodThreshold: 0.55,
     perfectThreshold: 0.86,

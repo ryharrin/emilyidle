@@ -73,12 +73,12 @@ describe("maison prestige", () => {
     const baseIncome = getRawIncomeRateCentsPerSec(baseState);
 
     const cases: Array<[string, Partial<typeof baseState.items>]> = [
-      ["oyster-society", { starter: 12, classic: 4 }],
-      ["crown-chronicle", { chronograph: 4, tourbillon: 1 }],
-      ["seamaster-society", { classic: 8, chronograph: 3 }],
-      ["dress-circle", { starter: 10, classic: 2 }],
-      ["diver-crew", { classic: 6, chronograph: 2 }],
-      ["collector-quartet", { starter: 18, classic: 4, chronograph: 2, tourbillon: 1 }],
+      ["oyster-society", { quartz: 12, automatic: 4 }],
+      ["crown-chronicle", { manual: 4, tourbillon: 1 }],
+      ["seamaster-society", { automatic: 8, manual: 3 }],
+      ["dress-circle", { quartz: 10, automatic: 2 }],
+      ["diver-crew", { automatic: 6, manual: 2 }],
+      ["collector-quartet", { quartz: 18, automatic: 4, manual: 2, tourbillon: 1 }],
     ];
 
     const watchItems = getWatchItems();
@@ -132,7 +132,7 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
+        quartz: 10,
       },
       discoveredCatalogEntries: [],
       catalogTierUnlocks: [],
@@ -194,7 +194,7 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 100,
+        quartz: 100,
       },
     });
     expect(centuryState.achievementUnlocks).toContain("vault-century");
@@ -279,8 +279,8 @@ describe("maison prestige", () => {
       enjoymentCents: 240_000,
       items: {
         ...baseState.items,
-        starter: 5,
-        classic: 2,
+        quartz: 5,
+        automatic: 2,
       },
       upgrades: {
         ...baseState.upgrades,
@@ -393,22 +393,22 @@ describe("maison prestige", () => {
 
   it("applies watch ability multipliers to cash and enjoyment", () => {
     const baseState = createInitialState();
-    const starterModelId = getModelIdForTier("starter");
-    const chronographModelId = getModelIdForTier("chronograph");
+    const starterModelId = getModelIdForTier("quartz");
+    const chronographModelId = getModelIdForTier("manual");
     expect(getCollectionBonusMultiplier(baseState)).toBe(1);
 
     const baseRate = getEffectiveIncomeRateCentsPerSec(baseState, 1);
 
     const starterIncome =
-      getWatchItems().find((item) => item.id === "starter")?.incomeCentsPerSec ?? 0;
+      getWatchItems().find((item) => item.id === "quartz")?.incomeCentsPerSec ?? 0;
     const chronographIncome =
-      getWatchItems().find((item) => item.id === "chronograph")?.incomeCentsPerSec ?? 0;
+      getWatchItems().find((item) => item.id === "manual")?.incomeCentsPerSec ?? 0;
 
     const starter10 = {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
+        quartz: 10,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -428,7 +428,7 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: 5,
+        manual: 5,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -446,8 +446,8 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
-        chronograph: 5,
+        quartz: 10,
+        manual: 5,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -466,8 +466,8 @@ describe("maison prestige", () => {
       getWatchItems().map((item) => [item.id, getWatchItemEnjoymentRateCentsPerSec(item)]),
     );
     const expectedEnjoyment =
-      ((enjoymentRates.get("starter") ?? 0) * getDuplicateRewardSum(10) +
-        (enjoymentRates.get("chronograph") ?? 0) * getDuplicateRewardSum(5)) *
+      ((enjoymentRates.get("quartz") ?? 0) * getDuplicateRewardSum(10) +
+        (enjoymentRates.get("manual") ?? 0) * getDuplicateRewardSum(5)) *
       getWatchAbilityIncomeMultiplier(stackedHigh);
     expect(getEnjoymentRateCentsPerSec(stackedHigh)).toBe(expectedEnjoyment);
   });
@@ -534,13 +534,13 @@ describe("maison prestige", () => {
       throw new Error("Expected showcase milestone with collection value requirement");
     }
 
-    const chronographModelId = getModelIdForTier("chronograph");
+    const chronographModelId = getModelIdForTier("manual");
 
     const belowMilestone = {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: 1,
+        manual: 1,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -552,7 +552,7 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        chronograph: 2,
+        manual: 2,
       },
       watchModels: {
         ...baseState.watchModels,
@@ -567,14 +567,14 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 9,
+        quartz: 9,
       },
     };
     const atAchievement = {
       ...baseState,
       items: {
         ...baseState.items,
-        starter: 10,
+        quartz: 10,
       },
     };
 

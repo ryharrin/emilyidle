@@ -11,10 +11,13 @@ const selectors = {
   upgradesCallout: '[data-testid="upgrades-callout"]',
   sectionNav: '[data-testid="collection-section-nav"]',
   insightsPanel: '[data-testid="collection-insights-panel"]',
-  navSegmentStarter:
-    '[data-testid="collection-section-nav-item-collection-segment-starter"] button',
-  navSegmentMid: '[data-testid="collection-section-nav-item-collection-segment-mid"] button',
-  navSegmentLux: '[data-testid="collection-section-nav-item-collection-segment-lux"] button',
+  navSegmentQuartz:
+    '[data-testid="collection-section-nav-item-collection-segment-quartz"] button',
+  navSegmentAutomatic:
+    '[data-testid="collection-section-nav-item-collection-segment-automatic"] button',
+  navSegmentManual: '[data-testid="collection-section-nav-item-collection-segment-manual"] button',
+  navSegmentTourbillon:
+    '[data-testid="collection-section-nav-item-collection-segment-tourbillon"] button',
   onboardingCoachmark: '[data-testid="collection-onboarding-coachmark-collection-overview"]',
   navMilestones: '[data-testid="collection-section-nav-item-collection-milestones"] button',
   milestoneCards: "#milestone-list .card",
@@ -207,15 +210,16 @@ test.describe("collection loop", () => {
       await clickPrimaryTab(page, "Collection");
     });
 
-    test("collection nav reaches insights panel and Starter/Mid/Lux segments", async ({ page }) => {
+    test("collection nav reaches insights panel and movement segments", async ({ page }) => {
       await clickPrimaryTab(page, "Collection");
       await expect(page.locator(selectors.insightsPanel)).toBeVisible();
 
       const nav = page.locator(selectors.sectionNav);
       const navSegments = [
-        { button: selectors.navSegmentStarter, target: "#collection-segment-starter" },
-        { button: selectors.navSegmentMid, target: "#collection-segment-mid" },
-        { button: selectors.navSegmentLux, target: "#collection-segment-lux" },
+        { button: selectors.navSegmentQuartz, target: "#collection-segment-quartz" },
+        { button: selectors.navSegmentAutomatic, target: "#collection-segment-automatic" },
+        { button: selectors.navSegmentManual, target: "#collection-segment-manual" },
+        { button: selectors.navSegmentTourbillon, target: "#collection-segment-tourbillon" },
       ];
 
       for (const segment of navSegments) {
@@ -240,28 +244,20 @@ test.describe("collection loop", () => {
 
     test("fresh save career session leads into first catalog purchase", async ({ page }) => {
       await clickPrimaryTab(page, "Career");
+      const careerPanel = page.getByRole("tabpanel", { name: "Career" });
+      await expect(careerPanel).toBeVisible();
 
-      const startCareerButton = page.getByTestId("career-next-action-start");
+      const startCareerButton = careerPanel.getByTestId("career-next-action-start");
       if ((await startCareerButton.count()) > 0) {
         await startCareerButton.click();
       }
 
-      const runSessionButton = page.getByTestId("career-action");
+      const runSessionButton = careerPanel.getByTestId("career-action");
       await expect(runSessionButton).toBeEnabled({ timeout: 10_000 });
       await runSessionButton.click();
 
-      const nextDetails = page.getByTestId("career-next-details");
-      if ((await nextDetails.count()) > 0) {
-        const isOpen = await nextDetails.evaluate((node) => (node as HTMLDetailsElement).open);
-        if (!isOpen) {
-          await page.getByTestId("career-next-details-toggle").click({ force: true });
-        }
-      }
-
-      await expect(page.getByTestId("career-feedback-strip")).toBeVisible();
-      await expect(page.getByTestId("career-feedback-primary")).toContainText(
-        /Last session|Next step/,
-      );
+      await expect(runSessionButton).toBeDisabled({ timeout: 10_000 });
+      await expect(careerPanel.getByTestId("career-status")).toContainText(/Cooldown/);
 
       await clickPrimaryTab(page, "Catalog");
       await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
@@ -377,7 +373,7 @@ test.describe("collection loop", () => {
           }
           const nextPayload = JSON.parse(saved);
           const ownedModel = nextPayload.state?.watchModels?.[modelId] ?? 0;
-          const ownedStarter = nextPayload.state?.items?.starter ?? 0;
+          const ownedStarter = nextPayload.state?.items?.quartz ?? 0;
           return ownedModel >= 1 && ownedStarter >= 1;
         },
         STARTER_MODEL_ID,
@@ -389,11 +385,11 @@ test.describe("collection loop", () => {
       expect(updatedSave).not.toBe(raw);
     });
 
-    test("enjoyment gate locks classic purchase", async ({ page }) => {
+    test("enjoyment gate locks automatic purchase", async ({ page }) => {
       const seededState = {
         currencyCents: 1_000_000,
         enjoymentCents: 0,
-        items: { starter: 5, classic: 0, chronograph: 0, tourbillon: 0 },
+        items: { quartz: 5, automatic: 0, manual: 0, tourbillon: 0 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: ["collector-shelf"],
         workshopBlueprints: 0,
@@ -453,7 +449,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 0,
-        items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+        items: { quartz: 15, automatic: 0, manual: 1, tourbillon: 0 },
         watchModels: { [TOURBILLON_MODEL_ID]: 1 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: ["showcase"],
@@ -518,7 +514,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 0,
-        items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+        items: { quartz: 15, automatic: 0, manual: 1, tourbillon: 0 },
         watchModels: { [TOURBILLON_MODEL_ID]: 1 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: ["showcase"],
@@ -593,7 +589,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 0,
-        items: { starter: 15, classic: 0, chronograph: 1, tourbillon: 0 },
+        items: { quartz: 15, automatic: 0, manual: 1, tourbillon: 0 },
         watchModels: { [TOURBILLON_MODEL_ID]: 1 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: ["showcase"],
@@ -682,7 +678,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 800_000,
-        items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
+        items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: [],
         workshopBlueprints: 0,
@@ -742,7 +738,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 0,
-        items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 8 },
+        items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 8 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: [],
         workshopBlueprints: 0,
@@ -803,7 +799,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 4_000_000,
-        items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
+        items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: [],
         workshopBlueprints: 3,
@@ -860,7 +856,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 0,
-        items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 6 },
+        items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: [],
         workshopBlueprints: 0,
@@ -934,7 +930,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 0,
-        items: { chronograph: 1 },
+        items: { manual: 1 },
         eventStates: {
           "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
@@ -969,7 +965,7 @@ test.describe("collection loop", () => {
 
       const openedWindingModal = await openCatalogInteractionModal(
         page,
-        '[data-testid="vault-interact-chronograph"]:not([disabled]), [data-testid="vault-interact-tourbillon"]:not([disabled])',
+        '[data-testid="vault-interact-manual"]:not([disabled]), [data-testid="vault-interact-tourbillon"]:not([disabled])',
         "winding-modal",
       );
       test.skip(!openedWindingModal, "No manual interaction candidate available in seeded state.");
@@ -996,7 +992,7 @@ test.describe("collection loop", () => {
         )
         .toBeGreaterThan(before);
       await expect(
-        page.locator('[data-testid="vault-interact-chronograph"]:not([disabled])'),
+        page.locator('[data-testid="vault-interact-manual"]:not([disabled])'),
       ).toHaveCount(0);
       const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
       await expect(catalogPanel.getByText(/Cooldown \d+s/i).first()).toBeVisible();
@@ -1006,7 +1002,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 0,
-        items: { classic: 50 },
+        items: { automatic: 50 },
         watchModels: { [CLASSIC_MODEL_ID]: 1 },
         eventStates: {
           "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
@@ -1044,7 +1040,7 @@ test.describe("collection loop", () => {
 
       const openedAutomaticModal = await openCatalogInteractionModal(
         page,
-        '[data-testid="vault-interact-classic"]:not([disabled])',
+        '[data-testid="vault-interact-automatic"]:not([disabled])',
         "automatic-modal",
       );
       test.skip(
@@ -1065,7 +1061,7 @@ test.describe("collection loop", () => {
             page.evaluate(() => {
               const saved = window.localStorage.getItem("emily-idle:save");
               const parsed = saved ? JSON.parse(saved) : null;
-              return parsed?.state?.powerReserveByItem?.classic ?? 0;
+              return parsed?.state?.powerReserveByItem?.automatic ?? 0;
             }),
           { timeout: 5_000 },
         )
@@ -1082,7 +1078,7 @@ test.describe("collection loop", () => {
         .toBeGreaterThanOrEqual(beforeRate);
 
       await expect(
-        page.locator('[data-testid="vault-interact-classic"]:not([disabled])'),
+        page.locator('[data-testid="vault-interact-automatic"]:not([disabled])'),
       ).toHaveCount(0);
       const catalogPanel = page.getByRole("tabpanel", { name: /Catalog/i });
       await expect(catalogPanel.getByText(/Cooldown \d+s/i).first()).toBeVisible();
@@ -1092,7 +1088,7 @@ test.describe("collection loop", () => {
       const seededState = {
         currencyCents: 0,
         enjoymentCents: 800_000,
-        items: { starter: 0, classic: 0, chronograph: 0, tourbillon: 3 },
+        items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 3 },
         upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
         unlockedMilestones: [],
         workshopBlueprints: 0,
