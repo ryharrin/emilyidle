@@ -8,6 +8,8 @@ output/
 tmp/
 target/
 .worktrees/
+.planning/uat-artifacts/
+ui-screenshots/
 
 # editor
 .vscode
