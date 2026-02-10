@@ -747,6 +747,18 @@ export function UpgradesTab({
     .sort(compareRecommendations)
     .slice(0, 3);
   const recommendedKeys = new Set(topRecommendations.map((recommendation) => recommendation.key));
+  const collectionActionableCount = collectionUpgradeCards.filter(
+    (card) => card.status === "actionable",
+  ).length;
+  const workshopActionableCount = workshopUpgradeCards.filter(
+    (card) => card.status === "actionable",
+  ).length;
+  const maisonActionableCount = maisonUpgradeCards.filter(
+    (card) => card.status === "actionable",
+  ).length;
+  const workshopInstalledCount = workshopUpgradeCards.filter((card) => card.owned).length;
+  const maisonInstalledCount = maisonUpgradeCards.filter((card) => card.owned).length;
+  const recommendationLead = topRecommendations[0]?.name ?? "No actionable recommendations";
 
   return (
     <section
@@ -768,6 +780,57 @@ export function UpgradesTab({
               <p className="muted">
                 Compare rate changes before committing to collection, Atelier, or Maison upgrades.
               </p>
+              <div
+                className="surface-complication-strip upgrades-complication-strip"
+                data-testid="upgrades-complication-strip"
+              >
+                <article
+                  className="surface-complication upgrades-complication"
+                  data-testid="upgrades-complication-power-reserve"
+                >
+                  <p className="surface-complication-label">Power reserve</p>
+                  <p className="surface-complication-value">
+                    {topRecommendations.length} recommended
+                  </p>
+                  <p className="surface-complication-detail">{recommendationLead}</p>
+                </article>
+                <article
+                  className="surface-complication upgrades-complication"
+                  data-testid="upgrades-complication-chronograph"
+                >
+                  <p className="surface-complication-label">Chronograph</p>
+                  <p className="surface-complication-value">
+                    {collectionActionableCount} collection upgrades ready
+                  </p>
+                  <p className="surface-complication-detail">
+                    Cash lane upgrades currently actionable
+                  </p>
+                </article>
+                <article
+                  className="surface-complication upgrades-complication"
+                  data-testid="upgrades-complication-date-wheel"
+                >
+                  <p className="surface-complication-label">Date wheel</p>
+                  <p className="surface-complication-value">
+                    {workshopInstalledCount} / {workshopUpgradeCards.length} Atelier installed
+                  </p>
+                  <p className="surface-complication-detail">
+                    {workshopActionableCount} Atelier upgrades ready to install
+                  </p>
+                </article>
+                <article
+                  className="surface-complication upgrades-complication"
+                  data-testid="upgrades-complication-moonphase"
+                >
+                  <p className="surface-complication-label">Moonphase</p>
+                  <p className="surface-complication-value">
+                    {maisonInstalledCount} / {maisonUpgradeCards.length} Maison installed
+                  </p>
+                  <p className="surface-complication-detail">
+                    {maisonActionableCount} Maison upgrades ready to install
+                  </p>
+                </article>
+              </div>
               <div className="inline-icon-button">
                 <ExplainButton sectionId={HELP_SECTION_IDS.upgrades} label="Explain upgrades" />
                 <span className="muted">Upgrade help</span>

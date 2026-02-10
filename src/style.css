@@ -198,12 +198,24 @@ strong {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
-  padding-left: var(--safe-area-left);
-  padding-right: var(--safe-area-right);
+  padding: 6px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-radius: 16px;
+  border: 1px solid rgba(57, 62, 74, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 16px rgba(0, 0, 0, 0.18);
+  padding-left: calc(6px + var(--safe-area-left));
+  padding-right: calc(6px + var(--safe-area-right));
 }
 
 [data-theme="light"] .page-nav {
   background: #f4f0e9; /* Match light theme body */
+  border-color: rgba(210, 199, 184, 0.88);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 8px 14px rgba(92, 81, 66, 0.08);
 }
 
 .help-open-button {
@@ -639,6 +651,91 @@ strong {
   gap: 12px;
 }
 
+.surface-complication-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.surface-complication {
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(35, 40, 49, 0.78), rgba(14, 17, 22, 0.88)), rgba(15, 17, 21, 0.84);
+  padding: 9px 10px;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.surface-complication-label {
+  margin: 0;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #a6b0be;
+}
+
+.surface-complication-value {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  color: #f5f5f6;
+  overflow-wrap: anywhere;
+}
+
+.surface-complication-detail {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #b8bfca;
+  overflow-wrap: anywhere;
+}
+
+.catalog-complication-strip,
+.upgrades-complication-strip {
+  margin-top: 14px;
+}
+
+.workshop-complication-strip .surface-complication,
+.stats-complication-strip .surface-complication {
+  border-color: rgba(151, 193, 220, 0.22);
+}
+
+.maison-complication-strip .surface-complication,
+.collection-complication-strip .surface-complication {
+  border-color: rgba(232, 198, 147, 0.22);
+}
+
+.nostalgia-complication-strip .surface-complication,
+.save-complication-strip .surface-complication {
+  border-color: rgba(212, 188, 156, 0.2);
+}
+
+.workshop-complication-value,
+.stats-complication-value {
+  color: #c8edf5;
+}
+
+.maison-complication-value,
+.collection-complication-value,
+.upgrades-complication-value {
+  color: #fae6c2;
+}
+
+.nostalgia-complication-value,
+.save-complication-value {
+  color: #d8e2ee;
+}
+
+.stats-complication-strip .surface-complication-detail {
+  color: #aeb7c4;
+}
+
 .stats-summary-strip {
   display: grid;
   gap: 10px;
@@ -847,6 +944,48 @@ strong {
 [data-theme="light"] .stats-disclosure {
   border-color: #d7cfc5;
   background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .surface-complication {
+  border-color: rgba(181, 166, 149, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 230, 0.9)),
+    rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .surface-complication-label {
+  color: #7d7264;
+}
+
+[data-theme="light"] .surface-complication-value {
+  color: #2f322f;
+}
+
+[data-theme="light"] .surface-complication-detail {
+  color: #605648;
+}
+
+[data-theme="light"] .workshop-complication-value,
+[data-theme="light"] .stats-complication-value {
+  color: #2d5c66;
+}
+
+[data-theme="light"] .maison-complication-value,
+[data-theme="light"] .collection-complication-value,
+[data-theme="light"] .upgrades-complication-value {
+  color: #76521f;
+}
+
+[data-theme="light"] .nostalgia-complication-value,
+[data-theme="light"] .save-complication-value {
+  color: #3a4f63;
+}
+
+@media (max-width: 640px) {
+  .surface-complication-strip {
+    grid-template-columns: 1fr;
+  }
 }
 
 [data-theme="light"] .stats-summary-strip__card .eyebrow {
@@ -4505,6 +4644,57 @@ button[data-testid^="catalog-buy-"]:disabled {
   margin: 0;
 }
 
+.career-complication-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.career-complication {
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(35, 40, 49, 0.8), rgba(14, 17, 22, 0.86)), rgba(15, 17, 21, 0.84);
+  padding: 9px 10px;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.career-complication-label {
+  margin: 0;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #a6b0be;
+}
+
+.career-complication-value {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #f5f5f6;
+  text-wrap: balance;
+}
+
+.career-complication-detail {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #b8bfca;
+  overflow-wrap: anywhere;
+}
+
+.career-complication[data-testid="career-complication-date-wheel"] .career-complication-value {
+  color: #fae6c2;
+}
+
+.career-complication[data-testid="career-complication-chronograph"] .career-complication-value {
+  color: #bfe8f0;
+}
+
 .career-next-details {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -4661,6 +4851,37 @@ button[data-testid^="catalog-buy-"]:disabled {
 [data-theme="light"] .career-deep-details {
   border-color: #d7cfc5;
   background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .career-complication {
+  border-color: rgba(181, 166, 149, 0.35);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 240, 230, 0.9)),
+    rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .career-complication-label {
+  color: #7d7264;
+}
+
+[data-theme="light"] .career-complication-value {
+  color: #2f322f;
+}
+
+[data-theme="light"] .career-complication-detail {
+  color: #605648;
+}
+
+[data-theme="light"]
+  .career-complication[data-testid="career-complication-date-wheel"]
+  .career-complication-value {
+  color: #76521f;
+}
+
+[data-theme="light"]
+  .career-complication[data-testid="career-complication-chronograph"]
+  .career-complication-value {
+  color: #2d5c66;
 }
 
 [data-theme="light"] .career-economy-summary-grid div {

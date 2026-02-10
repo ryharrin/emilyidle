@@ -143,6 +143,69 @@ export function WorkshopTab({
                       <p className="eyebrow">Reset loop</p>
                       <h3 id="workshop-title">Atelier</h3>
                       <p className="muted">Trade enjoyment for Blueprints and permanent boosts.</p>
+                      <div
+                        className="surface-complication-strip workshop-complication-strip"
+                        data-testid="workshop-complication-strip"
+                      >
+                        <article
+                          className="surface-complication workshop-complication"
+                          data-testid="workshop-complication-power-reserve"
+                        >
+                          <p className="surface-complication-label workshop-complication-label">
+                            Power reserve
+                          </p>
+                          <p className="surface-complication-value workshop-complication-value">
+                            {state.workshopBlueprints.toLocaleString()} banked
+                          </p>
+                          <p className="surface-complication-detail workshop-complication-detail">
+                            Current gain +{workshopPrestigeGain} Blueprints
+                          </p>
+                        </article>
+                        <article
+                          className="surface-complication workshop-complication"
+                          data-testid="workshop-complication-chronograph"
+                        >
+                          <p className="surface-complication-label workshop-complication-label">
+                            Chronograph
+                          </p>
+                          <p className="surface-complication-value workshop-complication-value">
+                            {Math.round(resetProgress.ratio * 100)}% ready
+                          </p>
+                          <p className="surface-complication-detail workshop-complication-detail">
+                            Reset ETA {resetEtaLabel}
+                          </p>
+                        </article>
+                        <article
+                          className="surface-complication workshop-complication"
+                          data-testid="workshop-complication-date-wheel"
+                        >
+                          <p className="surface-complication-label workshop-complication-label">
+                            Date wheel
+                          </p>
+                          <p className="surface-complication-value workshop-complication-value">
+                            {formatMoneyFromCents(nextBlueprintProgress.enjoymentRemainingCents)}
+                          </p>
+                          <p className="surface-complication-detail workshop-complication-detail">
+                            Next blueprint ETA {etaLabel}
+                          </p>
+                        </article>
+                        <article
+                          className="surface-complication workshop-complication"
+                          data-testid="workshop-complication-moonphase"
+                        >
+                          <p className="surface-complication-label workshop-complication-label">
+                            Moonphase
+                          </p>
+                          <p className="surface-complication-value workshop-complication-value">
+                            ×{atelierBonus.multiplier01.toFixed(2)}
+                          </p>
+                          <p className="surface-complication-detail workshop-complication-detail">
+                            {atelierBonus.capApplied
+                              ? "Atelier bonus cap active"
+                              : "Atelier bonus live"}
+                          </p>
+                        </article>
+                      </div>
                     </div>
                     <div className="results-count" data-testid="workshop-balance">
                       {state.workshopBlueprints.toLocaleString()} Blueprints

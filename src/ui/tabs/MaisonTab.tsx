@@ -93,6 +93,67 @@ export function MaisonTab({
                       <p className="muted">
                         Prestige the atelier to earn Heritage and strengthen long-term enjoyment.
                       </p>
+                      <div
+                        className="surface-complication-strip maison-complication-strip"
+                        data-testid="maison-complication-strip"
+                      >
+                        <article
+                          className="surface-complication maison-complication"
+                          data-testid="maison-complication-power-reserve"
+                        >
+                          <p className="surface-complication-label maison-complication-label">
+                            Power reserve
+                          </p>
+                          <p className="surface-complication-value maison-complication-value">
+                            {state.maisonHeritage.toLocaleString()} Heritage
+                          </p>
+                          <p className="surface-complication-detail maison-complication-detail">
+                            Current gain +{maisonPrestigeGain}
+                          </p>
+                        </article>
+                        <article
+                          className="surface-complication maison-complication"
+                          data-testid="maison-complication-chronograph"
+                        >
+                          <p className="surface-complication-label maison-complication-label">
+                            Chronograph
+                          </p>
+                          <p className="surface-complication-value maison-complication-value">
+                            {state.maisonReputation.toLocaleString()} Reputation
+                          </p>
+                          <p className="surface-complication-detail maison-complication-detail">
+                            Legacy credit +{maisonReputationGain}
+                          </p>
+                        </article>
+                        <article
+                          className="surface-complication maison-complication"
+                          data-testid="maison-complication-date-wheel"
+                        >
+                          <p className="surface-complication-label maison-complication-label">
+                            Date wheel
+                          </p>
+                          <p className="surface-complication-value maison-complication-value">
+                            {Math.round(resetProgress.ratio * 100)}% ready
+                          </p>
+                          <p className="surface-complication-detail maison-complication-detail">
+                            Recovery ETA {resetEtaLabel}
+                          </p>
+                        </article>
+                        <article
+                          className="surface-complication maison-complication"
+                          data-testid="maison-complication-moonphase"
+                        >
+                          <p className="surface-complication-label maison-complication-label">
+                            Moonphase
+                          </p>
+                          <p className="surface-complication-value maison-complication-value">
+                            {getEnjoymentThresholdLabel(getMaisonPrestigeThresholdCents())}
+                          </p>
+                          <p className="surface-complication-detail maison-complication-detail">
+                            Maison reset threshold
+                          </p>
+                        </article>
+                      </div>
                     </div>
                     <div className="results-count" data-testid="maison-balance">
                       {state.maisonHeritage.toLocaleString()} Heritage ·{" "}

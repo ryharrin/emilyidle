@@ -81,6 +81,12 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const nearTermUnlock = getTherapistNearTermUnlockImpact(state);
   const salaryRemainingLabel = formatDuration(salaryAlert.remainingMs);
   const showSalaryAlert = salaryAlert.level !== "none";
+  const cooldownComplicationValue =
+    showCooldownRing && cooldownSeconds > 0 ? formatDuration(remainingMs) : "Ready now";
+  const salaryComplicationValue = salaryWindowSummary.isActive
+    ? `${formatDuration(salaryWindowSummary.remainingMs)} left`
+    : "Inactive";
+  const salaryComplicationDetail = `Window ${formatDuration(salaryWindowSummary.windowMs)} base refresh`;
 
   const statusLabel = (() => {
     if (career.careerStartId === null) {
@@ -226,6 +232,38 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
             Start here on fresh saves: enter the program, earn salary, and run sessions for burst
             cash.
           </p>
+          <div className="career-complication-stack" data-testid="career-complication-stack">
+            <article
+              className="career-complication"
+              data-testid="career-complication-power-reserve"
+            >
+              <p className="career-complication-label">Power reserve</p>
+              <p className="career-complication-value">
+                +{formatMoneyFromCents(sessionValueSummary.cashPayoutCents)} per run
+              </p>
+              <p className="career-complication-detail">
+                Session cost {costLabel}
+                {sessionValueSummary.isFreeSession ? " (free now)" : ""}
+              </p>
+            </article>
+            <article className="career-complication" data-testid="career-complication-chronograph">
+              <p className="career-complication-label">Chronograph</p>
+              <p className="career-complication-value">{cooldownComplicationValue}</p>
+              <p className="career-complication-detail">
+                {showCooldownRing ? "Cooldown to next full-value run" : "Session timing is clear"}
+              </p>
+            </article>
+            <article className="career-complication" data-testid="career-complication-date-wheel">
+              <p className="career-complication-label">Date wheel</p>
+              <p className="career-complication-value">{nearTermUnlock.title}</p>
+              <p className="career-complication-detail">{nearTermUnlock.detail}</p>
+            </article>
+            <article className="career-complication" data-testid="career-complication-moonphase">
+              <p className="career-complication-label">Moonphase</p>
+              <p className="career-complication-value">{salaryComplicationValue}</p>
+              <p className="career-complication-detail">{salaryComplicationDetail}</p>
+            </article>
+          </div>
         </div>
         <div className="results-count" data-testid="career-status">
           {statusLabel}

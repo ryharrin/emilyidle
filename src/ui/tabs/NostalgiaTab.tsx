@@ -164,6 +164,68 @@ export function NostalgiaTab({
                     Reset your collection to bank Nostalgia points and carry your collection
                     forward.
                   </p>
+                  <div
+                    className="surface-complication-strip nostalgia-complication-strip"
+                    data-testid="nostalgia-complication-strip"
+                  >
+                    <article
+                      className="surface-complication nostalgia-complication"
+                      data-testid="nostalgia-complication-power-reserve"
+                    >
+                      <p className="surface-complication-label nostalgia-complication-label">
+                        Power reserve
+                      </p>
+                      <p className="surface-complication-value nostalgia-complication-value">
+                        {state.nostalgiaPoints.toLocaleString()} banked
+                      </p>
+                      <p className="surface-complication-detail nostalgia-complication-detail">
+                        Projected gain +{nostalgiaPrestigeGain}
+                      </p>
+                    </article>
+                    <article
+                      className="surface-complication nostalgia-complication"
+                      data-testid="nostalgia-complication-chronograph"
+                    >
+                      <p className="surface-complication-label nostalgia-complication-label">
+                        Chronograph
+                      </p>
+                      <p className="surface-complication-value nostalgia-complication-value">
+                        {Math.round(nostalgiaProgress * 100)}% ready
+                      </p>
+                      <p className="surface-complication-detail nostalgia-complication-detail">
+                        {formatMoneyFromCents(nostalgiaEarned)} /{" "}
+                        {getEnjoymentThresholdLabel(nostalgiaPrestigeThreshold)}
+                      </p>
+                    </article>
+                    <article
+                      className="surface-complication nostalgia-complication"
+                      data-testid="nostalgia-complication-date-wheel"
+                    >
+                      <p className="surface-complication-label nostalgia-complication-label">
+                        Date wheel
+                      </p>
+                      <p className="surface-complication-value nostalgia-complication-value">
+                        {nostalgiaRecoveryEtaLabel}
+                      </p>
+                      <p className="surface-complication-detail nostalgia-complication-detail">
+                        Recovery ETA
+                      </p>
+                    </article>
+                    <article
+                      className="surface-complication nostalgia-complication"
+                      data-testid="nostalgia-complication-moonphase"
+                    >
+                      <p className="surface-complication-label nostalgia-complication-label">
+                        Moonphase
+                      </p>
+                      <p className="surface-complication-value nostalgia-complication-value">
+                        {state.nostalgiaUnlockedItems.length}/{nostalgiaUnlockIds.length} unlocked
+                      </p>
+                      <p className="surface-complication-detail nostalgia-complication-detail">
+                        {state.nostalgiaResets.toLocaleString()} completed resets
+                      </p>
+                    </article>
+                  </div>
                 </div>
                 <div className="results-count" data-testid="nostalgia-balance">
                   {state.nostalgiaPoints.toLocaleString()} Nostalgia

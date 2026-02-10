@@ -90,6 +90,14 @@ export function SaveTab({
   onClearSave,
 }: SaveTabProps) {
   const [confirmClearOpen, setConfirmClearOpen] = React.useState(false);
+  const saveStatusSummary = saveStatus.trim().length > 0 ? saveStatus : "No recent save action";
+  const notificationEnabledCount = Object.values(settings.notificationPreferences).filter(
+    (enabled) => enabled,
+  ).length;
+  const visibleTabsCount = Math.max(0, visibleTabOptions.length - hiddenTabsSet.size);
+  const audioStatusLabel = `${audioSettings.sfxEnabled ? "SFX on" : "SFX off"} · ${
+    audioSettings.bgmEnabled ? "BGM on" : "BGM off"
+  }`;
 
   return (
     <section
@@ -108,6 +116,61 @@ export function SaveTab({
               <p className="muted">
                 Back up your progress, import a save string, and adjust settings.
               </p>
+              <div
+                className="surface-complication-strip save-complication-strip"
+                data-testid="save-complication-strip"
+              >
+                <article
+                  className="surface-complication save-complication"
+                  data-testid="save-complication-power-reserve"
+                >
+                  <p className="surface-complication-label save-complication-label">
+                    Power reserve
+                  </p>
+                  <p className="surface-complication-value save-complication-value">
+                    {saveStatusSummary}
+                  </p>
+                  <p className="surface-complication-detail save-complication-detail">
+                    Save pipeline status
+                  </p>
+                </article>
+                <article
+                  className="surface-complication save-complication"
+                  data-testid="save-complication-chronograph"
+                >
+                  <p className="surface-complication-label save-complication-label">Chronograph</p>
+                  <p className="surface-complication-value save-complication-value">
+                    Theme {settings.themeMode}
+                  </p>
+                  <p className="surface-complication-detail save-complication-detail">
+                    {visibleTabsCount}/{visibleTabOptions.length} tabs visible
+                  </p>
+                </article>
+                <article
+                  className="surface-complication save-complication"
+                  data-testid="save-complication-date-wheel"
+                >
+                  <p className="surface-complication-label save-complication-label">Date wheel</p>
+                  <p className="surface-complication-value save-complication-value">
+                    {audioStatusLabel}
+                  </p>
+                  <p className="surface-complication-detail save-complication-detail">
+                    Audio profile
+                  </p>
+                </article>
+                <article
+                  className="surface-complication save-complication"
+                  data-testid="save-complication-moonphase"
+                >
+                  <p className="surface-complication-label save-complication-label">Moonphase</p>
+                  <p className="surface-complication-value save-complication-value">
+                    {notificationEnabledCount}/4 notifications
+                  </p>
+                  <p className="surface-complication-detail save-complication-detail">
+                    Sessions, prestige, achievements, events
+                  </p>
+                </article>
+              </div>
             </div>
           </header>
           <div className="settings-shell">

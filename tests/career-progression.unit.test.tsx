@@ -122,6 +122,11 @@ describe("career progression", () => {
 
     expect(screen.getByTestId("career-now-section")).toBeVisible();
     expect(screen.getByTestId("career-next-section")).toBeVisible();
+    expect(screen.getByTestId("career-complication-stack")).toBeVisible();
+    expect(screen.getByTestId("career-complication-power-reserve")).toBeVisible();
+    expect(screen.getByTestId("career-complication-chronograph")).toBeVisible();
+    expect(screen.getByTestId("career-complication-date-wheel")).toBeVisible();
+    expect(screen.getByTestId("career-complication-moonphase")).toBeVisible();
     expect(screen.getByTestId("career-economy-summary")).toBeVisible();
     expect(screen.getByTestId("session-delta-breakdown")).toBeVisible();
     expect(screen.getByTestId("salary-window-timer")).toBeVisible();

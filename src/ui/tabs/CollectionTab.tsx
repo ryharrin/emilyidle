@@ -268,6 +268,27 @@ export function CollectionTab({
   );
 
   const equippedContribution = getEquippedWatchContribution(state, nowMs, currentEventMultiplier);
+  const totalOwnedWatches = watchModels.reduce(
+    (count, model) => count + getWatchModelOwnedCount(state, model.id),
+    0,
+  );
+  const automationComplicationValue = autoBuyUnlocked
+    ? autoBuyEnabled
+      ? "Enabled"
+      : "Standby"
+    : "Locked";
+  const movementComplicationDetail =
+    catalogTierBonuses.length > 0
+      ? `Bonus x${catalogTierBonusMultiplier.toFixed(2)} active`
+      : "Discover references to unlock tier bonuses.";
+  const archiveComplicationValue = archiveCuratorMilestone
+    ? `${archiveCuratorProgress} / ${archiveCuratorThreshold}`
+    : "No curator track";
+  const archiveComplicationDetail = archiveCuratorUnlocked
+    ? "Archive guides available in Upgrades."
+    : archiveCuratorMilestone
+      ? `Next: ${archiveCuratorMilestone.name}`
+      : "Unlock curator milestones to reveal guides.";
 
   return (
     <section
@@ -339,6 +360,54 @@ export function CollectionTab({
                     Manage your owned watches here. Track movement coverage and optimize equipped
                     output.
                   </p>
+                  <div
+                    className="surface-complication-strip collection-complication-strip"
+                    data-testid="collection-complication-strip"
+                  >
+                    <article
+                      className="surface-complication collection-complication"
+                      data-testid="collection-complication-vault"
+                    >
+                      <p className="surface-complication-label">Vault</p>
+                      <p className="surface-complication-value">
+                        {totalOwnedWatches.toLocaleString()} owned
+                      </p>
+                      <p className="surface-complication-detail">
+                        Favorites {favoriteModels.length.toLocaleString()} | Discovered{" "}
+                        {discoveredCatalogEntries.length.toLocaleString()}
+                      </p>
+                    </article>
+                    <article
+                      className="surface-complication collection-complication"
+                      data-testid="collection-complication-chronograph"
+                    >
+                      <p className="surface-complication-label">Chronograph</p>
+                      <p className="surface-complication-value">{automationComplicationValue}</p>
+                      <p className="surface-complication-detail">
+                        {autoBuyUnlocked
+                          ? "Auto-buy instrumentation is unlocked."
+                          : "Unlock automation with Atelier blueprints."}
+                      </p>
+                    </article>
+                    <article
+                      className="surface-complication collection-complication"
+                      data-testid="collection-complication-date-wheel"
+                    >
+                      <p className="surface-complication-label">Date wheel</p>
+                      <p className="surface-complication-value">
+                        {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                      </p>
+                      <p className="surface-complication-detail">{movementComplicationDetail}</p>
+                    </article>
+                    <article
+                      className="surface-complication collection-complication"
+                      data-testid="collection-complication-moonphase"
+                    >
+                      <p className="surface-complication-label">Moonphase</p>
+                      <p className="surface-complication-value">{archiveComplicationValue}</p>
+                      <p className="surface-complication-detail">{archiveComplicationDetail}</p>
+                    </article>
+                  </div>
                   <div className="inline-icon-button">
                     <ExplainButton
                       sectionId={HELP_SECTION_IDS.interactions}

@@ -17,9 +17,9 @@ type PageTabRailProps = {
 };
 
 const BUCKET_LABELS: Record<TabBucket, string> = {
-  primary: "Primary",
-  progression: "Progression",
-  system: "System",
+  primary: "Vault",
+  progression: "Atelier",
+  system: "Ledger",
 };
 
 export function PageTabRail({

@@ -157,29 +157,52 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
           </div>
         </header>
 
-        <section className="stats-summary-strip" data-testid="stats-summary-strip">
-          <article className="stats-summary-strip__card">
-            <p className="eyebrow">Enjoyment / sec</p>
-            <p className="stats-summary-strip__value">
+        <section
+          className="stats-summary-strip surface-complication-strip stats-complication-strip"
+          data-testid="stats-summary-strip"
+        >
+          <article
+            className="stats-summary-strip__card surface-complication stats-complication"
+            data-testid="stats-complication-power-reserve"
+          >
+            <p className="eyebrow surface-complication-label stats-complication-label">
+              Enjoyment / sec
+            </p>
+            <p className="stats-summary-strip__value surface-complication-value stats-complication-value">
               {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
             </p>
           </article>
-          <article className="stats-summary-strip__card">
-            <p className="eyebrow">Dollars / sec</p>
-            <p className="stats-summary-strip__value">
+          <article
+            className="stats-summary-strip__card surface-complication stats-complication"
+            data-testid="stats-complication-chronograph"
+          >
+            <p className="eyebrow surface-complication-label stats-complication-label">
+              Dollars / sec
+            </p>
+            <p className="stats-summary-strip__value surface-complication-value stats-complication-value">
               {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
             </p>
           </article>
-          <article className="stats-summary-strip__card" data-testid="stats-softcap-summary">
-            <p className="eyebrow">Softcap</p>
-            <p className="stats-summary-strip__value">{stats.softcap}</p>
+          <article
+            className="stats-summary-strip__card surface-complication stats-complication"
+            data-testid="stats-softcap-summary"
+          >
+            <p className="eyebrow surface-complication-label stats-complication-label">Softcap</p>
+            <p className="stats-summary-strip__value surface-complication-value stats-complication-value">
+              {stats.softcap}
+            </p>
           </article>
-          <article className="stats-summary-strip__card">
-            <p className="eyebrow">Events</p>
-            <p className="stats-summary-strip__value">
+          <article
+            className="stats-summary-strip__card surface-complication stats-complication"
+            data-testid="stats-complication-moonphase"
+          >
+            <p className="eyebrow surface-complication-label stats-complication-label">Events</p>
+            <p className="stats-summary-strip__value surface-complication-value stats-complication-value">
               {eventSummary.active} active · {eventSummary.upcoming} upcoming
             </p>
-            <p className="muted">{eventSummary.ready} ready</p>
+            <p className="muted surface-complication-detail stats-complication-detail">
+              {eventSummary.ready} ready
+            </p>
           </article>
         </section>
 

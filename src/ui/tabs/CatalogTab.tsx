@@ -717,6 +717,28 @@ export function CatalogPurchasePanel({
     () => visibleOwnedEntries.some((entry) => hasQuickActionForOwnedEntry(entry.id)),
     [hasQuickActionForOwnedEntry, visibleOwnedEntries],
   );
+  const readyToBuyCount = React.useMemo(
+    () =>
+      visibleUnownedEntries.reduce(
+        (count, entry) => count + (getWatchModelPurchaseGate(state, entry.id).ok ? 1 : 0),
+        0,
+      ),
+    [state, visibleUnownedEntries],
+  );
+  const readyOwnedQuickActionsCount = React.useMemo(
+    () =>
+      visibleOwnedEntries.reduce(
+        (count, entry) => count + (hasQuickActionForOwnedEntry(entry.id) ? 1 : 0),
+        0,
+      ),
+    [hasQuickActionForOwnedEntry, visibleOwnedEntries],
+  );
+  const undoComplicationValue = canUndoLastPurchase
+    ? `Available ${Math.ceil(undoRemainingMs / 1000)}s`
+    : "No undo";
+  const undoComplicationDetail = state.lastPurchase
+    ? `Last purchase ${state.lastPurchase.modelId}`
+    : "Buy a watch to enable a short undo window.";
 
   const compareSlotPayloads = React.useMemo<
     [CompareSlotPayload | null, CompareSlotPayload | null]
@@ -1361,6 +1383,57 @@ export function CatalogPurchasePanel({
               ? "Buy watches here, then explore catalog references and licensing details."
               : "Buy watches directly from catalog cards and track references as you discover them."}
           </p>
+          <div
+            className="surface-complication-strip catalog-complication-strip"
+            data-testid="catalog-complication-strip"
+          >
+            <article
+              className="surface-complication catalog-complication"
+              data-testid="catalog-complication-power-reserve"
+            >
+              <p className="surface-complication-label">Power reserve</p>
+              <p className="surface-complication-value">
+                {stableCatalogEntries.length} visible references
+              </p>
+              <p className="surface-complication-detail">
+                {discoveredCatalogEntries.length} discovered in archive
+              </p>
+            </article>
+            <article
+              className="surface-complication catalog-complication"
+              data-testid="catalog-complication-chronograph"
+            >
+              <p className="surface-complication-label">Chronograph</p>
+              <p className="surface-complication-value">{readyToBuyCount} ready to buy</p>
+              <p className="surface-complication-detail">
+                {unownedReady
+                  ? "Unowned references are currently affordable."
+                  : "Build cash or enjoyment to open more purchase gates."}
+              </p>
+            </article>
+            <article
+              className="surface-complication catalog-complication"
+              data-testid="catalog-complication-date-wheel"
+            >
+              <p className="surface-complication-label">Date wheel</p>
+              <p className="surface-complication-value">
+                {readyOwnedQuickActionsCount} quick actions
+              </p>
+              <p className="surface-complication-detail">
+                {ownedReady
+                  ? "Owned references have interaction or dismantle actions ready."
+                  : "No owned quick actions are currently available."}
+              </p>
+            </article>
+            <article
+              className="surface-complication catalog-complication"
+              data-testid="catalog-complication-moonphase"
+            >
+              <p className="surface-complication-label">Moonphase</p>
+              <p className="surface-complication-value">{undoComplicationValue}</p>
+              <p className="surface-complication-detail">{undoComplicationDetail}</p>
+            </article>
+          </div>
         </div>
         <div className="catalog-header-actions">
           <div className="catalog-collection-context" data-testid="catalog-collection-context">
