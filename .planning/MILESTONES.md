@@ -1,5 +1,19 @@
 # Milestones: Emily Idle
 
+## v5.0 Unfinished Work Closure + Progression Depth (Planned)
+
+**Intent:** Build milestone 5.0 directly from unfinished/partial/planned items captured in
+`NOTES-02-07-26.yaml`, with emphasis on session policy completion, catalog clarity, richer watch
+information, and reliability guardrails.
+
+**Planned phases:** 57-60
+
+**Planning anchors:**
+- `.planning/milestones/v5.0-REQUIREMENTS.md`
+- `.planning/milestones/v5.0-ROADMAP.md`
+
+---
+
 ## v4.5 Full UI Audit Remediation (Completed: 2026-02-07)
 
 **Delivered:** Completed the nine-plan remediation sequence derived from full desktop/mobile screenshot coverage, including tab/system UX fixes and a repeatable indexed audit harness.
@@ -30,16 +44,20 @@
 
 ---
 
-## Post-v4.1 Test Reliability + CI Stability (Planned: 2026-02-06)
+## Post-v4.1 Test Reliability + CI Stability (Completed: 2026-02-10, readiness blocked)
 
-**Goal:** Stabilize unit/e2e reliability by fixing selector ambiguity, project scoping mismatches, mobile-flow flake, and timing-sensitive assertions before the next feature milestone.
+**Delivered:** Completed the seven-plan reliability package for selector hardening, project scoping,
+mobile-flow stabilization, deterministic assertions, media verification hardening, and CI sequencing policy updates.
 
-**Phase planned:** 54 (7 plans)
+**Phase completed:** 54 (7 plans)
 
-**Planning package:**
+**Summary anchors:**
 - `.planning/phases/54-test-reliability-ci-stability/54-CONTEXT.md`
 - `.planning/phases/54-test-reliability-ci-stability/54-TASKLIST.md`
 - `.planning/phases/54-test-reliability-ci-stability/54-01-PLAN.md` .. `54-07-PLAN.md`
+- `.planning/phases/54-test-reliability-ci-stability/54-01-SUMMARY.md` .. `54-07-SUMMARY.md`
+- `docs/testing.md`
+- `.planning/milestones/v4.3-MILESTONE-AUDIT.md` (readiness: blocked pending green verification gates)
 
 ---
 
@@ -135,7 +153,4 @@
 
 ## What's next
 
-- `/gsd-plan-phase` — Execute `54-01` (selector disambiguation + strict-mode hardening).
-- `/gsd-plan-phase` — Execute `54-02` (desktop/mobile project scoping cleanup).
-- `/gsd-plan-phase` — Execute `54-03` (mobile helper stabilization for catalog/interactions).
-- `/gsd-plan-phase` — Continue `54-04` .. `54-07` (runtime determinism, media verification hardening, unit async cleanup, CI sequencing policy).
+- Resolve next checkpoint with `/prompts:progress`.

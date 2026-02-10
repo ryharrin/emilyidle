@@ -6,12 +6,40 @@
   [Milestone archive](milestones/v4.0-ROADMAP.md)
 - ✅ **v4.1 Next Wave** — Phases 48-51 (shipped 2026-02-06)
 - ✅ **Post-v4.1 Reliability + Career Clarity** — Phase 53 (completed 2026-02-06)
+- ✅ **Post-v4.1 Test Reliability + CI Stability** — Phase 54 (completed 2026-02-10)
 - ✅ **v4.4 UX Flow + Gameplay Clarity** — Phase 55 (completed 2026-02-06)
 - ✅ **v4.5 Full UI Audit Remediation** — Phase 56 (completed 2026-02-07)
 
 ## Planned Milestones
 
-- 🟡 **Post-v4.1 Test Reliability + CI Stability** — Phase 54 (planned 2026-02-06)
+- 🟡 **v5.0 Unfinished Work Closure + Progression Depth** — phases 57-60 (planned)
+  - `.planning/milestones/v5.0-REQUIREMENTS.md`
+  - `.planning/milestones/v5.0-ROADMAP.md`
+
+## Milestone v5.0 Unfinished Work Closure + Progression Depth (Planned)
+
+**Goal:** Convert unfinished/partial planned items from `NOTES-02-07-26.yaml` into a closed execution
+package covering session cooldown policy completion, catalog clarity, richer watch info, and
+reliability guardrails.
+
+### Phase 57: Session Policy Completion + Guidance Cleanup
+
+**Goal:** Finish therapist-session cooldown redesign and replace broad next-unlock preview patterns
+with contextual next-step guidance.
+
+### Phase 58: Catalog Control Density + Affordability Signals
+
+**Goal:** Use collapsed filters-by-default and affordable-card highlighting to improve first-glance
+catalog actionability and reduce clutter.
+
+### Phase 59: Watch Data Depth + Media/Tier Contracts
+
+**Goal:** Improve watch information depth while aligning tier semantics and hardening image/base-path
+contracts.
+
+### Phase 60: Regression Guardrails + Maintainability Closure
+
+**Goal:** Close v5.0 with deterministic tests and targeted refactors of touched high-risk modules.
 
 ## Milestone v4.1 Next Wave (Shipped)
 
@@ -121,18 +149,18 @@
 3. Career first view surfaces short-horizon payout/cost/unlock guidance.
 4. Previously tracked verification-report debt for phases 13/18 is closed.
 
-### Phase 54: Test Reliability + CI Stability (Planned)
+### Phase 54: Test Reliability + CI Stability (Complete, readiness blocked)
 
 **Goal:** Restore reliable, repeatable test execution across unit + e2e by removing deterministic selector/scope/timing failures and codifying CI run policy.
 
 **Plans:**
-- [ ] 54-01-PLAN.md — Selector disambiguation + strict-mode hardening
-- [ ] 54-02-PLAN.md — Desktop/mobile project scoping cleanup
-- [ ] 54-03-PLAN.md — Mobile catalog/interaction helper stabilization
-- [ ] 54-04-PLAN.md — Runtime determinism + tolerant assertions
-- [ ] 54-05-PLAN.md — Catalog media verification hardening
-- [ ] 54-06-PLAN.md — Unit async/act warning cleanup
-- [ ] 54-07-PLAN.md — CI sequencing policy + full regression closeout
+- [x] 54-01-PLAN.md — Selector disambiguation + strict-mode hardening
+- [x] 54-02-PLAN.md — Desktop/mobile project scoping cleanup
+- [x] 54-03-PLAN.md — Mobile catalog/interaction helper stabilization
+- [x] 54-04-PLAN.md — Runtime determinism + tolerant assertions
+- [x] 54-05-PLAN.md — Catalog media verification hardening
+- [x] 54-06-PLAN.md — Unit async/act warning cleanup
+- [x] 54-07-PLAN.md — CI sequencing policy + full regression closeout
 
 **Success criteria:**
 1. No strict-mode selector collisions remain in active e2e suites.
@@ -141,6 +169,10 @@
 4. Time-sensitive tests rely on deterministic/tolerant invariants rather than brittle exact values.
 5. Unit suite runs without timing-related failures and significantly reduced async warning noise.
 6. CI guidance enforces stable run order and avoids known contention modes.
+
+**Closeout artifact:**
+- `.planning/phases/54-test-reliability-ci-stability/54-07-SUMMARY.md`
+- `.planning/milestones/v4.3-MILESTONE-AUDIT.md`
 
 ### Phase 55: UX Flow + Gameplay Clarity (Complete)
 
@@ -208,6 +240,6 @@
 | 51. Quality of Life & Events | v4.1 | 5/5 | Complete | 51-05-SUMMARY.md |
 | 52. UX Redesign Spec | next milestone | 3/3 | Complete | 52-03-SUMMARY.md |
 | 53. Reliability + Career Clarity | post-v4.1 | 6/6 | Complete | 53-06-SUMMARY.md |
-| 54. Test Reliability + CI Stability | post-v4.1 | 0/7 | Planned | - |
+| 54. Test Reliability + CI Stability | post-v4.1 | 7/7 | Complete (readiness blocked) | 54-07-SUMMARY.md |
 | 55. UX Flow + Gameplay Clarity | v4.4 | 8/8 | Complete | 55-08-SUMMARY.md |
 | 56. Full UI Audit Remediation | v4.5 | 9/9 | Complete | 56-09-SUMMARY.md |

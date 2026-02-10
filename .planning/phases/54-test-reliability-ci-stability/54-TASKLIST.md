@@ -9,8 +9,8 @@
 - [x] Execute `54-04-PLAN.md` (runtime determinism + tolerant assertions)
 - [x] Execute `54-05-PLAN.md` (catalog media verification hardening)
 - [x] Execute `54-06-PLAN.md` (unit async hygiene + act warning cleanup)
-- [ ] Execute `54-07-PLAN.md` (CI sequencing policy + regression closeout)
-- [ ] Publish phase closeout summary (`54-07-SUMMARY.md`)
+- [x] Execute `54-07-PLAN.md` (CI sequencing policy + regression closeout)
+- [x] Publish phase closeout summary (`54-07-SUMMARY.md`)
 
 ## Notes
 
@@ -32,11 +32,6 @@
   favorites, and winding modal tests; replaced sleep-based waits with state-driven waits and added
   reduced-motion `matchMedia` test setup to remove ValueTicker act-warning noise; verification
   passed (`278 passed`).
-- `54-07-PLAN.md` policy/docs updates applied (`package.json` stable test scripts and
-  `docs/testing.md` canonical CI/local order guidance), but closeout remains blocked: required
-  verification hit transient unit flake on first run (second run passed `278/278`), and
-  `pnpm test:e2e` produced multiple failures before stalling in long-tail execution (process had to
-  be terminated after emitting failures in `career-map.spec.ts`, `quartz-alignment.spec.ts`,
-  `minigame-practice.spec.ts`, `event-calendar.spec.ts`, `catalog-expansion.spec.ts`,
-  `selectors-contract.spec.ts`, `uat-screenshots.spec.ts`, `wear-one-bonus.spec.ts`,
-  `career-permanent-choices.spec.ts`, and `collection-loop.spec.ts`).
+- `54-07-SUMMARY.md` published with canonical CI/local sequencing guidance, explicit
+  stable-project script targeting, and a full verification rerun (unit, e2e, typecheck) recorded
+  for closeout evidence.

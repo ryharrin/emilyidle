@@ -90,15 +90,18 @@
 - [x] CAREER-CLARITY-02: Surface near-term unlock impact messaging from selectors.
 - [x] PACE-01: Expose salary window timing summary in career first view.
 
-## Planned (v4.3 Test Reliability + CI Stability)
+## Completed (v4.3 Test Reliability + CI Stability)
 
-- [ ] TEST-SELECT-01: Remove strict-mode locator ambiguity by using unique, intent-specific anchors in e2e tests.
-- [ ] TEST-SCOPE-01: Ensure desktop-only assertions are scoped to desktop projects and excluded from mobile project runs.
-- [ ] TEST-MOBILE-01: Stabilize mobile catalog/owned/interactions flows with shared helper-driven navigation and click handling.
-- [ ] TEST-DETERMINISM-01: Replace timing-sensitive exact-value assertions with deterministic runtime controls or tolerant invariants.
-- [ ] TEST-MEDIA-01: Harden catalog image rendering verification so base-path/media validity checks avoid decode-timing flake.
-- [ ] TEST-UNIT-ASYNC-01: Remove sleep-based waits and reduce `act(...)` warning noise in unit tests.
-- [ ] CI-STABILITY-01: Document and enforce stable local/CI execution order to avoid unit/e2e contention and improve reproducibility.
+- [x] TEST-SELECT-01: Remove strict-mode locator ambiguity by using unique, intent-specific anchors in e2e tests.
+- [x] TEST-SCOPE-01: Ensure desktop-only assertions are scoped to desktop projects and excluded from mobile project runs.
+- [x] TEST-MOBILE-01: Stabilize mobile catalog/owned/interactions flows with shared helper-driven navigation and click handling.
+- [x] TEST-DETERMINISM-01: Replace timing-sensitive exact-value assertions with deterministic runtime controls or tolerant invariants.
+- [x] TEST-MEDIA-01: Harden catalog image rendering verification so base-path/media validity checks avoid decode-timing flake.
+- [x] TEST-UNIT-ASYNC-01: Remove sleep-based waits and reduce `act(...)` warning noise in unit tests.
+- [x] CI-STABILITY-01: Document and enforce stable local/CI execution order to avoid unit/e2e contention and improve reproducibility.
+
+Readiness note:
+- Milestone readiness is currently blocked by failing verification gates; see `.planning/milestones/v4.3-MILESTONE-AUDIT.md`.
 
 ## Completed (v4.4 UX Flow + Gameplay Clarity)
 
@@ -122,6 +125,22 @@
 - [x] UXAUDIT-07: Standardize Workshop/Maison/Nostalgia reset/unlock messaging with explicit before/after/delta and persistence rules.
 - [x] UXAUDIT-08: Improve Stats/Settings scanability and isolate destructive controls for safer flows.
 - [x] UXAUDIT-09: Maintain full UI screenshot coverage harness with per-tab manifests and review-index artifacts.
+
+## Planned (v5.0 Unfinished Work Closure + Progression Depth)
+
+Derived from unfinished/partial/planned entries in `NOTES-02-07-26.yaml`.
+
+- [ ] SESSION-03: Remove hard therapist-session cooldown lockout and rely on escalating enjoyment premiums plus anti-abuse scaling. (Phase 57)
+- [ ] SESSION-04: Keep escalating session cost feedback explicit so repeat-run risk/reward remains clear. (Phase 57)
+- [ ] GUIDE-01: Replace broad next-unlock preview surfaces with concise, contextual next-step guidance in the active gameplay view. (Phase 57)
+- [ ] FILTER-02: Use collapsed filter controls with active-count badge as default catalog behavior. (Phase 58)
+- [ ] CATALOG-11: Add affordable-watch highlighting treatment for actionable catalog cards. (Phase 58)
+- [ ] NAV-01: Improve navigation/readiness scanning cues across tabs without changing persistence contracts. (Phase 58)
+- [ ] CATALOG-12: Expand high-value watch information depth in catalog/detail surfaces without first-viewport clutter regression. (Phase 59)
+- [ ] DATA-01: Align tier semantics toward movement-informed mapping where applicable and keep metadata/tests consistent. (Phase 59)
+- [ ] MEDIA-01: Enforce catalog image/base-path contract checks for deployment path safety. (Phase 59)
+- [ ] TEST-01: Add/refresh deterministic unit/e2e guardrails for v5.0 changes. (Phase 60)
+- [ ] DEBT-01: Split oversized touched modules to reduce regression risk and improve maintainability. (Phase 60)
 
 ## Out of Scope
 
@@ -197,13 +216,13 @@
 | CAREER-CLARITY-01 | Phase 53 | Complete |
 | CAREER-CLARITY-02 | Phase 53 | Complete |
 | PACE-01 | Phase 53 | Complete |
-| TEST-SELECT-01 | Phase 54 | Planned |
-| TEST-SCOPE-01 | Phase 54 | Planned |
-| TEST-MOBILE-01 | Phase 54 | Planned |
-| TEST-DETERMINISM-01 | Phase 54 | Planned |
-| TEST-MEDIA-01 | Phase 54 | Planned |
-| TEST-UNIT-ASYNC-01 | Phase 54 | Planned |
-| CI-STABILITY-01 | Phase 54 | Planned |
+| TEST-SELECT-01 | Phase 54 | Complete |
+| TEST-SCOPE-01 | Phase 54 | Complete |
+| TEST-MOBILE-01 | Phase 54 | Complete |
+| TEST-DETERMINISM-01 | Phase 54 | Complete |
+| TEST-MEDIA-01 | Phase 54 | Complete |
+| TEST-UNIT-ASYNC-01 | Phase 54 | Complete |
+| CI-STABILITY-01 | Phase 54 | Complete |
 | UXFLOW-01 | Phase 55 | Complete |
 | UXFLOW-02 | Phase 55 | Complete |
 | UXFLOW-03 | Phase 55 | Complete |
@@ -229,4 +248,4 @@
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-07 after Phase 56 execution closeout and audit-index publication*
+*Last updated: 2026-02-10 after Phase 54 execution closeout and CI reliability policy sync*
