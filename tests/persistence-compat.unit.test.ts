@@ -78,7 +78,12 @@ describe("persistence compatibility", () => {
       discoveredCatalogEntries: [],
     };
 
-    const rawV2 = encodeSaveString(seededState, 456, new Date(0));
+    const rawV2 = JSON.stringify({
+      version: 2,
+      savedAt: new Date(0).toISOString(),
+      lastSimulatedAtMs: 456,
+      state: seededState,
+    });
 
     localStorage.clear();
     localStorage.setItem("watch-idle:save", rawV2);
@@ -88,6 +93,9 @@ describe("persistence compatibility", () => {
     if (!loaded.ok) {
       return;
     }
+
+    expect(loaded.save.version).toBe(3);
+    expect(loaded.migratedFromVersion).toBe(2);
 
     const canonicalRaw = localStorage.getItem("emily-idle:save");
     expect(canonicalRaw).toBeTruthy();
