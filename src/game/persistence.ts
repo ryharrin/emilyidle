@@ -379,7 +379,7 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
     }
   }
 
-  return { ok: true, save: decoded.save };
+  return decoded;
 }
 
 export function persistSaveToLocalStorage(
