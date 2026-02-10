@@ -130,6 +130,8 @@ describe("career progression", () => {
     expect(screen.getByTestId("career-economy-summary")).toBeVisible();
     expect(screen.getByTestId("session-delta-breakdown")).toBeVisible();
     expect(screen.getByTestId("salary-window-timer")).toBeVisible();
+    expect(screen.getByTestId("salary-window-summary")).toBeVisible();
+    expect(screen.getByTestId("near-term-unlock-summary")).toBeVisible();
     expect(screen.getByTestId("career-feedback-strip")).toBeVisible();
     expect(screen.getByTestId("career-feedback-primary").textContent).toMatch(
       /Next step|Last session/,

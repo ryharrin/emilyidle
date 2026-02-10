@@ -329,14 +329,18 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                   </dd>
                 </div>
               </dl>
-              <p className="career-economy-summary-window" data-testid="salary-window-timer">
-                Salary window{" "}
-                {salaryWindowSummary.isActive
+              <p className="career-economy-summary-window" data-testid="salary-window-summary">
+                <strong>
+                  {salaryWindowSummary.statusLabel === "active"
+                    ? "Active window:"
+                    : "Inactive window:"}
+                </strong>{" "}
+                {salaryWindowSummary.statusLabel === "active"
                   ? `ends in ${formatDuration(salaryWindowSummary.remainingMs)}`
                   : "is inactive"}{" "}
                 ({formatDuration(salaryWindowSummary.windowMs)} base refresh).
               </p>
-              <p className="muted">
+              <p className="career-economy-summary-note" data-testid="near-term-unlock-summary">
                 <strong>{nearTermUnlock.title}:</strong> {nearTermUnlock.detail}
               </p>
             </article>
