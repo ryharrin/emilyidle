@@ -53,14 +53,22 @@ export function ConfirmModal({
       aria-describedby={descriptionId}
     >
       <div className="nostalgia-modal-card confirm-modal-card" ref={modalRef}>
-        <h3 id={titleId}>{title}</h3>
-        <p id={descriptionId} className="muted">
+        <header className="modal-panel-header confirm-modal-header">
+          <p className="eyebrow">Confirmation</p>
+          <h3 id={titleId}>{title}</h3>
+        </header>
+        <p id={descriptionId} className="muted modal-panel-description">
           {description}
         </p>
-        <div className="card-actions">
+        <div className="card-actions modal-panel-actions confirm-modal-actions">
           <button
             type="button"
-            className={["action-priority-primary", confirmClassName].filter(Boolean).join(" ")}
+            className={[
+              "action-priority-primary confirm-modal-confirm",
+              confirmClassName,
+            ]
+              .filter(Boolean)
+              .join(" ")}
             data-testid={confirmTestId}
             onClick={onConfirm}
           >

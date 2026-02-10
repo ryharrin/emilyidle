@@ -37,13 +37,19 @@ function LockedStageTeaser({
   unlockLevel: number;
 }) {
   return (
-    <div className="card" data-testid={`career-stage-block-${stageId}`}>
-      <div className="career-track-header">
+    <div
+      className="card career-stage-choice-block career-panel-cluster-card"
+      data-testid={`career-stage-block-${stageId}`}
+    >
+      <div className="career-track-header career-stage-choice-header">
         <div>
           <h4>{heading}</h4>
           <p className="muted">Unlocks at level {unlockLevel}.</p>
         </div>
-        <div className="career-track-level" data-testid={`career-choice-locked-${stageId}`}>
+        <div
+          className="career-track-level career-stage-choice-lock-pill"
+          data-testid={`career-choice-locked-${stageId}`}
+        >
           Locked
         </div>
       </div>
@@ -78,8 +84,11 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
 
   if (status.stageId === "licensed-associate") {
     return (
-      <div className="card" data-testid={`career-stage-block-${status.stageId}`}>
-        <div className="career-track-header">
+      <div
+        className="card career-stage-choice-block career-panel-cluster-card"
+        data-testid={`career-stage-block-${status.stageId}`}
+      >
+        <div className="career-track-header career-stage-choice-header">
           <div>
             <h4>{heading}</h4>
             <p className="muted">Pick your primary track (permanent).</p>
@@ -87,7 +96,7 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
           <div className="career-track-level">Level {career.level.toLocaleString()}</div>
         </div>
 
-        <div className="career-track-grid">
+        <div className="career-track-grid career-stage-choice-grid">
           {CAREER_TRACKS.map((track) => {
             const effects = CAREER_TRACK_EFFECTS.find((choice) => choice.id === track.id);
             const preview = getCareerChoicePreview(state, {
@@ -98,7 +107,7 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
               <button
                 key={track.id}
                 type="button"
-                className="career-track-card"
+                className="career-track-card career-stage-choice-option"
                 data-testid={`career-choice-option-${track.id}`}
                 onClick={() => onPurchase(selectPrimaryCareerTrack(state, track.id))}
               >
@@ -120,15 +129,18 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
 
   if (status.stageId === "specialist-certification") {
     return (
-      <div className="card" data-testid={`career-stage-block-${status.stageId}`}>
-        <div className="career-track-header">
+      <div
+        className="card career-stage-choice-block career-panel-cluster-card"
+        data-testid={`career-stage-block-${status.stageId}`}
+      >
+        <div className="career-track-header career-stage-choice-header">
           <div>
             <h4>{heading}</h4>
             <p className="muted">Pick a modality (permanent).</p>
           </div>
           <div className="career-track-level">Level {career.level.toLocaleString()}</div>
         </div>
-        <div className="career-track-grid">
+        <div className="career-track-grid career-stage-choice-grid">
           {CAREER_MODALITIES.map((choice) => {
             const preview = getCareerChoicePreview(state, {
               stageId: "specialist-certification",
@@ -138,7 +150,7 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
               <button
                 key={choice.id}
                 type="button"
-                className="career-track-card"
+                className="career-track-card career-stage-choice-option"
                 data-testid={`career-choice-option-${choice.id}`}
                 onClick={() => onPurchase(chooseCareerModality(state, choice.id))}
               >
@@ -155,15 +167,18 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
 
   if (status.stageId === "practice-builder") {
     return (
-      <div className="card" data-testid={`career-stage-block-${status.stageId}`}>
-        <div className="career-track-header">
+      <div
+        className="card career-stage-choice-block career-panel-cluster-card"
+        data-testid={`career-stage-block-${status.stageId}`}
+      >
+        <div className="career-track-header career-stage-choice-header">
           <div>
             <h4>{heading}</h4>
             <p className="muted">Pick an operating style (permanent).</p>
           </div>
           <div className="career-track-level">Level {career.level.toLocaleString()}</div>
         </div>
-        <div className="career-track-grid">
+        <div className="career-track-grid career-stage-choice-grid">
           {CAREER_OPERATING_STYLES.map((choice) => {
             const preview = getCareerChoicePreview(state, {
               stageId: "practice-builder",
@@ -173,7 +188,7 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
               <button
                 key={choice.id}
                 type="button"
-                className="career-track-card"
+                className="career-track-card career-stage-choice-option"
                 data-testid={`career-choice-option-${choice.id}`}
                 onClick={() => onPurchase(chooseCareerOperatingStyle(state, choice.id))}
               >
@@ -189,15 +204,18 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
   }
 
   return (
-    <div className="card" data-testid={`career-stage-block-${status.stageId}`}>
-      <div className="career-track-header">
+    <div
+      className="card career-stage-choice-block career-panel-cluster-card"
+      data-testid={`career-stage-block-${status.stageId}`}
+    >
+      <div className="career-track-header career-stage-choice-header">
         <div>
           <h4>{heading}</h4>
           <p className="muted">Pick an expansion focus (permanent).</p>
         </div>
         <div className="career-track-level">Level {career.level.toLocaleString()}</div>
       </div>
-      <div className="career-track-grid">
+      <div className="career-track-grid career-stage-choice-grid">
         {CAREER_EXPANSION_FOCUSES.map((choice) => {
           const preview = getCareerChoicePreview(state, {
             stageId: "private-practice-owner",
@@ -207,7 +225,7 @@ export function CareerStageChoiceBlocks({ state, onPurchase }: CareerStageChoice
             <button
               key={choice.id}
               type="button"
-              className="career-track-card"
+              className="career-track-card career-stage-choice-option"
               data-testid={`career-choice-option-${choice.id}`}
               onClick={() => onPurchase(chooseCareerExpansionFocus(state, choice.id))}
             >

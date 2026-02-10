@@ -51,6 +51,22 @@
 - Career surface structure:
   - Preserve Now/Next/Deep layout.
   - Complication stack belongs in the panel header, before detailed cards.
+- Overlay System (modals/help/minigames):
+  - Use shared shell + card treatment (`overlay-*` + `modal-panel-*`) instead of one-off modal styling.
+  - Keep dialog hierarchy dense: micro-label -> title -> short descriptor -> action rail.
+  - Keep mini-game readouts instrument-like via compact strips and bordered inset bodies.
+- Toast System:
+  - Single visible toast in a stacked rail with queue badge for additional notifications.
+  - Left accent rail communicates tone (`neutral/info/success/warning/critical`).
+  - Keep copy compact: eyebrow, title, message, optional detail.
+- Panel Cluster Surfaces:
+  - Use cluster wrappers (`panel-cluster-*`) for collection insights, compare, and career stage cards.
+  - Keep shared surface rhythm: 14-18px radius, border-led depth, restrained gradients from same hue family.
+  - Use active state accents only for meaningful availability/selection signals.
+- Career Blueprint Canvas:
+  - Add compact HUD/legend instruments directly on map/upgrades viewport.
+  - Keep node chips/tiers/status readable at a glance without changing progression logic.
+  - Preserve pan/zoom controls and existing test anchors.
 
 ## Motion
 - Keep transitions short and subtle (no springy movement).
@@ -60,6 +76,8 @@
 - Maintain compact readability on mobile.
 - Preserve sticky action rail behavior in Career compact mode.
 - Prevent tab rail overflow from feeling clipped by preserving edge gradients and snap behavior.
+- Collapse modal action rails to full-width controls on narrow viewports.
+- Collapse panel clusters to single-column stacks at tablet widths.
 
 ## Implementation Guardrails
 - Keep `data-testid` anchors stable unless tests are intentionally updated.

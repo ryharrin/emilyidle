@@ -275,31 +275,33 @@ export function AutomaticMiniGameModal({
 
   return (
     <div
-      className="nostalgia-modal automatic-modal"
+      className="nostalgia-modal automatic-modal overlay-instrument-modal"
       data-testid="automatic-modal"
-      ref={modalRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className="nostalgia-modal-card automatic-modal-card">
-        <header className="winding-modal-header">
-          <div>
+      <div
+        className="nostalgia-modal-card automatic-modal-card modal-panel-card mini-game-modal-card"
+        ref={modalRef}
+      >
+        <header className="winding-modal-header modal-panel-header">
+          <div className="winding-modal-heading">
             <p className="eyebrow">Automatic</p>
             <h3 id={titleId}>{itemLabel}</h3>
-            <p id={descriptionId} className="muted winding-modal-subtitle">
+            <p id={descriptionId} className="muted winding-modal-subtitle modal-panel-description">
               Hold the needle near center for 10s.
             </p>
             <p className="muted winding-modal-subtitle" data-testid="automatic-difficulty">
               Difficulty: {difficultyProfile.label}
             </p>
           </div>
-          <div className="card-actions">
+          <div className="card-actions modal-panel-actions">
             {helpAction}
             <button
               type="button"
-              className="secondary"
+              className="secondary action-priority-secondary"
               data-testid="automatic-close"
               onClick={onClose}
             >
@@ -308,8 +310,11 @@ export function AutomaticMiniGameModal({
           </div>
         </header>
 
-        <div className="automatic-modal-body" data-outcome-state={outcomeState}>
-          <div className="winding-mode-strip" data-testid="automatic-mode-strip">
+        <div className="automatic-modal-body modal-panel-body" data-outcome-state={outcomeState}>
+          <div
+            className="winding-mode-strip modal-instrument-strip"
+            data-testid="automatic-mode-strip"
+          >
             <label className="winding-mode-toggle">
               <input
                 type="checkbox"
@@ -333,7 +338,7 @@ export function AutomaticMiniGameModal({
           </div>
 
           <div
-            className="automatic-live"
+            className="automatic-live modal-live-readout"
             data-testid="automatic-live"
             aria-live="polite"
             data-live-state={liveState}
@@ -350,7 +355,7 @@ export function AutomaticMiniGameModal({
           </div>
 
           {!result ? (
-            <div className="card-actions">
+            <div className="card-actions modal-panel-actions">
               <button type="button" data-testid="automatic-left" onClick={() => handleImpulse(-1)}>
                 Left
               </button>
@@ -385,7 +390,7 @@ export function AutomaticMiniGameModal({
                   </>
                 )
               )}
-              <div className="card-actions">
+              <div className="card-actions modal-panel-actions">
                 <button type="button" data-testid="automatic-done" onClick={onClose}>
                   Done
                 </button>

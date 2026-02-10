@@ -34,7 +34,10 @@ export function CareerNextActionCard({
   })();
 
   return (
-    <article className="card career-next-action-card" data-testid="career-next-action">
+    <article
+      className="card career-next-action-card career-panel-cluster-card"
+      data-testid="career-next-action"
+    >
       <header className="career-next-action-header">
         <div>
           <p className="eyebrow">Primary action</p>
@@ -47,8 +50,8 @@ export function CareerNextActionCard({
           {statusLabel}
         </p>
       </header>
-      <p className="muted">{cue.detail}</p>
-      {secondaryHint ? <p className="muted">{secondaryHint}</p> : null}
+      <p className="muted career-next-action-detail">{cue.detail}</p>
+      {secondaryHint ? <p className="muted career-next-action-hint">{secondaryHint}</p> : null}
 
       {cue.id === "start-career" ? (
         <div className="card-actions">

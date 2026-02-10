@@ -10,6 +10,7 @@ type UseModalAccessibilityArgs = {
 
 const FOCUSABLE_SELECTOR =
   "button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex='-1'])";
+const MODAL_ROOT_SELECTOR = ".nostalgia-modal, .help-modal, [role='dialog'][aria-modal='true']";
 
 function getFocusableElements(modal: HTMLElement): HTMLElement[] {
   return Array.from(modal.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((element) => {
@@ -42,6 +43,10 @@ function focusWithinModal(modal: HTMLElement, initialFocus: HTMLElement | null) 
   modal.focus();
 }
 
+function getModalRoot(modal: HTMLElement): HTMLElement {
+  return modal.closest<HTMLElement>(MODAL_ROOT_SELECTOR) ?? modal;
+}
+
 export function useModalAccessibility({
   open,
   modalRef,
@@ -50,16 +55,19 @@ export function useModalAccessibility({
   lockScroll = true,
 }: UseModalAccessibilityArgs) {
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const stackIdRef = useRef(`modal-${Math.random().toString(36).slice(2)}`);
 
   useEffect(() => {
     if (!open || typeof document === "undefined") {
       return;
     }
 
-    const modal = modalRef.current;
-    if (!modal) {
+    const currentModal = modalRef.current;
+    if (!currentModal) {
       return;
     }
+    const modal = getModalRoot(currentModal);
+    modal.dataset.modalStackId = stackIdRef.current;
 
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
 
@@ -72,12 +80,20 @@ export function useModalAccessibility({
       if (!open || !modalRef.current) {
         return;
       }
-      focusWithinModal(modalRef.current, initialFocusRef?.current ?? null);
+      focusWithinModal(getModalRoot(modalRef.current), initialFocusRef?.current ?? null);
     });
 
+    const isTopmostModal = () => {
+      const stack = Array.from(document.querySelectorAll<HTMLElement>("[data-modal-stack-id]"));
+      return stack.length > 0 && stack[stack.length - 1] === modal;
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      const currentModal = modalRef.current;
-      if (!currentModal) {
+      const activeModal = modalRef.current ? getModalRoot(modalRef.current) : null;
+      if (!activeModal) {
+        return;
+      }
+      if (!isTopmostModal()) {
         return;
       }
 
@@ -94,10 +110,10 @@ export function useModalAccessibility({
         return;
       }
 
-      const focusables = getFocusableElements(currentModal);
+      const focusables = getFocusableElements(activeModal);
       if (focusables.length === 0) {
         event.preventDefault();
-        focusWithinModal(currentModal, initialFocusRef?.current ?? null);
+        focusWithinModal(activeModal, initialFocusRef?.current ?? null);
         return;
       }
 
@@ -105,7 +121,7 @@ export function useModalAccessibility({
       const last = focusables[focusables.length - 1];
       const active = document.activeElement;
 
-      if (!(active instanceof HTMLElement) || !currentModal.contains(active)) {
+      if (!(active instanceof HTMLElement) || !activeModal.contains(active)) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
         return;
@@ -121,17 +137,20 @@ export function useModalAccessibility({
     };
 
     const handleFocusIn = (event: FocusEvent) => {
-      const currentModal = modalRef.current;
-      if (!currentModal) {
+      const activeModal = modalRef.current ? getModalRoot(modalRef.current) : null;
+      if (!activeModal) {
+        return;
+      }
+      if (!isTopmostModal()) {
         return;
       }
 
       const target = event.target;
-      if (target instanceof Node && currentModal.contains(target)) {
+      if (target instanceof Node && activeModal.contains(target)) {
         return;
       }
 
-      focusWithinModal(currentModal, initialFocusRef?.current ?? null);
+      focusWithinModal(activeModal, initialFocusRef?.current ?? null);
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -143,6 +162,9 @@ export function useModalAccessibility({
 
       if (lockScroll) {
         document.body.style.overflow = previousOverflow;
+      }
+      if (modal.dataset.modalStackId === stackIdRef.current) {
+        delete modal.dataset.modalStackId;
       }
 
       const previouslyFocused = previouslyFocusedRef.current;

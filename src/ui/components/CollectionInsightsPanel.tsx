@@ -28,7 +28,7 @@ export function CollectionInsightsPanel({ state }: CollectionInsightsPanelProps)
     }
     return (
       <div
-        className="collection-insights__distribution-group"
+        className="collection-insights__distribution-group collection-insights__distribution-module"
         data-testid={`collection-analytics-${label.toLowerCase()}`}
       >
         <p className="eyebrow">{label}</p>
@@ -49,18 +49,21 @@ export function CollectionInsightsPanel({ state }: CollectionInsightsPanelProps)
   return (
     <section
       id="collection-set-bonuses"
-      className="collection-insights"
+      className="collection-insights panel collection-insights-panel-cluster"
       data-testid="collection-insights-panel"
     >
-      <div className="collection-insights__set-bonuses" data-testid="collection-set-bonus-grid">
+      <div
+        className="collection-insights__set-bonuses panel-cluster-grid"
+        data-testid="collection-set-bonus-grid"
+      >
         {setBonusRows.map((row) => (
           <article
             key={row.id}
-            className={`collection-insights__set-bonus-card ${row.active ? "is-active" : ""}`}
+            className={`collection-insights__set-bonus-card collection-insights__module-card ${row.active ? "is-active" : ""}`}
             data-testid="collection-set-bonus-card"
             data-bonus-id={row.id}
           >
-            <div className="collection-insights__set-card-header">
+            <div className="collection-insights__set-card-header collection-insights__module-header">
               <p className="eyebrow">Set bonus</p>
               <h3>{row.name}</h3>
             </div>
@@ -83,9 +86,9 @@ export function CollectionInsightsPanel({ state }: CollectionInsightsPanelProps)
           </article>
         ))}
       </div>
-      <div className="collection-insights__right">
+      <div className="collection-insights__right panel-cluster-column">
         <article
-          className="collection-insights__prestige"
+          className="collection-insights__prestige collection-insights__module-card"
           data-testid="collection-prestige-preview"
         >
           <p className="collection-insights__badge">Prestige preview</p>
@@ -112,7 +115,7 @@ export function CollectionInsightsPanel({ state }: CollectionInsightsPanelProps)
           )}
         </article>
         <article
-          className="collection-insights__analytics"
+          className="collection-insights__analytics collection-insights__module-card"
           data-testid="collection-analytics-panel"
         >
           <div className="collection-insights__analytics-main">

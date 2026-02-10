@@ -33,8 +33,8 @@ export function WatchComparePanel({
   const filledSlots = slots.filter(Boolean).length;
 
   return (
-    <section className="compare-panel" data-testid="catalog-compare-panel">
-      <header className="compare-panel-header">
+    <section className="compare-panel panel compare-panel-cluster" data-testid="catalog-compare-panel">
+      <header className="compare-panel-header panel-header">
         <div>
           <p className="eyebrow">Compare watches</p>
           <h3>Side-by-side stats</h3>
@@ -57,14 +57,14 @@ export function WatchComparePanel({
           )}
         </div>
       </header>
-      <div className="compare-panel-body">
+      <div className="compare-panel-body panel-cluster-grid">
         {slots.map((slot, index) => {
           const slotId = SLOT_LABELS[index];
           if (!slot) {
             return (
               <div
                 key={`empty-${slotId}`}
-                className="compare-slot compare-slot-empty"
+                className="compare-slot compare-slot-module compare-slot-empty"
                 id={`compare-slot-${slotId.toLowerCase()}`}
               >
                 <div
@@ -81,7 +81,7 @@ export function WatchComparePanel({
           return (
             <article
               key={slot.entry.id}
-              className={`compare-slot ${slot.ready ? "compare-slot-ready" : ""}`}
+              className={`compare-slot compare-slot-module ${slot.ready ? "compare-slot-ready" : ""}`}
               id={`compare-slot-${slotId.toLowerCase()}`}
               data-testid={`compare-slot-${slotId}`}
             >

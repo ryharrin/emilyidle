@@ -179,7 +179,7 @@ export function CareerTimeline({ state }: CareerTimelineProps) {
       aria-label="Career progression timeline"
       data-testid="career-timeline"
     >
-      <div className="career-timeline-meta">
+      <div className="career-timeline-meta career-timeline-meta-grid">
         <article
           className="career-timeline-current"
           id="career-timeline-current"
@@ -193,7 +193,7 @@ export function CareerTimeline({ state }: CareerTimelineProps) {
           <div className="career-timeline-current__body">
             <div className="career-timeline-current__level">
               <strong>Level {progress.currentLevel}</strong>
-              <span>{nextUnlockLabel}</span>
+              <span className="career-timeline-current__target">{nextUnlockLabel}</span>
             </div>
             <div className="career-timeline-current__progress">
               <div className="career-timeline-current__progress-track">
@@ -275,6 +275,7 @@ export function CareerTimeline({ state }: CareerTimelineProps) {
                 className={`career-timeline-node career-timeline-${status}`}
                 data-status={status}
                 data-stage-id={stage.id}
+                data-stage-index={index}
                 data-testid="career-timeline-node"
               >
                 <div

@@ -37,8 +37,8 @@ export function CareerStageChoiceSummary({ state }: CareerStageChoiceSummaryProp
   }
 
   return (
-    <div className="card" data-testid="career-permanent-choices">
-      <div className="career-track-header">
+    <div className="card career-stage-choice-summary career-panel-cluster-card" data-testid="career-permanent-choices">
+      <div className="career-track-header career-stage-choice-header">
         <div>
           <h4>Permanent choices</h4>
           <p className="muted">These choices are locked in.</p>
@@ -46,22 +46,34 @@ export function CareerStageChoiceSummary({ state }: CareerStageChoiceSummaryProp
       </div>
 
       {trackLabel ? (
-        <p className="muted" data-testid="career-choice-locked-licensed-associate">
+        <p
+          className="muted career-stage-choice-summary-row"
+          data-testid="career-choice-locked-licensed-associate"
+        >
           Track: {trackLabel}
         </p>
       ) : null}
       {modalityLabel ? (
-        <p className="muted" data-testid="career-choice-locked-specialist-certification">
+        <p
+          className="muted career-stage-choice-summary-row"
+          data-testid="career-choice-locked-specialist-certification"
+        >
           Modality: {modalityLabel}
         </p>
       ) : null}
       {operatingStyleLabel ? (
-        <p className="muted" data-testid="career-choice-locked-practice-builder">
+        <p
+          className="muted career-stage-choice-summary-row"
+          data-testid="career-choice-locked-practice-builder"
+        >
           Operating style: {operatingStyleLabel}
         </p>
       ) : null}
       {expansionFocusLabel ? (
-        <p className="muted" data-testid="career-choice-locked-private-practice-owner">
+        <p
+          className="muted career-stage-choice-summary-row"
+          data-testid="career-choice-locked-private-practice-owner"
+        >
           Expansion focus: {expansionFocusLabel}
         </p>
       ) : null}

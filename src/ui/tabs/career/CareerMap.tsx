@@ -299,7 +299,13 @@ function layoutCareerMap(state: GameState): {
 }
 
 export function CareerMap({ state, onPurchase }: CareerMapProps) {
+  const career = getTherapistCareer(state);
   const { layout, actions, bodies } = React.useMemo(() => layoutCareerMap(state), [state]);
+  const currentStageId = getTherapistCareerStageId(career.level);
+  const currentStage =
+    CAREER_STAGES.find((stage) => stage.id === currentStageId) ?? CAREER_STAGES[0];
+  const unlockedStages = CAREER_STAGES.filter((stage) => career.level >= stage.unlockLevel).length;
+  const pendingChoices = getTherapistCareerChoiceStatus(state).filter((status) => !status.chosen);
 
   const handleNodeClick = (nodeId: string) => {
     const action = actions.get(nodeId);
@@ -329,6 +335,29 @@ export function CareerMap({ state, onPurchase }: CareerMapProps) {
 
   return (
     <div className="career-map-shell" data-testid="career-map-shell">
+      <div className="career-canvas-header career-canvas-header-map">
+        <div className="career-canvas-header-copy">
+          <p className="eyebrow">Caliber blueprint</p>
+          <h4>Career stage map</h4>
+          <p className="muted">
+            Follow progression thresholds and lock permanent specialty choices.
+          </p>
+        </div>
+        <dl className="career-canvas-instruments" aria-label="Career map status">
+          <div className="career-canvas-instrument">
+            <dt>Current stage</dt>
+            <dd>{currentStage.label}</dd>
+          </div>
+          <div className="career-canvas-instrument">
+            <dt>Stage index</dt>
+            <dd>{unlockedStages}/{CAREER_STAGES.length}</dd>
+          </div>
+          <div className="career-canvas-instrument">
+            <dt>Pending choices</dt>
+            <dd>{pendingChoices.length}</dd>
+          </div>
+        </dl>
+      </div>
       <CareerMapCanvas
         nodes={layout.nodes}
         edges={layout.edges}

@@ -41,9 +41,10 @@ export function CareerProgressCard({ state, nowMs }: CareerProgressCardProps) {
       : `Current target: level ${progress.nextUnlockLevel}`;
 
   return (
-    <div className="card" data-testid="career-progress-card">
+    <div className="card career-progress-card" data-testid="career-progress-card">
       <div className="career-track-header">
         <div>
+          <p className="eyebrow">Power reserve</p>
           <h4>Progress</h4>
           <p className="muted" data-testid="career-progress-message">
             {message}
@@ -54,6 +55,7 @@ export function CareerProgressCard({ state, nowMs }: CareerProgressCardProps) {
         </div>
       </div>
       <progress
+        className="career-progress-meter"
         data-testid="career-progress-bar"
         value={progress.progress01}
         max={1}

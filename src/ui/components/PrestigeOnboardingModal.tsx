@@ -28,21 +28,23 @@ export function PrestigeOnboardingModal({
 
   return (
     <div
-      className="nostalgia-modal"
+      className="nostalgia-modal prestige-onboarding-modal"
       data-testid="prestige-onboarding-modal"
-      ref={modalRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className="nostalgia-modal-card">
-        <h3 id={titleId}>{content.title}</h3>
-        <p id={descriptionId} className="muted">
+      <div className="nostalgia-modal-card prestige-onboarding-modal-card" ref={modalRef}>
+        <header className="modal-panel-header prestige-onboarding-header">
+          <p className="eyebrow">Prestige briefing</p>
+          <h3 id={titleId}>{content.title}</h3>
+        </header>
+        <p id={descriptionId} className="muted modal-panel-description">
           {content.body}
         </p>
         <div className="prestige-onboarding-grid" data-testid="prestige-onboarding-grid">
-          <section className="card">
+          <section className="card prestige-onboarding-section">
             <h4>Carries forward</h4>
             <ul>
               {content.carryForward.map((entry) => (
@@ -50,7 +52,7 @@ export function PrestigeOnboardingModal({
               ))}
             </ul>
           </section>
-          <section className="card">
+          <section className="card prestige-onboarding-section">
             <h4>Resets now</h4>
             <ul>
               {content.resets.map((entry) => (
@@ -59,17 +61,22 @@ export function PrestigeOnboardingModal({
             </ul>
           </section>
         </div>
-        <p className="muted">{content.recoveryHint}</p>
-        <div className="card-actions">
+        <p className="muted prestige-onboarding-recovery">{content.recoveryHint}</p>
+        <div className="card-actions modal-panel-actions prestige-onboarding-actions">
           <button
             type="button"
+            className="action-priority-primary"
             onClick={() => {
               onRecommendedAction(content.recommended.tabId);
             }}
           >
             {content.recommended.label}
           </button>
-          <button type="button" className="secondary" onClick={onClose}>
+          <button
+            type="button"
+            className="secondary action-priority-secondary"
+            onClick={onClose}
+          >
             Keep current tab
           </button>
         </div>

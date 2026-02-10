@@ -39,7 +39,7 @@ export function CatalogCardDetailsSheet({
     <>
       <button
         type="button"
-        className="catalog-card-details-sheet-backdrop"
+        className="catalog-card-details-sheet-backdrop panel-cluster-backdrop"
         aria-label="Close catalog details"
         onClick={onClose}
         onKeyDown={(event) => {
@@ -53,7 +53,7 @@ export function CatalogCardDetailsSheet({
         data-open="true"
       />
       <div
-        className="catalog-card-details-sheet"
+        className="catalog-card-details-sheet panel catalog-card-details-sheet-cluster"
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${SHEET_ID}-title`}
@@ -61,7 +61,7 @@ export function CatalogCardDetailsSheet({
         id={SHEET_ID}
         ref={modalRef}
       >
-        <div className="catalog-card-details-sheet__header">
+        <div className="catalog-card-details-sheet__header panel-header">
           <div>
             <p className="catalog-card-details-sheet__brand">{entry.brand}</p>
             <h3 id={`${SHEET_ID}-title`}>{entry.model}</h3>
@@ -79,7 +79,7 @@ export function CatalogCardDetailsSheet({
             Close
           </button>
         </div>
-        <div className="catalog-card-details-sheet__content">{children}</div>
+        <div className="catalog-card-details-sheet__content panel-cluster-column">{children}</div>
       </div>
     </>
   );

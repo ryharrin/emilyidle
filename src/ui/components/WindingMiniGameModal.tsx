@@ -313,31 +313,35 @@ export function WindingMiniGameModal({
   } as React.CSSProperties;
 
   return open ? (
-    <div className="nostalgia-modal winding-modal" data-testid="winding-modal" role="presentation">
+    <div
+      className="nostalgia-modal winding-modal overlay-instrument-modal"
+      data-testid="winding-modal"
+      role="presentation"
+    >
       <div
-        className="nostalgia-modal-card winding-modal-card"
+        className="nostalgia-modal-card winding-modal-card modal-panel-card mini-game-modal-card"
         ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
       >
-        <header className="winding-modal-header">
-          <div>
+        <header className="winding-modal-header modal-panel-header">
+          <div className="winding-modal-heading">
             <p className="eyebrow">Winding</p>
             <h3 id={titleId}>{itemLabel}</h3>
-            <p id={descriptionId} className="muted winding-modal-subtitle">
+            <p id={descriptionId} className="muted winding-modal-subtitle modal-panel-description">
               Reward: {rewardRangeLabel}
             </p>
             <p className="muted winding-modal-subtitle" data-testid="winding-difficulty">
               Difficulty: {difficultyProfile.label}
             </p>
           </div>
-          <div className="card-actions">
+          <div className="card-actions modal-panel-actions">
             {helpAction}
             <button
               type="button"
-              className="secondary"
+              className="secondary action-priority-secondary"
               data-testid="winding-close"
               onClick={handleClose}
             >
@@ -346,8 +350,8 @@ export function WindingMiniGameModal({
           </div>
         </header>
 
-        <div className="winding-modal-body" data-outcome-state={outcomeState}>
-          <div className="winding-mode-strip" data-testid="winding-mode-strip">
+        <div className="winding-modal-body modal-panel-body" data-outcome-state={outcomeState}>
+          <div className="winding-mode-strip modal-instrument-strip" data-testid="winding-mode-strip">
             <label className="winding-mode-toggle">
               <input
                 type="checkbox"
@@ -454,7 +458,7 @@ export function WindingMiniGameModal({
 
           <div
             id="winding-live"
-            className="winding-live"
+            className="winding-live modal-live-readout"
             data-testid="winding-live"
             aria-live="polite"
             data-live-state={outcomeState}
@@ -470,7 +474,7 @@ export function WindingMiniGameModal({
             Release before the red glow at 98.5% to keep tension from spiking.
           </p>
 
-          <div className="card-actions winding-actions">
+          <div className="card-actions winding-actions modal-panel-actions">
             {result && (
               <button
                 type="button"

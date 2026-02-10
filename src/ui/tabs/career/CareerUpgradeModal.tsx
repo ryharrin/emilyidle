@@ -21,6 +21,8 @@ export function CareerUpgradeModal({ open, model, onClose, onSpend }: CareerUpgr
     return null;
   }
 
+  const statusLabel = model.status.replace("-", " ");
+
   return (
     <div
       className="nostalgia-modal career-upgrade-modal"
@@ -30,9 +32,10 @@ export function CareerUpgradeModal({ open, model, onClose, onSpend }: CareerUpgr
     >
       <div className="nostalgia-modal-card career-upgrade-modal-card">
         <header className="career-upgrade-modal-header">
-          <div>
+          <div className="career-upgrade-modal-title">
             <p className="eyebrow">Career upgrade</p>
             <h3>{model.title}</h3>
+            <p className="career-upgrade-modal-status-chip">{statusLabel}</p>
           </div>
           <button type="button" className="secondary" onClick={onClose}>
             Close
@@ -42,13 +45,13 @@ export function CareerUpgradeModal({ open, model, onClose, onSpend }: CareerUpgr
         <p className="muted career-upgrade-modal-desc">{model.description}</p>
 
         <div className="career-upgrade-modal-meta">
-          <div>
+          <div className="career-upgrade-modal-meta-card">
             <p className="workshop-label">Cost</p>
             <p className="workshop-value">{model.costPoints} pt</p>
           </div>
-          <div>
+          <div className="career-upgrade-modal-meta-card">
             <p className="workshop-label">Status</p>
-            <p className="workshop-value">{model.status}</p>
+            <p className="workshop-value">{statusLabel}</p>
           </div>
         </div>
 

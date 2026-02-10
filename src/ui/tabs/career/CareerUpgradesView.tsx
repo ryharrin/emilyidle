@@ -85,7 +85,7 @@ export function CareerUpgradesView({ state, nowMs, onPurchase }: CareerUpgradesV
 
   if (!careerStarted) {
     return (
-      <div className="card" data-testid="career-upgrades-empty">
+      <div className="card career-upgrades-empty" data-testid="career-upgrades-empty">
         <h4>Career upgrades</h4>
         <p className="muted">Start your career to unlock the progression tree.</p>
       </div>
@@ -177,6 +177,7 @@ export function CareerUpgradesView({ state, nowMs, onPurchase }: CareerUpgradesV
   const trackLabel = activeTrackId
     ? (CAREER_TRACKS.find((track) => track.id === activeTrackId)?.label ?? "Track upgrades")
     : "Track upgrades";
+  const trackDescriptor = activeTrackId ? "Track specialization active" : "Track specialization pending";
 
   const selected = selectedNodeId
     ? (CAREER_NODES.find((node) => node.id === selectedNodeId) ?? null)
@@ -206,8 +207,9 @@ export function CareerUpgradesView({ state, nowMs, onPurchase }: CareerUpgradesV
 
   return (
     <>
-      <div className="career-tree-header" data-testid="career-tree-header">
-        <div>
+      <div className="career-tree-header career-tree-header-deep" data-testid="career-tree-header">
+        <div className="career-tree-header-copy">
+          <p className="eyebrow">Complication lattice</p>
           <h4>Progression tree</h4>
           <p className="muted">Spend points to unlock track upgrades.</p>
         </div>
@@ -215,6 +217,7 @@ export function CareerUpgradesView({ state, nowMs, onPurchase }: CareerUpgradesV
           <span className="career-tree-points" data-testid="career-tree-points">
             {career.pointsAvailable} points
           </span>
+          <span className="career-tree-track-chip">{trackDescriptor}</span>
           <button
             type="button"
             className="secondary"
@@ -228,11 +231,13 @@ export function CareerUpgradesView({ state, nowMs, onPurchase }: CareerUpgradesV
       </div>
 
       <div className="career-upgrades-sections">
-        <div>
+        <div className="career-upgrades-section-card">
+          <p className="career-upgrades-section-kicker">Core deck</p>
           <h5>Core foundations</h5>
           <p className="muted">Baseline unlocks that improve your overall career loop.</p>
         </div>
-        <div>
+        <div className="career-upgrades-section-card">
+          <p className="career-upgrades-section-kicker">Active track</p>
           <h5>{trackLabel}</h5>
           <p className="muted">
             {activeTrackId

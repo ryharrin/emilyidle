@@ -296,31 +296,33 @@ export function QuartzMiniGameModal({
 
   return (
     <div
-      className="nostalgia-modal quartz-modal"
+      className="nostalgia-modal quartz-modal overlay-instrument-modal"
       data-testid="quartz-modal"
-      ref={modalRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className="nostalgia-modal-card quartz-modal-card">
-        <header className="winding-modal-header">
-          <div>
+      <div
+        className="nostalgia-modal-card quartz-modal-card modal-panel-card mini-game-modal-card"
+        ref={modalRef}
+      >
+        <header className="winding-modal-header modal-panel-header">
+          <div className="winding-modal-heading">
             <p className="eyebrow">Quartz</p>
             <h3 id={titleId}>{itemLabel}</h3>
-            <p id={descriptionId} className="muted winding-modal-subtitle">
+            <p id={descriptionId} className="muted winding-modal-subtitle modal-panel-description">
               Reward: {rewardRangeLabel}
             </p>
             <p className="muted winding-modal-subtitle" data-testid="quartz-difficulty">
               Difficulty: {difficultyProfile.label}
             </p>
           </div>
-          <div className="card-actions">
+          <div className="card-actions modal-panel-actions">
             {helpAction}
             <button
               type="button"
-              className="secondary"
+              className="secondary action-priority-secondary"
               data-testid="quartz-close"
               onClick={onClose}
             >
@@ -329,8 +331,8 @@ export function QuartzMiniGameModal({
           </div>
         </header>
 
-        <div className="quartz-modal-body" data-outcome-state={outcomeState}>
-          <div className="winding-mode-strip" data-testid="quartz-mode-strip">
+        <div className="quartz-modal-body modal-panel-body" data-outcome-state={outcomeState}>
+          <div className="winding-mode-strip modal-instrument-strip" data-testid="quartz-mode-strip">
             <label className="winding-mode-toggle">
               <input
                 type="checkbox"
@@ -344,11 +346,11 @@ export function QuartzMiniGameModal({
               Perfect streak: {currentPerfectStreak}
             </p>
           </div>
-          <div className="quartz-target-time" data-testid="quartz-target-time">
+          <div className="quartz-target-time modal-instrument-strip" data-testid="quartz-target-time">
             <strong>Set to: {formatTime(targetTime.hour, targetTime.minute)}</strong>
           </div>
           <div
-            className="quartz-live"
+            className="quartz-live modal-live-readout"
             data-testid="quartz-live"
             aria-live="polite"
             data-live-state={outcomeState}
@@ -361,18 +363,9 @@ export function QuartzMiniGameModal({
             {HOUR_MARKERS.map((marker) => (
               <div
                 key={marker.angle}
-                className="quartz-hour-marker"
+                className={`quartz-hour-marker ${marker.isMajor ? "quartz-hour-marker-major" : "quartz-hour-marker-minor"}`}
                 style={{
-                  position: "absolute",
-                  left: "50%",
-                  top: "50%",
-                  width: "2px",
-                  height: marker.isMajor ? "12px" : "6px",
-                  background: marker.isMajor
-                    ? "rgba(232, 198, 147, 0.6)"
-                    : "rgba(232, 198, 147, 0.3)",
                   transform: `translate(-50%, -50%) rotate(${marker.angle}deg) translateY(-70px)`,
-                  transformOrigin: "center",
                 }}
               />
             ))}
@@ -381,16 +374,7 @@ export function QuartzMiniGameModal({
             <div
               className="quartz-target-marker"
               style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                width: "4px",
-                height: "20px",
-                background: "rgba(72, 175, 255, 0.8)",
-                borderRadius: "2px",
                 transform: `translate(-50%, -50%) rotate(${targetPosition * 360}deg) translateY(-60px)`,
-                transformOrigin: "center",
-                boxShadow: "0 0 8px rgba(72, 175, 255, 0.5)",
               }}
             />
 
@@ -402,9 +386,6 @@ export function QuartzMiniGameModal({
                 aria-hidden="true"
                 style={{
                   transform: `rotate(${(progress * 360) % 360}deg)`,
-                  width: "4px",
-                  height: "45px",
-                  background: "rgba(232, 198, 147, 0.6)",
                 }}
               />
             </div>
@@ -417,27 +398,12 @@ export function QuartzMiniGameModal({
                 aria-hidden="true"
                 style={{
                   transform: `rotate(${(progress * 360 * 12) % 360}deg)`,
-                  width: "2px",
-                  height: "65px",
-                  background: "rgba(232, 198, 147, 0.9)",
                 }}
               />
             </div>
 
             {/* Center dot */}
-            <div
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                width: "8px",
-                height: "8px",
-                background: "rgba(232, 198, 147, 1)",
-                borderRadius: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 10,
-              }}
-            />
+            <div className="quartz-center-dot" />
           </div>
 
           {!result ? (
@@ -471,7 +437,7 @@ export function QuartzMiniGameModal({
             </div>
           )}
 
-          <div className="card-actions">
+          <div className="card-actions modal-panel-actions">
             {!result ? (
               <button type="button" data-testid="quartz-action" onClick={handleSet}>
                 Set time

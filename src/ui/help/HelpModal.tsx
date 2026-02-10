@@ -218,7 +218,7 @@ export function HelpModal({
 
   return (
     <div
-      className="help-modal"
+      className="help-modal overlay-help-modal"
       data-testid="help-modal"
       data-overlay-kind="blocking"
       role="dialog"
@@ -226,8 +226,8 @@ export function HelpModal({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className="help-modal-card" ref={modalRef} tabIndex={-1}>
-        <header className="help-modal-header">
+      <div className="help-modal-card modal-panel-card help-modal-card--overlay" ref={modalRef} tabIndex={-1}>
+        <header className="help-modal-header modal-panel-header">
           <div>
             <p className="eyebrow">Glossary</p>
             <h2 id={titleId}>Help</h2>
@@ -272,7 +272,7 @@ export function HelpModal({
         {filteredSections.length === 0 ? (
           <p className="help-modal-no-results">No help sections match your search.</p>
         ) : (
-          <ul className="help-modal-sections">
+          <ul className="help-modal-sections modal-chip-rail">
             {filteredSections.map((section, index) => {
               const isActive = section.id === activeSection?.id;
               return (
@@ -295,7 +295,7 @@ export function HelpModal({
             })}
           </ul>
         )}
-        <div className="help-modal-content">
+        <div className="help-modal-content modal-content-surface">
           {relatedSections.length > 0 && (
             <div className="help-modal-related" data-testid="help-related-chips">
               {relatedSections.map((section) => (

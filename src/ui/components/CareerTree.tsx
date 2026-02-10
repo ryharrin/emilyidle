@@ -38,7 +38,8 @@ export function CareerTree({
   return (
     <div className="card career-tree" data-testid="career-tree">
       <div className="career-tree-header">
-        <div>
+        <div className="career-tree-header-copy">
+          <p className="eyebrow">Complication lattice</p>
           <h4>Progression tree</h4>
           <p className="muted">Spend points to unlock track upgrades.</p>
         </div>
@@ -67,6 +68,7 @@ export function CareerTree({
           >
             <div className="career-tree-section-header">
               <div>
+                <p className="career-upgrades-section-kicker">Section</p>
                 <h5 data-testid={`career-tree-section-title-${section.id}`}>{section.label}</h5>
                 {section.description && <p className="muted">{section.description}</p>}
               </div>

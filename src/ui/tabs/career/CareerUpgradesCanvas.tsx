@@ -136,26 +136,35 @@ export function CareerUpgradesCanvas({
   return (
     <div className="career-upgrades-canvas" data-testid="career-tree">
       <div className="career-upgrades-controls">
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale * 1.12 }))}
-        >
-          +
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale / 1.12 }))}
-        >
-          -
-        </button>
-        <button type="button" className="secondary" onClick={reset}>
-          Reset
-        </button>
+        <p className="career-canvas-control-label">Lens controls</p>
+        <div className="career-canvas-control-buttons">
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale * 1.12 }))}
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale / 1.12 }))}
+          >
+            -
+          </button>
+          <button type="button" className="secondary" onClick={reset}>
+            Reset
+          </button>
+        </div>
       </div>
 
       <div ref={viewportRef} className="career-upgrades-viewport" {...bind}>
+        <div className="career-upgrades-blueprint-grid" aria-hidden="true" />
+        <div className="career-upgrades-hud" aria-hidden="true">
+          <span>Nodes {nodes.length}</span>
+          <span>Links {edges.length}</span>
+          <span>Zoom {Math.round(viewport.scale * 100)}%</span>
+        </div>
         <div
           className="career-upgrades-content"
           style={{
@@ -198,6 +207,7 @@ export function CareerUpgradesCanvas({
               ].join(" ")}
               style={{ left: node.x, top: node.y, width: NODE_SIZE, height: NODE_SIZE }}
               data-testid={node.testId}
+              data-tier={node.tier + 1}
               aria-disabled={!node.canSpend}
               onPointerDown={(event) => event.stopPropagation()}
               onMouseEnter={(event) => setTooltipForEvent(node.id, event.currentTarget)}
@@ -211,6 +221,9 @@ export function CareerUpgradesCanvas({
             >
               <span className="career-upgrade-icon" aria-hidden="true">
                 {toMonogram(node.label)}
+              </span>
+              <span className="career-upgrade-tier" aria-hidden="true">
+                T{node.tier + 1}
               </span>
               <span className="career-upgrade-cost" aria-hidden="true">
                 {node.costPoints}

@@ -31,6 +31,12 @@ export function CareerMapCanvas({
   isNodeInteractive,
   renderNodeBody,
 }: CareerMapCanvasProps) {
+  const totalStages = nodes.filter((node) => node.kind === "stage").length;
+  const chosenStages = nodes.filter((node) => node.kind === "stage" && node.status === "chosen").length;
+  const interactiveNodes = nodes.filter((node) =>
+    isNodeInteractive ? isNodeInteractive(node.id) : false,
+  ).length;
+
   const {
     viewportRef,
     viewport,
@@ -154,25 +160,33 @@ export function CareerMapCanvas({
   return (
     <div className="career-map" data-testid="career-map">
       <div className="career-map-controls">
-        <button
-          type="button"
-          className="secondary"
-          data-testid="career-map-zoom-in"
-          onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale * 1.12 }))}
-        >
-          +
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          data-testid="career-map-zoom-out"
-          onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale / 1.12 }))}
-        >
-          -
-        </button>
-        <button type="button" className="secondary" data-testid="career-map-reset" onClick={reset}>
-          Reset
-        </button>
+        <p className="career-canvas-control-label">Lens controls</p>
+        <div className="career-canvas-control-buttons">
+          <button
+            type="button"
+            className="secondary"
+            data-testid="career-map-zoom-in"
+            onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale * 1.12 }))}
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            data-testid="career-map-zoom-out"
+            onClick={() => setViewport(clampToView({ ...viewport, scale: viewport.scale / 1.12 }))}
+          >
+            -
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            data-testid="career-map-reset"
+            onClick={reset}
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       <div
@@ -185,6 +199,23 @@ export function CareerMapCanvas({
         onPointerUp={bind.onPointerUp}
         onPointerCancel={bind.onPointerCancel}
       >
+        <div className="career-map-blueprint-grid" aria-hidden="true" />
+        <dl className="career-map-legend" aria-label="Career map legend">
+          <div>
+            <dt>Stages</dt>
+            <dd>
+              {chosenStages}/{totalStages}
+            </dd>
+          </div>
+          <div>
+            <dt>Interactive</dt>
+            <dd>{interactiveNodes}</dd>
+          </div>
+          <div>
+            <dt>Zoom</dt>
+            <dd>{Math.round(viewport.scale * 100)}%</dd>
+          </div>
+        </dl>
         <div className="career-map-content" style={contentStyle}>
           <svg className="career-map-edges" width={width} height={height} aria-hidden="true">
             {edges.map((edge) => {
@@ -225,10 +256,19 @@ export function CareerMapCanvas({
                 .join(" ")}
               style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
               data-testid={node.testId}
+              data-node-kind={node.kind}
+              data-node-status={node.status}
               disabled={isNodeInteractive ? !isNodeInteractive(node.id) : false}
               onPointerDown={(event) => event.stopPropagation()}
               onClick={() => onNodeClick(node.id)}
             >
+              <div className="career-map-node-tag" aria-hidden="true">
+                {node.kind === "choice-option"
+                  ? "Complication"
+                  : node.kind === "stage"
+                    ? "Milestone"
+                    : "Ledger"}
+              </div>
               <div className="career-map-node-title">{node.label}</div>
               {node.description ? (
                 <div className="career-map-node-desc">{node.description}</div>
