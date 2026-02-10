@@ -361,14 +361,12 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
   if (raw !== null) {
     try {
       const shouldRewrite = source === "legacy" || decoded.migratedFromVersion !== undefined;
-      const canonicalRaw = shouldRewrite
-        ? JSON.stringify({
-            version: CURRENT_SAVE_VERSION,
-            savedAt: getSafeSavedAtIso(decoded.save.savedAt),
-            lastSimulatedAtMs: decoded.save.lastSimulatedAtMs,
-            state: decoded.save.state,
-          } satisfies SaveV3)
-        : raw;
+      const canonicalSave = buildCanonicalSave(
+        decoded.save.state,
+        decoded.save.lastSimulatedAtMs,
+        decoded.save.savedAt,
+      );
+      const canonicalRaw = shouldRewrite ? JSON.stringify(canonicalSave) : raw;
       localStorage.setItem(SAVE_KEY, canonicalRaw);
       localStorage.removeItem(LEGACY_SAVE_KEY);
     } catch (error) {
