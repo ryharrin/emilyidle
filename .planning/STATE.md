@@ -33,7 +33,7 @@ Next Phase: Continue Phase 53 re-execution (plan 53-05 next).
 
 ### Carried Gaps / Tech Debt
 
-- Catalog image contract now validates the shared `BASE_URL` constant so `LOCAL_CATALOG_ROOT` stays aligned with `import.meta.env.BASE_URL` when `pnpm test:unit -- tests/mobile-responsive.unit.test.tsx` runs.
+- None — Phase 13/18 verification backfills and therapist session E2E coverage are now captured in the Phase 53 reliability execution.
 
 ### Decisions Made
 

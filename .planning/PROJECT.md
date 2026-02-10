@@ -216,8 +216,6 @@ Shipped v3.2 on 2026-02-02:
 ## Known Gaps / Tech Debt
 
 - Planning process: `.planning/REQUIREMENTS.md` was not present during v2.0 (requirement-level traceability is reconstructed).
-- Verification process (historical): phase 13/18 verification reports were missing at that time.
-- Test gap (historical): no dedicated Playwright E2E asserted therapist session deltas/cooldown UX at that time.
 
 ## Requirements Status
 
