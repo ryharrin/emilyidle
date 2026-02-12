@@ -2996,6 +2996,59 @@ button[data-testid="help-close"] {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.next-action-chip-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.next-action-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid rgba(145, 166, 193, 0.28);
+  border-radius: 999px;
+  background: rgba(10, 16, 26, 0.76);
+  padding: 8px 10px 8px 12px;
+}
+
+.next-action-chip__copy {
+  min-width: 0;
+}
+
+.next-action-chip__title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.next-action-chip__detail {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  color: #b8c2d3;
+}
+
+.next-action-chip__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.next-action-chip__cta,
+.next-action-chip__dismiss {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  padding: 5px 10px;
+}
+
+.next-action-chip__dismiss {
+  background: transparent;
+  border: 1px solid rgba(120, 140, 170, 0.5);
+  color: #d7ddeb;
+}
+
 .help-modal-body ul {
   margin: 10px 0 0;
   padding: 0;
