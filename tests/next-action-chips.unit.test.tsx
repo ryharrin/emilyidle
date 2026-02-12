@@ -13,32 +13,6 @@ import {
 
 const SETTINGS_KEY = "emily-idle:settings";
 const SAVE_KEY = "emily-idle:save";
-const originalLocalStorage = window.localStorage;
-
-function installLocalStorageMock() {
-  const store = new Map<string, string>();
-  const mockStorage: Storage = {
-    getItem: (key: string) => (store.has(key) ? store.get(key)! : null),
-    setItem: (key: string, value: string) => {
-      store.set(key, value);
-    },
-    removeItem: (key: string) => {
-      store.delete(key);
-    },
-    clear: () => {
-      store.clear();
-    },
-    key: (index: number) => Array.from(store.keys())[index] ?? null,
-    get length() {
-      return store.size;
-    },
-  };
-
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: mockStorage,
-  });
-}
 
 function seedSave(state: ReturnType<typeof createInitialState>) {
   localStorage.setItem(
@@ -60,16 +34,11 @@ async function openTab(name: RegExp) {
 
 describe("next-action chips", () => {
   beforeEach(() => {
-    installLocalStorageMock();
     window.localStorage.clear();
     window.history.replaceState({}, "", "/");
   });
 
   afterEach(() => {
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: originalLocalStorage,
-    });
     cleanup();
   });
 

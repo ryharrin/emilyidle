@@ -21,35 +21,9 @@ const setTelemetryBackend = (backend: TelemetryBackend | undefined) => {
   (window as Window & { [TELEMETRY_BACKEND_KEY]?: TelemetryBackend })[TELEMETRY_BACKEND_KEY] = backend;
 };
 
-const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(window, "localStorage");
-
-const createMemoryStorage = (): Storage => {
-  const store = new Map<string, string>();
-  return {
-    get length() {
-      return store.size;
-    },
-    clear: () => {
-      store.clear();
-    },
-    getItem: (key: string) => (store.has(key) ? store.get(key)! : null),
-    key: (index: number) => Array.from(store.keys())[index] ?? null,
-    removeItem: (key: string) => {
-      store.delete(key);
-    },
-    setItem: (key: string, value: string) => {
-      store.set(key, value);
-    },
-  };
-};
 
 describe("telemetry instrumentation", () => {
   beforeEach(() => {
-    Object.defineProperty(window, "localStorage", {
-      value: createMemoryStorage(),
-      configurable: true,
-      writable: true,
-    });
     window.localStorage.clear();
     window.history.replaceState({}, "", "/");
     setTelemetryBackend(undefined);
@@ -58,9 +32,6 @@ describe("telemetry instrumentation", () => {
   afterEach(() => {
     cleanup();
     setTelemetryBackend(undefined);
-    if (originalLocalStorageDescriptor) {
-      Object.defineProperty(window, "localStorage", originalLocalStorageDescriptor);
-    }
   });
 
   it("keeps emitter side-effect safe when backend is missing or throws", () => {

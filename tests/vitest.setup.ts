@@ -40,3 +40,44 @@ Object.defineProperty(window, "matchMedia", {
   configurable: true,
   value: (query: string) => createMediaQueryList(query),
 });
+
+
+const createMemoryStorage = (): Storage => {
+  const store = new Map<string, string>();
+  return {
+    get length() {
+      return store.size;
+    },
+    clear: () => {
+      store.clear();
+    },
+    getItem: (key: string) => (store.has(key) ? store.get(key)! : null),
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    removeItem: (key: string) => {
+      store.delete(key);
+    },
+    setItem: (key: string, value: string) => {
+      store.set(key, value);
+    },
+  };
+};
+
+const hasStorageShape = (candidate: unknown): candidate is Storage => {
+  if (!candidate || typeof candidate !== "object") return false;
+  const value = candidate as Partial<Storage>;
+  return (
+    typeof value.getItem === "function" &&
+    typeof value.setItem === "function" &&
+    typeof value.removeItem === "function" &&
+    typeof value.clear === "function"
+  );
+};
+
+if (!hasStorageShape(window.localStorage)) {
+  Object.defineProperty(window, "localStorage", {
+    value: createMemoryStorage(),
+    configurable: true,
+    writable: true,
+  });
+}
+
