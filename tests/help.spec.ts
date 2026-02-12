@@ -63,7 +63,7 @@ test.describe("help entry point", () => {
     });
     await page.goto("/");
 
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.locator("#workshop-tab").click();
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
   });
@@ -200,7 +200,7 @@ test.describe("icon cues", () => {
       },
     });
     await page.goto("/");
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.locator("#workshop-tab").click();
 
     const workshopPanel = page.getByTestId("workshop-panel");
     await expect(workshopPanel).toBeVisible();
