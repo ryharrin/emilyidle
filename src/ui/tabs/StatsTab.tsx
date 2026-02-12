@@ -1,4 +1,4 @@
-import { formatRateFromCentsPerSec } from "../../game/format";
+import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
   getCashRateBreakdown,
   getEnjoymentRateBreakdown,
@@ -31,13 +31,14 @@ type StatsTabProps = {
   stats: StatsSummary;
   currentEventMultiplier: number;
   onNavigate: (tabId: TabId, scrollTargetId?: string) => void;
+  nowMs?: number;
 };
 
-export function StatsTab({ isActive, state, stats, currentEventMultiplier }: StatsTabProps) {
-  const nowMs = Date.now();
+export function StatsTab({ isActive, state, stats, currentEventMultiplier, nowMs }: StatsTabProps) {
+  const effectiveNowMs = typeof nowMs === "number" ? nowMs : Date.now();
   const enjoymentRateBreakdown = getEnjoymentRateBreakdown(state, currentEventMultiplier);
-  const cashRateBreakdown = getCashRateBreakdown(state, nowMs, currentEventMultiplier);
-  const eventCalendar = getEventCalendar(state, nowMs);
+  const cashRateBreakdown = getCashRateBreakdown(state, effectiveNowMs, currentEventMultiplier);
+  const eventCalendar = getEventCalendar(state, effectiveNowMs);
   const enjoymentModifierGroups = getStatModifierGroups(
     enjoymentRateBreakdown.baseCentsPerSec,
     enjoymentRateBreakdown.multiplierTerms,
@@ -50,6 +51,9 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
     cashBaseCentsPerSec,
     cashRateBreakdown.multiplierTerms,
   );
+  const salaryRateCentsPerSec = cashBaseCentsPerSec;
+  const sessionCadence = cashRateBreakdown.sessionCadence;
+  const formatCooldownSeconds = (cooldownMs: number) => `${Math.ceil(cooldownMs / 1000)}s`;
   const eventSummary = {
     active: eventCalendar.active.length,
     upcoming: eventCalendar.upcoming.length,
@@ -212,7 +216,14 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
             <p>
               Enjoyment {formatRateFromCentsPerSec(enjoymentRateBreakdown.effectiveCentsPerSec)}
             </p>
-            <p>Cash {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}</p>
+            <p>Salary {formatRateFromCentsPerSec(salaryRateCentsPerSec)}</p>
+            <p>
+              Session cadence{" "}
+              {sessionCadence.supportsSessions
+                ? formatRateFromCentsPerSec(sessionCadence.cadenceCentsPerSec)
+                : "Unavailable"}
+            </p>
+            <p>Cash total {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}</p>
             <p className="muted">Softcap status: {stats.softcap}</p>
           </article>
           <article className="card stats-priority-card" data-testid="stats-priority-events">
@@ -270,7 +281,7 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
                   <article className="card stats-breakdown__card" data-testid="cash-rate-breakdown">
                     <header className="stats-breakdown__card-header">
                       <div>
-                        <p className="eyebrow">Dollars / sec</p>
+                        <p className="eyebrow">Dollars / sec (salary + event)</p>
                         <p className="stats-breakdown__total">
                           {formatRateFromCentsPerSec(cashRateBreakdown.totalCentsPerSec)}
                         </p>
@@ -283,6 +294,26 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
                           {addend.label}: {formatRateFromCentsPerSec(addend.centsPerSec)}
                         </li>
                       ))}
+                      <li data-testid="cash-session-cadence-row">
+                        Session cadence:{" "}
+                        {sessionCadence.supportsSessions ? (
+                          <>
+                            {formatRateFromCentsPerSec(sessionCadence.cadenceCentsPerSec)} from{" "}
+                            {formatMoneyFromCents(sessionCadence.payoutCents)} per session (
+                            {formatCooldownSeconds(sessionCadence.cooldownMs)} cooldown
+                            {sessionCadence.cooldownRemainingMs > 0
+                              ? `, ${formatCooldownSeconds(sessionCadence.cooldownRemainingMs)} remaining`
+                              : ""}
+                            ,{" "}
+                            {sessionCadence.isFreeSession
+                              ? "free next session"
+                              : `${formatMoneyFromCents(sessionCadence.enjoymentCostCents)} enjoyment`}
+                            )
+                          </>
+                        ) : (
+                          "Unavailable"
+                        )}
+                      </li>
                     </ul>
                     {renderModifierGroups(cashModifierGroups)}
                     {renderModifierTerms(cashRateBreakdown.multiplierTerms)}

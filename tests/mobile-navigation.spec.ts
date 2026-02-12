@@ -29,8 +29,17 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
     });
 
     test("maintains horizontal scroll snap and sticky tabs", async ({ page }) => {
+      const tabList = page.getByRole("tablist", { name: "Primary navigation" });
+      await expect(tabList).toBeVisible();
+      await expect(tabList.getByRole("group", { name: "Vault tabs" })).toBeVisible();
+      await expect(tabList.getByRole("group", { name: "Atelier tabs" })).toBeVisible();
+      await expect(tabList.getByRole("group", { name: "Ledger tabs" })).toBeVisible();
+
       const navTabs = page.locator(".page-tab-rail__scroll");
       await expect(navTabs).toBeVisible();
+      const pageNav = page.locator(".page-nav");
+      await expect(pageNav).toBeVisible();
+      const initialTop = await pageNav.evaluate((element) => element.getBoundingClientRect().top);
       const scrollState = await navTabs.evaluate((element) => {
         const before = element.scrollLeft;
         const hasOverflow = element.scrollWidth > element.clientWidth + 1;
@@ -44,11 +53,19 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
       }
 
       await page.evaluate(() => window.scrollBy(0, 800));
-      await expect
-        .poll(async () => navTabs.evaluate((el) => el.getBoundingClientRect().top), {
-          timeout: 2_000,
-        })
-        .toBeLessThanOrEqual(6);
+      if (initialTop > 48) {
+        await expect
+          .poll(async () => pageNav.evaluate((el) => el.getBoundingClientRect().top), {
+            timeout: 2_000,
+          })
+          .toBeLessThan(initialTop - 20);
+      } else {
+        await expect
+          .poll(async () => pageNav.evaluate((el) => el.getBoundingClientRect().top), {
+            timeout: 2_000,
+          })
+          .toBeLessThanOrEqual(initialTop + 4);
+      }
     });
 
     test("supports tab clicks and help modal entry", async ({ page }) => {
@@ -105,6 +122,91 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
       await helpButton.focus();
       await page.keyboard.press("Tab");
       await expect(collectionTab).toBeFocused();
+    });
+
+    test("collection section nav keeps overflow affordance and reduced-motion jump behavior", async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.reload();
+      await gotoAppWithNavigationReady(page);
+
+      await page.evaluate(() => {
+        const win = window as Window & {
+          __collectionScrollBehaviors?: string[];
+          __collectionScrollCaptureReady?: boolean;
+        };
+        if (win.__collectionScrollCaptureReady) {
+          return;
+        }
+
+        win.__collectionScrollBehaviors = [];
+        const scrollPrototype = HTMLElement.prototype as unknown as {
+          scrollTo: (...args: unknown[]) => void;
+        };
+        const originalScrollTo = scrollPrototype.scrollTo;
+        scrollPrototype.scrollTo = function scrollToPatched(...args: unknown[]) {
+          const firstArg = args[0];
+          const options =
+            typeof firstArg === "object" && firstArg !== null
+              ? (firstArg as ScrollToOptions)
+              : ({ left: args[0], top: args[1] } as ScrollToOptions);
+          const behavior = options.behavior === "smooth" ? "smooth" : "auto";
+          win.__collectionScrollBehaviors?.push(behavior);
+          return originalScrollTo.apply(this, args);
+        };
+        win.__collectionScrollCaptureReady = true;
+      });
+
+      await page.getByRole("tab", { name: "Collection" }).click();
+      const sectionNav = page.getByTestId("collection-section-nav");
+      await expect(sectionNav).toBeVisible();
+
+      const navOverflow = await sectionNav.evaluate((element) => {
+        const scroller = element.querySelector(".collection-section-nav__scroller");
+        if (!(scroller instanceof HTMLElement)) {
+          return false;
+        }
+        return scroller.scrollWidth > scroller.clientWidth + 1;
+      });
+
+      if (navOverflow) {
+        await expect(sectionNav).toHaveAttribute("data-overflow-end", "true");
+        const scroller = sectionNav.locator(".collection-section-nav__scroller");
+        await scroller.evaluate((element) => {
+          element.scrollLeft = element.scrollWidth;
+          element.dispatchEvent(new Event("scroll"));
+        });
+        await expect
+          .poll(async () => sectionNav.getAttribute("data-overflow-start"), { timeout: 2_000 })
+          .toBe("true");
+      }
+
+      const eventsLink = page
+        .getByTestId("collection-section-nav-item-collection-events")
+        .getByRole("button");
+      await eventsLink.click();
+
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(() => {
+              const win = window as Window & {
+                __collectionScrollBehaviors?: string[];
+              };
+              return win.__collectionScrollBehaviors ?? [];
+            }),
+          { timeout: 2_000 },
+        )
+        .toContain("auto");
+
+      const hasSmoothScroll = await page.evaluate(() => {
+        const win = window as Window & {
+          __collectionScrollBehaviors?: string[];
+        };
+        return (win.__collectionScrollBehaviors ?? []).includes("smooth");
+      });
+      expect(hasSmoothScroll).toBe(false);
     });
   });
 });

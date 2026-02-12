@@ -1,4 +1,5 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { CareerTimeline } from "../src/ui/components/CareerTimeline";
@@ -112,7 +113,7 @@ describe("career progression", () => {
     expect(trackChoice).toHaveTextContent(/level/);
   });
 
-  it("renders Now/Next/Deep details sections in the career panel", () => {
+  it("renders Now/Next/Deep details sections in the career panel", async () => {
     const state = enterPhdProgram(createInitialState(), 0);
     render(
       <HelpProvider value={{ openHelpTo: () => {} }}>
@@ -127,6 +128,12 @@ describe("career progression", () => {
     expect(screen.getByTestId("career-complication-chronograph")).toBeVisible();
     expect(screen.getByTestId("career-complication-date-wheel")).toBeVisible();
     expect(screen.getByTestId("career-complication-moonphase")).toBeVisible();
+
+    const secondaryDetails = screen.getByTestId("career-secondary-details");
+    if (!secondaryDetails.hasAttribute("open")) {
+      await userEvent.click(screen.getByTestId("career-secondary-details-toggle"));
+    }
+
     expect(screen.getByTestId("career-economy-summary")).toBeVisible();
     expect(screen.getByTestId("session-delta-breakdown")).toBeVisible();
     expect(screen.getByTestId("salary-window-summary")).toBeVisible();
@@ -135,6 +142,7 @@ describe("career progression", () => {
     expect(screen.getByTestId("career-feedback-primary").textContent).toMatch(
       /Next step|Last session/,
     );
+
     const deepDetails = screen.getByTestId("career-deep-details");
     expect(deepDetails).toHaveAttribute("open");
     expect(screen.getByTestId("career-deep-details-toggle")).toBeVisible();

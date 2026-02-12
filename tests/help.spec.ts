@@ -63,7 +63,7 @@ test.describe("help entry point", () => {
     });
     await page.goto("/");
 
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.locator("#workshop-tab").click();
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
   });
@@ -101,6 +101,45 @@ test.describe("help entry point", () => {
 
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
+  });
+
+  test("mission rail and hidden-tab recovery stay actionable", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByTestId("mission-rail")).toBeVisible();
+    await expect(page.getByTestId("mission-guidance-lane-note")).toBeVisible();
+    await expect(page.getByTestId("mission-action-primary")).toBeVisible();
+    await expect(page.getByTestId("mission-action-secondary")).toBeVisible();
+
+    await page.locator("#career-tab").click();
+    await expect(page.getByTestId("career-panel")).toBeVisible();
+
+    const missionRailBox = await page.getByTestId("mission-rail").boundingBox();
+    const careerNowBox = await page.getByTestId("career-now-section").boundingBox();
+    if (!missionRailBox || !careerNowBox) {
+      throw new Error("Expected mission rail and career now section to be measurable");
+    }
+    expect(missionRailBox.y).toBeLessThan(careerNowBox.y);
+
+    const careerSecondaryDetails = page.getByTestId("career-secondary-details");
+    await expect(careerSecondaryDetails).toBeVisible();
+    await expect(careerSecondaryDetails).not.toHaveAttribute("open", "");
+    await page.getByTestId("career-secondary-details-toggle").click();
+    await expect(careerSecondaryDetails).toHaveAttribute("open", "");
+    await expect(page.getByTestId("career-economy-summary")).toBeVisible();
+
+    await page.locator("#save-tab").click();
+    await expect(page.getByTestId("settings-visibility")).toBeVisible();
+
+    await page.getByTestId("tab-visibility-career").uncheck();
+    await expect(page.getByTestId("hidden-tabs-recovery")).toContainText("Hidden tabs: 1");
+
+    await page.getByTestId("hidden-tabs-recovery").click();
+    await expect(page.getByTestId("settings-visibility")).toBeVisible();
+
+    await page.getByTestId("settings-restore-hidden-tabs").click();
+    await expect(page.getByTestId("hidden-tabs-recovery")).toHaveCount(0);
+    await expect(page.locator("#career-tab")).toBeVisible();
   });
 });
 
@@ -200,7 +239,7 @@ test.describe("icon cues", () => {
       },
     });
     await page.goto("/");
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.locator("#workshop-tab").click();
 
     const workshopPanel = page.getByTestId("workshop-panel");
     await expect(workshopPanel).toBeVisible();

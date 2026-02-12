@@ -8,9 +8,12 @@ import {
   canNostalgiaPrestige,
   canPerformTherapistSession,
   canWorkshopPrestige,
+  getCatalogEntries,
   getUpgrades,
   getWatchItems,
-  getWatchPurchaseGate,
+  getWatchModelOwnedCount,
+  getWatchModelPurchaseGate,
+  getWatchModelTierId,
   isInteractionAvailable,
   isItemUnlocked,
   isUpgradeUnlocked,
@@ -45,11 +48,22 @@ export function getTabReadiness(state: GameState, nowMs: number): TabReadinessMa
     base.career = { label: "Session ready" };
   }
 
-  const canBuyNewWatch = watchItems.some((item) => {
-    if (!isItemUnlocked(state, item.id)) {
+  const discoveredIds = new Set(state.discoveredCatalogEntries);
+  const canBuyNewWatch = getCatalogEntries().some((entry) => {
+    if (!discoveredIds.has(entry.id)) {
       return false;
     }
-    return getWatchPurchaseGate(state, item.id, 1).ok;
+
+    if (getWatchModelOwnedCount(state, entry.id) > 0) {
+      return false;
+    }
+
+    const tierId = getWatchModelTierId(entry.id);
+    if (!isItemUnlocked(state, tierId)) {
+      return false;
+    }
+
+    return getWatchModelPurchaseGate(state, entry.id).ok;
   });
   if (canBuyNewWatch) {
     base.catalog = { label: "New watch affordable" };

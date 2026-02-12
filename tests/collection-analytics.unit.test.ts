@@ -62,20 +62,32 @@ describe("collection insight selectors", () => {
     expect(activeRow.nextNeedLabel).toBe("Complete");
   });
 
-  it("selects the nearest locked prestige target and computes remaining gap", () => {
+  it("tracks prestige preview by tier progression state", () => {
     const baseState = createInitialState();
-    const seededState = {
+    const workshopPreviewState = {
       ...baseState,
       enjoymentCents: 900_000,
     };
 
-    const preview = getNextPrestigePreview(seededState);
+    const workshopPreview = getNextPrestigePreview(workshopPreviewState);
+    expect(workshopPreview).not.toBeNull();
+    expect(workshopPreview?.id).toBe("workshop");
+    expect(workshopPreview?.threshold).toBe(800_000);
+    expect(workshopPreview?.remaining).toBe(0);
+    expect(workshopPreview?.ratio).toBe(1);
 
-    expect(preview).not.toBeNull();
-    expect(preview?.id).toBe("maison");
-    expect(preview?.threshold).toBe(4_000_000);
-    expect(preview?.remaining).toBe(3_100_000);
-    expect(preview?.ratio).toBeCloseTo(900_000 / 4_000_000, 8);
+    const maisonPreviewState = {
+      ...baseState,
+      enjoymentCents: 900_000,
+      workshopPrestigeCount: 1,
+    };
+
+    const maisonPreview = getNextPrestigePreview(maisonPreviewState);
+    expect(maisonPreview).not.toBeNull();
+    expect(maisonPreview?.id).toBe("maison");
+    expect(maisonPreview?.threshold).toBe(4_000_000);
+    expect(maisonPreview?.remaining).toBe(3_100_000);
+    expect(maisonPreview?.ratio).toBeCloseTo(900_000 / 4_000_000, 8);
 
     const completedState = {
       ...baseState,

@@ -16,6 +16,7 @@ const MOBILE_VIEWPORTS = [
   { name: "iPhone 12", viewport: { width: 390, height: 844 } },
   { name: "Pixel 5", viewport: { width: 393, height: 851 } },
 ];
+const AUTOMATIC_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "automatic")?.id;
 const STARTER_MODEL_ID = "rolex-calibrorolex";
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ref-16700";
 const CHRONOGRAPH_MODEL_ID = "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta";
@@ -44,6 +45,7 @@ const buildSeededState = (): GameState => {
       [CLASSIC_MODEL_ID]: 2,
       [CHRONOGRAPH_MODEL_ID]: 2,
       [TOURBILLON_MODEL_ID]: 1,
+      ...(AUTOMATIC_MODEL_ID ? { [AUTOMATIC_MODEL_ID]: 2 } : {}),
     },
     discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
   };
@@ -148,6 +150,8 @@ const defineTouchTargetTests = (
         catalogPanel,
       );
       await expectVisibleTouchTargets(interactButtons, "collection button", 3);
+      await page.keyboard.press("Escape").catch(() => {});
+      await expect(page.getByTestId("catalog-details-sheet")).toHaveCount(0);
 
       await page.getByTestId("help-open").click();
       await expect(page.getByTestId("help-modal")).toBeVisible();
@@ -246,6 +250,21 @@ const defineTouchTargetTests = (
       const catalogCallout = page.getByTestId("catalog-shop-callout");
       const openCatalogButton = catalogCallout.getByRole("button", { name: "Open Catalog" });
       await expectTouchTarget(openCatalogButton, "collection open catalog");
+    });
+
+    test("collection nav chips and reserve hints stay above 44px", async ({ page }) => {
+      await page.getByRole("tab", { name: "Collection" }).click();
+      await expectVisibleTouchTargets(
+        page.locator(".collection-section-nav__link"),
+        "collection nav",
+        4,
+      );
+
+      const catalogPanel = await openCatalogFromCollection(page);
+      await switchCatalogToOwned(page, catalogPanel);
+
+      const reserveHintButtons = catalogPanel.locator(".power-reserve-hint-button");
+      await expectVisibleTouchTargets(reserveHintButtons, "reserve hint", 2);
     });
   });
 };

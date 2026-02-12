@@ -6,22 +6,48 @@ Emily Idle is a browser-based watch-collecting idle/incremental game that blends
 ## Core Value
 Deliver a satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
 
-## Last Shipped Milestone: v4.1 Next Wave (Shipped: 2026-02-06)
-**Goal:** Redesign sessions and atelier systems, finish the mobile/UX polish, and deepen catalog depth and quality-of-life features.
+## Last Shipped Milestone: v4.5 Full UI Audit Remediation (Shipped: 2026-02-07)
+**Goal:** Resolve full desktop/mobile UI audit findings and harden gameplay-flow clarity across every primary tab.
 **Delivered features:**
-- Sessions reward strategic choice through progressive costs, visual cooldown cues, and richer winding interactions.
-- Mobile UX receives sticky horizontal tabs, keyboard shortcuts, focus-safe help modals, and accessibility-friendly touch targets.
-- The catalog and Collection gain analytics, comparison tools, and notifications tied to achievements/events.
-- Quality-of-life updates (offline gains, save import/export, undo, favorites, notifications, mini-game practice) and new achievements/events round out the experience.
+- Global nav order/discoverability locked (`Career -> Catalog -> Collection`) with mobile-safe readability and readiness cues.
+- One-primary-action hierarchy enforced per tab with improved overlay orchestration and reduced CTA competition.
+- Career/Catalog/Collection/Upgrades/Workshop/Maison/Nostalgia/Stats/Settings first-viewport clarity pass completed.
+- Indexed audit artifacts generated for desktop + mobile (`output/playwright/full-ui-coverage-audit-20260207/`) with rubric-tagged review sheets.
 
 ## Current Milestones
-Immediate execution focus remains Post-v4.1 Phase 54 test reliability + CI stability hardening; Phase 56 full UI audit remediation is now fully executed with indexed desktop/mobile evidence.
+Current focus is **post-v5 milestone closeout**: v5.0 Unfinished Work Closure + Progression Depth is complete (Phases 57-60 executed). Next work is defining the next milestone package.
 
-### Current planning package (execution now)
-- Phase 54 test reliability + CI stability package is authored in `.planning/phases/54-test-reliability-ci-stability/`:
+### Current planning package (execution next)
+- Milestone package:
+  - `.planning/milestones/v5.0-REQUIREMENTS.md`
+  - `.planning/milestones/v5.0-ROADMAP.md`
+- Research package:
+  - `.planning/research/V5.0-GAP-AUDIT-2026-02-11.md`
+
+### Recently completed package (v5 phase closeout)
+- Phase 57 session policy + guidance cleanup package is executed in `.planning/phases/57-session-policy-and-guidance-cleanup/`:
+  - `57-CONTEXT.md`
+  - `57-01-PLAN.md`
+  - `57-01-SUMMARY.md`
+- Phase 58 catalog control density + affordability signals package is executed in `.planning/phases/58-catalog-control-density-affordability-signals/`:
+  - `58-CONTEXT.md`
+  - `58-01-PLAN.md`
+  - `58-01-SUMMARY.md`
+- Phase 59 watch data depth + media/tier contracts package is executed in `.planning/phases/59-watch-data-depth-media-tier-contracts/`:
+  - `59-CONTEXT.md`
+  - `59-01-PLAN.md`
+  - `59-01-SUMMARY.md`
+- Phase 60 regression guardrails + maintainability closure package is executed in `.planning/phases/60-regression-guardrails-maintainability-closure/`:
+  - `60-CONTEXT.md`
+  - `60-01-PLAN.md`
+  - `60-01-SUMMARY.md`
+
+### Recently completed package (post-v4.1 reliability closeout)
+- Phase 54 test reliability + CI stability package is fully executed in `.planning/phases/54-test-reliability-ci-stability/`:
   - `54-CONTEXT.md`
   - `54-01-PLAN.md` .. `54-07-PLAN.md`
   - `54-TASKLIST.md`
+  - `54-01-SUMMARY.md` .. `54-07-SUMMARY.md`
 
 ### Recently completed package (v4.5 closeout)
 - Phase 56 full UI audit remediation package is fully executed in `.planning/phases/56-full-ui-audit-remediation/`:
@@ -83,8 +109,8 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 ## Context
 - v4.0 delivered tier badge theming, per-watch stats, catalog variety, mobile navigation polish, and WebKit-friendly focus handling; we now build atop that foundation.
 - Mobile regression coverage spans Pixel 5 (Chrome) and iPhone 12 (WebKit) viewports.
-- Current blockers identified by Phase 54 intake: selector ambiguity in e2e, desktop/mobile scope mismatch, mobile interaction flow flake, and timing-sensitive assertion brittleness.
-- Phase 55 audit findings are now implemented (toast interruption safety, mobile density, catalog action hierarchy, and first-session guidance clarity), with follow-up reliability work tracked in Phase 54.
+- Phase 54 reliability blockers identified during intake have been addressed through the completed 54-01..54-07 execution.
+- Phase 55 audit findings are implemented (toast interruption safety, mobile density, catalog action hierarchy, and first-session guidance clarity), then carried into Phase 56 full-audit remediation closeout.
 - Full screenshot audit artifacts and indexes now exist under `output/playwright/full-ui-coverage-audit-20260207/`, including per-tab manifests and rubric-tagged review sheets for desktop and mobile projects.
 
 ## Key Decisions
@@ -97,11 +123,9 @@ See `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md` for updated completio
 | Tab/Shift+Tab between the help search input and Close button is intercepted manually | Keeps iOS Safari keyboard navigation inside the modal | ✓ Good |
 
 ## Next Steps
-- `/gsd-plan-phase` — Execute `54-01` selector disambiguation.
-- `/gsd-plan-phase` — Execute `54-02` desktop/mobile project scoping cleanup.
-- `/gsd-plan-phase` — Execute `54-03` mobile-flow helper stabilization.
-- `/gsd-plan-phase` — Continue `54-04` through `54-07` reliability hardening after initial selector/scope/mobile fixes.
-- `/prompts:project.progress` — Reconfirm post-v4.5 state before opening the next feature package.
+- `/gsd-plan` — Define next milestone requirements/package after v5 closeout.
+- `/gsd-plan-phase` — Author Phase 61 kickoff plan once next milestone scope is approved.
+- `/prompts:project.progress` — Keep state/roadmap synced as next milestone planning begins.
 
 <details>
 <summary>Archived context (pre-v4.1 milestone)</summary>

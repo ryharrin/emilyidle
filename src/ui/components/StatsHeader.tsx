@@ -1,3 +1,5 @@
+import React from "react";
+
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { CurrencyIcon } from "../icons/coreIcons";
@@ -25,7 +27,72 @@ type StatsHeaderProps = {
   systemStats: StatsSystemMetrics;
 };
 
+const MOBILE_STATS_QUERY = "(max-width: 900px)";
+
+const getIsCompactStatsViewport = () => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return window.matchMedia(MOBILE_STATS_QUERY).matches;
+};
+
 export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
+  const [isCompactLayout, setIsCompactLayout] = React.useState(getIsCompactStatsViewport);
+  const [progressionOpen, setProgressionOpen] = React.useState(() => !getIsCompactStatsViewport());
+  const [systemOpen, setSystemOpen] = React.useState(() => !getIsCompactStatsViewport());
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_STATS_QUERY);
+    const syncLayout = (matches: boolean) => {
+      setIsCompactLayout(matches);
+      if (matches) {
+        setProgressionOpen(false);
+        setSystemOpen(false);
+        return;
+      }
+
+      setProgressionOpen(true);
+      setSystemOpen(true);
+    };
+
+    syncLayout(mediaQuery.matches);
+    const onChange = (event: MediaQueryListEvent) => {
+      syncLayout(event.matches);
+    };
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", onChange);
+      return () => mediaQuery.removeEventListener("change", onChange);
+    }
+
+    mediaQuery.addListener(onChange);
+    return () => mediaQuery.removeListener(onChange);
+  }, []);
+
+  const handleProgressionToggle = React.useCallback(
+    (isOpen: boolean) => {
+      setProgressionOpen(isOpen);
+      if (isCompactLayout && isOpen) {
+        setSystemOpen(false);
+      }
+    },
+    [isCompactLayout],
+  );
+
+  const handleSystemToggle = React.useCallback(
+    (isOpen: boolean) => {
+      setSystemOpen(isOpen);
+      if (isCompactLayout && isOpen) {
+        setProgressionOpen(false);
+      }
+    },
+    [isCompactLayout],
+  );
+
   return (
     <section className="stats-header" aria-labelledby="vault-stats-title">
       <h2 id="vault-stats-title" className="visually-hidden">
@@ -34,13 +101,13 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
       <div className="stats-header__grid" data-testid="stats-metrics">
         <article className="stats-header__group">
           <div className="stats-header__group-title">
-            <p className="eyebrow">Primary economy</p>
+            <p className="eyebrow">Primary mission</p>
           </div>
           <dl className="stats-grid stats-header__metrics">
             <div>
               <dt className="inline-icon-button stats-header__metric-label">
                 <CurrencyIcon className="inline-icon" />
-                Dollars
+                Cash
               </dt>
               <dd
                 id="currency"
@@ -56,7 +123,7 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
             <div>
               <dt className="inline-icon-button stats-header__metric-label">
                 <CurrencyIcon className="inline-icon" />
-                Dollars / sec
+                Cash / sec
               </dt>
               <dd
                 id="income"
@@ -72,10 +139,15 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           </dl>
         </article>
 
-        <details className="stats-header__group stats-header__group--collapsible" open>
-          <summary className="stats-header__group-summary">
-            <span className="eyebrow">Progression</span>
-            <span className="stats-header__toggle-icon" aria-hidden="true">
+        <details
+          className="stats-header__group stats-header__group--collapsible"
+          open={progressionOpen}
+          onToggle={(event) => handleProgressionToggle(event.currentTarget.open)}
+          data-testid="stats-progression-details"
+        >
+          <summary className="stats-header__group-summary" data-testid="stats-progression-toggle">
+            <span className="eyebrow disclosure-summary-label">Progression</span>
+            <span className="stats-header__toggle-icon disclosure-summary-meta" aria-hidden="true">
               ▼
             </span>
           </summary>
@@ -83,7 +155,7 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
             <div>
               <dt className="inline-icon-button stats-header__metric-label">
                 <CurrencyIcon className="inline-icon" />
-                Collection enjoyment
+                Enjoyment
                 <ExplainButton sectionId={HELP_SECTION_IDS.currencies} label="Explain currencies" />
               </dt>
               <dd id="enjoyment" className="stats-header__metric-value">
@@ -117,10 +189,15 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           </dl>
         </details>
 
-        <details className="stats-header__group stats-header__group--collapsible" open>
-          <summary className="stats-header__group-summary">
-            <span className="eyebrow">System</span>
-            <span className="stats-header__toggle-icon" aria-hidden="true">
+        <details
+          className="stats-header__group stats-header__group--collapsible"
+          open={systemOpen}
+          onToggle={(event) => handleSystemToggle(event.currentTarget.open)}
+          data-testid="stats-system-details"
+        >
+          <summary className="stats-header__group-summary" data-testid="stats-system-toggle">
+            <span className="eyebrow disclosure-summary-label">System</span>
+            <span className="stats-header__toggle-icon disclosure-summary-meta" aria-hidden="true">
               ▼
             </span>
           </summary>

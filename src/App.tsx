@@ -20,6 +20,7 @@ import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { StatsHeader } from "./ui/components/StatsHeader";
 import { ToastStack, type ToastMessage } from "./ui/components/ToastStack";
+import { MissionRail } from "./ui/components/MissionRail";
 import { detectPrestigeEvent, type PrestigeEvent } from "./ui/prestigeOnboarding";
 import { resolveLandingTab, resolveTabAlias } from "./ui/navigation/landing";
 import { PageTabRail } from "./ui/navigation/PageTabRail";
@@ -86,6 +87,7 @@ import {
   getNostalgiaUnlockIds,
   getNostalgiaPrestigeGain,
   getNostalgiaPrestigeThresholdCents,
+  getPrimaryLoopAction,
   getCollectionValueCents,
   getWatchModelOwnedCount,
   getWatchModelPriceCents,
@@ -107,8 +109,23 @@ const SETTINGS_KEY = "emily-idle:settings";
 const NAVIGATION_KEY = "emily-idle:navigation";
 type TabActivationSource = "user" | "deep-link" | "system";
 
+type CatalogViewMode = "novice" | "expert";
+
+type CatalogFilterState = {
+  search: string;
+  brand: string;
+  style: "all" | "womens";
+  sort: "default" | "brand" | "year" | "tier";
+  era: "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown";
+  type: "all" | "gmt" | "manual" | "dress" | "diver";
+  tab: "unowned" | "owned";
+  viewMode: CatalogViewMode;
+};
+
 type NavigationState = {
   lastTabId: TabId;
+  tabSectionMemory?: Partial<Record<TabId, string>>;
+  catalogFilters?: CatalogFilterState;
 };
 
 type PurchaseMeta = {
@@ -186,7 +203,61 @@ const loadNavigationState = (): NavigationState | null => {
       return null;
     }
 
-    return { lastTabId: resolvedTabId };
+    const tabSectionMemoryRaw =
+      parsed.tabSectionMemory && typeof parsed.tabSectionMemory === "object"
+        ? (parsed.tabSectionMemory as Record<string, unknown>)
+        : {};
+    const tabSectionMemory = Object.entries(tabSectionMemoryRaw).reduce<
+      Partial<Record<TabId, string>>
+    >((acc, [tabId, targetId]) => {
+      const resolved = resolveTabAlias(tabId);
+      if (!resolved || typeof targetId !== "string" || targetId.trim().length === 0) {
+        return acc;
+      }
+      acc[resolved] = targetId;
+      return acc;
+    }, {});
+
+    const catalogFiltersRaw =
+      parsed.catalogFilters && typeof parsed.catalogFilters === "object"
+        ? (parsed.catalogFilters as Partial<CatalogFilterState>)
+        : null;
+    const catalogFilters: CatalogFilterState | undefined = catalogFiltersRaw
+      ? {
+          search:
+            typeof catalogFiltersRaw.search === "string" ? catalogFiltersRaw.search : "",
+          brand: typeof catalogFiltersRaw.brand === "string" ? catalogFiltersRaw.brand : "All",
+          style: catalogFiltersRaw.style === "womens" ? "womens" : "all",
+          sort:
+            catalogFiltersRaw.sort === "brand" ||
+            catalogFiltersRaw.sort === "year" ||
+            catalogFiltersRaw.sort === "tier"
+              ? catalogFiltersRaw.sort
+              : "default",
+          era:
+            catalogFiltersRaw.era === "pre-1970" ||
+            catalogFiltersRaw.era === "1970-1999" ||
+            catalogFiltersRaw.era === "2000+" ||
+            catalogFiltersRaw.era === "unknown"
+              ? catalogFiltersRaw.era
+              : "all",
+          type:
+            catalogFiltersRaw.type === "gmt" ||
+            catalogFiltersRaw.type === "manual" ||
+            catalogFiltersRaw.type === "dress" ||
+            catalogFiltersRaw.type === "diver"
+              ? catalogFiltersRaw.type
+              : "all",
+          tab: catalogFiltersRaw.tab === "owned" ? "owned" : "unowned",
+          viewMode: catalogFiltersRaw.viewMode === "expert" ? "expert" : "novice",
+        }
+      : undefined;
+
+    return {
+      lastTabId: resolvedTabId,
+      tabSectionMemory,
+      catalogFilters,
+    };
   } catch {
     return null;
   }
@@ -316,20 +387,31 @@ export default function App() {
     automatic: "normal",
     quartz: "normal",
   });
+  const initialNavigationState = useMemo(() => loadNavigationState(), []);
+  const initialCatalogFilters = initialNavigationState?.catalogFilters;
 
   const [saveStatus, setSaveStatus] = useState("");
   const [importText, setImportText] = useState("");
-  const [catalogSearch, setCatalogSearch] = useState("");
-  const [catalogBrand, setCatalogBrand] = useState("All");
-  const [catalogStyle, setCatalogStyle] = useState<"all" | "womens">("all");
-  const [catalogSort, setCatalogSort] = useState<"default" | "brand" | "year" | "tier">("default");
+  const [catalogSearch, setCatalogSearch] = useState(() => initialCatalogFilters?.search ?? "");
+  const [catalogBrand, setCatalogBrand] = useState(() => initialCatalogFilters?.brand ?? "All");
+  const [catalogStyle, setCatalogStyle] = useState<"all" | "womens">(
+    () => initialCatalogFilters?.style ?? "all",
+  );
+  const [catalogSort, setCatalogSort] = useState<"default" | "brand" | "year" | "tier">(
+    () => initialCatalogFilters?.sort ?? "default",
+  );
   const [catalogEra, setCatalogEra] = useState<
     "all" | "pre-1970" | "1970-1999" | "2000+" | "unknown"
-  >("all");
+  >(() => initialCatalogFilters?.era ?? "all");
   const [catalogType, setCatalogType] = useState<"all" | "gmt" | "manual" | "dress" | "diver">(
-    "all",
+    () => initialCatalogFilters?.type ?? "all",
   );
-  const [catalogTab, setCatalogTab] = useState<"unowned" | "owned">("unowned");
+  const [catalogTab, setCatalogTab] = useState<"unowned" | "owned">(
+    () => initialCatalogFilters?.tab ?? "unowned",
+  );
+  const [catalogViewMode, setCatalogViewMode] = useState<CatalogViewMode>(
+    () => initialCatalogFilters?.viewMode ?? "novice",
+  );
   const [workshopResetArmed, setWorkshopResetArmed] = useState(false);
   const [maisonResetArmed, setMaisonResetArmed] = useState(false);
   const [nostalgiaModalOpen, setNostalgiaModalOpen] = useState(false);
@@ -337,6 +419,7 @@ export default function App() {
   const [nostalgiaUnlockPending, setNostalgiaUnlockPending] = useState<WatchItemId | null>(null);
   const [prestigeOnboarding, setPrestigeOnboarding] = useState<PrestigeEvent | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [shortcutModalOpen, setShortcutModalOpen] = useState(false);
   const [helpSectionId, setHelpSectionId] = useState<string | null>(null);
   const [isTabSwitching, setIsTabSwitching] = useState(false);
   const tabSwitchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -369,6 +452,7 @@ export default function App() {
   const [coachmarksDismissed, setCoachmarksDismissed] = useState<Record<string, boolean>>(
     () => settings.coachmarksDismissed,
   );
+  const shortcutsHintDismissed = coachmarksDismissed["keyboard-shortcuts"] ?? false;
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const toastTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const pushToast = useCallback((toast: ToastMessage) => {
@@ -494,6 +578,20 @@ export default function App() {
     });
   };
 
+  const handleDismissShortcutHint = useCallback(() => {
+    if (settings.coachmarksDismissed["keyboard-shortcuts"]) {
+      return;
+    }
+
+    persistSettings({
+      ...settings,
+      coachmarksDismissed: {
+        ...settings.coachmarksDismissed,
+        "keyboard-shortcuts": true,
+      },
+    });
+  }, [persistSettings, settings]);
+
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -511,7 +609,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>("collection");
   const [focusedTab, setFocusedTab] = useState<TabId>("collection");
   const [hasResolvedInitialTab, setHasResolvedInitialTab] = useState(false);
+  const hasHydratedCatalogFilterPersistenceRef = useRef(false);
   const tabRefs = useRef(new Map<TabId, HTMLButtonElement>());
+  const tabSectionMemoryRef = useRef<Partial<Record<TabId, string>>>(
+    initialNavigationState?.tabSectionMemory ?? {},
+  );
+  const lastNavigatedTabRef = useRef<TabId>(initialNavigationState?.lastTabId ?? "collection");
   const handleTabRef = useCallback((tabId: TabId, node: HTMLButtonElement | null) => {
     if (!node) {
       tabRefs.current.delete(tabId);
@@ -526,6 +629,13 @@ export default function App() {
     }
 
     setFocusedTab(tabId);
+  }, []);
+  const emitUxEvent = useCallback((eventName: string, detail: Record<string, unknown>) => {
+    if (isTestEnvironment()) {
+      return;
+    }
+
+    console.info(`[ux] ${eventName}`, detail);
   }, []);
 
   useEffect(() => {
@@ -562,36 +672,19 @@ export default function App() {
     focusTabById(nextId);
   };
 
-  const activateTab = useCallback(
-    (tabId: TabId, source: TabActivationSource = "system") => {
-      setActiveTab(tabId);
-      setFocusedTab(tabId);
-      triggerTabSwitch();
-
-      if (source !== "user" || typeof window === "undefined") {
-        return;
-      }
-
-      window.localStorage.setItem(NAVIGATION_KEY, JSON.stringify({ lastTabId: tabId }));
-    },
-    [triggerTabSwitch],
-  );
-
-  const navigateTo = (tabId: TabId, scrollTargetId?: string) => {
-    activateTab(tabId, "system");
-
-    if (!scrollTargetId || typeof document === "undefined") {
+  const scrollToSection = useCallback((targetId: string) => {
+    if (typeof document === "undefined") {
       return;
     }
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const target = document.getElementById(scrollTargetId);
+        const target = document.getElementById(targetId);
         if (!target) {
           return;
         }
 
-        if (scrollTargetId === "catalog-shop") {
+        if (targetId === "catalog-shop") {
           const buyButton = target.querySelector('[data-testid^="catalog-buy-"]');
           if (buyButton instanceof HTMLElement) {
             buyButton.scrollIntoView({ block: "start", behavior: "auto" });
@@ -602,7 +695,97 @@ export default function App() {
         target.scrollIntoView({ block: "start", behavior: "auto" });
       });
     });
+  }, []);
+
+  const getCurrentCatalogFilters = useCallback(
+    (): CatalogFilterState => ({
+      search: catalogSearch,
+      brand: catalogBrand,
+      style: catalogStyle,
+      sort: catalogSort,
+      era: catalogEra,
+      type: catalogType,
+      tab: catalogTab,
+      viewMode: catalogViewMode,
+    }),
+    [
+      catalogBrand,
+      catalogEra,
+      catalogSearch,
+      catalogSort,
+      catalogStyle,
+      catalogTab,
+      catalogType,
+      catalogViewMode,
+    ],
+  );
+
+  const persistNavigationState = useCallback(
+    (lastTabId: TabId) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const payload: NavigationState = {
+        lastTabId,
+        tabSectionMemory: tabSectionMemoryRef.current,
+        catalogFilters: getCurrentCatalogFilters(),
+      };
+      window.localStorage.setItem(NAVIGATION_KEY, JSON.stringify(payload));
+    },
+    [getCurrentCatalogFilters],
+  );
+
+  const activateTab = useCallback(
+    (tabId: TabId, source: TabActivationSource = "system") => {
+      setActiveTab(tabId);
+      setFocusedTab(tabId);
+      triggerTabSwitch();
+      lastNavigatedTabRef.current = tabId;
+
+      if (source !== "user") {
+        return;
+      }
+      persistNavigationState(tabId);
+    },
+    [persistNavigationState, triggerTabSwitch],
+  );
+
+  const navigateTo = (tabId: TabId, scrollTargetId?: string) => {
+    activateTab(tabId, "system");
+
+    const rememberedTargetId = scrollTargetId ?? tabSectionMemoryRef.current[tabId];
+    if (!rememberedTargetId) {
+      return;
+    }
+
+    tabSectionMemoryRef.current[tabId] = rememberedTargetId;
+    emitUxEvent("navigate.tab", {
+      tabId,
+      targetId: rememberedTargetId,
+      source: scrollTargetId ? "explicit" : "memory",
+    });
+    scrollToSection(rememberedTargetId);
+    persistNavigationState(lastNavigatedTabRef.current);
   };
+
+  const handleUserTabClick = useCallback(
+    (tabId: TabId) => {
+      activateTab(tabId, "user");
+      const rememberedTargetId = tabSectionMemoryRef.current[tabId];
+      if (!rememberedTargetId) {
+        return;
+      }
+
+      emitUxEvent("navigate.restore-tab-section", {
+        tabId,
+        targetId: rememberedTargetId,
+      });
+      scrollToSection(rememberedTargetId);
+      persistNavigationState(lastNavigatedTabRef.current);
+    },
+    [activateTab, emitUxEvent, persistNavigationState, scrollToSection],
+  );
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (visibleTabs.length === 0) {
@@ -1103,7 +1286,7 @@ export default function App() {
       return { tabId: "collection", source: "system" };
     }
 
-    const navigationState = loadNavigationState();
+    const navigationState = initialNavigationState;
     const hasSave = window.localStorage.getItem("emily-idle:save") !== null;
 
     const { tabId, source } = resolveLandingTab({
@@ -1114,7 +1297,7 @@ export default function App() {
     });
 
     return { tabId, source };
-  }, [combinedTabVisibility]);
+  }, [combinedTabVisibility, initialNavigationState]);
 
   useLayoutEffect(() => {
     if (hasResolvedInitialTab) {
@@ -1195,10 +1378,142 @@ export default function App() {
     prestigeOnboarding,
   ]);
 
+  useEffect(() => {
+    if (!hasResolvedInitialTab) {
+      return;
+    }
+    if (!hasHydratedCatalogFilterPersistenceRef.current) {
+      hasHydratedCatalogFilterPersistenceRef.current = true;
+      return;
+    }
+    persistNavigationState(lastNavigatedTabRef.current);
+  }, [
+    catalogBrand,
+    catalogEra,
+    catalogSearch,
+    catalogSort,
+    catalogStyle,
+    catalogTab,
+    catalogType,
+    catalogViewMode,
+    hasResolvedInitialTab,
+    persistNavigationState,
+  ]);
+
   const visibleTabOptions = useMemo(
     () => tabs.filter((tab) => HIDEABLE_TAB_IDS.includes(tab.id) && tabVisibility[tab.id]),
     [tabs, tabVisibility],
   );
+  const actionableHiddenTabIds = useMemo(
+    () =>
+      settings.hiddenTabs.filter((hiddenTabId) =>
+        visibleTabOptions.some((tabOption) => tabOption.id === hiddenTabId),
+      ),
+    [settings.hiddenTabs, visibleTabOptions],
+  );
+  const hiddenTabCount = actionableHiddenTabIds.length;
+  const restoreAllHiddenTabs = useCallback(() => {
+    if (actionableHiddenTabIds.length === 0) {
+      return;
+    }
+
+    persistSettings({
+      ...settings,
+      hiddenTabs: [],
+    });
+    emitUxEvent("settings.restore-hidden-tabs", {
+      restoredCount: actionableHiddenTabIds.length,
+    });
+  }, [actionableHiddenTabIds.length, emitUxEvent, persistSettings, settings]);
+
+  const primaryLoopAction = useMemo(() => getPrimaryLoopAction(state, nowMs), [nowMs, state]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const runtimeWindow = window as Window & {
+      render_game_to_text?: () => string;
+      advanceTime?: (ms: number) => void;
+    };
+
+    runtimeWindow.render_game_to_text = () =>
+      JSON.stringify({
+        coordinateSystem: "UI state snapshot (no world coordinates); values are current frame.",
+        tab: activeTab,
+        mission: {
+          urgency: primaryLoopAction.urgency,
+          primary: primaryLoopAction.primary.label,
+          secondary: primaryLoopAction.secondary.label,
+        },
+        currencies: {
+          cashCents: state.currencyCents,
+          enjoymentCents: state.enjoymentCents,
+          memoriesCents: getCollectionValueCents(state),
+        },
+        rates: {
+          cashPerSecCents: getEffectiveCashRateCentsPerSec(state, nowMs, currentEventMultiplier),
+          enjoymentPerSecCents: getEnjoymentRateCentsPerSec(state) * currentEventMultiplier,
+          eventMultiplier: currentEventMultiplier,
+        },
+        therapistCareer: {
+          started: state.therapistCareer.careerStartId !== null,
+          level: state.therapistCareer.level,
+          xp: state.therapistCareer.xp,
+          nextAvailableAtMs: state.therapistCareer.nextAvailableAtMs,
+        },
+        interactions: {
+          runsTotal: state.interactionRunsTotal,
+          perfectRuns: state.interactionPerfectRuns,
+          perfectStreak: state.interactionPerfectStreak,
+          bestPerfectStreak: state.interactionBestPerfectStreak,
+        },
+        readiness: tabReadiness,
+        checklist: primaryLoopAction.checklist,
+      });
+
+    runtimeWindow.advanceTime = (ms: number) => {
+      const totalMs = Number.isFinite(ms) ? Math.max(0, Math.floor(ms)) : 0;
+      if (totalMs <= 0) {
+        return;
+      }
+
+      const chunkMs = 100;
+      setState((currentState) => {
+        let nextState = currentState;
+        let elapsedMs = 0;
+        let currentNowMs = nowMs;
+
+        while (elapsedMs < totalMs) {
+          const dtMs = Math.min(chunkMs, totalMs - elapsedMs);
+          currentNowMs += dtMs;
+          nextState = step(nextState, dtMs, currentNowMs);
+          elapsedMs += dtMs;
+        }
+
+        return nextState;
+      });
+      markSaveDirty();
+      resetSimulationClock();
+    };
+
+    return () => {
+      delete runtimeWindow.render_game_to_text;
+      delete runtimeWindow.advanceTime;
+    };
+  }, [
+    activeTab,
+    currentEventMultiplier,
+    markSaveDirty,
+    nowMs,
+    primaryLoopAction,
+    resetSimulationClock,
+    setState,
+    state,
+    tabReadiness,
+  ]);
+
   const coachmarks = useMemo(
     () => [
       {
@@ -1532,6 +1847,29 @@ export default function App() {
     </div>
   );
 
+  const runMissionAction = useCallback(
+    (action: typeof primaryLoopAction.primary | typeof primaryLoopAction.secondary) => {
+      emitUxEvent("mission.action", {
+        label: action.label,
+        tabId: action.target.tabId,
+        targetId: action.target.scrollTargetId ?? null,
+      });
+
+      const destinationTab = combinedTabVisibility[action.target.tabId]
+        ? action.target.tabId
+        : "collection";
+      navigateTo(destinationTab, action.target.scrollTargetId);
+    },
+    [combinedTabVisibility, emitUxEvent, navigateTo, primaryLoopAction.primary, primaryLoopAction.secondary],
+  );
+
+  const handleOpenHiddenTabRecovery = useCallback(() => {
+    emitUxEvent("settings.hidden-tabs-recovery", {
+      hiddenTabCount,
+    });
+    navigateTo("save", "settings-visibility");
+  }, [emitUxEvent, hiddenTabCount, navigateTo]);
+
   return (
     <HelpProvider value={{ openHelpTo }}>
       <div id="app-shell">
@@ -1547,7 +1885,7 @@ export default function App() {
                     tabs={visibleTabs}
                     activeTabId={activeTab}
                     focusedTabId={focusedTab}
-                    onTabClick={(tabId) => activateTab(tabId, "user")}
+                    onTabClick={handleUserTabClick}
                     onTabFocus={handleTabFocus}
                     onTabKeyDown={handleTabKeyDown}
                     onTabRef={handleTabRef}
@@ -1555,6 +1893,16 @@ export default function App() {
                   />
                   <TabSwitchSkeleton visible={isTabSwitching} />
                 </div>
+                {hiddenTabCount > 0 ? (
+                  <button
+                    type="button"
+                    className="secondary hidden-tabs-recovery-button"
+                    data-testid="hidden-tabs-recovery"
+                    onClick={handleOpenHiddenTabRecovery}
+                  >
+                    Hidden tabs: {hiddenTabCount}
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="help-open-button"
@@ -1565,10 +1913,55 @@ export default function App() {
                 >
                   <HelpIcon size={18} />
                 </button>
+                <button
+                  type="button"
+                  className="secondary shortcuts-open-button"
+                  aria-label="Open keyboard shortcuts"
+                  data-testid="shortcuts-open"
+                  onClick={() => setShortcutModalOpen(true)}
+                >
+                  ?
+                </button>
               </nav>
+              {!shortcutsHintDismissed ? (
+                <div className="shortcut-hint-inline" data-testid="shortcut-hint-inline">
+                  <p className="muted">Keyboard: `1-8` switches tabs. `?` opens shortcuts.</p>
+                  <button
+                    type="button"
+                    className="secondary"
+                    data-testid="shortcut-hint-dismiss"
+                    onClick={handleDismissShortcutHint}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              ) : null}
             </div>
             <StatsHeader stats={stats} systemStats={systemStats} />
           </header>
+
+          <MissionRail
+            urgency={primaryLoopAction.urgency}
+            urgencyReason={primaryLoopAction.urgencyReason}
+            primary={{
+              label: primaryLoopAction.primary.label,
+              detail: primaryLoopAction.primary.detail,
+              actionLabel: primaryLoopAction.primary.actionLabel,
+              whyNow: primaryLoopAction.primary.whyNow,
+              onAction: () => runMissionAction(primaryLoopAction.primary),
+              testId: "mission-action-primary",
+            }}
+            secondary={{
+              label: primaryLoopAction.secondary.label,
+              detail: primaryLoopAction.secondary.detail,
+              actionLabel: primaryLoopAction.secondary.actionLabel,
+              whyNow: primaryLoopAction.secondary.whyNow,
+              onAction: () => runMissionAction(primaryLoopAction.secondary),
+              testId: "mission-action-secondary",
+            }}
+            checklist={primaryLoopAction.checklist}
+            forecast={primaryLoopAction.forecast}
+          />
 
           <CollectionTab
             isActive={activeTab === "collection"}
@@ -1621,6 +2014,8 @@ export default function App() {
             onCatalogTypeChange={setCatalogType}
             catalogTab={catalogTab}
             onCatalogTabChange={setCatalogTab}
+            catalogViewMode={catalogViewMode}
+            onCatalogViewModeChange={setCatalogViewMode}
             catalogBrands={catalogBrands}
             filteredCatalogEntries={filteredCatalogEntries}
             discoveredCatalogEntries={discoveredCatalogEntries}
@@ -1833,6 +2228,8 @@ export default function App() {
             persistSettings={persistSettings}
             visibleTabOptions={visibleTabOptions}
             hiddenTabsSet={hiddenTabsSet}
+            hiddenTabCount={hiddenTabCount}
+            onRestoreHiddenTabs={restoreAllHiddenTabs}
             devSettings={devSettings}
             setDevSettings={setDevSettings}
             onPurchase={handlePurchase}
@@ -1857,6 +2254,47 @@ export default function App() {
           )}
         </main>
         <ToastStack toasts={toasts} onDismiss={handleDismissToast} />
+        {shortcutModalOpen ? (
+          <div className="shortcut-dialog-backdrop" role="presentation">
+            <section
+              className="shortcut-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="shortcut-dialog-title"
+              data-testid="shortcut-dialog"
+            >
+              <header className="shortcut-dialog__header">
+                <h3 id="shortcut-dialog-title">Keyboard shortcuts</h3>
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid="shortcut-dialog-close"
+                  onClick={() => setShortcutModalOpen(false)}
+                >
+                  Close
+                </button>
+              </header>
+              <ul className="shortcut-dialog__list">
+                <li>
+                  <kbd>1-8</kbd>
+                  <span>Jump between visible tabs</span>
+                </li>
+                <li>
+                  <kbd>Arrow Keys</kbd>
+                  <span>Move tab focus in the top nav</span>
+                </li>
+                <li>
+                  <kbd>Enter</kbd>
+                  <span>Open focused tab</span>
+                </li>
+                <li>
+                  <kbd>?</kbd>
+                  <span>Open this shortcut guide</span>
+                </li>
+              </ul>
+            </section>
+          </div>
+        ) : null}
       </div>
       <HelpModal
         open={helpOpen}

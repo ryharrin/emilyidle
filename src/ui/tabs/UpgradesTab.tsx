@@ -2,6 +2,7 @@ import React from "react";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
+  getAffordabilityEtaSecondsForDeficit,
   buyMaisonUpgrade,
   buyUpgrade,
   buyWorkshopUpgrade,
@@ -15,6 +16,7 @@ import {
   getMilestoneRequirementLabel,
   getMilestoneUnlockProgressDetail,
   getUpgradePriceCents,
+  getResourceDeficit,
   getWorkshopBlueprintCostDetail,
   getWorkshopPrestigeGain,
   getWorkshopSoftcapExponent,
@@ -68,6 +70,7 @@ type EffectPreviewLine = {
 type UpgradeIntent = "income" | "enjoyment" | "automation" | "meta";
 
 type UpgradeStatus = "actionable" | "locked" | "installed" | "unaffordable" | "no-change";
+type UpgradeDensity = "compact" | "expanded";
 
 type UpgradeRecommendation = {
   key: string;
@@ -98,6 +101,8 @@ type CollectionUpgradeCard = {
   intent: UpgradeIntent;
   combinedDelta: number;
   paybackSeconds: number | null;
+  cashDeficitCents: number;
+  cashAffordabilityEtaSeconds: number | null;
 };
 
 type WorkshopUpgradeCard = {
@@ -112,6 +117,7 @@ type WorkshopUpgradeCard = {
   status: UpgradeStatus;
   intent: UpgradeIntent;
   combinedDelta: number;
+  blueprintDeficit: number;
 };
 
 type MaisonUpgradeCard = {
@@ -127,6 +133,8 @@ type MaisonUpgradeCard = {
   status: UpgradeStatus;
   intent: UpgradeIntent;
   combinedDelta: number;
+  resourceDeficit: number;
+  resourceLabel: "Heritage" | "Reputation";
 };
 
 const UPGRADE_INTENT_META: Record<
@@ -185,8 +193,13 @@ const formatExponentValue = (value: number) => value.toFixed(2);
 
 const formatAutomationState = (enabled: boolean) => (enabled ? "Enabled" : "Disabled");
 
-const getUpgradeCardClassName = (status: UpgradeStatus, recommended: boolean) => {
+const getUpgradeCardClassName = (
+  status: UpgradeStatus,
+  recommended: boolean,
+  compactDensity: boolean,
+) => {
   const classNames = ["card", "upgrade-card"];
+  classNames.push(compactDensity ? "upgrade-card-compact" : "upgrade-card-expanded");
   if (recommended) {
     classNames.push("upgrade-card--recommended");
   }
@@ -229,6 +242,22 @@ const formatPaybackLabel = (paybackSeconds: number | null): string => {
   }
 
   return `Payback ${formatDurationFromSeconds(paybackSeconds)}`;
+};
+
+const formatEtaLabel = (etaSeconds: number | null): string => {
+  if (etaSeconds === null) {
+    return "ETA unavailable";
+  }
+  if (etaSeconds <= 0) {
+    return "Ready now";
+  }
+  if (etaSeconds < 60) {
+    return `${etaSeconds}s`;
+  }
+  if (etaSeconds < 3_600) {
+    return `${Math.ceil(etaSeconds / 60)}m`;
+  }
+  return `${Math.ceil(etaSeconds / 3_600)}h`;
 };
 
 const getRecommendationReason = (recommendation: UpgradeRecommendation): string => {
@@ -570,9 +599,39 @@ export function UpgradesTab({
   maisonUpgrades,
   onPurchase,
 }: UpgradesTabProps) {
+  const [upgradeDensity, setUpgradeDensity] = React.useState<UpgradeDensity>("expanded");
+  const isCompactDensity = upgradeDensity === "compact";
+  const toggleUpgradeDensity = React.useCallback(() => {
+    setUpgradeDensity((value) => (value === "compact" ? "expanded" : "compact"));
+  }, []);
+
+  const openUpgradeGroup = (
+    testId: "upgrades-group-collection" | "upgrades-group-workshop" | "upgrades-group-maison",
+  ) => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const target = document.querySelector(`[data-testid="${testId}"]`);
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    if (target instanceof HTMLDetailsElement && !target.open) {
+      target.open = true;
+    }
+
+    target.scrollIntoView({ block: "start", behavior: "auto" });
+  };
+
   const formatCount = (value: number) => Math.floor(value).toLocaleString();
   const blueprintCostDetail = getWorkshopBlueprintCostDetail(state);
   const blueprintTooltip = buildBlueprintTooltip(state, getWorkshopPrestigeGain(state));
+  const currentCashRateCentsPerSec = getEffectiveCashRateCentsPerSec(
+    state,
+    nowMs,
+    currentEventMultiplier,
+  );
 
   const collectionUpgradeCards: CollectionUpgradeCard[] = upgrades.map((upgrade) => {
     const level = state.upgrades[upgrade.id] ?? 0;
@@ -597,6 +656,11 @@ export function UpgradesTab({
     const nextState = buyUpgrade(state, upgrade.id);
     const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
     const combinedDelta = getCombinedDelta(preview);
+    const cashDeficitCents = getResourceDeficit(price, state.currencyCents);
+    const cashAffordabilityEtaSeconds = getAffordabilityEtaSecondsForDeficit(
+      cashDeficitCents,
+      currentCashRateCentsPerSec,
+    );
 
     return {
       upgrade,
@@ -614,6 +678,8 @@ export function UpgradesTab({
       intent: "enjoyment",
       combinedDelta,
       paybackSeconds: getPaybackSeconds(price, preview),
+      cashDeficitCents,
+      cashAffordabilityEtaSeconds,
     };
   });
 
@@ -639,6 +705,7 @@ export function UpgradesTab({
     const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
     const effectLines = buildWorkshopEffectLines(state, nextState, upgrade);
     const combinedDelta = getCombinedDelta(preview);
+    const blueprintDeficit = Math.max(0, upgrade.blueprintCost - state.workshopBlueprints);
 
     return {
       upgrade,
@@ -657,6 +724,7 @@ export function UpgradesTab({
       ),
       intent: resolveWorkshopIntent(upgrade),
       combinedDelta,
+      blueprintDeficit,
     };
   });
 
@@ -681,6 +749,9 @@ export function UpgradesTab({
     const preview = buildRatePreview(state, nextState, nowMs, currentEventMultiplier);
     const effectLines = buildMaisonEffectLines(state, nextState, upgrade);
     const combinedDelta = getCombinedDelta(preview);
+    const resourceLabel = upgrade.currency === "heritage" ? "Heritage" : "Reputation";
+    const currentResource = upgrade.currency === "heritage" ? state.maisonHeritage : state.maisonReputation;
+    const resourceDeficit = Math.max(0, upgrade.cost - currentResource);
 
     return {
       upgrade,
@@ -700,6 +771,8 @@ export function UpgradesTab({
       ),
       intent: resolveMaisonIntent(upgrade),
       combinedDelta,
+      resourceDeficit,
+      resourceLabel,
     };
   });
 
@@ -788,7 +861,7 @@ export function UpgradesTab({
                   className="surface-complication upgrades-complication"
                   data-testid="upgrades-complication-power-reserve"
                 >
-                  <p className="surface-complication-label">Power reserve</p>
+                  <p className="surface-complication-label">Power reserve · Recommendations</p>
                   <p className="surface-complication-value">
                     {topRecommendations.length} recommended
                   </p>
@@ -798,7 +871,7 @@ export function UpgradesTab({
                   className="surface-complication upgrades-complication"
                   data-testid="upgrades-complication-chronograph"
                 >
-                  <p className="surface-complication-label">Chronograph</p>
+                  <p className="surface-complication-label">Chronograph · Collection lane</p>
                   <p className="surface-complication-value">
                     {collectionActionableCount} collection upgrades ready
                   </p>
@@ -810,7 +883,7 @@ export function UpgradesTab({
                   className="surface-complication upgrades-complication"
                   data-testid="upgrades-complication-date-wheel"
                 >
-                  <p className="surface-complication-label">Date wheel</p>
+                  <p className="surface-complication-label">Date wheel · Atelier lane</p>
                   <p className="surface-complication-value">
                     {workshopInstalledCount} / {workshopUpgradeCards.length} Atelier installed
                   </p>
@@ -822,7 +895,7 @@ export function UpgradesTab({
                   className="surface-complication upgrades-complication"
                   data-testid="upgrades-complication-moonphase"
                 >
-                  <p className="surface-complication-label">Moonphase</p>
+                  <p className="surface-complication-label">Moonphase · Maison lane</p>
                   <p className="surface-complication-value">
                     {maisonInstalledCount} / {maisonUpgradeCards.length} Maison installed
                   </p>
@@ -835,6 +908,45 @@ export function UpgradesTab({
                 <ExplainButton sectionId={HELP_SECTION_IDS.upgrades} label="Explain upgrades" />
                 <span className="muted">Upgrade help</span>
               </div>
+              <div className="card-actions" data-testid="upgrades-hub-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid="upgrades-jump-collection"
+                  onClick={() => openUpgradeGroup("upgrades-group-collection")}
+                >
+                  Open Collection lane
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid="upgrades-jump-workshop"
+                  onClick={() => openUpgradeGroup("upgrades-group-workshop")}
+                >
+                  Open Atelier lane
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid="upgrades-jump-maison"
+                  onClick={() => openUpgradeGroup("upgrades-group-maison")}
+                >
+                  Open Maison lane
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid="upgrades-density-toggle"
+                  aria-pressed={isCompactDensity}
+                  onClick={toggleUpgradeDensity}
+                >
+                  Card density · {isCompactDensity ? "Compact" : "Expanded"}
+                </button>
+              </div>
+              <p className="muted">
+                Upgrades is the canonical hub for comparing and buying Collection, Atelier, and
+                Maison improvements.
+              </p>
             </div>
           </header>
 
@@ -853,7 +965,11 @@ export function UpgradesTab({
                 <span className="upgrade-disclosure-hint">Expand/collapse</span>
               </summary>
               <div className="upgrades-group-content">
-                <div className="card-stack" data-testid="upgrades-cash-list">
+                <div
+                  className="card-stack"
+                  data-testid="upgrades-cash-list"
+                  data-density={upgradeDensity}
+                >
                   {collectionUpgradeCards.map((card) => {
                     const recommendation = recommendations.find(
                       (candidate) => candidate.key === card.key,
@@ -861,7 +977,11 @@ export function UpgradesTab({
                     const isRecommended = recommendedKeys.has(card.key);
                     return (
                       <div
-                        className={getUpgradeCardClassName(card.status, isRecommended)}
+                        className={getUpgradeCardClassName(
+                          card.status,
+                          isRecommended,
+                          isCompactDensity,
+                        )}
                         key={card.upgrade.id}
                         data-testid="upgrade-card"
                         id={card.cardId}
@@ -886,7 +1006,7 @@ export function UpgradesTab({
                           Intent: {UPGRADE_INTENT_META[card.intent].label}
                         </p>
                         {renderDeltaChips(card.preview)}
-                        {renderImpactSummary(card.preview)}
+                        {!isCompactDensity && renderImpactSummary(card.preview)}
                         {renderRoiSummary(
                           formatMoneyFromCents(card.price),
                           card.paybackSeconds,
@@ -898,7 +1018,7 @@ export function UpgradesTab({
                             {getRecommendationReason(recommendation)}
                           </p>
                         )}
-                        {renderPreviewDetails(card.preview)}
+                        {!isCompactDensity && renderPreviewDetails(card.preview)}
                         {!card.unlocked && card.unlockDetail && (
                           <div data-testid={`locked-upgrade-hint-${card.upgrade.id}`}>
                             <UnlockHint
@@ -928,6 +1048,18 @@ export function UpgradesTab({
                               </div>
                             )}
                         </div>
+                        {!card.unlocked && card.unlockDetail && (
+                          <p className="muted">
+                            Blocked: {card.unlockDetail.label} ({card.unlockCurrentLabel} /{" "}
+                            {card.unlockThresholdLabel}).
+                          </p>
+                        )}
+                        {card.unlocked && !card.canAfford && (
+                          <p className="muted">
+                            Blocked: need {formatMoneyFromCents(card.cashDeficitCents)} more cash
+                            (ETA {formatEtaLabel(card.cashAffordabilityEtaSeconds)}).
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -952,7 +1084,11 @@ export function UpgradesTab({
                   tooltipContent={blueprintTooltip}
                   testId="upgrades-blueprint-cost"
                 />
-                <div className="card-stack" data-testid="upgrades-workshop-list">
+                <div
+                  className="card-stack"
+                  data-testid="upgrades-workshop-list"
+                  data-density={upgradeDensity}
+                >
                   {workshopUpgradeCards.map((card) => {
                     const recommendation = recommendations.find(
                       (candidate) => candidate.key === card.key,
@@ -961,7 +1097,11 @@ export function UpgradesTab({
 
                     return (
                       <div
-                        className={getUpgradeCardClassName(card.status, isRecommended)}
+                        className={getUpgradeCardClassName(
+                          card.status,
+                          isRecommended,
+                          isCompactDensity,
+                        )}
                         key={card.upgrade.id}
                         data-testid="workshop-upgrade-card"
                         id={card.cardId}
@@ -985,7 +1125,7 @@ export function UpgradesTab({
                           Intent: {UPGRADE_INTENT_META[card.intent].label}
                         </p>
                         {renderDeltaChips(card.preview)}
-                        {renderImpactSummary(card.preview)}
+                        {!isCompactDensity && renderImpactSummary(card.preview)}
                         {renderRoiSummary(
                           `${card.upgrade.blueprintCost} Blueprints`,
                           null,
@@ -998,7 +1138,7 @@ export function UpgradesTab({
                           </p>
                         )}
                         {renderEffectLines(card.effectLines)}
-                        {renderPreviewDetails(card.preview)}
+                        {!isCompactDensity && renderPreviewDetails(card.preview)}
                         <div className="card-actions">
                           <button
                             type="button"
@@ -1011,6 +1151,13 @@ export function UpgradesTab({
                               : `Buy (${card.upgrade.blueprintCost} Blueprints)`}
                           </button>
                         </div>
+                        {card.owned ? (
+                          <p className="muted">Installed: this Atelier upgrade is already active.</p>
+                        ) : !card.canAfford ? (
+                          <p className="muted">
+                            Blocked: need {card.blueprintDeficit.toLocaleString()} more Blueprints.
+                          </p>
+                        ) : null}
                       </div>
                     );
                   })}
@@ -1030,7 +1177,11 @@ export function UpgradesTab({
                 <span className="upgrade-disclosure-hint">Expand/collapse</span>
               </summary>
               <div className="upgrades-group-content">
-                <div className="card-stack" data-testid="upgrades-maison-list">
+                <div
+                  className="card-stack"
+                  data-testid="upgrades-maison-list"
+                  data-density={upgradeDensity}
+                >
                   {maisonUpgradeCards.map((card) => {
                     const recommendation = recommendations.find(
                       (candidate) => candidate.key === card.key,
@@ -1039,7 +1190,11 @@ export function UpgradesTab({
 
                     return (
                       <div
-                        className={getUpgradeCardClassName(card.status, isRecommended)}
+                        className={getUpgradeCardClassName(
+                          card.status,
+                          isRecommended,
+                          isCompactDensity,
+                        )}
                         key={card.upgrade.id}
                         data-testid="maison-upgrade-card"
                         id={card.cardId}
@@ -1061,7 +1216,7 @@ export function UpgradesTab({
                           Intent: {UPGRADE_INTENT_META[card.intent].label}
                         </p>
                         {renderDeltaChips(card.preview)}
-                        {renderImpactSummary(card.preview)}
+                        {!isCompactDensity && renderImpactSummary(card.preview)}
                         {renderRoiSummary(card.costLabel, null, card.status, card.intent)}
                         {card.status === "actionable" && recommendation && (
                           <p className="upgrade-recommendation-note">
@@ -1069,7 +1224,7 @@ export function UpgradesTab({
                           </p>
                         )}
                         {renderEffectLines(card.effectLines)}
-                        {renderPreviewDetails(card.preview)}
+                        {!isCompactDensity && renderPreviewDetails(card.preview)}
                         <div className="card-actions">
                           <button
                             type="button"
@@ -1080,6 +1235,14 @@ export function UpgradesTab({
                             {card.owned ? "Installed" : `Buy (${card.costLabel})`}
                           </button>
                         </div>
+                        {card.owned ? (
+                          <p className="muted">Installed: this Maison upgrade is already active.</p>
+                        ) : !card.canAfford ? (
+                          <p className="muted">
+                            Blocked: need {card.resourceDeficit.toLocaleString()} more{" "}
+                            {card.resourceLabel}.
+                          </p>
+                        ) : null}
                       </div>
                     );
                   })}

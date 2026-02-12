@@ -22,6 +22,8 @@ const BUCKET_LABELS: Record<TabBucket, string> = {
   system: "Ledger",
 };
 
+const BUCKET_ORDER: TabBucket[] = ["primary", "progression", "system"];
+
 export function PageTabRail({
   tabs,
   activeTabId,
@@ -122,7 +124,10 @@ export function PageTabRail({
     };
   }, [updateOverflowState]);
 
-  let lastBucket: TabBucket | null = null;
+  const groupedTabs = BUCKET_ORDER.map((bucket) => ({
+    bucket,
+    tabs: tabs.filter((tab) => tab.bucket === bucket),
+  })).filter((group) => group.tabs.length > 0);
 
   return (
     <div
@@ -136,42 +141,60 @@ export function PageTabRail({
         aria-label="Primary navigation"
         ref={scrollRef}
       >
-        {tabs.map((tab) => {
-          const bucketStart = tab.bucket !== lastBucket;
-          lastBucket = tab.bucket;
-          const selected = tab.id === activeTabId;
-          const focusable = tab.id === focusedTabId;
-          const readiness = tabReadiness[tab.id];
+        {groupedTabs.map((group) => (
+          <div
+            key={group.bucket}
+            className="page-tab-rail__bucket"
+            role="group"
+            aria-label={`${BUCKET_LABELS[group.bucket]} tabs`}
+            data-bucket={group.bucket}
+          >
+            <span className="page-tab-rail__bucket-label">{BUCKET_LABELS[group.bucket]}</span>
+            <div className="page-tab-rail__bucket-tabs">
+              {group.tabs.map((tab) => {
+                const selected = tab.id === activeTabId;
+                const focusable = tab.id === focusedTabId;
+                const readiness = tabReadiness[tab.id];
+                const readinessSummary = readiness ? `Ready: ${readiness.label}` : null;
 
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              id={`${tab.id}-tab`}
-              aria-controls={tab.id}
-              aria-selected={selected}
-              tabIndex={focusable ? 0 : -1}
-              className="page-tab-rail__tab"
-              data-bucket={tab.bucket}
-              data-bucket-label={BUCKET_LABELS[tab.bucket]}
-              data-bucket-start={bucketStart ? "true" : undefined}
-              data-testid={tab.testId}
-              onClick={() => onTabClick(tab.id)}
-              onFocus={() => onTabFocus(tab.id)}
-              onKeyDown={onTabKeyDown}
-              ref={(node) => onTabRef(tab.id, node)}
-            >
-              {tab.label}
-              {readiness && (
-                <span className="page-tab-rail__badge" data-testid={`tab-ready-${tab.id}`}>
-                  <span className="page-tab-rail__badge-dot" aria-hidden="true" />
-                  <span className="visually-hidden">{readiness.label}</span>
-                </span>
-              )}
-            </button>
-          );
-        })}
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    id={`${tab.id}-tab`}
+                    aria-controls={tab.id}
+                    aria-selected={selected}
+                    tabIndex={focusable ? 0 : -1}
+                    className="page-tab-rail__tab"
+                    data-bucket={tab.bucket}
+                    data-testid={tab.testId}
+                    onClick={() => onTabClick(tab.id)}
+                    onFocus={() => onTabFocus(tab.id)}
+                    onKeyDown={onTabKeyDown}
+                    ref={(node) => onTabRef(tab.id, node)}
+                  >
+                    {tab.label}
+                    {readinessSummary && (
+                      <span
+                        className="page-tab-rail__badge"
+                        data-testid={`tab-ready-${tab.id}`}
+                        aria-label={readinessSummary}
+                        title={readinessSummary}
+                      >
+                        <span className="page-tab-rail__badge-dot" aria-hidden="true" />
+                        <span className="page-tab-rail__badge-text" aria-hidden="true">
+                          Ready
+                        </span>
+                        <span className="visually-hidden">{readinessSummary}</span>
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,16 +1,35 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getAffordabilityEtaSecondsForDeficit,
   createInitialState,
   getCashRateBreakdown,
   getEffectiveCashRateCentsPerSec,
   getEnjoymentRateBreakdown,
   getEnjoymentRateCentsPerSec,
+  getResourceDeficit,
+  getTherapistSessionPolicy,
   getWornWatchEnjoymentMultiplier,
   getWatchModels,
+  performTherapistSession,
 } from "../src/game/state";
 
 describe("rate breakdown selectors", () => {
+  it("computes resource deficits with non-negative clamping", () => {
+    expect(getResourceDeficit(10_000, 6_000)).toBe(4_000);
+    expect(getResourceDeficit(10_000, 10_000)).toBe(0);
+    expect(getResourceDeficit(10_000, 12_000)).toBe(0);
+    expect(getResourceDeficit(Number.NaN, 1_000)).toBe(0);
+  });
+
+  it("computes affordability ETA with zero and unavailable rate handling", () => {
+    expect(getAffordabilityEtaSecondsForDeficit(0, 250)).toBe(0);
+    expect(getAffordabilityEtaSecondsForDeficit(1_000, 250)).toBe(4);
+    expect(getAffordabilityEtaSecondsForDeficit(1_000, 0)).toBeNull();
+    expect(getAffordabilityEtaSecondsForDeficit(999, 250)).toBe(4);
+    expect(getAffordabilityEtaSecondsForDeficit(1_001, 250)).toBe(5);
+  });
+
   it("omits worn-watch term when wear none", () => {
     const baseState = createInitialState();
     const breakdown = getEnjoymentRateBreakdown(baseState, 1);
@@ -132,6 +151,7 @@ describe("rate breakdown selectors", () => {
       therapistCareer: {
         ...baseState.therapistCareer,
         careerStartId: "phd-program" as const,
+        activeTrackId: "private-practice" as const,
         salaryActiveUntilMs: nowMs + 300_000,
         level: 3,
       },
@@ -148,5 +168,57 @@ describe("rate breakdown selectors", () => {
     expect(breakdown.multiplierTerms.some((term) => term.id === "event")).toBe(true);
     const eventTerm = breakdown.multiplierTerms.find((term) => term.id === "event");
     expect(eventTerm?.multiplier).toBe(eventMultiplier);
+    expect(breakdown.sessionCadence.supportsSessions).toBe(true);
+    expect(breakdown.sessionCadence.cadenceCentsPerSec).toBeGreaterThan(0);
+    expect(breakdown.sessionCadence.cooldownMs).toBeGreaterThan(0);
+  });
+
+  it("keeps premium-window and rush semantics consistent across policy and breakdowns", () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      enjoymentCents: 20_000,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+        activeTrackId: "private-practice" as const,
+        freeSessionAvailable: false,
+        nextAvailableAtMs: 0,
+      },
+    };
+    const firstNow = 0;
+    const firstPolicy = getTherapistSessionPolicy(seededState, firstNow);
+    const afterFirst = performTherapistSession(seededState, firstNow);
+    const rushNow = firstNow + Math.max(1, Math.floor(firstPolicy.cooldownMs / 2));
+    const rushPolicy = getTherapistSessionPolicy(afterFirst, rushNow);
+    const rushBreakdown = getCashRateBreakdown(afterFirst, rushNow, 1);
+
+    expect(rushPolicy.premiumCount).toBe(1);
+    expect(rushPolicy.premiumLabel).toBe("Second session premium");
+    expect(rushPolicy.premiumNote).toBe("Waiting twice the cooldown resets the premium.");
+    expect(rushPolicy.cooldownRemainingMs).toBeGreaterThan(0);
+    expect(rushPolicy.cooldownRushMultiplier).toBeGreaterThan(1);
+    expect(rushPolicy.cooldownRushExtraCents).toBeGreaterThan(0);
+    expect(rushPolicy.effectiveEnjoymentCostCents).toBe(
+      rushPolicy.premiumEnjoymentCostCents + rushPolicy.cooldownRushExtraCents,
+    );
+    expect(rushBreakdown.sessionCadence.enjoymentCostCents).toBe(
+      rushPolicy.effectiveEnjoymentCostCents,
+    );
+    expect(rushBreakdown.sessionCadence.cooldownRemainingMs).toBe(rushPolicy.cooldownRemainingMs);
+
+    const readyNow = afterFirst.therapistCareer.nextAvailableAtMs;
+    const readyPolicy = getTherapistSessionPolicy(afterFirst, readyNow);
+    const readyBreakdown = getCashRateBreakdown(afterFirst, readyNow, 1);
+
+    expect(readyPolicy.premiumCount).toBe(1);
+    expect(readyPolicy.cooldownRemainingMs).toBe(0);
+    expect(readyPolicy.cooldownRushMultiplier).toBe(1);
+    expect(readyPolicy.cooldownRushExtraCents).toBe(0);
+    expect(readyPolicy.effectiveEnjoymentCostCents).toBe(readyPolicy.premiumEnjoymentCostCents);
+    expect(readyBreakdown.sessionCadence.enjoymentCostCents).toBe(
+      readyPolicy.effectiveEnjoymentCostCents,
+    );
+    expect(readyBreakdown.sessionCadence.cooldownRemainingMs).toBe(0);
   });
 });

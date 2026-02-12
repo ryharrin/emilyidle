@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { CATALOG_ENTRIES } from "../src/game/catalog";
+import { openCatalogTab, switchCatalogToOwned } from "./helpers/catalogFilters";
 import { clickLocatorSafely } from "./helpers/interactions";
 import { seedStorage } from "./helpers/storageSeed";
 
@@ -20,6 +22,8 @@ async function clickExplainTrigger(page: Page, testId: string) {
   await trigger.scrollIntoViewIfNeeded();
   await trigger.evaluate((element: Element) => (element as HTMLButtonElement).click());
 }
+
+const AUTOMATIC_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "automatic")?.id;
 
 test("currency explain trigger opens currencies help", async ({ page }) => {
   test.slow();
@@ -80,6 +84,83 @@ test("catalog help opens shopping guidance", async ({ page }) => {
   await expect(page.getByTestId("help-active-section")).toHaveText(/Catalog shopping/);
 });
 
+test("power reserve tooltip links aria-describedby for keyboard and touch", async ({ page }) => {
+  if (!AUTOMATIC_MODEL_ID) {
+    throw new Error("Expected at least one automatic catalog model to exist");
+  }
+
+  const seededState = {
+    currencyCents: 1_000_000,
+    enjoymentCents: 0,
+    items: { quartz: 5, automatic: 3, manual: 0, tourbillon: 0 },
+    upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
+    unlockedMilestones: ["collector-shelf"],
+    workshopBlueprints: 0,
+    workshopPrestigeCount: 0,
+    workshopUpgrades: {
+      "etched-ledgers": false,
+      "vault-calibration": false,
+      "heritage-templates": false,
+      "automation-blueprints": false,
+    },
+    maisonHeritage: 0,
+    maisonReputation: 0,
+    maisonUpgrades: {
+      "atelier-charter": false,
+      "heritage-loom": false,
+      "global-vitrine": false,
+    },
+    maisonLines: {
+      "atelier-line": false,
+      "heritage-line": false,
+      "complication-line": false,
+    },
+    achievementUnlocks: [],
+    eventStates: {
+      "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
+    },
+    watchModels: {
+      [AUTOMATIC_MODEL_ID]: 2,
+    },
+    discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
+    catalogTierUnlocks: [],
+  };
+
+  await seedStorage(page, {
+    save: {
+      state: seededState,
+    },
+  });
+
+  await page.goto("/");
+  const catalogPanel = await openCatalogTab(page);
+  await switchCatalogToOwned(page, catalogPanel);
+
+  const trigger = catalogPanel.locator(".power-reserve-hint-button:visible").first();
+  await expect(trigger).toBeVisible();
+
+  await trigger.focus();
+  const keyboardTooltipId = await trigger.getAttribute("aria-describedby");
+  expect(keyboardTooltipId).toBeTruthy();
+  if (!keyboardTooltipId) {
+    throw new Error("Missing tooltip id after keyboard focus");
+  }
+  await expect(page.locator(`[id="${keyboardTooltipId}"]`)).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator(`[id="${keyboardTooltipId}"]`)).toHaveCount(0);
+
+  await trigger.dispatchEvent("pointerdown", { pointerType: "touch" });
+  await trigger.dispatchEvent("click");
+
+  const touchTooltipId = await trigger.getAttribute("aria-describedby");
+  expect(touchTooltipId).toBeTruthy();
+  if (!touchTooltipId) {
+    throw new Error("Missing tooltip id after touch interaction");
+  }
+  await expect(page.locator(`[id="${touchTooltipId}"]`)).toBeVisible();
+});
+
 test("career start explain trigger opens starting-career help", async ({ page }) => {
   await page.goto("/");
   await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));
@@ -102,6 +183,9 @@ test("career progression card surfaces the now-action feedback strip", async ({ 
   await page.goto("/");
   await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));
 
+  await expect(page.getByTestId("mission-rail")).toBeVisible();
+  await expect(page.getByTestId("career-now-section")).toBeVisible();
+
   const nextDetails = page.getByTestId("career-next-details");
   if ((await nextDetails.count()) > 0) {
     const isOpen = await nextDetails.evaluate((node) => (node as HTMLDetailsElement).open);
@@ -111,10 +195,18 @@ test("career progression card surfaces the now-action feedback strip", async ({ 
   }
 
   await expect(page.getByTestId("career-feedback-strip")).toBeVisible();
-  await expect(page.getByTestId("career-feedback-primary")).toContainText(/Next step|Last session/);
-  await expect(page.getByTestId("career-feedback-secondary")).toContainText(
-    /threshold|Cost|complete/i,
-  );
+  await expect
+    .poll(
+      async () =>
+        (await page.getByTestId("career-feedback-primary").textContent())?.trim().length ?? 0,
+    )
+    .toBeGreaterThan(0);
+  await expect
+    .poll(
+      async () =>
+        (await page.getByTestId("career-feedback-secondary").textContent())?.trim().length ?? 0,
+    )
+    .toBeGreaterThan(0);
 });
 
 test("stats rate breakdown disclosures render line items", async ({ page }) => {

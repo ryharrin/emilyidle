@@ -3,6 +3,8 @@ import { createInitialState } from "../src/game/state";
 import { openCatalogFilters } from "./helpers/catalogFilters";
 import { seedStorage } from "./helpers/storageSeed";
 
+const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+
 test("tabs respect hidden preferences", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
@@ -63,6 +65,14 @@ test("tabs respect hidden preferences", async ({ page }) => {
 test("tabs surface readiness badges and honor numeric shortcuts", async ({ page }) => {
   const seededState = createInitialState();
   seededState.items.quartz = 2;
+  seededState.currencyCents = 5_000_000_00;
+  seededState.enjoymentCents = 5_000_000_00;
+  seededState.discoveredCatalogEntries = [CLASSIC_MODEL_ID];
+  seededState.catalogTierUnlocks = ["quartz", "automatic", "manual", "tourbillon"];
+  seededState.watchModels = {
+    ...seededState.watchModels,
+    [CLASSIC_MODEL_ID]: 0,
+  };
   seededState.interactionNextAvailableAtMsByItem = {
     ...seededState.interactionNextAvailableAtMsByItem,
     quartz: 0,
@@ -85,6 +95,7 @@ test("tabs surface readiness badges and honor numeric shortcuts", async ({ page 
   await page.goto("/");
 
   await expect(page.getByTestId("tab-ready-collection")).toBeVisible();
+  await expect(page.getByTestId("tab-ready-catalog")).toBeVisible();
 
   const tabList = page.getByRole("tablist", { name: "Primary navigation" });
   const careerTab = tabList.getByRole("tab", { name: "Career" });

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createInitialState,
   enterPhdProgram,
+  getCashRateBreakdown,
   getEffectiveCashRateCentsPerSec,
   getTherapistSalaryActiveWindowMs,
   getTherapistSalaryExpirationAlert,
@@ -57,6 +58,28 @@ describe("career salary window", () => {
     };
 
     expect(getTherapistSalaryActiveWindowMs(withPointsSpent)).toBeGreaterThan(baseline);
+  });
+
+  it("keeps salary and session cadence surfaced as distinct cash components", () => {
+    const base = createInitialState();
+    const nowMs = 1_700_000_000_000;
+    const started = enterPhdProgram(base, nowMs);
+    const withTrack = {
+      ...started,
+      therapistCareer: {
+        ...started.therapistCareer,
+        activeTrackId: "private-practice" as const,
+        freeSessionAvailable: false,
+      },
+    };
+
+    const breakdown = getCashRateBreakdown(withTrack, nowMs, 1);
+    const salaryTerm = breakdown.careerAddends.find((entry) => entry.id === "career-salary");
+
+    expect(salaryTerm?.centsPerSec ?? 0).toBeGreaterThan(0);
+    expect(breakdown.sessionCadence.supportsSessions).toBe(true);
+    expect(breakdown.sessionCadence.cadenceCentsPerSec).toBeGreaterThan(0);
+    expect(breakdown.totalCentsPerSec).toBeGreaterThanOrEqual(salaryTerm?.centsPerSec ?? 0);
   });
 });
 

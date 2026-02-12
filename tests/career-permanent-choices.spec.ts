@@ -88,14 +88,9 @@ test("career permanent choices show previews and persist across refresh", async 
 
   await trackOption.scrollIntoViewIfNeeded();
   await clickLocatorSafely(trackOption);
+  await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
+  await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
   const lockedTrackLabel = page.getByTestId("career-choice-locked-licensed-associate");
-  if (!(await lockedTrackLabel.isVisible().catch(() => false))) {
-    if (await trackOption.isVisible().catch(() => false)) {
-      await trackOption.evaluate((element) => {
-        (element as HTMLButtonElement).click();
-      });
-    }
-  }
   await expect(lockedTrackLabel).toBeVisible();
 
   // Stage 3: verify previews exist and show a delta
@@ -105,14 +100,9 @@ test("career permanent choices show previews and persist across refresh", async 
   expect(salaryBefore).not.toEqual(salaryAfter);
 
   await clickLocatorSafely(modalityOption);
+  await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
+  await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
   const lockedModalityLabel = page.getByTestId("career-choice-locked-specialist-certification");
-  if (!(await lockedModalityLabel.isVisible().catch(() => false))) {
-    if (await modalityOption.isVisible().catch(() => false)) {
-      await modalityOption.evaluate((element) => {
-        (element as HTMLButtonElement).click();
-      });
-    }
-  }
   await expect(lockedModalityLabel).toBeVisible();
 
   // Wait for autosave to persist the permanent choice before reloading.

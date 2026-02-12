@@ -103,6 +103,9 @@ test("nostalgia prestige flow", async ({ page }) => {
 
   await expect(page.getByTestId("nostalgia-progress")).toBeVisible();
   await expect(page.getByTestId("nostalgia-preview")).toBeVisible();
+  await expect(page.getByTestId("nostalgia-reset-matrix")).toBeVisible();
+  await expect(page.getByTestId("nostalgia-reset-matrix")).toContainText("What resets");
+  await expect(page.getByTestId("nostalgia-reset-matrix")).toContainText("What stays");
 
   await expect(page.getByTestId("nostalgia-prestige-summary")).toBeVisible();
 
@@ -113,6 +116,7 @@ test("nostalgia prestige flow", async ({ page }) => {
     (button as HTMLButtonElement).click();
   });
   await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
+  await expect(page.getByTestId("nostalgia-reset-matrix-modal")).toBeVisible();
 
   await page.getByRole("button", { name: "Keep current run" }).evaluate((button) => {
     (button as HTMLButtonElement).click();
@@ -150,6 +154,12 @@ test("nostalgia prestige flow", async ({ page }) => {
     0,
   );
   await expect(nostalgiaToast).toHaveCount(0);
+
+  const openUnlockStore = page.getByTestId("nostalgia-results-open-unlock-store");
+  await expect(openUnlockStore).toBeVisible();
+  await openUnlockStore.click();
+  await expect(page.getByTestId("nostalgia-unlocks")).toBeVisible();
+
   const finalSave = await page.evaluate(() => {
     const raw = window.localStorage.getItem("emily-idle:save");
     return raw ? JSON.parse(raw).state : null;

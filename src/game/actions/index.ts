@@ -73,7 +73,7 @@ export {
 
 const THERAPIST_SESSION_XP_GAIN = 8;
 const THERAPIST_PASSIVE_XP_PER_SEC = 3;
-const UNDO_WINDOW_MS = 10_000;
+export const WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS = 10_000;
 
 export function applyTherapistPassiveProgress(state: GameState, dtMs: number): GameState {
   if (state.therapistCareer.careerStartId === null) {
@@ -538,12 +538,18 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
 
   const salaryWindowMs = getTherapistSalaryActiveWindowMs(state);
   const salaryActiveUntilMs = Math.max(career.salaryActiveUntilMs, clampedNowMs + salaryWindowMs);
+  const currentPremiumCount = Number.isFinite(career.sessionPremiumCount)
+    ? Math.max(0, Math.floor(career.sessionPremiumCount))
+    : 0;
+  const lastSessionAtMs = Number.isFinite(career.lastSessionAtMs)
+    ? Math.max(0, Math.floor(career.lastSessionAtMs))
+    : 0;
+  const hasSessionChain = currentPremiumCount > 0;
   const withinPremiumWindow =
     policy.premiumWindowMs > 0 &&
-    career.lastSessionAtMs > 0 &&
-    clampedNowMs >= career.lastSessionAtMs &&
-    clampedNowMs - career.lastSessionAtMs < policy.premiumWindowMs;
-  const currentPremiumCount = Math.max(0, Math.floor(career.sessionPremiumCount));
+    hasSessionChain &&
+    clampedNowMs >= lastSessionAtMs &&
+    clampedNowMs - lastSessionAtMs < policy.premiumWindowMs;
   const nextPremiumCount =
     policy.premiumWindowMs > 0
       ? withinPremiumWindow
@@ -668,7 +674,7 @@ export function undoLastPurchase(state: GameState, nowMs: number): GameState {
     return state;
   }
 
-  if (nowMs - last.purchasedAtMs > UNDO_WINDOW_MS) {
+  if (nowMs - last.purchasedAtMs > WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS) {
     return state;
   }
 

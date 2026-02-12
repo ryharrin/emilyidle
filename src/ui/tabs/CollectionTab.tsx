@@ -123,6 +123,15 @@ const COLLECTION_SECTION_NAV_LINKS: CollectionSectionNavLink[] = [
   },
 ];
 
+const MOBILE_COLLECTION_QUERY = "(max-width: 900px)";
+
+const getIsCompactCollectionViewport = () => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return window.matchMedia(MOBILE_COLLECTION_QUERY).matches;
+};
+
 type CollectionTabProps = {
   isActive: boolean;
   state: GameState;
@@ -156,10 +165,22 @@ type CollectionTabProps = {
   onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
 };
 
+type CollectionMobileSectionId =
+  | "movement-bonuses"
+  | "maison-lines"
+  | "equipment"
+  | "coachmarks"
+  | "upgrades"
+  | "milestones"
+  | "achievements"
+  | "events"
+  | "crafting";
+
 export function CollectionTab({
   isActive,
   state,
   onNavigate,
+  watchItemLabels,
   autoBuyUnlocked,
   autoBuyEnabled,
   onToggleAutoBuy,
@@ -196,6 +217,9 @@ export function CollectionTab({
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
   const { discoveredCatalogEntries } = state;
   const [collectionFavoritesOnly, setCollectionFavoritesOnly] = React.useState(false);
+  const [isCompactLayout, setIsCompactLayout] = React.useState(getIsCompactCollectionViewport);
+  const [openMobileSectionId, setOpenMobileSectionId] =
+    React.useState<CollectionMobileSectionId | null>(null);
   const favoriteSet = React.useMemo(
     () => new Set(state.favoriteWatchIds ?? []),
     [state.favoriteWatchIds],
@@ -267,6 +291,51 @@ export function CollectionTab({
     [persistSettings, settings],
   );
 
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_COLLECTION_QUERY);
+    const syncLayout = (matches: boolean) => {
+      setIsCompactLayout(matches);
+      setOpenMobileSectionId(null);
+    };
+
+    syncLayout(mediaQuery.matches);
+    const onChange = (event: MediaQueryListEvent) => {
+      syncLayout(event.matches);
+    };
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", onChange);
+      return () => mediaQuery.removeEventListener("change", onChange);
+    }
+
+    mediaQuery.addListener(onChange);
+    return () => mediaQuery.removeListener(onChange);
+  }, []);
+
+  const handleMobileSectionToggle = React.useCallback(
+    (sectionId: CollectionMobileSectionId, isOpen: boolean) => {
+      if (!isCompactLayout) {
+        return;
+      }
+      setOpenMobileSectionId((currentValue) => {
+        if (!isOpen) {
+          return currentValue === sectionId ? null : currentValue;
+        }
+        return sectionId;
+      });
+    },
+    [isCompactLayout],
+  );
+
+  const isMobileSectionOpen = React.useCallback(
+    (sectionId: CollectionMobileSectionId) => openMobileSectionId === sectionId,
+    [openMobileSectionId],
+  );
+
   const equippedContribution = getEquippedWatchContribution(state, nowMs, currentEventMultiplier);
   const totalOwnedWatches = watchModels.reduce(
     (count, model) => count + getWatchModelOwnedCount(state, model.id),
@@ -289,6 +358,20 @@ export function CollectionTab({
     : archiveCuratorMilestone
       ? `Next: ${archiveCuratorMilestone.name}`
       : "Unlock curator milestones to reveal guides.";
+  const interactionRunsTotal = state.interactionRunsTotal;
+  const interactionPerfectRuns = state.interactionPerfectRuns;
+  const interactionPerfectStreak = state.interactionPerfectStreak;
+  const interactionBestPerfectStreak = state.interactionBestPerfectStreak;
+  const interactionPrecisionPercent =
+    interactionRunsTotal > 0 ? Math.round((interactionPerfectRuns / interactionRunsTotal) * 100) : 0;
+  const interactionOutcomeSummary =
+    interactionPerfectStreak > 0
+      ? `Live streak: ${interactionPerfectStreak} perfect run${
+          interactionPerfectStreak === 1 ? "" : "s"
+        }.`
+      : interactionRunsTotal > 0
+        ? "No active perfect streak."
+        : "No outcomes logged yet.";
 
   return (
     <section
@@ -353,7 +436,11 @@ export function CollectionTab({
                   sections={navigationSections}
                   onCoachmarkDismiss={handleDismissSectionCoachmark}
                 />
-                <CollectionInsightsPanel state={state} />
+                <CollectionInsightsPanel
+                  state={state}
+                  watchItemLabels={watchItemLabels}
+                  onNavigate={onNavigate}
+                />
                 <div id="collection-overview" className="collection-section collection-overview">
                   <h2>Collection</h2>
                   <p className="muted">
@@ -368,7 +455,7 @@ export function CollectionTab({
                       className="surface-complication collection-complication"
                       data-testid="collection-complication-vault"
                     >
-                      <p className="surface-complication-label">Vault</p>
+                      <p className="surface-complication-label">Vault · Collection size</p>
                       <p className="surface-complication-value">
                         {totalOwnedWatches.toLocaleString()} owned
                       </p>
@@ -381,7 +468,7 @@ export function CollectionTab({
                       className="surface-complication collection-complication"
                       data-testid="collection-complication-chronograph"
                     >
-                      <p className="surface-complication-label">Chronograph</p>
+                      <p className="surface-complication-label">Chronograph · Automation</p>
                       <p className="surface-complication-value">{automationComplicationValue}</p>
                       <p className="surface-complication-detail">
                         {autoBuyUnlocked
@@ -393,7 +480,7 @@ export function CollectionTab({
                       className="surface-complication collection-complication"
                       data-testid="collection-complication-date-wheel"
                     >
-                      <p className="surface-complication-label">Date wheel</p>
+                      <p className="surface-complication-label">Date wheel · Tier unlocks</p>
                       <p className="surface-complication-value">
                         {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
                       </p>
@@ -403,11 +490,36 @@ export function CollectionTab({
                       className="surface-complication collection-complication"
                       data-testid="collection-complication-moonphase"
                     >
-                      <p className="surface-complication-label">Moonphase</p>
+                      <p className="surface-complication-label">Moonphase · Archive progress</p>
                       <p className="surface-complication-value">{archiveComplicationValue}</p>
                       <p className="surface-complication-detail">{archiveComplicationDetail}</p>
                     </article>
                   </div>
+                  <article className="card interaction-feed-card" data-testid="collection-interaction-feed">
+                    <header className="interaction-feed-card__header">
+                      <div>
+                        <p className="eyebrow">Interaction outcomes</p>
+                        <h3>Collection feed</h3>
+                      </div>
+                      <p className="interaction-feed-card__status">{interactionOutcomeSummary}</p>
+                    </header>
+                    <dl className="interaction-feed-card__grid">
+                      <div>
+                        <dt>Perfect runs</dt>
+                        <dd>
+                          {interactionPerfectRuns.toLocaleString()} / {interactionRunsTotal.toLocaleString()}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Precision</dt>
+                        <dd>{interactionPrecisionPercent}%</dd>
+                      </div>
+                      <div>
+                        <dt>Best streak</dt>
+                        <dd>{interactionBestPerfectStreak.toLocaleString()}</dd>
+                      </div>
+                    </dl>
+                  </article>
                   <div className="inline-icon-button">
                     <ExplainButton
                       sectionId={HELP_SECTION_IDS.interactions}
@@ -430,64 +542,142 @@ export function CollectionTab({
                         <p className="muted">Unlock automation with Atelier blueprints.</p>
                       )}
                     </fieldset>
-                    <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
-                      <header className="panel-header">
-                        <div>
-                          <p className="eyebrow">Archive bonuses</p>
-                          <h3>Movement bonuses</h3>
-                          <p className="muted">
-                            Unlock movement groups by discovering watch references.
-                          </p>
-                        </div>
-                        <div className="results-count" data-testid="catalog-tier-count">
-                          {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
-                        </div>
-                      </header>
-                      {archiveCuratorMilestone && (
-                        <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
-                          <p className="muted">
-                            Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold} ·
-                            Unlock Archive guides to boost collection income.
-                          </p>
-                          <p className="catalog-tier-curator-status">
-                            {archiveCuratorUnlocked
-                              ? "Archive guides are available in Upgrades."
-                              : `Next milestone: ${archiveCuratorMilestone.name}.`}
-                          </p>
-                        </div>
-                      )}
-                      <div className="card-stack" data-testid="catalog-tier-list">
-                        {catalogTierDefinitions.map((tier) => {
-                          const unlocked = catalogTierUnlocks.includes(tier.id);
-                          const progress = catalogTierProgress[tier.id];
-                          return (
-                            <div
-                              className={`card catalog-tier-card ${
-                                unlocked ? "catalog-tier-unlocked" : ""
-                              }`}
-                              key={tier.id}
-                              data-testid="catalog-tier-card"
-                            >
-                              <div className="card-header">
-                                <div>
-                                  <h4>{tier.name}</h4>
-                                  <p>{tier.description}</p>
-                                </div>
-                                <div className="muted">
-                                  {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
-                                </div>
+                    {isCompactLayout ? (
+                      <details
+                        className="collection-mobile-accordion"
+                        open={isMobileSectionOpen("movement-bonuses")}
+                        onToggle={(event) =>
+                          handleMobileSectionToggle("movement-bonuses", event.currentTarget.open)
+                        }
+                        data-testid="collection-movement-bonuses-details"
+                      >
+                        <summary data-testid="collection-movement-bonuses-toggle">
+                          <span>Movement bonuses</span>
+                          <span className="muted">
+                            {isMobileSectionOpen("movement-bonuses") ? "Collapse" : "Expand"}
+                          </span>
+                        </summary>
+                        <div className="collection-mobile-accordion-body">
+                          <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
+                            <header className="panel-header">
+                              <div>
+                                <p className="eyebrow">Archive bonuses</p>
+                                <h3>Movement bonuses</h3>
+                                <p className="muted">
+                                  Unlock movement groups by discovering watch references.
+                                </p>
                               </div>
-                              <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                              <div className="results-count" data-testid="catalog-tier-count">
+                                {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                              </div>
+                            </header>
+                            {archiveCuratorMilestone && (
+                              <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
+                                <p className="muted">
+                                  Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold}
+                                  {" · "}Unlock Archive guides to boost collection income.
+                                </p>
+                                <p className="catalog-tier-curator-status">
+                                  {archiveCuratorUnlocked
+                                    ? "Archive guides are available in Upgrades."
+                                    : `Next milestone: ${archiveCuratorMilestone.name}.`}
+                                </p>
+                              </div>
+                            )}
+                            <div className="card-stack" data-testid="catalog-tier-list">
+                              {catalogTierDefinitions.map((tier) => {
+                                const unlocked = catalogTierUnlocks.includes(tier.id);
+                                const progress = catalogTierProgress[tier.id];
+                                return (
+                                  <div
+                                    className={`card catalog-tier-card ${
+                                      unlocked ? "catalog-tier-unlocked" : ""
+                                    }`}
+                                    key={tier.id}
+                                    data-testid="catalog-tier-card"
+                                  >
+                                    <div className="card-header">
+                                      <div>
+                                        <h4>{tier.name}</h4>
+                                        <p>{tier.description}</p>
+                                      </div>
+                                      <div className="muted">
+                                        {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
+                                      </div>
+                                    </div>
+                                    <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        })}
+                            <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
+                              {catalogTierBonuses.length > 0
+                                ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
+                                : "Discover references to unlock tier bonuses."}
+                            </p>
+                          </div>
+                        </div>
+                      </details>
+                    ) : (
+                      <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
+                        <header className="panel-header">
+                          <div>
+                            <p className="eyebrow">Archive bonuses</p>
+                            <h3>Movement bonuses</h3>
+                            <p className="muted">
+                              Unlock movement groups by discovering watch references.
+                            </p>
+                          </div>
+                          <div className="results-count" data-testid="catalog-tier-count">
+                            {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                          </div>
+                        </header>
+                        {archiveCuratorMilestone && (
+                          <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
+                            <p className="muted">
+                              Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold} ·
+                              Unlock Archive guides to boost collection income.
+                            </p>
+                            <p className="catalog-tier-curator-status">
+                              {archiveCuratorUnlocked
+                                ? "Archive guides are available in Upgrades."
+                                : `Next milestone: ${archiveCuratorMilestone.name}.`}
+                            </p>
+                          </div>
+                        )}
+                        <div className="card-stack" data-testid="catalog-tier-list">
+                          {catalogTierDefinitions.map((tier) => {
+                            const unlocked = catalogTierUnlocks.includes(tier.id);
+                            const progress = catalogTierProgress[tier.id];
+                            return (
+                              <div
+                                className={`card catalog-tier-card ${
+                                  unlocked ? "catalog-tier-unlocked" : ""
+                                }`}
+                                key={tier.id}
+                                data-testid="catalog-tier-card"
+                              >
+                                <div className="card-header">
+                                  <div>
+                                    <h4>{tier.name}</h4>
+                                    <p>{tier.description}</p>
+                                  </div>
+                                  <div className="muted">
+                                    {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
+                                  </div>
+                                </div>
+                                <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
+                          {catalogTierBonuses.length > 0
+                            ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
+                            : "Discover references to unlock tier bonuses."}
+                        </p>
                       </div>
-                      <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
-                        {catalogTierBonuses.length > 0
-                          ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
-                          : "Discover references to unlock tier bonuses."}
-                      </p>
-                    </div>
+                    )}
                     <section
                       id="collection-tier-summary"
                       className="panel collection-tier-summary collection-section"
@@ -537,284 +727,716 @@ export function CollectionTab({
                   </header>
                 </section>
                 {showMaisonLines && (
-                  <div
-                    id="collection-maison-lines"
-                    className="panel maison-lines collection-section"
-                    data-testid="maison-lines"
-                  >
-                    <header className="panel-header">
-                      <div>
-                        <p className="eyebrow">Maison expansion</p>
-                        <h3>Maison lines</h3>
-                        <p className="muted">Invest Heritage or Reputation to expand your house.</p>
-                      </div>
-                      <div className="results-count" data-testid="maison-lines-count">
-                        {Object.values(state.maisonLines).filter(Boolean).length} /{" "}
-                        {maisonLines.length} active
-                      </div>
-                    </header>
-                    <div className="card-stack" data-testid="maison-lines-list">
-                      {maisonLines.map((line) => {
-                        const owned = state.maisonLines[line.id] ?? false;
-                        const canAfford = canBuyMaisonLine(state, line.id);
-                        const costLabel =
-                          line.currency === "heritage"
-                            ? `${line.cost} Heritage`
-                            : `${line.cost} Reputation`;
-                        const effectLabel = (() => {
-                          if (line.incomeMultiplier) {
-                            return `+${Math.round((line.incomeMultiplier - 1) * 100)}% enjoyment`;
-                          }
-                          if (line.collectionBonusMultiplier) {
-                            return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                          }
-                          if (line.workshopBlueprintBonus) {
-                            return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
-                          }
-                          return "Maison line";
-                        })();
-
-                        return (
-                          <div className="card" key={line.id} data-testid="maison-line-card">
-                            <div className="card-header">
+                  <>
+                    {isCompactLayout ? (
+                      <details
+                        id="collection-maison-lines"
+                        className="collection-section collection-mobile-accordion"
+                        open={isMobileSectionOpen("maison-lines")}
+                        onToggle={(event) =>
+                          handleMobileSectionToggle("maison-lines", event.currentTarget.open)
+                        }
+                        data-testid="maison-lines"
+                      >
+                        <summary data-testid="collection-maison-lines-toggle">
+                          <span>Maison lines</span>
+                          <span className="muted">
+                            {isMobileSectionOpen("maison-lines") ? "Collapse" : "Expand"}
+                          </span>
+                        </summary>
+                        <div className="collection-mobile-accordion-body">
+                          <div className="panel maison-lines">
+                            <header className="panel-header">
                               <div>
-                                <h4>{line.name}</h4>
-                                <p>{line.description}</p>
+                                <p className="eyebrow">Maison expansion</p>
+                                <h3>Maison lines</h3>
+                                <p className="muted">
+                                  Invest Heritage or Reputation to expand your house.
+                                </p>
                               </div>
-                              <div className="muted">{owned ? "Active" : costLabel}</div>
+                              <div className="results-count" data-testid="maison-lines-count">
+                                {Object.values(state.maisonLines).filter(Boolean).length} /{" "}
+                                {maisonLines.length} active
+                              </div>
+                            </header>
+                            <div className="card-stack" data-testid="maison-lines-list">
+                              {maisonLines.map((line) => {
+                                const owned = state.maisonLines[line.id] ?? false;
+                                const canAfford = canBuyMaisonLine(state, line.id);
+                                const costLabel =
+                                  line.currency === "heritage"
+                                    ? `${line.cost} Heritage`
+                                    : `${line.cost} Reputation`;
+                                const effectLabel = (() => {
+                                  if (line.incomeMultiplier) {
+                                    return `+${Math.round((line.incomeMultiplier - 1) * 100)}% enjoyment`;
+                                  }
+                                  if (line.collectionBonusMultiplier) {
+                                    return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+                                  }
+                                  if (line.workshopBlueprintBonus) {
+                                    return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
+                                  }
+                                  return "Maison line";
+                                })();
+
+                                return (
+                                  <div className="card" key={line.id} data-testid="maison-line-card">
+                                    <div className="card-header">
+                                      <div>
+                                        <h4>{line.name}</h4>
+                                        <p>{line.description}</p>
+                                      </div>
+                                      <div className="muted">{owned ? "Active" : costLabel}</div>
+                                    </div>
+                                    <p>{effectLabel}</p>
+                                    <div className="card-actions">
+                                      <button
+                                        type="button"
+                                        className="secondary"
+                                        disabled={owned || !canAfford}
+                                        onClick={() => onPurchase(buyMaisonLine(state, line.id))}
+                                      >
+                                        {owned ? "Live" : `Activate (${costLabel})`}
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                            <p>{effectLabel}</p>
+                          </div>
+                        </div>
+                      </details>
+                    ) : (
+                      <div
+                        id="collection-maison-lines"
+                        className="panel maison-lines collection-section"
+                        data-testid="maison-lines"
+                      >
+                        <header className="panel-header">
+                          <div>
+                            <p className="eyebrow">Maison expansion</p>
+                            <h3>Maison lines</h3>
+                            <p className="muted">Invest Heritage or Reputation to expand your house.</p>
+                          </div>
+                          <div className="results-count" data-testid="maison-lines-count">
+                            {Object.values(state.maisonLines).filter(Boolean).length} /{" "}
+                            {maisonLines.length} active
+                          </div>
+                        </header>
+                        <div className="card-stack" data-testid="maison-lines-list">
+                          {maisonLines.map((line) => {
+                            const owned = state.maisonLines[line.id] ?? false;
+                            const canAfford = canBuyMaisonLine(state, line.id);
+                            const costLabel =
+                              line.currency === "heritage"
+                                ? `${line.cost} Heritage`
+                                : `${line.cost} Reputation`;
+                            const effectLabel = (() => {
+                              if (line.incomeMultiplier) {
+                                return `+${Math.round((line.incomeMultiplier - 1) * 100)}% enjoyment`;
+                              }
+                              if (line.collectionBonusMultiplier) {
+                                return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
+                              }
+                              if (line.workshopBlueprintBonus) {
+                                return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
+                              }
+                              return "Maison line";
+                            })();
+
+                            return (
+                              <div className="card" key={line.id} data-testid="maison-line-card">
+                                <div className="card-header">
+                                  <div>
+                                    <h4>{line.name}</h4>
+                                    <p>{line.description}</p>
+                                  </div>
+                                  <div className="muted">{owned ? "Active" : costLabel}</div>
+                                </div>
+                                <p>{effectLabel}</p>
+                                <div className="card-actions">
+                                  <button
+                                    type="button"
+                                    className="secondary"
+                                    disabled={owned || !canAfford}
+                                    onClick={() => onPurchase(buyMaisonLine(state, line.id))}
+                                  >
+                                    {owned ? "Live" : `Activate (${costLabel})`}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+                {isCompactLayout ? (
+                  <details
+                    className="collection-mobile-accordion"
+                    open={isMobileSectionOpen("equipment")}
+                    onToggle={(event) =>
+                      handleMobileSectionToggle("equipment", event.currentTarget.open)
+                    }
+                    data-testid="collection-equipment-details"
+                  >
+                    <summary data-testid="collection-equipment-toggle">
+                      <span>Equipment and contribution</span>
+                      <span className="muted">
+                        {isMobileSectionOpen("equipment") ? "Collapse" : "Expand"}
+                      </span>
+                    </summary>
+                    <div className="collection-mobile-accordion-body">
+                      <div className="card-stack">
+                        <section className="panel" data-testid="worn-watch-summary">
+                          <header className="panel-header">
+                            <div>
+                              <p className="eyebrow">Equipment</p>
+                              <h3>Worn watch</h3>
+                              <p className="muted">{wornModel ? wornModel.displayName : "None"}</p>
+                            </div>
                             <div className="card-actions">
                               <button
                                 type="button"
                                 className="secondary"
-                                disabled={owned || !canAfford}
-                                onClick={() => onPurchase(buyMaisonLine(state, line.id))}
+                                data-testid="worn-watch-change"
+                                onClick={() => setWornPickerOpen(true)}
                               >
-                                {owned ? "Live" : `Activate (${costLabel})`}
+                                Change
                               </button>
                             </div>
+                          </header>
+                          <p className="muted">
+                            {wornModel
+                              ? "Equipped. Switching replaces the previous worn watch."
+                              : "Wear one owned watch to gain an enjoyment bonus."}
+                          </p>
+                        </section>
+                      </div>
+                      <section className="panel per-watch-contribution" data-testid="per-watch-contribution">
+                        <header className="panel-header">
+                          <div>
+                            <p className="eyebrow">Contribution</p>
+                            <h3>Equipped watch</h3>
+                            <p className="muted">{wornModel ? wornModel.displayName : "No watch worn"}</p>
                           </div>
-                        );
-                      })}
+                        </header>
+                        <div className="per-watch-contribution-body">
+                          <div className="per-watch-contribution-metric">
+                            <strong data-testid="per-watch-contribution-enjoyment">
+                              {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
+                            </strong>
+                            <span>
+                              Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
+                            </span>
+                          </div>
+                          <div className="per-watch-contribution-metric">
+                            <strong data-testid="per-watch-contribution-cash">
+                              {formatMoneyFromCents(equippedContribution.cashDeltaCentsPerSec)} /s
+                            </strong>
+                            <span>{equippedContribution.cashExplanation}</span>
+                          </div>
+                          <p
+                            className="muted per-watch-contribution-event"
+                            data-testid="per-watch-contribution-event"
+                          >
+                            Event multiplier x{equippedContribution.eventMultiplier.toFixed(2)}
+                          </p>
+                        </div>
+                      </section>
                     </div>
-                  </div>
-                )}
-                <div className="card-stack">
-                  <section className="panel" data-testid="worn-watch-summary">
-                    <header className="panel-header">
-                      <div>
-                        <p className="eyebrow">Equipment</p>
-                        <h3>Worn watch</h3>
-                        <p className="muted">{wornModel ? wornModel.displayName : "None"}</p>
-                      </div>
-                      <div className="card-actions">
-                        <button
-                          type="button"
-                          className="secondary"
-                          data-testid="worn-watch-change"
-                          onClick={() => setWornPickerOpen(true)}
-                        >
-                          Change
-                        </button>
-                      </div>
-                    </header>
-                    <p className="muted">
-                      {wornModel
-                        ? "Equipped. Switching replaces the previous worn watch."
-                        : "Wear one owned watch to gain an enjoyment bonus."}
-                    </p>
-                  </section>
-                </div>
-                <section
-                  className="panel per-watch-contribution"
-                  data-testid="per-watch-contribution"
-                >
-                  <header className="panel-header">
-                    <div>
-                      <p className="eyebrow">Contribution</p>
-                      <h3>Equipped watch</h3>
-                      <p className="muted">{wornModel ? wornModel.displayName : "No watch worn"}</p>
+                  </details>
+                ) : (
+                  <>
+                    <div className="card-stack">
+                      <section className="panel" data-testid="worn-watch-summary">
+                        <header className="panel-header">
+                          <div>
+                            <p className="eyebrow">Equipment</p>
+                            <h3>Worn watch</h3>
+                            <p className="muted">{wornModel ? wornModel.displayName : "None"}</p>
+                          </div>
+                          <div className="card-actions">
+                            <button
+                              type="button"
+                              className="secondary"
+                              data-testid="worn-watch-change"
+                              onClick={() => setWornPickerOpen(true)}
+                            >
+                              Change
+                            </button>
+                          </div>
+                        </header>
+                        <p className="muted">
+                          {wornModel
+                            ? "Equipped. Switching replaces the previous worn watch."
+                            : "Wear one owned watch to gain an enjoyment bonus."}
+                        </p>
+                      </section>
                     </div>
-                  </header>
-                  <div className="per-watch-contribution-body">
-                    <div className="per-watch-contribution-metric">
-                      <strong data-testid="per-watch-contribution-enjoyment">
-                        {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
-                      </strong>
-                      <span>
-                        Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
-                      </span>
-                    </div>
-                    <div className="per-watch-contribution-metric">
-                      <strong data-testid="per-watch-contribution-cash">
-                        {formatMoneyFromCents(equippedContribution.cashDeltaCentsPerSec)} /s
-                      </strong>
-                      <span>{equippedContribution.cashExplanation}</span>
-                    </div>
-                    <p
-                      className="muted per-watch-contribution-event"
-                      data-testid="per-watch-contribution-event"
+                    <section
+                      className="panel per-watch-contribution"
+                      data-testid="per-watch-contribution"
                     >
-                      Event multiplier x{equippedContribution.eventMultiplier.toFixed(2)}
-                    </p>
-                  </div>
-                </section>
+                      <header className="panel-header">
+                        <div>
+                          <p className="eyebrow">Contribution</p>
+                          <h3>Equipped watch</h3>
+                          <p className="muted">
+                            {wornModel ? wornModel.displayName : "No watch worn"}
+                          </p>
+                        </div>
+                      </header>
+                      <div className="per-watch-contribution-body">
+                        <div className="per-watch-contribution-metric">
+                          <strong data-testid="per-watch-contribution-enjoyment">
+                            {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
+                          </strong>
+                          <span>
+                            Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
+                          </span>
+                        </div>
+                        <div className="per-watch-contribution-metric">
+                          <strong data-testid="per-watch-contribution-cash">
+                            {formatMoneyFromCents(equippedContribution.cashDeltaCentsPerSec)} /s
+                          </strong>
+                          <span>{equippedContribution.cashExplanation}</span>
+                        </div>
+                        <p
+                          className="muted per-watch-contribution-event"
+                          data-testid="per-watch-contribution-event"
+                        >
+                          Event multiplier x{equippedContribution.eventMultiplier.toFixed(2)}
+                        </p>
+                      </div>
+                    </section>
+                  </>
+                )}
               </>
             )}
           </div>
 
           <aside className="side-panel">
             {activeCoachmarks.length > 0 && (
-              <div className="panel" data-testid="coachmarks">
-                <h3>Coachmarks</h3>
-                <div className="card-stack">
-                  {activeCoachmarks.map((mark) => (
-                    <div className="card" key={mark.id} data-testid="coachmark">
-                      <div className="card-header">
-                        <div>
-                          <h4>{mark.title}</h4>
-                          <p>{mark.text}</p>
+              <>
+                {isCompactLayout ? (
+                  <details
+                    className="collection-mobile-accordion"
+                    open={isMobileSectionOpen("coachmarks")}
+                    onToggle={(event) =>
+                      handleMobileSectionToggle("coachmarks", event.currentTarget.open)
+                    }
+                    data-testid="collection-coachmarks-details"
+                  >
+                    <summary data-testid="collection-coachmarks-toggle">
+                      <span>Coachmarks</span>
+                      <span className="muted">
+                        {isMobileSectionOpen("coachmarks") ? "Collapse" : "Expand"}
+                      </span>
+                    </summary>
+                    <div className="collection-mobile-accordion-body">
+                      <div className="panel" data-testid="coachmarks">
+                        <h3>Coachmarks</h3>
+                        <div className="card-stack">
+                          {activeCoachmarks.map((mark) => (
+                            <div className="card" key={mark.id} data-testid="coachmark">
+                              <div className="card-header">
+                                <div>
+                                  <h4>{mark.title}</h4>
+                                  <p>{mark.text}</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="secondary"
+                                  onClick={() => {
+                                    const nextDismissed = {
+                                      ...settings.coachmarksDismissed,
+                                      [mark.id]: true,
+                                    };
+                                    persistSettings({
+                                      ...settings,
+                                      coachmarksDismissed: nextDismissed,
+                                    });
+                                  }}
+                                >
+                                  Dismiss
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <button
-                          type="button"
-                          className="secondary"
-                          onClick={() => {
-                            const nextDismissed = {
-                              ...settings.coachmarksDismissed,
-                              [mark.id]: true,
-                            };
-                            persistSettings({
-                              ...settings,
-                              coachmarksDismissed: nextDismissed,
-                            });
-                          }}
-                        >
-                          Dismiss
-                        </button>
                       </div>
                     </div>
-                  ))}
+                  </details>
+                ) : (
+                  <div className="panel" data-testid="coachmarks">
+                    <h3>Coachmarks</h3>
+                    <div className="card-stack">
+                      {activeCoachmarks.map((mark) => (
+                        <div className="card" key={mark.id} data-testid="coachmark">
+                          <div className="card-header">
+                            <div>
+                              <h4>{mark.title}</h4>
+                              <p>{mark.text}</p>
+                            </div>
+                            <button
+                              type="button"
+                              className="secondary"
+                              onClick={() => {
+                                const nextDismissed = {
+                                  ...settings.coachmarksDismissed,
+                                  [mark.id]: true,
+                                };
+                                persistSettings({
+                                  ...settings,
+                                  coachmarksDismissed: nextDismissed,
+                                });
+                              }}
+                            >
+                              Dismiss
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+            {isCompactLayout ? (
+              <details
+                className="collection-mobile-accordion"
+                open={isMobileSectionOpen("upgrades")}
+                onToggle={(event) =>
+                  handleMobileSectionToggle("upgrades", event.currentTarget.open)
+                }
+                data-testid="collection-upgrades-details"
+              >
+                <summary data-testid="collection-upgrades-toggle">
+                  <span>Upgrades callout</span>
+                  <span className="muted">
+                    {isMobileSectionOpen("upgrades") ? "Collapse" : "Expand"}
+                  </span>
+                </summary>
+                <div className="collection-mobile-accordion-body">
+                  <div className="panel upgrades-callout" data-testid="upgrades-callout">
+                    <h3>Upgrades live in their own tab</h3>
+                    <p className="muted">
+                      Compare before/after rate changes and buy upgrades from the dedicated Upgrades
+                      surface.
+                    </p>
+                    <div className="card-actions">
+                      <button type="button" onClick={() => onNavigate("upgrades")}>
+                        Open Upgrades
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            ) : (
+              <div className="panel upgrades-callout" data-testid="upgrades-callout">
+                <h3>Upgrades live in their own tab</h3>
+                <p className="muted">
+                  Compare before/after rate changes and buy upgrades from the dedicated Upgrades
+                  surface.
+                </p>
+                <div className="card-actions">
+                  <button type="button" onClick={() => onNavigate("upgrades")}>
+                    Open Upgrades
+                  </button>
                 </div>
               </div>
             )}
-            <div className="panel upgrades-callout" data-testid="upgrades-callout">
-              <h3>Upgrades live in their own tab</h3>
-              <p className="muted">
-                Compare before/after rate changes and buy upgrades from the dedicated Upgrades
-                surface.
-              </p>
-              <div className="card-actions">
-                <button type="button" onClick={() => onNavigate("upgrades")}>
-                  Open Upgrades
-                </button>
-              </div>
-            </div>
-            <section id="collection-milestones" className="collection-section">
-              <div className="panel">
-                <h3>Milestones</h3>
-                <div id="milestone-list" className="card-stack">
-                  {milestones.map((milestone) => {
-                    const unlocked = state.unlockedMilestones.includes(milestone.id);
-                    return (
-                      <div className="card" key={milestone.id}>
-                        <h3>{milestone.name}</h3>
-                        <p>{milestone.description}</p>
-                        <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
-                        <p>{unlocked ? "Unlocked" : "Locked"}</p>
-                      </div>
-                    );
-                  })}
+
+            {isCompactLayout ? (
+              <details
+                id="collection-milestones"
+                className="collection-section collection-mobile-accordion"
+                open={isMobileSectionOpen("milestones")}
+                onToggle={(event) =>
+                  handleMobileSectionToggle("milestones", event.currentTarget.open)
+                }
+                data-testid="collection-milestones-details"
+              >
+                <summary data-testid="collection-milestones-toggle">
+                  <span>Milestones</span>
+                  <span className="muted">
+                    {isMobileSectionOpen("milestones") ? "Collapse" : "Expand"}
+                  </span>
+                </summary>
+                <div className="collection-mobile-accordion-body">
+                  <div className="panel">
+                    <h3>Milestones</h3>
+                    <div id="milestone-list" className="card-stack">
+                      {milestones.map((milestone) => {
+                        const unlocked = state.unlockedMilestones.includes(milestone.id);
+                        return (
+                          <div className="card" key={milestone.id}>
+                            <h3>{milestone.name}</h3>
+                            <p>{milestone.description}</p>
+                            <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
+                            <p>{unlocked ? "Unlocked" : "Locked"}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </section>
-            <section id="collection-achievements" className="collection-section">
-              <div className="panel">
-                <h3>Achievements</h3>
-                <p className="muted">Permanent proof of your collection milestones.</p>
-                <div className="card-stack">
-                  {achievements
-                    .filter((achievement) => {
-                      if (!settings.hideCompletedAchievements) {
-                        return true;
-                      }
-                      return !state.achievementUnlocks.includes(achievement.id);
-                    })
-                    .map((achievement) => {
-                      const unlocked = state.achievementUnlocks.includes(achievement.id);
-                      const progress = getAchievementUnlockProgressDetail(state, achievement.id);
-                      const categoryLabel =
-                        achievement.category === "mini-game"
-                          ? "Mini-game"
-                          : achievement.category === "career"
-                            ? "Career"
-                            : achievement.category === "prestige"
-                              ? "Prestige"
-                              : "Collection";
+              </details>
+            ) : (
+              <section id="collection-milestones" className="collection-section">
+                <div className="panel">
+                  <h3>Milestones</h3>
+                  <div id="milestone-list" className="card-stack">
+                    {milestones.map((milestone) => {
+                      const unlocked = state.unlockedMilestones.includes(milestone.id);
                       return (
-                        <div className="card" key={achievement.id}>
-                          <h3>{achievement.name}</h3>
-                          <p>{achievement.description}</p>
-                          <p className="muted">{categoryLabel}</p>
-                          <p className="muted">
-                            {progress.current.toLocaleString()} /{" "}
-                            {progress.threshold.toLocaleString()}
-                          </p>
+                        <div className="card" key={milestone.id}>
+                          <h3>{milestone.name}</h3>
+                          <p>{milestone.description}</p>
+                          <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
+                          <p>{unlocked ? "Unlocked" : "Locked"}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {isCompactLayout ? (
+              <details
+                id="collection-achievements"
+                className="collection-section collection-mobile-accordion"
+                open={isMobileSectionOpen("achievements")}
+                onToggle={(event) =>
+                  handleMobileSectionToggle("achievements", event.currentTarget.open)
+                }
+                data-testid="collection-achievements-details"
+              >
+                <summary data-testid="collection-achievements-toggle">
+                  <span>Achievements</span>
+                  <span className="muted">
+                    {isMobileSectionOpen("achievements") ? "Collapse" : "Expand"}
+                  </span>
+                </summary>
+                <div className="collection-mobile-accordion-body">
+                  <div className="panel">
+                    <h3>Achievements</h3>
+                    <p className="muted">Permanent proof of your collection milestones.</p>
+                    <div className="card-stack">
+                      {achievements
+                        .filter((achievement) => {
+                          if (!settings.hideCompletedAchievements) {
+                            return true;
+                          }
+                          return !state.achievementUnlocks.includes(achievement.id);
+                        })
+                        .map((achievement) => {
+                          const unlocked = state.achievementUnlocks.includes(achievement.id);
+                          const progress = getAchievementUnlockProgressDetail(state, achievement.id);
+                          const categoryLabel =
+                            achievement.category === "mini-game"
+                              ? "Mini-game"
+                              : achievement.category === "career"
+                                ? "Career"
+                                : achievement.category === "prestige"
+                                  ? "Prestige"
+                                  : "Collection";
+                          return (
+                            <div className="card" key={achievement.id}>
+                              <h3>{achievement.name}</h3>
+                              <p>{achievement.description}</p>
+                              <p className="muted">{categoryLabel}</p>
+                              <p className="muted">
+                                {progress.current.toLocaleString()} /{" "}
+                                {progress.threshold.toLocaleString()}
+                              </p>
+                              <p className="muted" aria-live="polite">
+                                {unlocked ? "Unlocked" : "Locked"}
+                              </p>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                </div>
+              </details>
+            ) : (
+              <section id="collection-achievements" className="collection-section">
+                <div className="panel">
+                  <h3>Achievements</h3>
+                  <p className="muted">Permanent proof of your collection milestones.</p>
+                  <div className="card-stack">
+                    {achievements
+                      .filter((achievement) => {
+                        if (!settings.hideCompletedAchievements) {
+                          return true;
+                        }
+                        return !state.achievementUnlocks.includes(achievement.id);
+                      })
+                      .map((achievement) => {
+                        const unlocked = state.achievementUnlocks.includes(achievement.id);
+                        const progress = getAchievementUnlockProgressDetail(state, achievement.id);
+                        const categoryLabel =
+                          achievement.category === "mini-game"
+                            ? "Mini-game"
+                            : achievement.category === "career"
+                              ? "Career"
+                              : achievement.category === "prestige"
+                                ? "Prestige"
+                                : "Collection";
+                        return (
+                          <div className="card" key={achievement.id}>
+                            <h3>{achievement.name}</h3>
+                            <p>{achievement.description}</p>
+                            <p className="muted">{categoryLabel}</p>
+                            <p className="muted">
+                              {progress.current.toLocaleString()} /{" "}
+                              {progress.threshold.toLocaleString()}
+                            </p>
+                            <p className="muted" aria-live="polite">
+                              {unlocked ? "Unlocked" : "Locked"}
+                            </p>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {isCompactLayout ? (
+              <details
+                id="collection-events"
+                className="collection-section collection-mobile-accordion"
+                open={isMobileSectionOpen("events")}
+                onToggle={(event) =>
+                  handleMobileSectionToggle("events", event.currentTarget.open)
+                }
+                data-testid="collection-events-details"
+              >
+                <summary data-testid="collection-events-toggle">
+                  <span>Events</span>
+                  <span className="muted">{isMobileSectionOpen("events") ? "Collapse" : "Expand"}</span>
+                </summary>
+                <div className="collection-mobile-accordion-body">
+                  <div className="panel">
+                    <h3>Events</h3>
+                    <p className="muted">
+                      Live boosts cycle in and out. Current multiplier x
+                      {currentEventMultiplier.toFixed(2)}.
+                    </p>
+                    <div className="card-stack">
+                      {events.map((event) => {
+                        const active = isEventActive(state, event.id, nowMs);
+                        const effectiveMultiplier = active
+                          ? (state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier)
+                          : event.incomeMultiplier;
+                        const statusLabel = getEventStatusLabel(state, event.id, nowMs);
+                        return (
+                          <div className="card" key={event.id}>
+                            <div className="card-header">
+                              <div>
+                                <h3>{event.name}</h3>
+                                <p>{event.description}</p>
+                              </div>
+                              <div className="muted">{active ? "Live" : "Idle"}</div>
+                            </div>
+                            <p>Income x{effectiveMultiplier.toFixed(2)}</p>
+                            <p className="muted" aria-live="polite">
+                              {statusLabel}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </details>
+            ) : (
+              <section id="collection-events" className="collection-section">
+                <div className="panel">
+                  <h3>Events</h3>
+                  <p className="muted">
+                    Live boosts cycle in and out. Current multiplier x
+                    {currentEventMultiplier.toFixed(2)}.
+                  </p>
+                  <div className="card-stack">
+                    {events.map((event) => {
+                      const active = isEventActive(state, event.id, nowMs);
+                      const effectiveMultiplier = active
+                        ? (state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier)
+                        : event.incomeMultiplier;
+                      const statusLabel = getEventStatusLabel(state, event.id, nowMs);
+                      return (
+                        <div className="card" key={event.id}>
+                          <div className="card-header">
+                            <div>
+                              <h3>{event.name}</h3>
+                              <p>{event.description}</p>
+                            </div>
+                            <div className="muted">{active ? "Live" : "Idle"}</div>
+                          </div>
+                          <p>Income x{effectiveMultiplier.toFixed(2)}</p>
                           <p className="muted" aria-live="polite">
-                            {unlocked ? "Unlocked" : "Locked"}
+                            {statusLabel}
                           </p>
                         </div>
                       );
                     })}
+                  </div>
                 </div>
-              </div>
-            </section>
-            <section id="collection-events" className="collection-section">
-              <div className="panel">
-                <h3>Events</h3>
-                <p className="muted">
-                  Live boosts cycle in and out. Current multiplier x
-                  {currentEventMultiplier.toFixed(2)}.
-                </p>
-                <div className="card-stack">
-                  {events.map((event) => {
-                    const active = isEventActive(state, event.id, nowMs);
-                    const effectiveMultiplier = active
-                      ? (state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier)
-                      : event.incomeMultiplier;
-                    const statusLabel = getEventStatusLabel(state, event.id, nowMs);
-                    return (
-                      <div className="card" key={event.id}>
-                        <div className="card-header">
-                          <div>
-                            <h3>{event.name}</h3>
-                            <p>{event.description}</p>
-                          </div>
-                          <div className="muted">{active ? "Live" : "Idle"}</div>
-                        </div>
-                        <p>Income x{effectiveMultiplier.toFixed(2)}</p>
-                        <p className="muted" aria-live="polite">
-                          {statusLabel}
-                        </p>
-                      </div>
-                    );
-                  })}
+              </section>
+            )}
+
+            {isCompactLayout ? (
+              <details
+                id="collection-crafting"
+                className="collection-section collection-mobile-accordion"
+                open={isMobileSectionOpen("crafting")}
+                onToggle={(event) =>
+                  handleMobileSectionToggle("crafting", event.currentTarget.open)
+                }
+                data-testid="collection-crafting-details"
+              >
+                <summary data-testid="collection-crafting-toggle">
+                  <span>Crafting workshop</span>
+                  <span className="muted">
+                    {isMobileSectionOpen("crafting") ? "Collapse" : "Expand"}
+                  </span>
+                </summary>
+                <div className="collection-mobile-accordion-body">
+                  <div className="panel" data-testid="crafting-panel">
+                    <h3>Crafting workshop</h3>
+                    <p className="muted">
+                      Break down watches into parts, then craft permanent collection boosts.
+                    </p>
+                    <div className="results-count" data-testid="crafting-parts">
+                      {craftingParts} parts
+                    </div>
+                    {renderCraftingRecipes("crafting-recipes")}
+                    {renderCraftingBoosts("crafting-boosts")}
+                  </div>
                 </div>
-              </div>
-            </section>
-            <section id="collection-crafting" className="collection-section">
-              <div className="panel" data-testid="crafting-panel">
-                <h3>Crafting workshop</h3>
-                <p className="muted">
-                  Break down watches into parts, then craft permanent collection boosts.
-                </p>
-                <div className="results-count" data-testid="crafting-parts">
-                  {craftingParts} parts
+              </details>
+            ) : (
+              <section id="collection-crafting" className="collection-section">
+                <div className="panel" data-testid="crafting-panel">
+                  <h3>Crafting workshop</h3>
+                  <p className="muted">
+                    Break down watches into parts, then craft permanent collection boosts.
+                  </p>
+                  <div className="results-count" data-testid="crafting-parts">
+                    {craftingParts} parts
+                  </div>
+                  {renderCraftingRecipes("crafting-recipes")}
+                  {renderCraftingBoosts("crafting-boosts")}
                 </div>
-                {renderCraftingRecipes("crafting-recipes")}
-                {renderCraftingBoosts("crafting-boosts")}
-              </div>
-            </section>
+              </section>
+            )}
 
             {wornPickerOpen && (
               <div

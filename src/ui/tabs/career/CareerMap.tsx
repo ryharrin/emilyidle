@@ -32,6 +32,7 @@ import type {
   CareerMapLayout,
   CareerMapNode,
 } from "../../components/careerMap/types";
+import { ConfirmModal } from "../../components/ConfirmModal";
 
 type CareerMapProps = {
   state: GameState;
@@ -63,6 +64,40 @@ function getPreviewArgs(action: NodeAction): CareerChoicePreviewArgs {
     case "expansionFocus":
       return { stageId: "private-practice-owner", choiceId: action.choiceId };
   }
+}
+
+function getChoiceLabel(action: NodeAction): string {
+  if (action.type === "track") {
+    return CAREER_TRACKS.find((track) => track.id === action.trackId)?.label ?? action.trackId;
+  }
+  if (action.type === "modality") {
+    return (
+      CAREER_MODALITIES.find((choice) => choice.id === action.choiceId)?.label ?? action.choiceId
+    );
+  }
+  if (action.type === "operatingStyle") {
+    return (
+      CAREER_OPERATING_STYLES.find((choice) => choice.id === action.choiceId)?.label ??
+      action.choiceId
+    );
+  }
+  return (
+    CAREER_EXPANSION_FOCUSES.find((choice) => choice.id === action.choiceId)?.label ??
+    action.choiceId
+  );
+}
+
+function getChoiceStageLabel(action: NodeAction): string {
+  if (action.type === "track") {
+    return "primary track";
+  }
+  if (action.type === "modality") {
+    return "modality";
+  }
+  if (action.type === "operatingStyle") {
+    return "operating style";
+  }
+  return "expansion focus";
 }
 
 function layoutCareerMap(state: GameState): {
@@ -301,11 +336,34 @@ function layoutCareerMap(state: GameState): {
 export function CareerMap({ state, onPurchase }: CareerMapProps) {
   const career = getTherapistCareer(state);
   const { layout, actions, bodies } = React.useMemo(() => layoutCareerMap(state), [state]);
+  const [pendingChoiceAction, setPendingChoiceAction] = React.useState<NodeAction | null>(null);
   const currentStageId = getTherapistCareerStageId(career.level);
   const currentStage =
     CAREER_STAGES.find((stage) => stage.id === currentStageId) ?? CAREER_STAGES[0];
   const unlockedStages = CAREER_STAGES.filter((stage) => career.level >= stage.unlockLevel).length;
   const pendingChoices = getTherapistCareerChoiceStatus(state).filter((status) => !status.chosen);
+
+  const commitChoiceAction = React.useCallback(
+    (action: NodeAction) => {
+      if (action.type === "track") {
+        onPurchase(selectPrimaryCareerTrack(state, action.trackId));
+        return;
+      }
+
+      if (action.type === "modality") {
+        onPurchase(chooseCareerModality(state, action.choiceId));
+        return;
+      }
+
+      if (action.type === "operatingStyle") {
+        onPurchase(chooseCareerOperatingStyle(state, action.choiceId));
+        return;
+      }
+
+      onPurchase(chooseCareerExpansionFocus(state, action.choiceId));
+    },
+    [onPurchase, state],
+  );
 
   const handleNodeClick = (nodeId: string) => {
     const action = actions.get(nodeId);
@@ -313,25 +371,19 @@ export function CareerMap({ state, onPurchase }: CareerMapProps) {
       return;
     }
 
-    if (action.type === "track") {
-      onPurchase(selectPrimaryCareerTrack(state, action.trackId));
-      return;
-    }
-
-    if (action.type === "modality") {
-      onPurchase(chooseCareerModality(state, action.choiceId));
-      return;
-    }
-
-    if (action.type === "operatingStyle") {
-      onPurchase(chooseCareerOperatingStyle(state, action.choiceId));
-      return;
-    }
-
-    if (action.type === "expansionFocus") {
-      onPurchase(chooseCareerExpansionFocus(state, action.choiceId));
-    }
+    setPendingChoiceAction(action);
   };
+
+  const confirmPendingChoice = () => {
+    if (!pendingChoiceAction) {
+      return;
+    }
+    commitChoiceAction(pendingChoiceAction);
+    setPendingChoiceAction(null);
+  };
+
+  const choiceLabel = pendingChoiceAction ? getChoiceLabel(pendingChoiceAction) : "";
+  const stageLabel = pendingChoiceAction ? getChoiceStageLabel(pendingChoiceAction) : "";
 
   return (
     <div className="career-map-shell" data-testid="career-map-shell">
@@ -350,7 +402,9 @@ export function CareerMap({ state, onPurchase }: CareerMapProps) {
           </div>
           <div className="career-canvas-instrument">
             <dt>Stage index</dt>
-            <dd>{unlockedStages}/{CAREER_STAGES.length}</dd>
+            <dd>
+              {unlockedStages}/{CAREER_STAGES.length}
+            </dd>
           </div>
           <div className="career-canvas-instrument">
             <dt>Pending choices</dt>
@@ -366,6 +420,17 @@ export function CareerMap({ state, onPurchase }: CareerMapProps) {
         onNodeClick={handleNodeClick}
         isNodeInteractive={(nodeId) => actions.has(nodeId)}
         renderNodeBody={(nodeId) => bodies.get(nodeId) ?? null}
+      />
+      <ConfirmModal
+        open={pendingChoiceAction !== null}
+        title="Lock in permanent choice"
+        description={`Choose ${choiceLabel} as your ${stageLabel}. This permanent choice cannot be changed in this run.`}
+        confirmLabel="Confirm choice"
+        cancelLabel="Keep browsing"
+        confirmTestId="career-permanent-choice-confirm"
+        cancelTestId="career-permanent-choice-cancel"
+        onConfirm={confirmPendingChoice}
+        onCancel={() => setPendingChoiceAction(null)}
       />
     </div>
   );

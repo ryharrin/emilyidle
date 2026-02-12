@@ -70,6 +70,8 @@ describe("catalog purchase undo UI", () => {
     await user.click(undoButton);
 
     expect(undoButton.disabled).toBe(true);
-    expect(screen.getByTestId("catalog-undo-countdown").textContent).toMatch(/No undo/i);
+    expect(screen.getByTestId("catalog-undo-countdown").textContent).toMatch(
+      /No purchase to undo/i,
+    );
   });
 });

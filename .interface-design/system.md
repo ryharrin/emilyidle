@@ -63,6 +63,17 @@
   - Use cluster wrappers (`panel-cluster-*`) for collection insights, compare, and career stage cards.
   - Keep shared surface rhythm: 14-18px radius, border-led depth, restrained gradients from same hue family.
   - Use active state accents only for meaningful availability/selection signals.
+- Career "Now" Focus Cluster:
+  - Keep desktop split with a stronger `now` rail (`~416px`) against deep canvas content to signal action priority.
+  - Treat the top "next action" card as focal: larger interior padding, stronger champagne border/gradient, and calmer surrounding cards.
+  - Add a thin left accent rail on the focal card to reinforce "start here" priority without heavy shadows.
+  - Use a subtle top-right radial highlight on the focal card instead of dramatic drop shadows.
+  - Build the session value snapshot as instrument tiles (`minmax(144px, 1fr)`), each with micro-label + stronger readout.
+  - Promote `Session cash` as the hero metric tile (spans two columns on desktop; reverts to one column on mobile).
+  - Keep salary window and near-term unlock as separate inset strips with uppercase micro-labels and muted detail lines.
+  - Preserve quiet interactive feedback on snapshot tiles through border/background hover shifts (no heavy lift shadows).
+  - Keep secondary guidance as an inset hint strip and separate action controls with a thin divider for scanability.
+  - Keep this cluster on a strict 4px rhythm for padding/gaps to maintain instrument-panel precision.
 - Career Blueprint Canvas:
   - Add compact HUD/legend instruments directly on map/upgrades viewport.
   - Keep node chips/tiers/status readable at a glance without changing progression logic.

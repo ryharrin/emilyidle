@@ -19,6 +19,30 @@ import {
   type CompareSlotPayload,
 } from "../components/catalog/WatchComparePanel";
 import { PowerReserveHint } from "../components/PowerReserveHint";
+import {
+  buildCatalogDecisionInfo,
+  CatalogDetailsContent,
+  type CatalogDecisionInfo,
+} from "./catalog/CatalogDetailsContent";
+import {
+  CATALOG_BEST_VALUE_TOP_SHARE,
+  CATALOG_MOBILE_MEDIA_QUERY,
+  CATALOG_MOVEMENT_SECTIONS,
+  CATALOG_QUICK_PRESET_HINTS,
+  CATALOG_QUICK_PRESET_LABELS,
+  CATALOG_QUICK_PRESET_ORDER,
+  CATALOG_SORT_LABELS,
+  CATALOG_SORT_ORDER,
+  CATALOG_UNLOCKING_SOON_MIN_RATIO,
+  CATALOG_VIRTUALIZATION_THRESHOLD,
+  CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT,
+  CATALOG_VIRTUALIZER_OVERSCAN,
+  describeGateStatus,
+  formatEtaLabel,
+  formatMovementLabel,
+  getGateEtaLabel,
+  type CatalogQuickPreset,
+} from "./catalog/catalogPresentation";
 
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import { isTestEnvironment } from "../../game/runtime/isTestEnvironment";
@@ -32,16 +56,20 @@ import {
 import type { CatalogEntry } from "../../game/catalog";
 import type { CatalogTierId } from "../../game/model/types";
 import {
+  getAffordabilityEtaSecondsForDeficit,
   buyWatchModel,
   buyWatchModelWithUndo,
   dismantleWatchModel,
+  getEffectiveCashRateCentsPerSec,
   getCraftingPartsPerWatch,
+  getEnjoymentRateCentsPerSec,
   getInteractionCooldownRemainingMs,
   getInteractionMovementGate,
   getMilestoneUnlockProgressDetail,
   getNextDuplicateRewardMultiplier,
   getPerWatchStatsRows,
   getPowerReserveDetail,
+  getResourceDeficit,
   getWatchItems,
   getWatchModelOwnedCount,
   getWatchModelPurchaseGate,
@@ -51,8 +79,8 @@ import {
   setWornWatchId,
   toggleWatchFavorite,
   undoLastPurchase,
+  WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS,
   type GameState,
-  type WatchModelPurchaseGate,
   type WatchItemId,
 } from "../../game/state";
 
@@ -85,6 +113,8 @@ type CatalogTabProps = {
   onCatalogTypeChange: (next: "all" | "gmt" | "manual" | "dress" | "diver") => void;
   catalogTab: "unowned" | "owned";
   onCatalogTabChange: (next: "unowned" | "owned") => void;
+  catalogViewMode: "novice" | "expert";
+  onCatalogViewModeChange: (next: "novice" | "expert") => void;
   catalogBrands: ReadonlyArray<string>;
   filteredCatalogEntries: ReadonlyArray<CatalogEntry>;
   discoveredCatalogEntries: ReadonlyArray<CatalogEntry>;
@@ -98,117 +128,7 @@ type CatalogTabProps = {
   atelierUnlocked?: boolean;
 };
 
-type CatalogFilterOptions = {
-  brand: string;
-  style: CatalogTabProps["catalogStyle"];
-  era: CatalogTabProps["catalogEra"];
-  type: CatalogTabProps["catalogType"];
-  query: string;
-};
-
-function matchesCatalogFilters(entry: CatalogEntry, options: CatalogFilterOptions): boolean {
-  const entryTags = getCatalogEntryTags(entry);
-  const matchesBrand = options.brand === "All" || entry.brand === options.brand;
-  const matchesStyle = options.style === "all" || entryTags.includes("womens");
-  const year = entry.year === "Unknown" ? null : Number(entry.year);
-  const matchesEra = (() => {
-    switch (options.era) {
-      case "all":
-        return true;
-      case "unknown":
-        return year === null;
-      case "pre-1970":
-        return year !== null && year < 1970;
-      case "1970-1999":
-        return year !== null && year >= 1970 && year <= 1999;
-      default:
-        return year !== null && year >= 2000;
-    }
-  })();
-  const matchesType =
-    options.type === "all" || entryTags.some((tag) => tag.toLowerCase() === options.type);
-  const tags = entryTags.join(" ");
-  const matchesQuery =
-    options.query.length === 0 ||
-    `${entry.brand} ${entry.model} ${entry.description} ${entry.year} ${tags}`
-      .toLowerCase()
-      .includes(options.query);
-  return matchesBrand && matchesStyle && matchesEra && matchesType && matchesQuery;
-}
-
-function describeGateStatus(gate: WatchModelPurchaseGate): string {
-  if (gate.ok) {
-    return "Ready to buy";
-  }
-  const reasons: string[] = [];
-  if (gate.cashDeficitCents && gate.cashDeficitCents > 0) {
-    reasons.push(`Need ${formatMoneyFromCents(gate.cashDeficitCents)} cash`);
-  }
-  if (gate.enjoymentDeficitCents && gate.enjoymentDeficitCents > 0) {
-    reasons.push(`Need ${formatMoneyFromCents(gate.enjoymentDeficitCents)} enjoyment`);
-  }
-  return reasons.length > 0 ? reasons.join(" + ") : "Awaiting resources";
-}
-
-function formatMovementLabel(movement?: string): string {
-  if (!movement) {
-    return "Movement unavailable";
-  }
-  return `${movement.charAt(0).toUpperCase()}${movement.slice(1)} movement`;
-}
-
-type CatalogMovementSectionDefinition = {
-  id: CatalogTierId;
-  title: string;
-  description: string;
-  note: string;
-};
-
-const CATALOG_MOVEMENT_SECTIONS: ReadonlyArray<CatalogMovementSectionDefinition> = [
-  {
-    id: "quartz",
-    title: "Quartz movement",
-    description: "Battery-powered watches focused on precision and easy entry progression.",
-    note: "Reliable pacing and low friction make this the quickest movement family to scale.",
-  },
-  {
-    id: "automatic",
-    title: "Automatic movement",
-    description: "Rotor-driven mechanical watches with balanced reward pacing.",
-    note: "Automatic references maintain reserve through wear and reward steady ownership.",
-  },
-  {
-    id: "manual",
-    title: "Manual movement",
-    description: "Hand-wound mechanical watches emphasizing interaction depth and craft.",
-    note: "Manual references reward active winding and detail-oriented collecting.",
-  },
-  {
-    id: "tourbillon",
-    title: "Tourbillon movement",
-    description: "High-complication tourbillons reserved for prestige collection goals.",
-    note: "Tourbillon references sit at the top of progression and provide premium bonuses.",
-  },
-];
-
-const CATALOG_VIRTUALIZATION_THRESHOLD = 200;
-const CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT = 420;
-const CATALOG_VIRTUALIZER_OVERSCAN = 6;
-const PURCHASE_UNDO_WINDOW_MS = 10_000;
-const CATALOG_MOBILE_MEDIA_QUERY = "(max-width: 720px)";
-const CATALOG_SORT_ORDER: readonly CatalogTabProps["catalogSort"][] = [
-  "default",
-  "brand",
-  "year",
-  "tier",
-];
-
-const CATALOG_SORT_LABELS: Record<CatalogTabProps["catalogSort"], string> = {
-  default: "Default",
-  brand: "Brand",
-  year: "Year",
-  tier: "Tier",
-};
+const PURCHASE_UNDO_WINDOW_SECONDS = Math.floor(WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS / 1_000);
 
 type CatalogOwnershipTabId = CatalogTabProps["catalogTab"];
 
@@ -343,6 +263,8 @@ export function CatalogPurchasePanel({
   onCatalogTypeChange,
   catalogTab,
   onCatalogTabChange,
+  catalogViewMode,
+  onCatalogViewModeChange,
   catalogBrands,
   filteredCatalogEntries,
   discoveredCatalogEntries,
@@ -441,10 +363,15 @@ export function CatalogPurchasePanel({
   }, [isMobileViewport]);
 
   const isCompactDensity = catalogDensity === "compact";
+  const isNoviceViewMode = catalogViewMode === "novice";
+  const isExpertViewMode = catalogViewMode === "expert";
   const toggleCatalogDensity = React.useCallback(() => {
     catalogDensityOverriddenRef.current = true;
     setCatalogDensity((value) => (value === "compact" ? "expanded" : "compact"));
   }, []);
+  const toggleCatalogViewMode = React.useCallback(() => {
+    onCatalogViewModeChange(catalogViewMode === "novice" ? "expert" : "novice");
+  }, [catalogViewMode, onCatalogViewModeChange]);
 
   const favoriteSet = React.useMemo(
     () => new Set(state.favoriteWatchIds ?? []),
@@ -453,6 +380,7 @@ export function CatalogPurchasePanel({
 
   const [filtersOpen, setFiltersOpen] = React.useState<boolean>(() => isTestEnvironment());
   const [catalogFavoritesOnly, setCatalogFavoritesOnly] = React.useState(false);
+  const [catalogQuickPreset, setCatalogQuickPreset] = React.useState<CatalogQuickPreset>("all");
   const favoriteIdsSignature = React.useMemo(
     () => (state.favoriteWatchIds ?? []).join(","),
     [state.favoriteWatchIds],
@@ -467,6 +395,7 @@ export function CatalogPurchasePanel({
         catalogSort,
         catalogEra,
         catalogType,
+        catalogQuickPreset,
         catalogFavoritesOnly ? "favorites-only" : "all-catalog",
         catalogFavoritesOnly ? favoriteIdsSignature : "favorites-ignored",
       ].join("|"),
@@ -479,6 +408,7 @@ export function CatalogPurchasePanel({
       catalogStyle,
       catalogTab,
       catalogType,
+      catalogQuickPreset,
       favoriteIdsSignature,
     ],
   );
@@ -488,6 +418,7 @@ export function CatalogPurchasePanel({
     catalogStyle !== "all",
     catalogEra !== "all",
     catalogType !== "all",
+    catalogQuickPreset !== "all",
   ].filter(Boolean).length;
   React.useEffect(() => {
     if (activeFilterCount > 0 && !filtersOpen) {
@@ -507,6 +438,15 @@ export function CatalogPurchasePanel({
     onCatalogSortChange(nextSort);
   }, [catalogSort, onCatalogSortChange]);
   const quickSortLabel = CATALOG_SORT_LABELS[catalogSort];
+  const cycleCatalogQuickPreset = React.useCallback(() => {
+    const currentIndex = CATALOG_QUICK_PRESET_ORDER.indexOf(catalogQuickPreset);
+    const nextPreset =
+      CATALOG_QUICK_PRESET_ORDER[
+        (currentIndex + 1 + CATALOG_QUICK_PRESET_ORDER.length) % CATALOG_QUICK_PRESET_ORDER.length
+      ];
+    setCatalogQuickPreset(nextPreset);
+  }, [catalogQuickPreset]);
+  const quickPresetLabel = CATALOG_QUICK_PRESET_LABELS[catalogQuickPreset];
 
   const catalogEntriesForView = React.useMemo(
     () =>
@@ -515,12 +455,6 @@ export function CatalogPurchasePanel({
         : filteredCatalogEntries,
     [catalogFavoritesOnly, favoriteSet, filteredCatalogEntries],
   );
-
-  const stableCatalogEntries = useStableCatalogEntries({
-    entries: catalogEntriesForView,
-    allEntries: catalogEntries,
-    signature: filterSignature,
-  });
 
   const catalogEntryById = React.useMemo(
     () => new Map(catalogEntries.map((entry) => [entry.id, entry])),
@@ -541,6 +475,16 @@ export function CatalogPurchasePanel({
       };
       row.catalogEntryIds.forEach((entryId) => {
         map.set(entryId, stats);
+      });
+    }
+    return map;
+  }, [perWatchRows]);
+  const previewRateByEntry = React.useMemo(() => {
+    const map = new Map<string, number>();
+    for (const row of perWatchRows) {
+      const valueRate = Math.max(0, row.enjoymentCentsPerSec) + Math.max(0, row.cashCentsPerSec);
+      row.catalogEntryIds.forEach((entryId) => {
+        map.set(entryId, valueRate);
       });
     }
     return map;
@@ -636,16 +580,38 @@ export function CatalogPurchasePanel({
     () => (typeof nowMs === "number" ? nowMs : Date.now()),
     [nowMs],
   );
+  const effectiveEventMultiplier = currentEventMultiplier ?? 1;
+  const effectiveCashRateCentsPerSec = React.useMemo(
+    () => getEffectiveCashRateCentsPerSec(state, effectiveNowMs, effectiveEventMultiplier),
+    [effectiveEventMultiplier, effectiveNowMs, state],
+  );
+  const effectiveEnjoymentRateCentsPerSec = React.useMemo(
+    () => getEnjoymentRateCentsPerSec(state) * effectiveEventMultiplier,
+    [effectiveEventMultiplier, state],
+  );
   const undoRemainingMs = React.useMemo(() => {
     if (!state.lastPurchase) {
       return 0;
     }
     return Math.max(
       0,
-      PURCHASE_UNDO_WINDOW_MS - Math.max(0, effectiveNowMs - state.lastPurchase.purchasedAtMs),
+      WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS -
+        Math.max(0, effectiveNowMs - state.lastPurchase.purchasedAtMs),
     );
   }, [effectiveNowMs, state.lastPurchase]);
   const canUndoLastPurchase = state.lastPurchase !== null && undoRemainingMs > 0;
+  const lastPurchaseModelId = state.lastPurchase?.modelId ?? null;
+  const undoElapsedMs = state.lastPurchase
+    ? Math.max(0, effectiveNowMs - state.lastPurchase.purchasedAtMs)
+    : 0;
+  const undoExpiredMsAgo = state.lastPurchase
+    ? Math.max(0, undoElapsedMs - WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS)
+    : 0;
+  const undoStatus: "available" | "expired" | "idle" = canUndoLastPurchase
+    ? "available"
+    : lastPurchaseModelId
+      ? "expired"
+      : "idle";
 
   const handlePurchase = React.useCallback(
     (entryId: string) => {
@@ -655,38 +621,84 @@ export function CatalogPurchasePanel({
     [effectiveNowMs, onPurchase, state, triggerPurchaseHighlight],
   );
 
-  const catalogFilterOptions = React.useMemo(
-    () => ({
-      brand: catalogBrand,
-      style: catalogStyle,
-      era: catalogEra,
-      type: catalogType,
-      query: catalogSearch.trim().toLowerCase(),
-    }),
-    [catalogBrand, catalogEra, catalogSearch, catalogStyle, catalogType],
-  );
+  const quickPresetEntryIds = React.useMemo(() => {
+    if (catalogQuickPreset === "all") {
+      return null;
+    }
 
-  const visibleUnownedEntries = React.useMemo(
-    () =>
-      catalogEntries.filter(
-        (entry) =>
-          (!catalogFavoritesOnly || favoriteSet.has(entry.id)) &&
-          matchesCatalogFilters(entry, catalogFilterOptions) &&
-          getWatchModelOwnedCount(state, entry.id) === 0,
-      ),
-    [catalogEntries, catalogFilterOptions, state, catalogFavoritesOnly, favoriteSet],
-  );
+    if (catalogQuickPreset === "best-value") {
+      const scored = catalogEntriesForView
+        .map((entry) => {
+          const tierId = getWatchModelTierId(entry.id);
+          if (!isItemUnlocked(state, tierId)) {
+            return null;
+          }
+          const gate = getWatchModelPurchaseGate(state, entry.id);
+          if (!gate.ok || gate.cashPriceCents <= 0) {
+            return null;
+          }
+          const valueRate = previewRateByEntry.get(entry.id) ?? 0;
+          const score = valueRate / gate.cashPriceCents;
+          if (!Number.isFinite(score) || score <= 0) {
+            return null;
+          }
+          return { id: entry.id, score };
+        })
+        .filter((entry): entry is { id: string; score: number } => entry !== null)
+        .sort((left, right) => right.score - left.score);
+      if (scored.length === 0) {
+        return new Set<string>();
+      }
+      const count = Math.max(1, Math.ceil(scored.length * CATALOG_BEST_VALUE_TOP_SHARE));
+      return new Set(scored.slice(0, count).map((entry) => entry.id));
+    }
 
-  const visibleOwnedEntries = React.useMemo(
-    () =>
-      catalogEntries.filter(
-        (entry) =>
-          (!catalogFavoritesOnly || favoriteSet.has(entry.id)) &&
-          matchesCatalogFilters(entry, catalogFilterOptions) &&
-          getWatchModelOwnedCount(state, entry.id) > 0,
-      ),
-    [catalogEntries, catalogFilterOptions, state, catalogFavoritesOnly, favoriteSet],
-  );
+    return new Set(
+      catalogEntriesForView
+        .filter((entry) => {
+          const tierId = getWatchModelTierId(entry.id);
+          const unlocked = isItemUnlocked(state, tierId);
+          const gate = getWatchModelPurchaseGate(state, entry.id);
+          if (catalogQuickPreset === "affordable") {
+            return unlocked && gate.ok;
+          }
+          if (catalogQuickPreset === "needs-enjoyment") {
+            return (
+              unlocked &&
+              !gate.ok &&
+              gate.blocksBy === "enjoyment" &&
+              (gate.enjoymentDeficitCents ?? 0) > 0
+            );
+          }
+          if (catalogQuickPreset === "unlocking-soon") {
+            if (unlocked) {
+              return false;
+            }
+            const unlockMilestoneId = watchItemById.get(tierId)?.unlockMilestoneId;
+            if (!unlockMilestoneId) {
+              return false;
+            }
+            const unlockDetail = getMilestoneUnlockProgressDetail(state, unlockMilestoneId);
+            return unlockDetail.ratio >= CATALOG_UNLOCKING_SOON_MIN_RATIO && unlockDetail.ratio < 1;
+          }
+          return true;
+        })
+        .map((entry) => entry.id),
+    );
+  }, [catalogEntriesForView, catalogQuickPreset, previewRateByEntry, state, watchItemById]);
+
+  const presetFilteredEntries = React.useMemo(() => {
+    if (quickPresetEntryIds === null) {
+      return catalogEntriesForView;
+    }
+    return catalogEntriesForView.filter((entry) => quickPresetEntryIds.has(entry.id));
+  }, [catalogEntriesForView, quickPresetEntryIds]);
+
+  const stableCatalogEntries = useStableCatalogEntries({
+    entries: presetFilteredEntries,
+    allEntries: catalogEntries,
+    signature: filterSignature,
+  });
 
   const hasQuickActionForOwnedEntry = React.useCallback(
     (entryId: string) => {
@@ -709,36 +721,55 @@ export function CatalogPurchasePanel({
   );
 
   const unownedReady = React.useMemo(
-    () => visibleUnownedEntries.some((entry) => getWatchModelPurchaseGate(state, entry.id).ok),
-    [state, visibleUnownedEntries],
+    () =>
+      stableCatalogEntries.some(
+        (entry) =>
+          getWatchModelOwnedCount(state, entry.id) === 0 &&
+          getWatchModelPurchaseGate(state, entry.id).ok,
+      ),
+    [stableCatalogEntries, state],
   );
 
   const ownedReady = React.useMemo(
-    () => visibleOwnedEntries.some((entry) => hasQuickActionForOwnedEntry(entry.id)),
-    [hasQuickActionForOwnedEntry, visibleOwnedEntries],
+    () =>
+      stableCatalogEntries.some(
+        (entry) =>
+          getWatchModelOwnedCount(state, entry.id) > 0 && hasQuickActionForOwnedEntry(entry.id),
+      ),
+    [hasQuickActionForOwnedEntry, stableCatalogEntries, state],
   );
   const readyToBuyCount = React.useMemo(
     () =>
-      visibleUnownedEntries.reduce(
-        (count, entry) => count + (getWatchModelPurchaseGate(state, entry.id).ok ? 1 : 0),
-        0,
-      ),
-    [state, visibleUnownedEntries],
+      stableCatalogEntries.reduce((count, entry) => {
+        if (getWatchModelOwnedCount(state, entry.id) > 0) {
+          return count;
+        }
+        return count + (getWatchModelPurchaseGate(state, entry.id).ok ? 1 : 0);
+      }, 0),
+    [stableCatalogEntries, state],
   );
   const readyOwnedQuickActionsCount = React.useMemo(
     () =>
-      visibleOwnedEntries.reduce(
-        (count, entry) => count + (hasQuickActionForOwnedEntry(entry.id) ? 1 : 0),
-        0,
-      ),
-    [hasQuickActionForOwnedEntry, visibleOwnedEntries],
+      stableCatalogEntries.reduce((count, entry) => {
+        if (getWatchModelOwnedCount(state, entry.id) <= 0) {
+          return count;
+        }
+        return count + (hasQuickActionForOwnedEntry(entry.id) ? 1 : 0);
+      }, 0),
+    [hasQuickActionForOwnedEntry, stableCatalogEntries, state],
   );
-  const undoComplicationValue = canUndoLastPurchase
-    ? `Available ${Math.ceil(undoRemainingMs / 1000)}s`
-    : "No undo";
-  const undoComplicationDetail = state.lastPurchase
-    ? `Last purchase ${state.lastPurchase.modelId}`
-    : "Buy a watch to enable a short undo window.";
+  const undoComplicationValue =
+    undoStatus === "available"
+      ? `Available · ${Math.ceil(undoRemainingMs / 1_000)}s left`
+      : undoStatus === "expired"
+        ? "Expired"
+        : "No undo yet";
+  const undoComplicationDetail =
+    undoStatus === "available"
+      ? `Last purchase ${lastPurchaseModelId} can be reversed until the timer reaches 0s.`
+      : undoStatus === "expired"
+        ? `Last purchase ${lastPurchaseModelId} passed the ${PURCHASE_UNDO_WINDOW_SECONDS}s undo window.`
+        : `Buy a watch to open a ${PURCHASE_UNDO_WINDOW_SECONDS}s undo window.`;
 
   const compareSlotPayloads = React.useMemo<
     [CompareSlotPayload | null, CompareSlotPayload | null]
@@ -775,49 +806,72 @@ export function CatalogPurchasePanel({
     return [buildPayload(normalizedSlots[0]), buildPayload(normalizedSlots[1])];
   }, [compareSlots, catalogEntryById, previewStatsByEntry, state, watchItemById, watchModelById]);
 
-  const renderCatalogDetailsContent = (entry: CatalogEntry, tags: string[], showFacts: boolean) => {
-    const sourceLabel = entry.image.sourceUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    const specs = [
-      { label: "Year", value: entry.year },
-      { label: "Tags", value: tags.join(" · ") },
-      { label: "License", value: entry.image.licenseName },
-      { label: "Author", value: entry.image.author },
-      {
-        label: "Source",
-        value: (
-          <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
-            {sourceLabel}
-          </a>
-        ),
-      },
-    ];
-
-    return (
-      <div className="catalog-details-body">
-        <p className="catalog-description">{entry.description}</p>
-        <ul className="catalog-specs">
-          {specs.map((spec) => (
-            <li key={`${entry.id}-${spec.label}`}>
-              <span className="catalog-spec-label">{spec.label}</span>
-              <span className="catalog-spec-value">{spec.value}</span>
-            </li>
-          ))}
-        </ul>
-        {showFacts && entry.facts && entry.facts.length > 0 && (
-          <div className="catalog-facts">
-            <p className="catalog-facts-title">Collector notes</p>
-            <ul data-testid="catalog-facts">
-              {entry.facts.map((fact) => (
-                <li key={fact}>{fact}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+  const buildDecisionInfoForEntry = (entryId: string): CatalogDecisionInfo => {
+    const tierId = getWatchModelTierId(entryId);
+    const tierItem = watchItemById.get(tierId);
+    if (!tierItem) {
+      throw new Error(`Missing watch tier definition for ${tierId}`);
+    }
+    const tierOwned = state.items[tierId] ?? 0;
+    const totalTierOwned = modelOwnedByTier.get(tierId) ?? 0;
+    const fallbackOwner =
+      totalTierOwned === 0 && tierOwned > 0 && firstModelByTier.get(tierId) === entryId;
+    const modelOwned = getWatchModelOwnedCount(state, entryId);
+    const ownedCount = fallbackOwner ? tierOwned : modelOwned;
+    const unlocked = isItemUnlocked(state, tierId);
+    const unlockMilestoneId = tierItem.unlockMilestoneId;
+    const unlockDetail = unlockMilestoneId
+      ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+      : null;
+    const unlockUsesCents = unlockMilestoneId === "showcase";
+    const unlockProgressLabel = unlockDetail
+      ? `${unlockUsesCents ? formatMoneyFromCents(unlockDetail.current) : formatCount(unlockDetail.current)} / ${
+          unlockUsesCents
+            ? formatMoneyFromCents(unlockDetail.threshold)
+            : formatCount(unlockDetail.threshold)
+        }`
+      : null;
+    const gate = getWatchModelPurchaseGate(state, entryId);
+    const gateEtaLabel = getGateEtaLabel(
+      gate,
+      effectiveCashRateCentsPerSec,
+      effectiveEnjoymentRateCentsPerSec,
     );
+    const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entryId);
+
+    return buildCatalogDecisionInfo({
+      tierId,
+      movement: tierItem.movement,
+      unlocked,
+      ownedCount,
+      unlockRequirementLabel: unlockDetail?.label ?? null,
+      unlockProgressLabel,
+      gateReady: gate.ok,
+      gateEtaLabel,
+      duplicateMultiplier,
+    });
   };
 
-  const renderCatalogDetails = (entry: CatalogEntry, tags: string[], showFacts: boolean) => (
+  const renderCatalogDetailsContent = (
+    entry: CatalogEntry,
+    tags: string[],
+    showFacts: boolean,
+    decisionInfo = buildDecisionInfoForEntry(entry.id),
+  ) => (
+    <CatalogDetailsContent
+      entry={entry}
+      tags={tags}
+      showFacts={showFacts}
+      decisionInfo={decisionInfo}
+    />
+  );
+
+  const renderCatalogDetails = (
+    entry: CatalogEntry,
+    tags: string[],
+    showFacts: boolean,
+    decisionInfo: CatalogDecisionInfo,
+  ) => (
     <details
       className="catalog-details"
       open={expandedCards[entry.id] ?? false}
@@ -825,7 +879,7 @@ export function CatalogPurchasePanel({
       data-testid="catalog-details"
     >
       <summary>Details</summary>
-      {renderCatalogDetailsContent(entry, tags, showFacts)}
+      {renderCatalogDetailsContent(entry, tags, showFacts, decisionInfo)}
     </details>
   );
 
@@ -985,8 +1039,14 @@ export function CatalogPurchasePanel({
         : formatCount(unlockDetail.threshold)
       : "0";
     const gate = getWatchModelPurchaseGate(state, entry.id);
+    const gateEtaLabel = getGateEtaLabel(
+      gate,
+      effectiveCashRateCentsPerSec,
+      effectiveEnjoymentRateCentsPerSec,
+    );
     const previewStats = previewStatsByEntry.get(entry.id);
     const isActionable = unlocked && gate.ok;
+    const hasAffordabilityHighlight = discovered && ownedCount === 0 && isActionable;
     const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
     const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
     const isHighlighted = purchaseHighlights[entry.id];
@@ -1024,13 +1084,29 @@ export function CatalogPurchasePanel({
     const powerReserveDetail = getPowerReserveDetail(state, tierId);
     const showInlineSecondaryActions = !isCompactDensity;
     const showDetailsButton = isCompactDensity || isMobileViewport;
+    const showExpertCardDetails = !isCompactDensity && isExpertViewMode;
+    const showExpertSecondaryActions = showInlineSecondaryActions && isExpertViewMode;
+    const showSecondaryActions = showInlineSecondaryActions || showDetailsButton;
+    const decisionInfo = buildCatalogDecisionInfo({
+      tierId,
+      movement: tierItem.movement,
+      unlocked,
+      ownedCount,
+      unlockRequirementLabel: unlockDetail?.label ?? null,
+      unlockProgressLabel: unlockDetail ? `${unlockCurrentLabel} / ${unlockThresholdLabel}` : null,
+      gateReady: gate.ok,
+      gateEtaLabel,
+      duplicateMultiplier,
+    });
     return (
       <article
         key={entry.id}
         className={`catalog-card ${
           discovered ? "catalog-discovered" : "catalog-locked"
         } ${isHighlighted ? "purchase-flash" : ""} ${
-          isActionable ? "catalog-actionable" : "catalog-nonactionable"
+          hasAffordabilityHighlight ? "catalog-actionable" : ""
+        } ${
+          isActionable ? "" : "catalog-nonactionable"
         } ${isCompared ? "catalog-card-compared" : ""} ${
           isCompactDensity ? "catalog-card-compact" : "catalog-card-expanded"
         }`}
@@ -1115,7 +1191,7 @@ export function CatalogPurchasePanel({
             </div>
             <p className="catalog-year">{entry.year}</p>
           </div>
-          {!isCompactDensity && renderCatalogDetails(entry, tags, showFacts)}
+          {showExpertCardDetails && renderCatalogDetails(entry, tags, showFacts, decisionInfo)}
           {!unlocked && unlockDetail && (
             <div data-testid={`locked-item-hint-${entry.id}`}>
               <UnlockHint
@@ -1128,13 +1204,13 @@ export function CatalogPurchasePanel({
               />
             </div>
           )}
-          {tierItem.movement === "automatic" && ownedCount > 0 && (
+          {isExpertViewMode && tierItem.movement === "automatic" && ownedCount > 0 && (
             <PowerReserveHint
               detail={powerReserveDetail}
               testId={`power-reserve-hint-${entry.id}`}
             />
           )}
-          {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
+          {isExpertViewMode && (craftingPartsPerWatch[tierId] ?? 0) > 0 && (
             <p className="muted">Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts</p>
           )}
           <div className="catalog-action-bar">
@@ -1146,7 +1222,9 @@ export function CatalogPurchasePanel({
               )}
               <span className="catalog-owned">{ownedCount} owned</span>
               <span className="catalog-price">{formatMoneyFromCents(gate.cashPriceCents)}</span>
-              <span className="catalog-duplicate">Next x{duplicateMultiplier.toFixed(2)}</span>
+              {isExpertViewMode && (
+                <span className="catalog-duplicate">Next x{duplicateMultiplier.toFixed(2)}</span>
+              )}
             </div>
             <div className="catalog-primary-actions">
               <CatalogPurchaseGate
@@ -1159,86 +1237,104 @@ export function CatalogPurchasePanel({
                 gate={gate}
                 buyLabel={buyLabel}
                 onBuy={() => handlePurchase(entry.id)}
+                extraReasons={
+                  gateEtaLabel
+                    ? [
+                        {
+                          code: "prerequisite",
+                          label: "Affordability ETA",
+                          detail: gateEtaLabel,
+                        },
+                      ]
+                    : []
+                }
               />
             </div>
           </div>
-          <div className="catalog-secondary-actions">
-            <button
-              type="button"
-              className={`catalog-favorite-toggle secondary ${isFavorite ? "catalog-favorite-toggle--active" : ""}`}
-              data-testid={`catalog-favorite-toggle-${entry.id}`}
-              aria-pressed={isFavorite}
-              onClick={() => onPurchase(toggleWatchFavorite(state, entry.id))}
-            >
-              {isFavorite ? "Favorited" : "Favorite"}
-            </button>
-            <button
-              type="button"
-              className={`catalog-compare-toggle secondary ${isCompared ? "catalog-compare-toggle-active" : ""}`}
-              data-testid={`catalog-compare-toggle-${entry.id}`}
-              aria-pressed={isCompared}
-              onClick={() => handleCompareToggle(entry.id)}
-            >
-              {isCompared ? "Selected" : "Compare"}
-            </button>
-            {showInlineSecondaryActions && canWear && (
-              <button
-                type="button"
-                className="secondary catalog-secondary-action"
-                data-testid={`watch-wear-${entry.id}`}
-                onClick={() => onPurchase(setWornWatchId(state, entry.id))}
-              >
-                Wear
-              </button>
-            )}
-            {showInlineSecondaryActions && showSecondaryInteract && (
-              <button
-                type="button"
-                className="secondary catalog-secondary-action"
-                disabled={!canInteract}
-                data-testid={`vault-interact-${tierId}`}
-                onClick={() => onInteract?.(tierId)}
-              >
-                {interactionLabel}
-              </button>
-            )}
-            {showInlineSecondaryActions && showDismantleAction && (
-              <button
-                type="button"
-                className="secondary catalog-secondary-action"
-                data-testid={`catalog-dismantle-${entry.id}`}
-                disabled={!canDismantle}
-                onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
-              >
-                Dismantle
-              </button>
-            )}
-            {showDetailsButton && (
-              <button
-                type="button"
-                className="catalog-card-details-button catalog-secondary-action"
-                data-testid={`catalog-details-button-${entry.id}`}
-                aria-haspopup="dialog"
-                aria-controls="catalog-details-sheet"
-                aria-expanded={isDetailsOpen}
-                onClick={(event) =>
-                  openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
-                }
-              >
-                More
-              </button>
-            )}
-            {showInlineSecondaryActions && canShowInteract && ownedCount > 0 && interactionHint && (
-              <span className="muted catalog-interaction-hint">{interactionHint}</span>
-            )}
-            {showInlineSecondaryActions && canShowInteract && (
-              <ExplainButton
-                sectionId={HELP_SECTION_IDS.interactions}
-                label="Explain interactions"
-                className="help-open-button catalog-secondary-help"
-              />
-            )}
-          </div>
+          {gateEtaLabel && <p className="muted catalog-gate-eta">{gateEtaLabel}</p>}
+          {showSecondaryActions && (
+            <div className="catalog-secondary-actions">
+              {showInlineSecondaryActions && (
+                <>
+                  <button
+                    type="button"
+                    className={`catalog-favorite-toggle secondary ${isFavorite ? "catalog-favorite-toggle--active" : ""}`}
+                    data-testid={`catalog-favorite-toggle-${entry.id}`}
+                    aria-pressed={isFavorite}
+                    onClick={() => onPurchase(toggleWatchFavorite(state, entry.id))}
+                  >
+                    {isFavorite ? "Favorited" : "Favorite"}
+                  </button>
+                  <button
+                    type="button"
+                    className={`catalog-compare-toggle secondary ${isCompared ? "catalog-compare-toggle-active" : ""}`}
+                    data-testid={`catalog-compare-toggle-${entry.id}`}
+                    aria-pressed={isCompared}
+                    onClick={() => handleCompareToggle(entry.id)}
+                  >
+                    {isCompared ? "Selected" : "Compare"}
+                  </button>
+                  {canWear && (
+                    <button
+                      type="button"
+                      className="secondary catalog-secondary-action"
+                      data-testid={`watch-wear-${entry.id}`}
+                      onClick={() => onPurchase(setWornWatchId(state, entry.id))}
+                    >
+                      Wear
+                    </button>
+                  )}
+                  {showSecondaryInteract && (
+                    <button
+                      type="button"
+                      className="secondary catalog-secondary-action"
+                      disabled={!canInteract}
+                      data-testid={`vault-interact-${tierId}`}
+                      onClick={() => onInteract?.(tierId)}
+                    >
+                      {interactionLabel}
+                    </button>
+                  )}
+                  {showDismantleAction && (
+                    <button
+                      type="button"
+                      className="secondary catalog-secondary-action"
+                      data-testid={`catalog-dismantle-${entry.id}`}
+                      disabled={!canDismantle}
+                      onClick={() => onPurchase(dismantleWatchModel(state, entry.id, 1))}
+                    >
+                      Dismantle
+                    </button>
+                  )}
+                </>
+              )}
+              {showDetailsButton && (
+                <button
+                  type="button"
+                  className="catalog-card-details-button catalog-secondary-action"
+                  data-testid={`catalog-details-button-${entry.id}`}
+                  aria-haspopup="dialog"
+                  aria-controls="catalog-details-sheet"
+                  aria-expanded={isDetailsOpen}
+                  onClick={(event) =>
+                    openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
+                  }
+                >
+                  More
+                </button>
+              )}
+              {showExpertSecondaryActions && canShowInteract && ownedCount > 0 && interactionHint && (
+                <span className="muted catalog-interaction-hint">{interactionHint}</span>
+              )}
+              {showExpertSecondaryActions && canShowInteract && (
+                <ExplainButton
+                  sectionId={HELP_SECTION_IDS.interactions}
+                  label="Explain interactions"
+                  className="help-open-button catalog-secondary-help"
+                />
+              )}
+            </div>
+          )}
         </div>
       </article>
     );
@@ -1273,6 +1369,7 @@ export function CatalogPurchasePanel({
         className={`catalog-grid catalog-lanes ${isCompactDensity ? "catalog-grid-density-compact" : "catalog-grid-density-expanded"}`}
         data-testid="catalog-grid"
         data-density={catalogDensity}
+        data-view-mode={catalogViewMode}
       >
         {CATALOG_MOVEMENT_SECTIONS.map((section) => {
           const movementEntries = sectionMap.get(section.id) ?? [];
@@ -1330,9 +1427,18 @@ export function CatalogPurchasePanel({
     : null;
   const detailsSheetTags = activeDetailsEntry ? getCatalogEntryTags(activeDetailsEntry) : [];
   const detailsSheetShowFacts = detailsSheetTarget?.showFacts ?? false;
+  const detailsSheetDecisionInfo = activeDetailsEntry
+    ? buildDecisionInfoForEntry(activeDetailsEntry.id)
+    : null;
   const detailsSheetContent = activeDetailsEntry ? (
     <>
-      {renderCatalogDetailsContent(activeDetailsEntry, detailsSheetTags, detailsSheetShowFacts)}
+      {detailsSheetDecisionInfo &&
+        renderCatalogDetailsContent(
+          activeDetailsEntry,
+          detailsSheetTags,
+          detailsSheetShowFacts,
+          detailsSheetDecisionInfo,
+        )}
       {isCompactDensity && renderCompactSheetActions(activeDetailsEntry)}
     </>
   ) : null;
@@ -1347,6 +1453,7 @@ export function CatalogPurchasePanel({
           }`}
           data-testid="catalog-grid"
           data-density={catalogDensity}
+          data-view-mode={catalogViewMode}
           style={{ paddingTop, paddingBottom }}
         >
           {virtualItems.map((virtualItem) => {
@@ -1366,6 +1473,7 @@ export function CatalogPurchasePanel({
         }`}
         data-testid="catalog-grid"
         data-density={catalogDensity}
+        data-view-mode={catalogViewMode}
       >
         {stableCatalogEntries.map((entry) => renderCatalogCard(entry, showFacts))}
       </div>
@@ -1391,7 +1499,7 @@ export function CatalogPurchasePanel({
               className="surface-complication catalog-complication"
               data-testid="catalog-complication-power-reserve"
             >
-              <p className="surface-complication-label">Power reserve</p>
+              <p className="surface-complication-label">Power reserve · Visible catalog</p>
               <p className="surface-complication-value">
                 {stableCatalogEntries.length} visible references
               </p>
@@ -1403,7 +1511,7 @@ export function CatalogPurchasePanel({
               className="surface-complication catalog-complication"
               data-testid="catalog-complication-chronograph"
             >
-              <p className="surface-complication-label">Chronograph</p>
+              <p className="surface-complication-label">Chronograph · Ready to buy</p>
               <p className="surface-complication-value">{readyToBuyCount} ready to buy</p>
               <p className="surface-complication-detail">
                 {unownedReady
@@ -1415,7 +1523,7 @@ export function CatalogPurchasePanel({
               className="surface-complication catalog-complication"
               data-testid="catalog-complication-date-wheel"
             >
-              <p className="surface-complication-label">Date wheel</p>
+              <p className="surface-complication-label">Date wheel · Owned actions</p>
               <p className="surface-complication-value">
                 {readyOwnedQuickActionsCount} quick actions
               </p>
@@ -1429,7 +1537,7 @@ export function CatalogPurchasePanel({
               className="surface-complication catalog-complication"
               data-testid="catalog-complication-moonphase"
             >
-              <p className="surface-complication-label">Moonphase</p>
+              <p className="surface-complication-label">Moonphase · Undo window</p>
               <p className="surface-complication-value">{undoComplicationValue}</p>
               <p className="surface-complication-detail">{undoComplicationDetail}</p>
             </article>
@@ -1472,10 +1580,34 @@ export function CatalogPurchasePanel({
               Undo last purchase
             </button>
             <p className="muted" data-testid="catalog-undo-countdown">
-              {canUndoLastPurchase
-                ? `Available ${Math.ceil(undoRemainingMs / 1000)}s`
-                : "No undo available"}
+              {undoStatus === "available"
+                ? `Undo available for ${lastPurchaseModelId} · expires in ${Math.ceil(undoRemainingMs / 1_000)}s.`
+                : undoStatus === "expired"
+                  ? `Undo expired for ${lastPurchaseModelId} ${Math.max(1, Math.ceil(undoExpiredMsAgo / 1_000))}s ago. Buy again to reopen a ${PURCHASE_UNDO_WINDOW_SECONDS}s window.`
+                  : `No purchase to undo yet. Buy a watch to start a ${PURCHASE_UNDO_WINDOW_SECONDS}s window.`}
             </p>
+          </div>
+          <div className="catalog-help" data-testid="catalog-view-mode-control">
+            <button
+              type="button"
+              className="secondary"
+              data-testid="catalog-view-mode-toggle"
+              aria-pressed={!isNoviceViewMode}
+              onClick={toggleCatalogViewMode}
+            >
+              Card detail mode · {isNoviceViewMode ? "Novice" : "Expert"}
+            </button>
+          </div>
+          <div className="catalog-help" data-testid="catalog-density-control">
+            <button
+              type="button"
+              className="secondary"
+              data-testid="catalog-density-toggle"
+              aria-pressed={isCompactDensity}
+              onClick={toggleCatalogDensity}
+            >
+              Card density · {isCompactDensity ? "Compact" : "Expanded"}
+            </button>
           </div>
           <div className="catalog-help" data-testid="catalog-help">
             <ExplainButton
@@ -1509,6 +1641,23 @@ export function CatalogPurchasePanel({
             onClick={cycleCatalogSort}
           >
             Sort · {quickSortLabel}
+          </button>
+          <button
+            type="button"
+            className="catalog-quick-action"
+            data-testid="catalog-quick-preset-cycle"
+            onClick={cycleCatalogQuickPreset}
+          >
+            Preset · {quickPresetLabel}
+          </button>
+          <button
+            type="button"
+            className="catalog-quick-action"
+            data-testid="catalog-quick-view-mode"
+            aria-pressed={!isNoviceViewMode}
+            onClick={toggleCatalogViewMode}
+          >
+            Detail · {isNoviceViewMode ? "Novice" : "Expert"}
           </button>
           <button
             type="button"
@@ -1608,6 +1757,26 @@ export function CatalogPurchasePanel({
               <option value="year">Year (newest→oldest)</option>
               <option value="tier">Movement (quartz→tourbillon)</option>
             </select>
+          </div>
+          <div className="filter-field">
+            <label className="filter-label" htmlFor="catalog-quick-preset">
+              Quick preset
+            </label>
+            <select
+              id="catalog-quick-preset"
+              data-testid="catalog-quick-preset"
+              value={catalogQuickPreset}
+              onChange={(event) => setCatalogQuickPreset(event.target.value as CatalogQuickPreset)}
+            >
+              {CATALOG_QUICK_PRESET_ORDER.map((preset) => (
+                <option key={preset} value={preset}>
+                  {CATALOG_QUICK_PRESET_LABELS[preset]}
+                </option>
+              ))}
+            </select>
+            <p className="muted" data-testid="catalog-quick-preset-hint">
+              {CATALOG_QUICK_PRESET_HINTS[catalogQuickPreset]}
+            </p>
           </div>
           <div className="filter-field">
             <label className="filter-label" htmlFor="catalog-era">
@@ -1805,6 +1974,8 @@ export function CatalogTabLegacy({
   catalogEntries,
   hasOwnedCatalogTiers,
   onPurchase,
+  nowMs,
+  currentEventMultiplier,
 }: CatalogTabProps) {
   const [expandedCards, setExpandedCards] = React.useState<Record<string, boolean>>({});
   const [purchaseHighlights, setPurchaseHighlights] = React.useState<Record<string, boolean>>({});
@@ -1880,6 +2051,19 @@ export function CatalogTabLegacy({
       triggerPurchaseHighlight(entryId);
     },
     [onPurchase, state, triggerPurchaseHighlight],
+  );
+  const effectiveNowMs = React.useMemo(
+    () => (typeof nowMs === "number" ? nowMs : Date.now()),
+    [nowMs],
+  );
+  const effectiveEventMultiplier = currentEventMultiplier ?? 1;
+  const effectiveCashRateCentsPerSec = React.useMemo(
+    () => getEffectiveCashRateCentsPerSec(state, effectiveNowMs, effectiveEventMultiplier),
+    [effectiveEventMultiplier, effectiveNowMs, state],
+  );
+  const effectiveEnjoymentRateCentsPerSec = React.useMemo(
+    () => getEnjoymentRateCentsPerSec(state) * effectiveEventMultiplier,
+    [effectiveEventMultiplier, state],
   );
 
   const renderCatalogDetails = (entry: CatalogEntry, tags: string[], showFacts: boolean) => {
@@ -2102,6 +2286,27 @@ export function CatalogTabLegacy({
                   const tierBadge = getWatchModelTierBadge(entry.id);
                   const ownedCount = getWatchModelOwnedCount(state, entry.id);
                   const gate = getWatchModelPurchaseGate(state, entry.id);
+                  const cashDeficitCents = getResourceDeficit(
+                    gate.cashPriceCents,
+                    state.currencyCents,
+                  );
+                  const enjoymentDeficitCents = getResourceDeficit(
+                    gate.enjoymentRequiredCents,
+                    state.enjoymentCents,
+                  );
+                  const cashEtaSeconds = getAffordabilityEtaSecondsForDeficit(
+                    cashDeficitCents,
+                    effectiveCashRateCentsPerSec,
+                  );
+                  const enjoymentEtaSeconds = getAffordabilityEtaSecondsForDeficit(
+                    enjoymentDeficitCents,
+                    effectiveEnjoymentRateCentsPerSec,
+                  );
+                  const gateEtaLabel = getGateEtaLabel(
+                    gate,
+                    effectiveCashRateCentsPerSec,
+                    effectiveEnjoymentRateCentsPerSec,
+                  );
                   const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
                   const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
                   const isHighlighted = purchaseHighlights[entry.id];
@@ -2183,17 +2388,19 @@ export function CatalogTabLegacy({
                               {gate.blocksBy === "enjoyment" && (
                                 <>
                                   Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
-                                  {gate.enjoymentDeficitCents !== undefined && (
-                                    <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
-                                  )}
+                                  {` (${formatMoneyFromCents(enjoymentDeficitCents)} more, ETA ${formatEtaLabel(enjoymentEtaSeconds)})`}
                                 </>
                               )}
                               {gate.blocksBy === "cash" && (
-                                <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>
+                                <>
+                                  Need {formatMoneyFromCents(cashDeficitCents)} more cash (ETA{" "}
+                                  {formatEtaLabel(cashEtaSeconds)})
+                                </>
                               )}
                             </div>
                           )}
                         </div>
+                        {gateEtaLabel && <p className="muted catalog-gate-eta">{gateEtaLabel}</p>}
                       </div>
                     </article>
                   );

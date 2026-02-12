@@ -130,17 +130,17 @@ Readiness note:
 
 Derived from unfinished/partial/planned entries in `NOTES-02-07-26.yaml`.
 
-- [ ] SESSION-03: Remove hard therapist-session cooldown lockout and rely on escalating enjoyment premiums plus anti-abuse scaling. (Phase 57)
-- [ ] SESSION-04: Keep escalating session cost feedback explicit so repeat-run risk/reward remains clear. (Phase 57)
-- [ ] GUIDE-01: Replace broad next-unlock preview surfaces with concise, contextual next-step guidance in the active gameplay view. (Phase 57)
-- [ ] FILTER-02: Use collapsed filter controls with active-count badge as default catalog behavior. (Phase 58)
-- [ ] CATALOG-11: Add affordable-watch highlighting treatment for actionable catalog cards. (Phase 58)
-- [ ] NAV-01: Improve navigation/readiness scanning cues across tabs without changing persistence contracts. (Phase 58)
-- [ ] CATALOG-12: Expand high-value watch information depth in catalog/detail surfaces without first-viewport clutter regression. (Phase 59)
-- [ ] DATA-01: Align tier semantics toward movement-informed mapping where applicable and keep metadata/tests consistent. (Phase 59)
-- [ ] MEDIA-01: Enforce catalog image/base-path contract checks for deployment path safety. (Phase 59)
-- [ ] TEST-01: Add/refresh deterministic unit/e2e guardrails for v5.0 changes. (Phase 60)
-- [ ] DEBT-01: Split oversized touched modules to reduce regression risk and improve maintainability. (Phase 60)
+- [x] SESSION-03: Remove hard therapist-session cooldown lockout and rely on escalating enjoyment premiums plus anti-abuse scaling. (Phase 57)
+- [x] SESSION-04: Keep escalating session cost feedback explicit so repeat-run risk/reward remains clear. (Phase 57)
+- [x] GUIDE-01: Replace broad next-unlock preview surfaces with concise, contextual next-step guidance in the active gameplay view. (Phase 57)
+- [x] FILTER-02: Use collapsed filter controls with active-count badge as default catalog behavior. (Phase 58)
+- [x] CATALOG-11: Add affordable-watch highlighting treatment for actionable catalog cards. (Phase 58)
+- [x] NAV-01: Improve navigation/readiness scanning cues across tabs without changing persistence contracts. (Phase 58)
+- [x] CATALOG-12: Expand high-value watch information depth in catalog/detail surfaces without first-viewport clutter regression. (Phase 59)
+- [x] DATA-01: Align tier semantics toward movement-informed mapping where applicable and keep metadata/tests consistent. (Phase 59)
+- [x] MEDIA-01: Enforce catalog image/base-path contract checks for deployment path safety. (Phase 59)
+- [x] TEST-01: Add/refresh deterministic unit/e2e guardrails for v5.0 changes. (Phase 60)
+- [x] DEBT-01: Split oversized touched modules to reduce regression risk and improve maintainability. (Phase 60)
 
 ## Out of Scope
 

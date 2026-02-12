@@ -4,20 +4,61 @@ import {
   getNextPrestigePreview,
   getSetBonusProgressRows,
   type GameState,
+  type WatchItemId,
 } from "../../game/state";
 
 import "./collectionDepth.css";
 
 type CollectionInsightsPanelProps = {
   state: GameState;
+  watchItemLabels: Map<WatchItemId, string>;
+  onNavigate: (
+    tabId: "collection" | "career" | "upgrades" | "workshop" | "maison" | "nostalgia" | "catalog",
+    scrollTargetId?: string,
+  ) => void;
 };
 
 const formatPercent = (ratio: number) => `${Math.round(ratio * 100)}%`;
 
-export function CollectionInsightsPanel({ state }: CollectionInsightsPanelProps) {
+export function CollectionInsightsPanel({
+  state,
+  watchItemLabels,
+  onNavigate,
+}: CollectionInsightsPanelProps) {
   const setBonusRows = getSetBonusProgressRows(state);
   const prestigePreview = getNextPrestigePreview(state);
   const analytics = getCollectionAnalyticsSnapshot(state);
+  const prestigeCta = (() => {
+    if (!prestigePreview) {
+      return {
+        label: "Open Unlock Store",
+        tabId: "nostalgia" as const,
+        scrollTargetId: "nostalgia-unlocks",
+      };
+    }
+
+    if (prestigePreview.id === "workshop") {
+      return {
+        label: "Open Atelier reset",
+        tabId: "workshop" as const,
+        scrollTargetId: "workshop-reset",
+      };
+    }
+
+    if (prestigePreview.id === "maison") {
+      return {
+        label: "Open Maison reset",
+        tabId: "maison" as const,
+        scrollTargetId: "maison-reset",
+      };
+    }
+
+    return {
+      label: "Open Nostalgia reset",
+      tabId: "nostalgia" as const,
+      scrollTargetId: "nostalgia-preview",
+    };
+  })();
 
   const renderDistribution = (
     label: string,
@@ -79,7 +120,20 @@ export function CollectionInsightsPanel({ state }: CollectionInsightsPanelProps)
             <ul className="collection-insights__set-card-requirements">
               {row.requirements.map((entry) => (
                 <li key={entry.itemId} className={entry.met ? "is-met" : ""}>
-                  {entry.itemId} {entry.currentCount}/{entry.requiredCount}
+                  <div>
+                    <strong>{watchItemLabels.get(entry.itemId) ?? entry.itemId}</strong>{" "}
+                    {entry.currentCount}/{entry.requiredCount}
+                  </div>
+                  {!entry.met ? (
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid={`collection-set-bonus-find-${row.id}-${entry.itemId}`}
+                      onClick={() => onNavigate("catalog", "catalog-shop")}
+                    >
+                      Find in Catalog
+                    </button>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -106,11 +160,31 @@ export function CollectionInsightsPanel({ state }: CollectionInsightsPanelProps)
               <p className="muted">
                 {formatMoneyFromCents(prestigePreview.remaining)} remaining to unlock.
               </p>
+              <div className="card-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid="collection-prestige-preview-cta"
+                  onClick={() => onNavigate(prestigeCta.tabId, prestigeCta.scrollTargetId)}
+                >
+                  {prestigeCta.label}
+                </button>
+              </div>
             </>
           ) : (
             <>
               <h3>Fully prestiged</h3>
               <p className="muted">You already met the highest prestige threshold.</p>
+              <div className="card-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  data-testid="collection-prestige-preview-cta"
+                  onClick={() => onNavigate(prestigeCta.tabId, prestigeCta.scrollTargetId)}
+                >
+                  {prestigeCta.label}
+                </button>
+              </div>
             </>
           )}
         </article>

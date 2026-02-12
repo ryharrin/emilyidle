@@ -17,6 +17,14 @@ const MAX_STEP_DT_MS = 1_000;
 
 const POWER_RESERVE_DRAIN_FULL_MS = 120_000;
 
+function resolveNowMs(nowMs?: number): number {
+  if (typeof nowMs === "number" && Number.isFinite(nowMs)) {
+    return Math.max(0, Math.floor(nowMs));
+  }
+
+  return Date.now();
+}
+
 function applyPowerReserveDecay(state: GameState, dtMs: number): GameState {
   if (dtMs <= 0) {
     return state;
@@ -59,13 +67,14 @@ function applyPowerReserveDecay(state: GameState, dtMs: number): GameState {
   };
 }
 
-export function step(state: GameState, dtMs: number, nowMs = Date.now()): GameState {
+export function step(state: GameState, dtMs: number, nowMs?: number): GameState {
   const clampedDtMs = Math.max(0, Math.min(MAX_STEP_DT_MS, dtMs));
+  const resolvedNowMs = resolveNowMs(nowMs);
   const withReserveDecay = applyPowerReserveDecay(state, clampedDtMs);
   const collectionValue = getCollectionValueCents(withReserveDecay);
-  const withEvents = applyEventState(withReserveDecay, nowMs, collectionValue);
-  const eventMultiplier = getEventIncomeMultiplier(withEvents, nowMs);
-  const incomeRate = getEffectiveCashRateCentsPerSec(withEvents, nowMs, eventMultiplier);
+  const withEvents = applyEventState(withReserveDecay, resolvedNowMs, collectionValue);
+  const eventMultiplier = getEventIncomeMultiplier(withEvents, resolvedNowMs);
+  const incomeRate = getEffectiveCashRateCentsPerSec(withEvents, resolvedNowMs, eventMultiplier);
   const earnedCents = (incomeRate * clampedDtMs) / 1_000;
 
   const enjoymentRate = getEnjoymentRateCentsPerSec(withEvents) * eventMultiplier;

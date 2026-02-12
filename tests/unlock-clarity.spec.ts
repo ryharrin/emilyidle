@@ -58,11 +58,33 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
   const callout = page.getByTestId("catalog-shop-callout");
   await expect(callout).toBeVisible();
   await expect(callout.getByRole("button", { name: "Open Catalog" })).toBeVisible();
+  await expect(
+    page
+      .getByTestId("collection-set-bonus-grid")
+      .getByRole("button", { name: "Find in Catalog" })
+      .first(),
+  ).toBeVisible();
 
   await page.getByRole("tab", { name: "Catalog" }).click();
   const lockedItemHint = page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`);
   await lockedItemHint.scrollIntoViewIfNeeded();
   await expect(lockedItemHint).toBeVisible();
+  await page.getByTestId("catalog-quick-preset").selectOption("unlocking-soon");
+  await expect(page.getByTestId("catalog-quick-preset-hint")).toContainText(
+    "Show locked references near their unlock threshold.",
+  );
+  await page.getByTestId("catalog-quick-preset").selectOption("needs-enjoyment");
+  await expect(page.getByTestId("catalog-quick-preset-hint")).toContainText(
+    "blocked by enjoyment requirements",
+  );
+  await page.getByTestId("catalog-quick-preset").selectOption("all");
+  await page.getByTestId("catalog-density-toggle").click();
+  await expect(page.getByTestId("catalog-grid")).toHaveAttribute("data-density", "compact");
+  await page.getByTestId("catalog-density-toggle").click();
+  await expect(page.getByTestId("catalog-grid")).toHaveAttribute("data-density", "expanded");
+  await expect(page.getByTestId("catalog-undo-countdown")).toContainText(
+    "No purchase to undo yet. Buy a watch to start a 10s window.",
+  );
 
   await page.getByRole("tab", { name: "Upgrades" }).click();
   const collectionDisclosure = page.getByTestId("upgrades-group-collection");
@@ -78,6 +100,9 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
     false,
   );
   await expect(page.getByTestId("locked-upgrade-hint-assembly-jigs")).toBeVisible();
+  await expect(page.getByText(/Blocked: need .* more cash \(ETA /)).toBeVisible();
+  await page.getByTestId("upgrades-density-toggle").click();
+  await expect(page.getByTestId("upgrades-cash-list")).toHaveAttribute("data-density", "compact");
 });
 
 test("catalog empty state CTA stays in catalog", async ({ page }) => {

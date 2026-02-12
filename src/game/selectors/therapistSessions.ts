@@ -24,6 +24,10 @@ function normalizeNowMs(nowMs: number): number {
   return Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
 }
 
+function normalizeNonNegativeInteger(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+}
+
 const CAREER_TRACK_LOOKUP = new Map(CAREER_TRACKS.map((track) => [track.id, track] as const));
 const PRE_TRACK_FALLBACK_TRACK_ID: CareerTrackId = "private-practice";
 
@@ -135,13 +139,15 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
   const cooldownMs = getTherapistSessionCooldownMs(state, trackId);
   const cashPayoutCents = getTherapistSessionCashPayoutCents(state, trackId);
   const premiumWindowMs = Math.max(0, Math.floor(cooldownMs * SESSION_PREMIUM_WINDOW_MULTIPLIER));
-  const lastSessionAtMs = state.therapistCareer.lastSessionAtMs;
+  const lastSessionAtMs = normalizeNonNegativeInteger(state.therapistCareer.lastSessionAtMs);
+  const nextAvailableAtMs = normalizeNonNegativeInteger(state.therapistCareer.nextAvailableAtMs);
+  const storedPremiumCount = normalizeNonNegativeInteger(state.therapistCareer.sessionPremiumCount);
+  const hasSessionChain = storedPremiumCount > 0;
   const withinWindow =
     premiumWindowMs > 0 &&
-    lastSessionAtMs > 0 &&
+    hasSessionChain &&
     clampedNowMs >= lastSessionAtMs &&
     clampedNowMs - lastSessionAtMs < premiumWindowMs;
-  const storedPremiumCount = Math.max(0, Math.floor(state.therapistCareer.sessionPremiumCount));
   const premiumCount = withinWindow ? Math.min(SESSION_PREMIUM_MAX_COUNT, storedPremiumCount) : 0;
   const premiumMultiplier = 1 + premiumCount * SESSION_PREMIUM_STEP;
   const premiumEnjoymentCostCents = Math.max(0, Math.floor(baseEnjoymentCost * premiumMultiplier));
@@ -150,7 +156,7 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
       ? SESSION_PREMIUM_LABELS[Math.min(premiumCount - 1, SESSION_PREMIUM_LABELS.length - 1)]
       : "";
   const premiumNote = premiumCount > 0 ? SESSION_PREMIUM_NOTE : "";
-  const cooldownRemainingMs = Math.max(0, state.therapistCareer.nextAvailableAtMs - clampedNowMs);
+  const cooldownRemainingMs = Math.max(0, nextAvailableAtMs - clampedNowMs);
   const cooldownRushProgress01 =
     cooldownMs > 0 ? Math.max(0, Math.min(1, cooldownRemainingMs / cooldownMs)) : 0;
   const cooldownRushMultiplier = 1 + cooldownRushProgress01;

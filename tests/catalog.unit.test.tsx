@@ -697,6 +697,7 @@ describe("catalog filters", () => {
       const quickActions = await waitFor(() => screen.getByTestId("catalog-quick-actions"));
       expect(quickActions).toBeInTheDocument();
       expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-density", "compact");
+      expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "novice");
       expect(screen.queryByTestId("catalog-details")).toBeNull();
 
       const quickSort = screen.getByTestId("catalog-quick-sort");
@@ -704,6 +705,12 @@ describe("catalog filters", () => {
       expect(sortSelect.value).toBe("default");
       await user.click(quickSort);
       expect(sortSelect.value).toBe("brand");
+
+      const quickViewMode = screen.getByTestId("catalog-quick-view-mode");
+      await user.click(quickViewMode);
+      await waitFor(() => {
+        expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "expert");
+      });
 
       const quickDensity = screen.getByTestId("catalog-quick-density");
       await user.click(quickDensity);
@@ -714,6 +721,43 @@ describe("catalog filters", () => {
     } finally {
       window.matchMedia = originalMatchMedia;
     }
+  });
+
+  it("persists catalog detail mode preference between sessions", async () => {
+    const user = userEvent.setup();
+
+    const viewModeToggle = screen.getByTestId("catalog-view-mode-toggle");
+    expect(viewModeToggle).toHaveTextContent("Novice");
+    expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "novice");
+
+    await user.click(viewModeToggle);
+    await waitFor(() => {
+      expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "expert");
+      expect(screen.getByTestId("catalog-view-mode-toggle")).toHaveTextContent("Expert");
+    });
+
+    await waitFor(() => {
+      const raw = localStorage.getItem("emily-idle:navigation");
+      if (!raw) {
+        throw new Error("Expected persisted navigation state.");
+      }
+      const parsed = JSON.parse(raw) as { catalogFilters?: { viewMode?: string } };
+      expect(parsed.catalogFilters?.viewMode).toBe("expert");
+    });
+
+    cleanup();
+    render(<App />);
+
+    const nextUser = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await nextUser.click(catalogTab);
+
+    await waitFor(() => {
+      expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    });
+    expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "expert");
+    expect(screen.getByTestId("catalog-view-mode-toggle")).toHaveTextContent("Expert");
   });
 
   it("routes low-frequency compact actions through the details sheet", async () => {
@@ -751,6 +795,48 @@ describe("catalog filters", () => {
       await waitFor(() => {
         expect(screen.queryByTestId("catalog-details-sheet")).toBeNull();
       });
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it("shows movement and progression decision signals in details sheet", async () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = createMatchMediaMock(390);
+
+    try {
+      cleanup();
+      render(<App />);
+
+      const user = userEvent.setup();
+      const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+      const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+      await user.click(catalogTab);
+
+      const ownershipTabs = screen.getByRole("tablist", { name: /Catalog ownership/i });
+      await user.click(within(ownershipTabs).getByRole("tab", { name: /^Owned/ }));
+
+      const catalogGrid = screen.getByTestId("catalog-grid");
+      const cards = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-card"));
+      const firstCard = cards[0];
+      if (!(firstCard instanceof HTMLElement)) {
+        throw new Error("Expected first catalog card to be an HTMLElement");
+      }
+
+      const moreButton = within(firstCard).getByTestId(/catalog-details-button-/);
+      await user.click(moreButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("catalog-details-sheet")).toBeInTheDocument();
+      });
+      await waitFor(() => screen.getByTestId("catalog-decision-summary"));
+      const movementSignal = screen.getByTestId("catalog-decision-movement");
+      const tierSignal = screen.getByTestId("catalog-decision-tier");
+      const progressionSignal = screen.getByTestId("catalog-decision-progression");
+
+      expect(movementSignal.textContent).toMatch(/movement/i);
+      expect(tierSignal.textContent).toMatch(/Tier \d of 4/i);
+      expect(progressionSignal.textContent).toMatch(/Locked|Buy-ready|Unlocked/i);
     } finally {
       window.matchMedia = originalMatchMedia;
     }
@@ -853,6 +939,12 @@ describe("catalog filters", () => {
   it("filters catalog by style", async () => {
     const user = userEvent.setup();
 
+    const viewModeToggle = screen.getByTestId("catalog-view-mode-toggle");
+    await user.click(viewModeToggle);
+    await waitFor(() => {
+      expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "expert");
+    });
+
     const styleSelect = screen.getByTestId("catalog-style");
     const catalogGrid = screen.getByTestId("catalog-grid");
 
@@ -906,6 +998,12 @@ describe("catalog filters", () => {
     const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
     const ownedTab = within(tabList).getByRole("tab", { name: /^Owned/ });
     await user.click(ownedTab);
+
+    const viewModeToggle = screen.getByTestId("catalog-view-mode-toggle");
+    await user.click(viewModeToggle);
+    await waitFor(() => {
+      expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "expert");
+    });
 
     const searchInput = screen.getByTestId("catalog-search");
     await user.type(searchInput, "GMT-Master");
@@ -984,10 +1082,12 @@ describe("catalog filters", () => {
 
     const catalogGrid = screen.getByTestId("catalog-grid");
     const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
+    const years = cards.map((card) => card.querySelector(".catalog-year")?.textContent?.trim() ?? "");
 
-    expect(cards[0]?.textContent).toContain("Year");
-    expect(cards[0]?.textContent).not.toContain("Unknown");
-    expect(cards[cards.length - 1]?.textContent).toContain("Unknown");
+    expect(years.length).toBeGreaterThan(0);
+    expect(years.some((value) => /unknown/i.test(value))).toBe(true);
+    expect(years[0]?.toLowerCase()).not.toContain("unknown");
+    expect(years[years.length - 1]?.toLowerCase()).toContain("unknown");
   });
 
   it("orders default catalog results by price ascending", async () => {
@@ -1034,6 +1134,12 @@ describe("catalog filters", () => {
   it("filters catalog by type tags", async () => {
     const user = userEvent.setup();
 
+    const viewModeToggle = screen.getByTestId("catalog-view-mode-toggle");
+    await user.click(viewModeToggle);
+    await waitFor(() => {
+      expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "expert");
+    });
+
     const typeSelect = screen.getByTestId("catalog-type");
     const catalogGrid = screen.getByTestId("catalog-grid");
 
@@ -1072,9 +1178,12 @@ describe("catalog filters", () => {
 });
 
 describe("catalog purchase CTA", () => {
+  let highlightedModelId = "";
+
   beforeEach(async () => {
     localStorage.clear();
     const baseState = createInitialState();
+    highlightedModelId = getModelIdForTier("quartz");
     const chronographModelId = getModelIdForTier("manual");
     const seededState = {
       ...baseState,
@@ -1089,6 +1198,7 @@ describe("catalog purchase CTA", () => {
         [chronographModelId]: 1,
       },
       unlockedMilestones: ["showcase"],
+      discoveredCatalogEntries: [highlightedModelId],
     };
 
     localStorage.setItem(
@@ -1151,18 +1261,32 @@ describe("catalog purchase CTA", () => {
     });
   });
 
-  it("marks affordable catalog cards as actionable", async () => {
-    const catalogGrid = screen.getByTestId("catalog-grid");
-    const buyButtons = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-buy-/));
-
-    expect(buyButtons.length).toBeGreaterThan(0);
-
-    const card = buyButtons[0]?.closest('[data-testid="catalog-card"]');
+  it("marks affordable unowned discovered catalog cards as actionable", async () => {
+    const highlightedBuyButton = await waitFor(() =>
+      screen.getByTestId(`catalog-buy-${highlightedModelId}`),
+    );
+    const card = highlightedBuyButton.closest('[data-testid="catalog-card"]');
     if (!(card instanceof HTMLElement)) {
-      throw new Error("Expected a catalog card for the buy button");
+      throw new Error("Expected a catalog card for the highlighted buy button");
     }
 
+    expect(card.textContent).toContain("0 owned");
     expect(card.classList.contains("catalog-actionable")).toBe(true);
+    expect(card.classList.contains("catalog-nonactionable")).toBe(false);
+  });
+
+  it("does not mark non-actionable catalog cards as actionable", async () => {
+    const catalogGrid = screen.getByTestId("catalog-grid");
+    const gates = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-gate-/));
+    expect(gates.length).toBeGreaterThan(0);
+
+    const card = gates[0]?.closest('[data-testid="catalog-card"]');
+    if (!(card instanceof HTMLElement)) {
+      throw new Error("Expected a catalog card for the gate state");
+    }
+
+    expect(card.classList.contains("catalog-nonactionable")).toBe(true);
+    expect(card.classList.contains("catalog-actionable")).toBe(false);
   });
 
   it("renders primary and secondary catalog card actions with distinct affordances", async () => {
@@ -1452,10 +1576,10 @@ describe("catalog ownership tabs", () => {
     expect(statsTab.getAttribute("aria-selected")).toBe("true");
 
     const metrics = screen.getByTestId("stats-metrics");
-    expect(metrics.textContent).toContain("Collection enjoyment");
+    expect(metrics.textContent).toContain("Cash");
+    expect(metrics.textContent).toContain("Cash / sec");
+    expect(metrics.textContent).toContain("Enjoyment");
     expect(metrics.textContent).toContain("Enjoyment / sec");
-    expect(metrics.textContent).toContain("Dollars");
-    expect(metrics.textContent).toContain("Dollars / sec");
     expect(metrics.textContent).toContain("Memories");
     expect(metrics.textContent).toContain("Atelier resets");
     expect(metrics.textContent).toContain("Maison heritage");

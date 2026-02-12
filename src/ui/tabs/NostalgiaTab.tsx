@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { LockIcon, PrestigeIcon } from "../icons/coreIcons";
 import { FloatingDelta } from "../components/FloatingDelta";
+import { PrestigeResetMatrix } from "../components/PrestigeResetMatrix";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { PrestigeSummary } from "../components/PrestigeSummary";
@@ -9,12 +10,14 @@ import { buildNostalgiaPrestigeSummary } from "../prestigeSummary";
 
 import { formatMoneyFromCents } from "../../game/format";
 import {
+  getAffordabilityEtaSecondsForDeficit,
   buyNostalgiaUnlock,
   canBuyNostalgiaUnlock,
   canRefundNostalgiaUnlock,
   getEnjoymentThresholdLabel,
   getEnjoymentRateCentsPerSec,
   getNostalgiaUnlockCost,
+  getResourceDeficit,
   prestigeNostalgia,
   refundNostalgiaUnlock,
 } from "../../game/state";
@@ -82,6 +85,7 @@ export function NostalgiaTab({
   state,
   showNostalgiaSection,
   showNostalgiaPanel,
+  onNavigate,
   nostalgiaResultsDismissed,
   onDismissResults,
   nostalgiaProgress,
@@ -137,9 +141,11 @@ export function NostalgiaTab({
     };
   }, []);
   const enjoymentRate = getEnjoymentRateCentsPerSec(state);
-  const nostalgiaRemainingCents = Math.max(0, nostalgiaPrestigeThreshold - nostalgiaEarned);
-  const nostalgiaRecoveryEtaSeconds =
-    enjoymentRate > 0 ? Math.ceil(nostalgiaRemainingCents / enjoymentRate) : null;
+  const nostalgiaRemainingCents = getResourceDeficit(nostalgiaPrestigeThreshold, nostalgiaEarned);
+  const nostalgiaRecoveryEtaSeconds = getAffordabilityEtaSecondsForDeficit(
+    nostalgiaRemainingCents,
+    enjoymentRate,
+  );
   const nostalgiaRecoveryEtaLabel =
     nostalgiaRecoveryEtaSeconds === null
       ? "ETA unavailable"
@@ -161,8 +167,8 @@ export function NostalgiaTab({
                   <p className="eyebrow">Prestige loop</p>
                   <h3 id="nostalgia-title">Nostalgia</h3>
                   <p className="muted">
-                    Reset your collection to bank Nostalgia points and carry your collection
-                    forward.
+                    Reset your collection to bank Nostalgia points, then spend them in the Unlock
+                    Store.
                   </p>
                   <div
                     className="surface-complication-strip nostalgia-complication-strip"
@@ -173,7 +179,7 @@ export function NostalgiaTab({
                       data-testid="nostalgia-complication-power-reserve"
                     >
                       <p className="surface-complication-label nostalgia-complication-label">
-                        Power reserve
+                        Power reserve · Nostalgia bank
                       </p>
                       <p className="surface-complication-value nostalgia-complication-value">
                         {state.nostalgiaPoints.toLocaleString()} banked
@@ -187,7 +193,7 @@ export function NostalgiaTab({
                       data-testid="nostalgia-complication-chronograph"
                     >
                       <p className="surface-complication-label nostalgia-complication-label">
-                        Chronograph
+                        Chronograph · Reset readiness
                       </p>
                       <p className="surface-complication-value nostalgia-complication-value">
                         {Math.round(nostalgiaProgress * 100)}% ready
@@ -202,7 +208,7 @@ export function NostalgiaTab({
                       data-testid="nostalgia-complication-date-wheel"
                     >
                       <p className="surface-complication-label nostalgia-complication-label">
-                        Date wheel
+                        Date wheel · Recovery ETA
                       </p>
                       <p className="surface-complication-value nostalgia-complication-value">
                         {nostalgiaRecoveryEtaLabel}
@@ -216,7 +222,7 @@ export function NostalgiaTab({
                       data-testid="nostalgia-complication-moonphase"
                     >
                       <p className="surface-complication-label nostalgia-complication-label">
-                        Moonphase
+                        Moonphase · Unlock progress
                       </p>
                       <p className="surface-complication-value nostalgia-complication-value">
                         {state.nostalgiaUnlockedItems.length}/{nostalgiaUnlockIds.length} unlocked
@@ -248,6 +254,16 @@ export function NostalgiaTab({
                     <button type="button" className="secondary" onClick={onDismissResults}>
                       Back to progress
                     </button>
+                    {state.nostalgiaResets >= 1 ? (
+                      <button
+                        type="button"
+                        className="secondary"
+                        data-testid="nostalgia-results-open-unlock-store"
+                        onClick={() => onNavigate("nostalgia", "nostalgia-unlocks")}
+                      >
+                        Open Unlock Store
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               )}
@@ -260,7 +276,7 @@ export function NostalgiaTab({
                   ></div>
                 </div>
                 <div className="nostalgia-progress-meta">
-                  <span>{Math.round(nostalgiaProgress * 100)}% to prestige</span>
+                  <span>{Math.round(nostalgiaProgress * 100)}% to reset</span>
                   <span>
                     {formatMoneyFromCents(nostalgiaEarned)} enjoyment /{" "}
                     {getEnjoymentThresholdLabel(nostalgiaPrestigeThreshold)}
@@ -268,8 +284,8 @@ export function NostalgiaTab({
                 </div>
               </div>
 
-              <div className="card" data-testid="nostalgia-preview">
-                <h4>Projected nostalgia</h4>
+              <div className="card" data-testid="nostalgia-preview" id="nostalgia-preview">
+                <h4>Projected Nostalgia reset</h4>
                 <p className="muted">Reset now to gain +{nostalgiaPrestigeGain} Nostalgia.</p>
                 <p>Current balance: {state.nostalgiaPoints.toLocaleString()} Nostalgia</p>
                 <p className="muted">
@@ -279,6 +295,26 @@ export function NostalgiaTab({
                   Current run resets; owned watches, catalog discovery, achievements, and Nostalgia
                   unlock purchases carry forward.
                 </p>
+                <div className="card-actions">
+                  <button
+                    type="button"
+                    className="secondary"
+                    data-testid="nostalgia-open-catalog"
+                    onClick={() => onNavigate("catalog", "catalog-shop")}
+                  >
+                    Open Catalog shop
+                  </button>
+                  {state.nostalgiaResets >= 1 ? (
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="nostalgia-open-unlock-store"
+                      onClick={() => onNavigate("nostalgia", "nostalgia-unlocks")}
+                    >
+                      Open Unlock Store
+                    </button>
+                  ) : null}
+                </div>
               </div>
 
               <PrestigeSummary
@@ -312,14 +348,36 @@ export function NostalgiaTab({
                   )}
                 </div>
               </div>
+              <PrestigeResetMatrix
+                testId="nostalgia-reset-matrix"
+                resets={[
+                  "Current run cash and enjoyment",
+                  "Owned watches and active run inventory",
+                  "Atelier and Maison run-state momentum",
+                ]}
+                carries={[
+                  "Nostalgia points already banked",
+                  "Unlock Store purchases and completed resets",
+                  "Catalog discovery and achievement history",
+                ]}
+              />
+              <p className="muted" aria-live="polite">
+                {canPrestigeNostalgia
+                  ? "Open reset checklist to inspect carry-forward items before confirming."
+                  : `Blocked: need ${formatMoneyFromCents(nostalgiaRemainingCents)} more enjoyment toward the reset threshold (ETA ${nostalgiaRecoveryEtaLabel}).`}
+              </p>
 
               {state.nostalgiaResets >= 1 && (
-                <div className="nostalgia-unlocks" data-testid="nostalgia-unlocks">
+                <div
+                  className="nostalgia-unlocks"
+                  data-testid="nostalgia-unlocks"
+                  id="nostalgia-unlocks"
+                >
                   <header className="nostalgia-unlocks-header">
                     <div>
                       <p className="eyebrow">Permanent unlocks</p>
                       <h4>
-                        Unlock store{" "}
+                        Unlock Store{" "}
                         <ExplainButton
                           sectionId={HELP_SECTION_IDS.nostalgiaUnlocks}
                           label="Explain unlock order"
@@ -342,7 +400,7 @@ export function NostalgiaTab({
                           })
                         }
                       />
-                      Confirm unlock purchases
+                      Confirm Unlock Store purchases
                     </label>
                   </header>
                   <div className="nostalgia-unlock-grid">
@@ -435,12 +493,26 @@ export function NostalgiaTab({
                   aria-modal="true"
                 >
                   <div className="nostalgia-modal-card">
-                    <h3>Confirm nostalgia prestige</h3>
+                    <h3>Confirm Nostalgia reset</h3>
                     <p className="muted">
-                      Review Current run, Next run keeps, and Delta before confirming the reset.
+                      Review reset checklist (Current run, Next run keeps, Delta) before
+                      confirming the reset.
                     </p>
+                    <PrestigeResetMatrix
+                      testId="nostalgia-reset-matrix-modal"
+                      title="Before you confirm"
+                      resets={[
+                        "Current run cash, enjoyment, and owned watches",
+                        "Atelier and Maison run-state progress",
+                      ]}
+                      carries={[
+                        "Nostalgia points and unlock purchases",
+                        "Catalog discovery and achievements",
+                      ]}
+                    />
                     <PrestigeSummary
                       summary={buildNostalgiaPrestigeSummary(nostalgiaPrestigeGain)}
+                      testId="nostalgia-prestige-summary-modal"
                     />
                     <div className="card-actions">
                       <button
@@ -473,7 +545,7 @@ export function NostalgiaTab({
                   aria-modal="true"
                 >
                   <div className="nostalgia-modal-card">
-                    <h3>Confirm nostalgia unlock</h3>
+                    <h3>Confirm Unlock Store purchase</h3>
                     <p className="muted">
                       Spend {pendingNostalgiaUnlockCost.toLocaleString()} Nostalgia to unlock{" "}
                       {pendingNostalgiaUnlock.name} permanently?
@@ -519,7 +591,7 @@ export function NostalgiaTab({
                     style={{ width: `${Math.round(nostalgiaProgress * 100)}%` }}
                   ></div>
                 </div>
-                <span>{Math.round(nostalgiaProgress * 100)}% to nostalgia prestige</span>
+                <span>{Math.round(nostalgiaProgress * 100)}% to Nostalgia reset</span>
               </div>
             </div>
           )}

@@ -69,6 +69,7 @@ import {
 } from "./incomeMultipliers";
 import { getDuplicateRewardSum } from "./duplicates";
 import { getTherapistCashRateCentsPerSec as getTherapistCashRateWithWindowCentsPerSec } from "./therapistSalary";
+import { canPerformTherapistSession, getTherapistSessionPolicy } from "./therapistSessions";
 
 export * from "./enjoyment";
 export * from "./incomeMultipliers";
@@ -725,7 +726,12 @@ export function getPrestigeUnlockProgressDetail(
         ? getMaisonPrestigeThresholdCents()
         : getNostalgiaPrestigeThresholdCents();
 
-  const rawCurrent = state.enjoymentCents;
+  const rawCurrent =
+    prestigeId === "workshop"
+      ? state.enjoymentCents
+      : prestigeId === "maison"
+        ? state.enjoymentCents + state.workshopBlueprints * threshold
+        : state.nostalgiaEnjoymentEarnedCents;
   const current = clampNumber(rawCurrent, 0, threshold);
   const ratio = threshold > 0 ? clampNumber(rawCurrent / threshold, 0, 1) : 0;
 
@@ -995,6 +1001,15 @@ export function getEnjoymentRateBreakdown(
 
 export type CashRateBreakdown = {
   careerAddends: RateBreakdownAddendTerm[];
+  sessionCadence: {
+    supportsSessions: boolean;
+    isFreeSession: boolean;
+    payoutCents: number;
+    cooldownMs: number;
+    cooldownRemainingMs: number;
+    enjoymentCostCents: number;
+    cadenceCentsPerSec: number;
+  };
   multiplierTerms: RateBreakdownMultiplierTerm[];
   eventMultiplier: number;
   totalCentsPerSec: number;
@@ -1005,9 +1020,19 @@ export function getCashRateBreakdown(
   nowMs: number,
   eventMultiplier = 1,
 ): CashRateBreakdown {
-  const therapistSalaryCentsPerSec = getTherapistCashRateCentsPerSec(state, nowMs);
+  const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
+  const therapistSalaryCentsPerSec = getTherapistCashRateCentsPerSec(state, clampedNowMs);
+  const sessionPolicy = getTherapistSessionPolicy(state, clampedNowMs);
+  const sessionCadenceCentsPerSec =
+    sessionPolicy.supportsSessions && sessionPolicy.cooldownMs > 0
+      ? (sessionPolicy.cashPayoutCents * 1_000) / sessionPolicy.cooldownMs
+      : 0;
   const careerAddends: RateBreakdownAddendTerm[] = [
-    { id: "career-salary", label: "Career salary", centsPerSec: therapistSalaryCentsPerSec },
+    {
+      id: "career-salary",
+      label: "Career salary (passive)",
+      centsPerSec: therapistSalaryCentsPerSec,
+    },
   ];
   const multiplierTerms: RateBreakdownMultiplierTerm[] = [
     { id: "event", label: "Event", multiplier: eventMultiplier },
@@ -1015,9 +1040,20 @@ export function getCashRateBreakdown(
 
   return {
     careerAddends,
+    sessionCadence: {
+      supportsSessions: sessionPolicy.supportsSessions,
+      isFreeSession: state.therapistCareer.freeSessionAvailable && sessionPolicy.supportsSessions,
+      payoutCents: sessionPolicy.cashPayoutCents,
+      cooldownMs: sessionPolicy.cooldownMs,
+      cooldownRemainingMs: sessionPolicy.cooldownRemainingMs,
+      enjoymentCostCents: state.therapistCareer.freeSessionAvailable
+        ? 0
+        : sessionPolicy.effectiveEnjoymentCostCents,
+      cadenceCentsPerSec: sessionCadenceCentsPerSec,
+    },
     multiplierTerms,
     eventMultiplier,
-    totalCentsPerSec: getEffectiveCashRateCentsPerSec(state, nowMs, eventMultiplier),
+    totalCentsPerSec: getEffectiveCashRateCentsPerSec(state, clampedNowMs, eventMultiplier),
   };
 }
 
@@ -1192,6 +1228,375 @@ export function getEventCalendar(state: GameState, nowMs: number): EventCalendar
   return model;
 }
 
+export type LoopUrgency = "critical" | "high" | "medium" | "low";
+
+export type LoopActionTarget = {
+  tabId:
+    | "collection"
+    | "career"
+    | "upgrades"
+    | "workshop"
+    | "maison"
+    | "nostalgia"
+    | "catalog"
+    | "stats"
+    | "save";
+  scrollTargetId?: string;
+};
+
+export type LoopActionCard = {
+  id: string;
+  label: string;
+  detail: string;
+  actionLabel: string;
+  whyNow: string;
+  target: LoopActionTarget;
+};
+
+export type FirstRunChecklistItem = {
+  id: "career-start" | "first-session" | "first-watch" | "atelier-unlocked" | "first-atelier-reset";
+  label: string;
+  complete: boolean;
+};
+
+export type FirstRunChecklist = {
+  visible: boolean;
+  completedCount: number;
+  totalCount: number;
+  items: ReadonlyArray<FirstRunChecklistItem>;
+};
+
+export type EconomyForecastPoint = {
+  id: "plus-1m" | "plus-5m" | "plus-10m";
+  label: "+1m" | "+5m" | "+10m";
+  horizonMs: number;
+  projectedCashDeltaCents: number;
+  projectedEnjoymentDeltaCents: number;
+  averageEventMultiplier: number;
+};
+
+export type EconomyForecastStrip = {
+  points: ReadonlyArray<EconomyForecastPoint>;
+  reason: string;
+};
+
+export type PrimaryLoopAction = {
+  urgency: LoopUrgency;
+  urgencyReason: string;
+  primary: LoopActionCard;
+  secondary: LoopActionCard;
+  checklist: FirstRunChecklist;
+  forecast: EconomyForecastStrip;
+};
+
+export function getFirstRunChecklist(state: GameState): FirstRunChecklist {
+  const items: FirstRunChecklistItem[] = [
+    {
+      id: "career-start",
+      label: "Start the therapist career",
+      complete: state.therapistCareer.careerStartId !== null,
+    },
+    {
+      id: "first-session",
+      label: "Complete your first therapist session",
+      complete: state.therapistCareer.lastSessionAtMs > 0 || state.therapistCareer.level > 0,
+    },
+    {
+      id: "first-watch",
+      label: "Buy your first watch model",
+      complete: getTotalItemCount(state) > 0,
+    },
+    {
+      id: "atelier-unlocked",
+      label: "Reach Atelier reveal threshold",
+      complete: isWorkshopRevealReady(state) || state.unlockedMilestones.includes("atelier"),
+    },
+    {
+      id: "first-atelier-reset",
+      label: "Complete one Atelier prestige reset",
+      complete: state.workshopPrestigeCount > 0,
+    },
+  ];
+  const completedCount = items.reduce((count, item) => count + (item.complete ? 1 : 0), 0);
+  const firstLoopComplete = state.workshopPrestigeCount > 0 || state.nostalgiaResets > 0;
+
+  return {
+    visible: !firstLoopComplete && completedCount < items.length,
+    completedCount,
+    totalCount: items.length,
+    items,
+  };
+}
+
+function getAverageActiveEventMultiplier(state: GameState, nowMs: number, horizonMs: number): number {
+  const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
+  const clampedHorizonMs = Number.isFinite(horizonMs) ? Math.max(0, Math.floor(horizonMs)) : 0;
+  if (clampedHorizonMs <= 0) {
+    return getEventIncomeMultiplier(state, clampedNowMs);
+  }
+
+  const horizonEndMs = clampedNowMs + clampedHorizonMs;
+  const activeEvents = EVENTS.map((event) => {
+    const eventState = state.eventStates[event.id] ?? { activeUntilMs: 0, nextAvailableAtMs: 0 };
+    const effectiveMultiplier = eventState.incomeMultiplier ?? event.incomeMultiplier;
+
+    return {
+      activeUntilMs: Math.max(0, Math.floor(eventState.activeUntilMs)),
+      multiplier: Math.max(1, effectiveMultiplier),
+    };
+  }).filter((event) => event.activeUntilMs > clampedNowMs);
+
+  if (activeEvents.length === 0) {
+    return 1;
+  }
+
+  const boundaries = new Set<number>([clampedNowMs, horizonEndMs]);
+  for (const event of activeEvents) {
+    if (event.activeUntilMs > clampedNowMs && event.activeUntilMs < horizonEndMs) {
+      boundaries.add(event.activeUntilMs);
+    }
+  }
+
+  const sorted = Array.from(boundaries).sort((a, b) => a - b);
+  if (sorted.length <= 1) {
+    return 1;
+  }
+
+  let weightedMultiplierMs = 0;
+  for (let index = 0; index < sorted.length - 1; index += 1) {
+    const segmentStartMs = sorted[index];
+    const segmentEndMs = sorted[index + 1];
+    const segmentDurationMs = Math.max(0, segmentEndMs - segmentStartMs);
+    if (segmentDurationMs <= 0) {
+      continue;
+    }
+
+    const segmentMultiplier = activeEvents.reduce((multiplier, event) => {
+      if (event.activeUntilMs > segmentStartMs) {
+        return multiplier * event.multiplier;
+      }
+      return multiplier;
+    }, 1);
+    weightedMultiplierMs += segmentMultiplier * segmentDurationMs;
+  }
+
+  return weightedMultiplierMs > 0 ? weightedMultiplierMs / clampedHorizonMs : 1;
+}
+
+export function getEconomyForecastStrip(state: GameState, nowMs: number): EconomyForecastStrip {
+  const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
+  const baseCashRateCentsPerSec = getEffectiveCashRateCentsPerSec(state, clampedNowMs, 1);
+  const baseEnjoymentRateCentsPerSec = getEnjoymentRateCentsPerSec(state);
+  const pointsConfig: ReadonlyArray<{ id: EconomyForecastPoint["id"]; label: EconomyForecastPoint["label"]; horizonMs: number }> = [
+    { id: "plus-1m", label: "+1m", horizonMs: 60_000 },
+    { id: "plus-5m", label: "+5m", horizonMs: 5 * 60_000 },
+    { id: "plus-10m", label: "+10m", horizonMs: 10 * 60_000 },
+  ];
+
+  const points: EconomyForecastPoint[] = pointsConfig.map((config) => {
+    const averageEventMultiplier = getAverageActiveEventMultiplier(state, clampedNowMs, config.horizonMs);
+    const projectedCashDeltaCents = Math.max(
+      0,
+      Math.floor((baseCashRateCentsPerSec * averageEventMultiplier * config.horizonMs) / 1000),
+    );
+    const projectedEnjoymentDeltaCents = Math.max(
+      0,
+      Math.floor((baseEnjoymentRateCentsPerSec * averageEventMultiplier * config.horizonMs) / 1000),
+    );
+
+    return {
+      id: config.id,
+      label: config.label,
+      horizonMs: config.horizonMs,
+      projectedCashDeltaCents,
+      projectedEnjoymentDeltaCents,
+      averageEventMultiplier,
+    };
+  });
+
+  const activeEventCount = EVENTS.reduce(
+    (count, event) => count + (isEventActive(state, event.id, clampedNowMs) ? 1 : 0),
+    0,
+  );
+
+  return {
+    points,
+    reason:
+      activeEventCount > 0
+        ? "Includes active event bonuses and their expiry windows."
+        : "Uses current baseline rates with no active event bonus.",
+  };
+}
+
+export function getPrimaryLoopAction(state: GameState, nowMs: number): PrimaryLoopAction {
+  const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
+  const checklist = getFirstRunChecklist(state);
+  const forecast = getEconomyForecastStrip(state, clampedNowMs);
+  const careerStarted = state.therapistCareer.careerStartId !== null;
+  const careerSessionReady = canPerformTherapistSession(state, clampedNowMs);
+  const nostalgiaGain = getNostalgiaPrestigeGain(state);
+  const maisonGain = getMaisonPrestigeGain(state);
+  const atelierGain = getWorkshopPrestigeGain(state);
+  const activeEventCount = EVENTS.reduce(
+    (count, event) => count + (isEventActive(state, event.id, clampedNowMs) ? 1 : 0),
+    0,
+  );
+
+  if (!careerStarted) {
+    return {
+      urgency: "critical",
+      urgencyReason: "Career is the opening gate for salary, sessions, and long-loop progression.",
+      primary: {
+        id: "start-career",
+        label: "Start your therapist career",
+        detail: "Enter the PhD path to unlock salary cadence, sessions, and progression tracks.",
+        actionLabel: "Open Career",
+        whyNow: "Without career start, your main cash loop stays blocked.",
+        target: { tabId: "career" },
+      },
+      secondary: {
+        id: "review-save-settings",
+        label: "Review core settings",
+        detail: "Set theme, notifications, and tab visibility before your first run.",
+        actionLabel: "Open Settings",
+        whyNow: "Establishing controls early prevents accidental friction during onboarding.",
+        target: { tabId: "save", scrollTargetId: "settings-visibility" },
+      },
+      checklist,
+      forecast,
+    };
+  }
+
+  if (canNostalgiaPrestige(state)) {
+    return {
+      urgency: "critical",
+      urgencyReason: "Nostalgia is ready and converts this run into permanent account power.",
+      primary: {
+        id: "claim-nostalgia",
+        label: "Claim Nostalgia prestige",
+        detail: "Reset at peak and bank permanent points for future runs.",
+        actionLabel: "Open Nostalgia",
+        whyNow: `You can claim +${nostalgiaGain.toLocaleString()} Nostalgia right now.`,
+        target: { tabId: "nostalgia", scrollTargetId: "nostalgia-preview" },
+      },
+      secondary: {
+        id: "audit-reset-preferences",
+        label: "Audit reset preferences",
+        detail: "Confirm unlock prompts and visibility settings before reset.",
+        actionLabel: "Open Settings",
+        whyNow: "A quick check prevents accidental unlock flow mistakes post-reset.",
+        target: { tabId: "save", scrollTargetId: "settings-visibility" },
+      },
+      checklist,
+      forecast,
+    };
+  }
+
+  if (canMaisonPrestige(state)) {
+    return {
+      urgency: "high",
+      urgencyReason: "Maison prestige is available and can lock in legacy multipliers this run.",
+      primary: {
+        id: "prepare-maison-prestige",
+        label: "Prepare Maison prestige",
+        detail: "Review the reset to claim Heritage and Reputation.",
+        actionLabel: "Open Maison",
+        whyNow: `Current reset yields +${maisonGain.toLocaleString()} Heritage.`,
+        target: { tabId: "maison", scrollTargetId: "maison-reset" },
+      },
+      secondary: {
+        id: "finalize-prestige-buys",
+        label: "Finalize pre-reset purchases",
+        detail: "Spend remaining cash on compounding purchases before resetting.",
+        actionLabel: "Open Collection",
+        whyNow: "Last-minute buys can improve your restart velocity.",
+        target: { tabId: "collection", scrollTargetId: "collection-overview" },
+      },
+      checklist,
+      forecast,
+    };
+  }
+
+  if (canWorkshopPrestige(state)) {
+    return {
+      urgency: "high",
+      urgencyReason: "Atelier prestige is ready, enabling blueprint progression and compounding boosts.",
+      primary: {
+        id: "prepare-atelier-prestige",
+        label: "Prepare Atelier prestige",
+        detail: "Reset when ready to convert enjoyment into blueprints.",
+        actionLabel: "Open Workshop",
+        whyNow: `This reset currently yields +${atelierGain.toLocaleString()} blueprints.`,
+        target: { tabId: "workshop", scrollTargetId: "workshop-reset" },
+      },
+      secondary: {
+        id: "tighten-upgrade-path",
+        label: "Tighten your upgrade path",
+        detail: "Spend cash on value upgrades to improve your next loop start.",
+        actionLabel: "Open Upgrades",
+        whyNow: "Spending before reset can increase immediate post-reset output.",
+        target: { tabId: "upgrades", scrollTargetId: "collection-upgrades" },
+      },
+      checklist,
+      forecast,
+    };
+  }
+
+  if (careerSessionReady) {
+    return {
+      urgency: "high",
+      urgencyReason: "A session is currently actionable and directly boosts salary progression.",
+      primary: {
+        id: "run-career-session",
+        label: "Run your next therapist session",
+        detail: "Sessions generate cash and accelerate career milestones.",
+        actionLabel: "Go to Career",
+        whyNow: "Session availability is a high-leverage career progression window.",
+        target: { tabId: "career" },
+      },
+      secondary: {
+        id: "convert-cash-into-collection",
+        label: "Convert cash into collection growth",
+        detail: "Buy catalog watches to scale enjoyment and unlocks.",
+        actionLabel: "Open Catalog",
+        whyNow: "New purchases raise baseline rates for every subsequent tick.",
+        target: { tabId: "catalog", scrollTargetId: "catalog-shop" },
+      },
+      checklist,
+      forecast,
+    };
+  }
+
+  return {
+    urgency: activeEventCount > 0 ? "high" : "medium",
+    urgencyReason:
+      activeEventCount > 0
+        ? "An active event bonus is running; prioritize actions that capitalize on current rates."
+        : "No immediate gate is blocking progression, so prioritize steady compounding.",
+    primary: {
+      id: "expand-collection",
+      label: "Expand your collection",
+      detail: "Buy affordable watches to push enjoyment and memory growth.",
+      actionLabel: "Open Catalog",
+      whyNow:
+        activeEventCount > 0
+          ? "Active event bonuses amplify each purchase's short-term return."
+          : "Baseline compounding is strongest when you keep ownership growing.",
+      target: { tabId: "catalog", scrollTargetId: "catalog-shop" },
+    },
+    secondary: {
+      id: "review-live-diagnostics",
+      label: "Review live diagnostics",
+      detail: "Check rates and event timing to pick the next high-value investment.",
+      actionLabel: "Open Stats",
+      whyNow: "Use current rates and event timing before committing your next spend.",
+      target: { tabId: "stats" },
+    },
+    checklist,
+    forecast,
+  };
+}
+
 export function getSoftcapEfficiency(state: GameState): number {
   const rawIncome = getRawIncomeRateCentsPerSec(state);
   if (rawIncome <= 0) {
@@ -1318,6 +1723,29 @@ export function canBuyItem(state: GameState, id: WatchItemId, quantity = 1): boo
 
 export function canBuyUpgrade(state: GameState, id: UpgradeId, quantity = 1): boolean {
   return state.currencyCents >= getUpgradePriceCents(state, id, quantity);
+}
+
+export function getResourceDeficit(requiredAmount: number, currentAmount: number): number {
+  const safeRequiredAmount = Number.isFinite(requiredAmount) ? Math.max(0, requiredAmount) : 0;
+  const safeCurrentAmount = Number.isFinite(currentAmount) ? Math.max(0, currentAmount) : 0;
+  return Math.max(0, Math.ceil(safeRequiredAmount - safeCurrentAmount));
+}
+
+export function getAffordabilityEtaSecondsForDeficit(
+  deficitAmount: number,
+  ratePerSecond: number,
+): number | null {
+  const safeDeficitAmount = Number.isFinite(deficitAmount) ? Math.max(0, deficitAmount) : 0;
+  if (safeDeficitAmount <= 0) {
+    return 0;
+  }
+
+  const safeRatePerSecond = Number.isFinite(ratePerSecond) ? ratePerSecond : 0;
+  if (safeRatePerSecond <= 0) {
+    return null;
+  }
+
+  return Math.ceil(safeDeficitAmount / safeRatePerSecond);
 }
 
 export function getMaisonCollectionBonusMultiplier(state: GameState): number {

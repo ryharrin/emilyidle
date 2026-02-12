@@ -114,6 +114,8 @@ describe("unlock UI components", () => {
           onCatalogTypeChange={() => undefined}
           catalogTab="unowned"
           onCatalogTabChange={() => undefined}
+          catalogViewMode="novice"
+          onCatalogViewModeChange={() => undefined}
           catalogBrands={[]}
           filteredCatalogEntries={[]}
           discoveredCatalogEntries={[]}
@@ -157,6 +159,8 @@ describe("unlock UI components", () => {
           onCatalogTypeChange={() => undefined}
           catalogTab="owned"
           onCatalogTabChange={() => undefined}
+          catalogViewMode="novice"
+          onCatalogViewModeChange={() => undefined}
           catalogBrands={[]}
           filteredCatalogEntries={[]}
           discoveredCatalogEntries={[]}

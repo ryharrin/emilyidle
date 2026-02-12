@@ -59,14 +59,18 @@ test("atelier back-out keeps stats, confirm shows onboarding", async ({ page }) 
   await seedSave(page, seededState);
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
-  await clickLocatorSafely(page.getByRole("tab", { name: "Atelier" }));
+  await clickLocatorSafely(page.locator("#workshop-tab"));
   await expect(page.getByTestId("workshop-panel")).toBeVisible();
+  await expect(page.getByTestId("workshop-reset-matrix")).toBeVisible();
+  await expect(page.getByTestId("workshop-reset-matrix")).toContainText("What resets");
+  await expect(page.getByTestId("workshop-reset-matrix")).toContainText("What stays");
 
   const currencyBefore = await page.locator("#currency").innerText();
   const enjoymentBefore = await page.locator("#enjoyment").innerText();
 
   await clickLocatorSafely(page.getByRole("button", { name: "Review reset" }));
   await expect(page.getByTestId("workshop-prestige-summary")).toBeVisible();
+  await expect(page.getByTestId("workshop-reset-matrix")).toBeVisible();
 
   await clickLocatorSafely(page.getByRole("button", { name: "Keep current run" }));
   await expect(page.locator("#currency")).toHaveText(currencyBefore);
@@ -125,12 +129,16 @@ test("maison back-out keeps stats, confirm shows onboarding", async ({ page }) =
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Maison" }));
   await expect(page.getByTestId("maison-panel")).toBeVisible();
+  await expect(page.getByTestId("maison-reset-matrix")).toBeVisible();
+  await expect(page.getByTestId("maison-reset-matrix")).toContainText("What resets");
+  await expect(page.getByTestId("maison-reset-matrix")).toContainText("What stays");
 
   const currencyBefore = await page.locator("#currency").innerText();
   const enjoymentBefore = await page.locator("#enjoyment").innerText();
 
   await clickLocatorSafely(page.getByRole("button", { name: "Review reset" }));
   await expect(page.getByTestId("maison-prestige-summary")).toBeVisible();
+  await expect(page.getByTestId("maison-reset-matrix")).toBeVisible();
 
   await clickLocatorSafely(page.getByRole("button", { name: "Keep current run" }));
   await expect(page.locator("#currency")).toHaveText(currencyBefore);

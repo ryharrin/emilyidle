@@ -76,3 +76,24 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.getByTestId("settings-clear-save-confirm")).toBeVisible();
   await expect(page.getByTestId("settings-clear-save-cancel")).toBeVisible();
 });
+
+test("catalog readiness badge requires discovered unowned references", async ({ page }) => {
+  const seededState = createInitialState();
+  seededState.currencyCents = 5_000_000_00;
+  seededState.enjoymentCents = 5_000_000_00;
+  seededState.catalogTierUnlocks = ["quartz", "automatic", "manual", "tourbillon"];
+  seededState.discoveredCatalogEntries = [];
+
+  await seedStorage(page, {
+    clearLocalStorage: true,
+    save: {
+      state: seededState,
+    },
+    settings: {
+      hiddenTabs: [],
+    },
+  });
+
+  await page.goto("/");
+  await expect(page.getByTestId("tab-ready-catalog")).toHaveCount(0);
+});

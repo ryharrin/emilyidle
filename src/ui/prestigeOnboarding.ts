@@ -135,7 +135,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
   const nostalgia = clampGain(event.gained.nostalgia ?? 0).toLocaleString();
   return {
     title: "Nostalgia prestige complete",
-    body: `You gained +${nostalgia} Nostalgia. Your collection carries forward; rebuild the collection and spend points on permanent unlocks.`,
+    body: `You gained +${nostalgia} Nostalgia. Your collection carries forward; rebuild momentum, then spend points in the Unlock Store.`,
     carryForward: [
       "Owned watches and catalog discoveries",
       "Tier bonuses and achievements",
@@ -149,7 +149,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
     recoveryHint:
       "Use Nostalgia unlocks early, then re-open Collection and Career loops in that order.",
     recommended: {
-      label: "Visit the Unlock store to spend Nostalgia",
+      label: "Open Unlock Store to spend Nostalgia",
       tabId: "nostalgia",
     },
   };

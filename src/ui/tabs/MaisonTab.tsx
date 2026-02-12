@@ -2,15 +2,18 @@ import React from "react";
 
 import { PrestigeIcon } from "../icons/coreIcons";
 import { PrestigeSummary } from "../components/PrestigeSummary";
+import { PrestigeResetMatrix } from "../components/PrestigeResetMatrix";
 import { buildMaisonPrestigeSummary } from "../prestigeSummary";
 
 import {
+  getAffordabilityEtaSecondsForDeficit,
   buyMaisonUpgrade,
   canBuyMaisonUpgrade,
   getEnjoymentThresholdLabel,
   getEnjoymentRateCentsPerSec,
   getMaisonPrestigeThresholdCents,
   getPrestigeUnlockProgressDetail,
+  getResourceDeficit,
   prestigeMaison,
 } from "../../game/state";
 import type { GameState, MaisonUpgradeDefinition } from "../../game/state";
@@ -52,6 +55,7 @@ export function MaisonTab({
   state,
   showMaisonSection,
   showMaisonPanel,
+  onNavigate,
   maisonPrestigeGain,
   maisonReputationGain,
   maisonRevealProgress,
@@ -63,10 +67,8 @@ export function MaisonTab({
 }: MaisonTabProps) {
   const resetProgress = getPrestigeUnlockProgressDetail(state, "maison");
   const enjoymentRate = getEnjoymentRateCentsPerSec(state);
-  const resetEtaSeconds =
-    enjoymentRate > 0
-      ? Math.ceil(Math.max(0, resetProgress.threshold - resetProgress.current) / enjoymentRate)
-      : null;
+  const resetDeficitCents = getResourceDeficit(resetProgress.threshold, resetProgress.current);
+  const resetEtaSeconds = getAffordabilityEtaSecondsForDeficit(resetDeficitCents, enjoymentRate);
   const resetEtaLabel =
     resetEtaSeconds === null
       ? "ETA unavailable"
@@ -102,7 +104,7 @@ export function MaisonTab({
                           data-testid="maison-complication-power-reserve"
                         >
                           <p className="surface-complication-label maison-complication-label">
-                            Power reserve
+                            Power reserve · Heritage bank
                           </p>
                           <p className="surface-complication-value maison-complication-value">
                             {state.maisonHeritage.toLocaleString()} Heritage
@@ -116,7 +118,7 @@ export function MaisonTab({
                           data-testid="maison-complication-chronograph"
                         >
                           <p className="surface-complication-label maison-complication-label">
-                            Chronograph
+                            Chronograph · Reputation bank
                           </p>
                           <p className="surface-complication-value maison-complication-value">
                             {state.maisonReputation.toLocaleString()} Reputation
@@ -130,7 +132,7 @@ export function MaisonTab({
                           data-testid="maison-complication-date-wheel"
                         >
                           <p className="surface-complication-label maison-complication-label">
-                            Date wheel
+                            Date wheel · Reset readiness
                           </p>
                           <p className="surface-complication-value maison-complication-value">
                             {Math.round(resetProgress.ratio * 100)}% ready
@@ -144,7 +146,7 @@ export function MaisonTab({
                           data-testid="maison-complication-moonphase"
                         >
                           <p className="surface-complication-label maison-complication-label">
-                            Moonphase
+                            Moonphase · Reset threshold
                           </p>
                           <p className="surface-complication-value maison-complication-value">
                             {getEnjoymentThresholdLabel(getMaisonPrestigeThresholdCents())}
@@ -160,7 +162,11 @@ export function MaisonTab({
                       {state.maisonReputation.toLocaleString()} Reputation
                     </div>
                   </header>
-                  <div className="workshop-reset maison-reset" data-testid="maison-reset">
+                  <div
+                    className="workshop-reset maison-reset"
+                    data-testid="maison-reset"
+                    id="maison-reset"
+                  >
                     <div>
                       <p className="workshop-label">Reset threshold</p>
                       <p className="workshop-value">
@@ -190,12 +196,51 @@ export function MaisonTab({
                   <p className="muted maison-reset-detail">
                     Resets Collection + Atelier progress. Maison lines remain active.
                   </p>
+                  <div className="card-actions" data-testid="maison-handoff-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="maison-open-catalog"
+                      onClick={() => onNavigate("catalog", "catalog-shop")}
+                    >
+                      Open Catalog shop
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="maison-open-upgrades-hub"
+                      onClick={() => onNavigate("upgrades")}
+                    >
+                      Open Upgrades hub
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="maison-open-lines"
+                      onClick={() => onNavigate("collection", "collection-maison-lines")}
+                    >
+                      Open Maison lines in Collection
+                    </button>
+                  </div>
                   <fieldset className="workshop-cta">
                     <legend className="visually-hidden">Reset atelier</legend>
                     <p className="muted workshop-persistence-copy">
                       Collection and Atelier run-state reset. Maison legacy, Nostalgia progression,
                       and catalog achievements carry forward.
                     </p>
+                    <PrestigeResetMatrix
+                      testId="maison-reset-matrix"
+                      resets={[
+                        "Collection run cash, enjoyment, and owned watches",
+                        "Atelier run-state progress and current loop momentum",
+                        "Short-term run automation momentum",
+                      ]}
+                      carries={[
+                        "Maison Heritage and Reputation",
+                        "Maison upgrades and Maison lines",
+                        "Nostalgia progression and catalog achievements",
+                      ]}
+                    />
                     {maisonResetArmed ? (
                       <div className="workshop-confirm meta-action-controls">
                         <button
@@ -232,10 +277,10 @@ export function MaisonTab({
                     )}
                     <p className="muted" aria-live="polite">
                       {maisonResetArmed
-                        ? "Review Current run, Next run keeps, and Delta, then confirm reset."
+                        ? "Review reset checklist (Current run, Next run keeps, Delta), then confirm reset."
                         : canPrestigeMaison
-                          ? "Open reset review to compare what resets against what carries forward."
-                          : "Requires reaching the enjoyment threshold."}
+                          ? "Open reset checklist to compare what resets against what carries forward."
+                          : `Blocked: need ${formatMoneyFromCents(resetDeficitCents)} more enjoyment-equivalent progress (ETA ${resetEtaLabel}).`}
                     </p>
                   </fieldset>
 
@@ -252,6 +297,11 @@ export function MaisonTab({
                       {maisonUpgrades.map((upgrade) => {
                         const owned = state.maisonUpgrades[upgrade.id] ?? false;
                         const canAfford = canBuyMaisonUpgrade(state, upgrade.id);
+                        const currentResource =
+                          upgrade.currency === "heritage"
+                            ? state.maisonHeritage
+                            : state.maisonReputation;
+                        const resourceDeficit = Math.max(0, upgrade.cost - currentResource);
                         const costLabel =
                           upgrade.currency === "heritage"
                             ? `${upgrade.cost} Heritage`
@@ -293,6 +343,14 @@ export function MaisonTab({
                                 {owned ? "Installed" : `Buy (${costLabel})`}
                               </button>
                             </div>
+                            {owned ? (
+                              <p className="muted">Installed: this Maison upgrade is already active.</p>
+                            ) : !canAfford ? (
+                              <p className="muted">
+                                Blocked: need {resourceDeficit.toLocaleString()} more{" "}
+                                {upgrade.currency === "heritage" ? "Heritage" : "Reputation"}.
+                              </p>
+                            ) : null}
                           </div>
                         );
                       })}

@@ -14,6 +14,7 @@ type AnchoredTooltipProps = {
   anchorEl: HTMLElement | null;
   preferredPlacement?: Placement;
   content: AnchoredTooltipContent;
+  id?: string;
   testId?: string;
 };
 
@@ -111,6 +112,7 @@ export function AnchoredTooltip({
   anchorEl,
   preferredPlacement = "top",
   content,
+  id,
   testId,
 }: AnchoredTooltipProps) {
   const tooltipRef = React.useRef<HTMLDivElement | null>(null);
@@ -178,6 +180,7 @@ export function AnchoredTooltip({
 
   return createPortal(
     <div
+      id={id}
       ref={tooltipRef}
       className={[
         "anchored-tooltip",

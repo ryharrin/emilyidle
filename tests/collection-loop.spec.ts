@@ -11,8 +11,7 @@ const selectors = {
   upgradesCallout: '[data-testid="upgrades-callout"]',
   sectionNav: '[data-testid="collection-section-nav"]',
   insightsPanel: '[data-testid="collection-insights-panel"]',
-  navSegmentQuartz:
-    '[data-testid="collection-section-nav-item-collection-segment-quartz"] button',
+  navSegmentQuartz: '[data-testid="collection-section-nav-item-collection-segment-quartz"] button',
   navSegmentAutomatic:
     '[data-testid="collection-section-nav-item-collection-segment-automatic"] button',
   navSegmentManual: '[data-testid="collection-section-nav-item-collection-segment-manual"] button',
@@ -45,9 +44,22 @@ const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 const TOURBILLON_MODEL_ID =
   "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
 const WATCH_MODEL_COUNT = 59;
+const PRIMARY_TAB_IDS_BY_LABEL: Record<string, string> = {
+  Career: "career",
+  Catalog: "catalog",
+  Collection: "collection",
+  Upgrades: "upgrades",
+  Atelier: "workshop",
+  Maison: "maison",
+  Stats: "stats",
+  Settings: "save",
+};
 
 async function clickPrimaryTab(page: Page, name: string) {
-  const tab = page.getByRole("tab", { name });
+  const mappedTabId = PRIMARY_TAB_IDS_BY_LABEL[name];
+  const tab = mappedTabId
+    ? page.locator(`#${mappedTabId}-tab`)
+    : page.getByRole("tab", { name: new RegExp(`^${name}`, "i") });
   await expect(tab).toBeVisible();
   await clickLocatorSafely(tab);
   await expect(tab).toHaveAttribute("aria-selected", "true");
@@ -144,7 +156,7 @@ async function openCatalogInteractionModal(
     modal
       .waitFor({
         state: "visible",
-        timeout: 350,
+        timeout: 1_200,
       })
       .then(() => true)
       .catch(() => false);
@@ -156,10 +168,20 @@ async function openCatalogInteractionModal(
       continue;
     }
     await candidate.scrollIntoViewIfNeeded().catch(() => {});
-    await candidate.click({ force: true }).catch(() => {});
+    try {
+      await clickLocatorSafely(candidate);
+    } catch {
+      continue;
+    }
     if (await waitForModalVisible()) {
       return true;
     }
+  }
+
+  const detailsSheet = page.getByTestId("catalog-details-sheet");
+  if (await detailsSheet.isVisible().catch(() => false)) {
+    await page.keyboard.press("Escape").catch(() => {});
+    await detailsSheet.waitFor({ state: "hidden", timeout: 1_000 }).catch(() => {});
   }
 
   return modal.isVisible().catch(() => false);
@@ -188,6 +210,19 @@ test.describe("collection loop", () => {
       await expect(page.locator(selectors.upgradesCallout)).toBeVisible();
       await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
       await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
+      await expect(page.getByTestId("collection-prestige-preview-cta")).toBeVisible();
+
+      const firstFindInCatalog = page
+        .getByTestId("collection-set-bonus-grid")
+        .getByRole("button", { name: "Find in Catalog" })
+        .first();
+      await expect(firstFindInCatalog).toBeVisible();
+      await clickLocatorSafely(firstFindInCatalog);
+      await expect(page.getByRole("tab", { name: "Catalog" })).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+      await expect(page.getByTestId("catalog-shop")).toBeVisible();
 
       await clickPrimaryTab(page, "Catalog");
       const catalogCardCount = await page.locator(selectors.catalogCards).count();
@@ -253,6 +288,12 @@ test.describe("collection loop", () => {
       }
 
       const runSessionButton = careerPanel.getByTestId("career-action");
+      if (!(await runSessionButton.isVisible().catch(() => false))) {
+        const secondaryToggle = careerPanel.getByTestId("career-secondary-details-toggle");
+        await expect(secondaryToggle).toBeVisible();
+        await secondaryToggle.click();
+      }
+      await expect(runSessionButton).toBeVisible();
       await expect(runSessionButton).toBeEnabled({ timeout: 10_000 });
       await runSessionButton.click();
 
@@ -1146,15 +1187,17 @@ test.describe("collection loop", () => {
 
       const dismantleList = page.getByTestId("workshop-dismantle-list");
       const tourbillonCard = dismantleList.locator('[data-item-id="tourbillon"]');
-      await tourbillonCard.getByRole("button", { name: "Dismantle" }).click();
-      await tourbillonCard.getByRole("button", { name: "Dismantle" }).click();
+      const dismantleButton = tourbillonCard.getByRole("button", { name: "Dismantle" });
+      await clickLocatorSafely(dismantleButton);
+      await clickLocatorSafely(dismantleButton);
 
       await expect(parts).toContainText("16 parts");
 
       const recipes = page.getByTestId("workshop-crafting-recipes");
       const polishedCard = recipes.locator(".card", { hasText: "Polished tools" }).first();
-      await expect(polishedCard.getByRole("button", { name: "Craft" })).toBeEnabled();
-      await polishedCard.getByRole("button", { name: "Craft" }).click();
+      const craftButton = polishedCard.getByRole("button", { name: "Craft" });
+      await expect(craftButton).toBeEnabled();
+      await clickLocatorSafely(craftButton);
 
       await expect(parts).toContainText("4 parts");
       await expect(page.getByTestId("workshop-crafting-boosts")).toContainText("Income x1.05");

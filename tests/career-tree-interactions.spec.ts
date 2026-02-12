@@ -85,12 +85,9 @@ test.describe("career upgrades tree interactions", () => {
     await trackOption.scrollIntoViewIfNeeded();
     await expect(trackOption).toBeVisible();
     await clickLocatorSafely(trackOption);
+    await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
+    await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
     const lockedTrackLabel = page.getByTestId("career-choice-locked-licensed-associate");
-    if (!(await lockedTrackLabel.isVisible().catch(() => false))) {
-      await trackOption.evaluate((element) => {
-        (element as HTMLButtonElement).click();
-      });
-    }
     await expect(lockedTrackLabel).toBeVisible();
 
     await selectCareerView(page, "upgrades");

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { readFile } from "node:fs/promises";
+import {
+  CATALOG_ENTRIES,
+  getCatalogFallbackImageUrl,
+  getCatalogImageUrl,
+} from "../src/game/catalog";
 
 const cwd = (globalThis as { process?: { cwd?: () => string } }).process?.cwd?.();
 if (!cwd) {
@@ -19,5 +24,26 @@ describe("catalog image URL mapping contract", () => {
     expect(text).toMatch(/return\s+resolveCatalogAssetUrl\(localPath\);/);
     expect(text).toMatch(/entry\.image\.url\.startsWith\("\/catalog\/"\)/);
     expect(text).toMatch(/entry\.image\.url\.startsWith\("catalog\/"\)/);
+  });
+
+  it("resolves image URLs and fallback placeholders through BASE_URL-safe catalog paths", () => {
+    const baseUrl =
+      typeof import.meta.env.BASE_URL === "string" ? import.meta.env.BASE_URL : "/";
+    const catalogRoot = `${baseUrl}catalog/`;
+
+    for (const entry of CATALOG_ENTRIES) {
+      const src = getCatalogImageUrl(entry);
+      expect(src.startsWith(catalogRoot)).toBe(true);
+      const fallback = getCatalogFallbackImageUrl(entry);
+      expect(fallback.startsWith(catalogRoot)).toBe(true);
+
+      if (entry.movementType === "quartz") {
+        expect(fallback.endsWith("/catalog/placeholders/quartz-tier.svg")).toBe(true);
+      } else if (entry.movementType === "tourbillon") {
+        expect(fallback.endsWith("/catalog/placeholders/lux-tier.svg")).toBe(true);
+      } else {
+        expect(fallback.endsWith("/catalog/placeholders/mid-tier.svg")).toBe(true);
+      }
+    }
   });
 });

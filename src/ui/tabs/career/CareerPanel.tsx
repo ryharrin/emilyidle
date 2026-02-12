@@ -1,12 +1,15 @@
 import React from "react";
 
 import { CAREER_TRACKS, TRACK_CHOICE_UNLOCK_LEVEL } from "../../../game/data/career";
+import { CAREER_STAGES } from "../../../game/data/careerStages";
 import { formatMoneyFromCents } from "../../../game/format";
 import {
   canPerformTherapistSession,
   enterPhdProgram,
   getCareerNextActionCue,
+  getTherapistCareerChoiceStatus,
   getTherapistCareer,
+  getTherapistCareerStageUnlockLevel,
   getTherapistSessionCostLabel,
   getTherapistSessionValueDeltaSummary,
   getTherapistSalaryWindowSummary,
@@ -60,6 +63,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const [isCompactLayout, setIsCompactLayout] = React.useState(getIsCompactCareerViewport);
   const [deepDetailsOpen, setDeepDetailsOpen] = React.useState(() => !getIsCompactCareerViewport());
   const [nextSectionOpen, setNextSectionOpen] = React.useState(() => !getIsCompactCareerViewport());
+  const [secondaryMissionOpen, setSecondaryMissionOpen] = React.useState(false);
   const career = getTherapistCareer(state);
   const nextActionCue = getCareerNextActionCue(state, nowMs);
   const nextXpRequired = getTherapistXpRequiredForNextLevel(career.level);
@@ -79,6 +83,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const salaryWindowSummary = getTherapistSalaryWindowSummary(state, nowMs);
   const sessionValueSummary = getTherapistSessionValueDeltaSummary(state, nowMs);
   const nearTermUnlock = getTherapistNearTermUnlockImpact(state);
+  const choiceStatus = getTherapistCareerChoiceStatus(state);
+  const availableChoices = choiceStatus.filter((status) => status.available);
+  const pendingChoices = choiceStatus.filter((status) => !status.chosen);
   const salaryRemainingLabel = formatDuration(salaryAlert.remainingMs);
   const showSalaryAlert = salaryAlert.level !== "none";
   const cooldownComplicationValue =
@@ -166,6 +173,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       if (matches) {
         setDeepDetailsOpen(false);
         setNextSectionOpen(false);
+        setSecondaryMissionOpen(false);
         return;
       }
 
@@ -192,6 +200,84 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     setDeepDetailsOpen(true);
     setActiveView("stages");
   }, []);
+  const interactionRunsTotal = state.interactionRunsTotal;
+  const interactionPerfectRuns = state.interactionPerfectRuns;
+  const interactionPerfectStreak = state.interactionPerfectStreak;
+  const interactionBestPerfectStreak = state.interactionBestPerfectStreak;
+  const interactionPrecisionPercent =
+    interactionRunsTotal > 0
+      ? Math.round((interactionPerfectRuns / interactionRunsTotal) * 100)
+      : 0;
+  const interactionOutcomeSummary =
+    interactionPerfectStreak > 0
+      ? `${interactionPerfectStreak} perfect run${
+          interactionPerfectStreak === 1 ? "" : "s"
+        } in a row.`
+      : interactionRunsTotal > 0
+        ? "No active perfect streak."
+        : "No outcomes logged yet.";
+
+  const choiceQueueCard = (
+    <article className="card career-choice-queue" data-testid="career-choice-queue">
+      <header className="career-economy-summary-header">
+        <h4>Actionable choices</h4>
+        <p className="muted">
+          {availableChoices.length > 0
+            ? `${availableChoices.length} permanent choice${availableChoices.length === 1 ? "" : "s"} ready now.`
+            : "No permanent choices are ready yet."}
+        </p>
+      </header>
+      <ul className="career-choice-queue-list" data-testid="career-choice-queue-list">
+        {pendingChoices.length === 0 ? (
+          <li data-testid="career-choice-queue-empty">
+            <div>
+              <strong>All permanent choices locked in</strong>
+              <p className="muted">No pending stage decisions remain.</p>
+            </div>
+          </li>
+        ) : (
+          pendingChoices.map((status) => {
+            const stage = CAREER_STAGES.find((candidate) => candidate.id === status.stageId);
+            const unlockLevel = getTherapistCareerStageUnlockLevel(status.stageId);
+            const stateLabel = status.available
+              ? "Ready now"
+              : status.unlocked
+                ? "Waiting on earlier choice"
+                : `Unlocks at level ${unlockLevel}`;
+
+            return (
+              <li key={status.stageId} data-testid={`career-choice-queue-item-${status.stageId}`}>
+                <div>
+                  <strong>{stage?.label ?? status.stageId}</strong>
+                  <p className="muted">{stateLabel}</p>
+                </div>
+                {status.available ? (
+                  <button
+                    type="button"
+                    className="secondary"
+                    data-testid={`career-choice-queue-open-${status.stageId}`}
+                    onClick={openProgressDetails}
+                  >
+                    Choose now
+                  </button>
+                ) : null}
+              </li>
+            );
+          })
+        )}
+      </ul>
+      <div className="card-actions">
+        <button
+          type="button"
+          className="secondary"
+          data-testid="career-choice-queue-open-map"
+          onClick={openProgressDetails}
+        >
+          Open stage map
+        </button>
+      </div>
+    </article>
+  );
 
   const mobileRailAction = (() => {
     if (nextActionCue.id === "start-career") {
@@ -199,6 +285,19 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
         label: "Enter program",
         disabled: false,
         onClick: () => onPurchase(enterPhdProgram(state, nowMs)),
+      };
+    }
+
+    if (
+      nextActionCue.id === "choose-track" ||
+      nextActionCue.id === "choose-modality" ||
+      nextActionCue.id === "choose-operating-style" ||
+      nextActionCue.id === "choose-expansion-focus"
+    ) {
+      return {
+        label: "Open progression choices",
+        disabled: false,
+        onClick: openProgressDetails,
       };
     }
 
@@ -221,6 +320,180 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       onClick: openProgressDetails,
     };
   })();
+  const showProgressionShortcut =
+    mobileRailAction.label !== "Open progression" &&
+    mobileRailAction.label !== "Open progression choices";
+  const secondaryMissionContent = (
+    <div className="card-stack career-stack career-stack-secondary">
+      <article className="card interaction-feed-card" data-testid="career-interaction-feed">
+        <header className="interaction-feed-card__header">
+          <div>
+            <p className="eyebrow">Interaction outcomes</p>
+            <h4>Career feed</h4>
+          </div>
+          <p className="interaction-feed-card__status">{interactionOutcomeSummary}</p>
+        </header>
+        <dl className="interaction-feed-card__grid">
+          <div>
+            <dt>Perfect runs</dt>
+            <dd>
+              {interactionPerfectRuns.toLocaleString()} / {interactionRunsTotal.toLocaleString()}
+            </dd>
+          </div>
+          <div>
+            <dt>Precision</dt>
+            <dd>{interactionPrecisionPercent}%</dd>
+          </div>
+          <div>
+            <dt>Best streak</dt>
+            <dd>{interactionBestPerfectStreak.toLocaleString()}</dd>
+          </div>
+        </dl>
+      </article>
+      <article className="card career-economy-summary" data-testid="career-economy-summary">
+        <header className="career-economy-summary-header">
+          <h4>Session economics</h4>
+          <p className="muted">Live payout, timing, and cadence for your next run.</p>
+        </header>
+        <dl className="career-economy-summary-grid" data-testid="session-delta-breakdown">
+          <div className="career-economy-summary-metric career-economy-summary-metric-cash">
+            <dt>Session Cash</dt>
+            <dd>
+              +{formatMoneyFromCents(sessionValueSummary.cashPayoutCents)}
+              {sessionValueSummary.supportsSessions ? "" : " (locked)"}
+            </dd>
+          </div>
+          <div className="career-economy-summary-metric">
+            <dt>Run now cost</dt>
+            <dd>
+              {sessionValueSummary.isFreeSession
+                ? "0 (free)"
+                : `-${formatMoneyFromCents(sessionValueSummary.effectiveEnjoymentCostCents)}`}
+            </dd>
+          </div>
+          <div className="career-economy-summary-metric">
+            <dt>Cooldown</dt>
+            <dd>{formatDuration(sessionValueSummary.cooldownMs)}</dd>
+          </div>
+          <div className="career-economy-summary-metric">
+            <dt>Cadence premium</dt>
+            <dd>
+              {sessionValueSummary.premiumCount > 0
+                ? `+${Math.max(0, Math.round((sessionValueSummary.premiumMultiplier - 1) * 100))}%`
+                : "None"}
+            </dd>
+          </div>
+          <div className="career-economy-summary-metric">
+            <dt>Cooldown rush</dt>
+            <dd>
+              {sessionValueSummary.cooldownRushExtraCents > 0
+                ? `+${formatMoneyFromCents(sessionValueSummary.cooldownRushExtraCents)}`
+                : "None"}
+            </dd>
+          </div>
+        </dl>
+        <p className="career-economy-summary-window" data-testid="salary-window-summary">
+          <span className="career-economy-summary-window-label">Salary window</span>
+          <span className="career-economy-summary-window-value">
+            {salaryWindowSummary.statusLabel === "active"
+              ? `Active now • refreshes in ${formatDuration(salaryWindowSummary.remainingMs)}`
+              : "Inactive • waiting for the next rollover"}
+          </span>
+          <span className="career-economy-summary-window-detail">
+            Window cadence: {formatDuration(salaryWindowSummary.windowMs)}.
+          </span>
+        </p>
+        <p className="career-economy-summary-note" data-testid="near-term-unlock-summary">
+          <span className="career-economy-summary-note-label">Near-term unlock</span>
+          <strong>{nearTermUnlock.title}</strong>
+          <span className="career-economy-summary-note-summary">{nearTermUnlock.summaryText}</span>
+          <span className="career-economy-summary-note-detail">{nearTermUnlock.detail}</span>
+        </p>
+      </article>
+      <div className="card career-session">
+        <div className="career-session-header">
+          <div>
+            <h4>Run session</h4>
+            <p className="muted">Run sessions for burst Cash and career XP.</p>
+          </div>
+          <div className="career-session-note">{sessionCostNote}</div>
+        </div>
+        {showSalaryAlert && (
+          <div
+            className={`career-salary-alert career-salary-alert-${salaryAlert.level}`}
+            data-testid="career-salary-expiration"
+          >
+            <strong>
+              {salaryAlert.level === "urgent" ? "Urgent salary expiration" : "Salary expiring soon"}
+              :
+            </strong>{" "}
+            Salary window ends in {salaryRemainingLabel}.{" "}
+            {salaryAlert.level === "urgent"
+              ? "Refresh now to keep your income flowing."
+              : "Refresh soon to avoid a gap in salary."}
+          </div>
+        )}
+        <div className="workshop-reset">
+          <div>
+            <p className="workshop-label">Level</p>
+            <p className="workshop-value">{career.level.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="workshop-label">XP</p>
+            <p className="workshop-value">
+              {career.xp.toLocaleString()} / {nextXpRequired.toLocaleString()}
+            </p>
+          </div>
+          <div>
+            <p className="workshop-label">Session cost</p>
+            <p className="workshop-value">{costLabel}</p>
+          </div>
+          {sessionPolicy.premiumCount > 0 && (
+            <div className="career-session-premium" data-testid="career-session-premium">
+              <div className="career-session-premium-row">
+                <span className="career-session-premium-label">
+                  {sessionPolicy.premiumLabel || "Session premium"}
+                </span>
+                <span className="career-session-premium-value">
+                  +{Math.max(0, Math.round((sessionPolicy.premiumMultiplier - 1) * 100))}%
+                </span>
+              </div>
+              <p className="career-session-premium-note">
+                {sessionPolicy.premiumNote || "Waiting twice the cooldown resets the premium."}
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="inline-icon-button">
+          <ExplainButton
+            sectionId={HELP_SECTION_IDS.careerProgression}
+            label="Explain career progression"
+          />
+          <span className="muted">Career help</span>
+        </div>
+        <p className="career-session-run-now-cost" data-testid="career-session-run-now-cost">
+          {runNowCostLabel}
+        </p>
+        <div className="card-actions">
+          {showCooldownRing && (
+            <div className="career-session-cooldown" data-testid="career-session-cooldown-ring">
+              <CooldownRing progress01={cooldownProgress} label={cooldownLabel} />
+            </div>
+          )}
+          <button
+            type="button"
+            data-testid="career-action"
+            disabled={!sessionPolicy.supportsSessions || !canPerform}
+            onClick={() => onPurchase(performTherapistSession(state, nowMs))}
+          >
+            {canPerform && sessionPolicy.cooldownRemainingMs > 0
+              ? "Run session (rush)"
+              : "Run session"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="panel" data-testid="career-panel">
@@ -237,7 +510,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               className="career-complication"
               data-testid="career-complication-power-reserve"
             >
-              <p className="career-complication-label">Power reserve</p>
+              <p className="career-complication-label">Power reserve · Session payout</p>
               <p className="career-complication-value">
                 +{formatMoneyFromCents(sessionValueSummary.cashPayoutCents)} per run
               </p>
@@ -247,14 +520,14 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               </p>
             </article>
             <article className="career-complication" data-testid="career-complication-chronograph">
-              <p className="career-complication-label">Chronograph</p>
+              <p className="career-complication-label">Chronograph · Session cooldown</p>
               <p className="career-complication-value">{cooldownComplicationValue}</p>
               <p className="career-complication-detail">
                 {showCooldownRing ? "Cooldown to next full-value run" : "Session timing is clear"}
               </p>
             </article>
             <article className="career-complication" data-testid="career-complication-date-wheel">
-              <p className="career-complication-label">Date wheel</p>
+              <p className="career-complication-label">Date wheel · Near-term unlock</p>
               <p className="career-complication-value" data-testid="career-near-term-summary">
                 {nearTermUnlock.summaryText}
               </p>
@@ -263,7 +536,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               </p>
             </article>
             <article className="career-complication" data-testid="career-complication-moonphase">
-              <p className="career-complication-label">Moonphase</p>
+              <p className="career-complication-label">Moonphase · Salary window</p>
               <p className="career-complication-value">{salaryComplicationValue}</p>
               <p className="career-complication-detail">{salaryComplicationDetail}</p>
             </article>
@@ -280,9 +553,12 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           data-testid="career-now-section"
         >
           <header className="career-priority-header">
-            <p className="eyebrow">Now</p>
-            <h4>What to do now</h4>
-            <p className="muted">Top recommended action first, then the key numbers behind it.</p>
+            <p className="eyebrow">Execute</p>
+            <h4>Career execution lane</h4>
+            <p className="muted" data-testid="career-now-guidance-note">
+              Mission Rail owns immediate priorities. Use this lane for career-specific run controls
+              and diagnostics.
+            </p>
           </header>
           <div className="card-stack career-stack career-stack-now">
             <CareerNextActionCard
@@ -290,156 +566,22 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               nowMs={nowMs}
               statusLabel={statusLabel}
               onPurchase={onPurchase}
+              onOpenProgressionChoices={openProgressDetails}
             />
-            <article className="card career-economy-summary" data-testid="career-economy-summary">
-              <header className="career-economy-summary-header">
-                <h4>Session value snapshot</h4>
-                <p className="muted">Payout, cooldown, and pacing modifiers.</p>
-              </header>
-              <dl className="career-economy-summary-grid" data-testid="session-delta-breakdown">
-                <div>
-                  <dt>Session cash</dt>
-                  <dd>
-                    +{formatMoneyFromCents(sessionValueSummary.cashPayoutCents)}
-                    {sessionValueSummary.supportsSessions ? "" : " (locked)"}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Run now cost</dt>
-                  <dd>
-                    {sessionValueSummary.isFreeSession
-                      ? "0 (free)"
-                      : `-${formatMoneyFromCents(sessionValueSummary.effectiveEnjoymentCostCents)}`}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Cooldown</dt>
-                  <dd>{formatDuration(sessionValueSummary.cooldownMs)}</dd>
-                </div>
-                <div>
-                  <dt>Cadence premium</dt>
-                  <dd>
-                    {sessionValueSummary.premiumCount > 0
-                      ? `+${Math.max(0, Math.round((sessionValueSummary.premiumMultiplier - 1) * 100))}%`
-                      : "None"}
-                  </dd>
-                </div>
-                <div>
-                  <dt>Cooldown rush</dt>
-                  <dd>
-                    {sessionValueSummary.cooldownRushExtraCents > 0
-                      ? `+${formatMoneyFromCents(sessionValueSummary.cooldownRushExtraCents)}`
-                      : "None"}
-                  </dd>
-                </div>
-              </dl>
-              <p className="career-economy-summary-window" data-testid="salary-window-summary">
-                <strong>
-                  {salaryWindowSummary.statusLabel === "active"
-                    ? "Active window:"
-                    : "Inactive window:"}
-                </strong>{" "}
-                {salaryWindowSummary.statusLabel === "active"
-                  ? `ends in ${formatDuration(salaryWindowSummary.remainingMs)}`
-                  : "is inactive"}{" "}
-                ({formatDuration(salaryWindowSummary.windowMs)} base refresh).
-              </p>
-              <p className="career-economy-summary-note" data-testid="near-term-unlock-summary">
-                <strong>{nearTermUnlock.title}</strong>
-                <span className="career-economy-summary-note-summary">
-                  {nearTermUnlock.summaryText}
-                </span>
-                <span className="career-economy-summary-note-detail">{nearTermUnlock.detail}</span>
-              </p>
-            </article>
-            <div className="card career-session">
-              <div className="career-session-header">
-                <div>
-                  <h4>Run session</h4>
-                  <p className="muted">Run sessions for burst cash and career XP.</p>
-                </div>
-                <div className="career-session-note">{sessionCostNote}</div>
-              </div>
-              {showSalaryAlert && (
-                <div
-                  className={`career-salary-alert career-salary-alert-${salaryAlert.level}`}
-                  data-testid="career-salary-expiration"
-                >
-                  <strong>
-                    {salaryAlert.level === "urgent"
-                      ? "Urgent salary expiration"
-                      : "Salary expiring soon"}
-                    :
-                  </strong>{" "}
-                  Salary window ends in {salaryRemainingLabel}.{" "}
-                  {salaryAlert.level === "urgent"
-                    ? "Refresh now to keep your income flowing."
-                    : "Refresh soon to avoid a gap in salary."}
-                </div>
-              )}
-              <div className="workshop-reset">
-                <div>
-                  <p className="workshop-label">Level</p>
-                  <p className="workshop-value">{career.level.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="workshop-label">XP</p>
-                  <p className="workshop-value">
-                    {career.xp.toLocaleString()} / {nextXpRequired.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="workshop-label">Session cost</p>
-                  <p className="workshop-value">{costLabel}</p>
-                </div>
-                {sessionPolicy.premiumCount > 0 && (
-                  <div className="career-session-premium" data-testid="career-session-premium">
-                    <div className="career-session-premium-row">
-                      <span className="career-session-premium-label">
-                        {sessionPolicy.premiumLabel || "Session premium"}
-                      </span>
-                      <span className="career-session-premium-value">
-                        +{Math.max(0, Math.round((sessionPolicy.premiumMultiplier - 1) * 100))}%
-                      </span>
-                    </div>
-                    <p className="career-session-premium-note">
-                      {sessionPolicy.premiumNote ||
-                        "Waiting twice the cooldown resets the premium."}
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div className="inline-icon-button">
-                <ExplainButton
-                  sectionId={HELP_SECTION_IDS.careerProgression}
-                  label="Explain career progression"
-                />
-                <span className="muted">Career help</span>
-              </div>
-              <p className="career-session-run-now-cost" data-testid="career-session-run-now-cost">
-                {runNowCostLabel}
-              </p>
-              <div className="card-actions">
-                {showCooldownRing && (
-                  <div
-                    className="career-session-cooldown"
-                    data-testid="career-session-cooldown-ring"
-                  >
-                    <CooldownRing progress01={cooldownProgress} label={cooldownLabel} />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  data-testid="career-action"
-                  disabled={!sessionPolicy.supportsSessions || !canPerform}
-                  onClick={() => onPurchase(performTherapistSession(state, nowMs))}
-                >
-                  {canPerform && sessionPolicy.cooldownRemainingMs > 0
-                    ? "Run session (rush)"
-                    : "Run session"}
-                </button>
-              </div>
-            </div>
+            <details
+              className={`career-next-details career-secondary-details ${
+                isCompactLayout ? "career-secondary-details-compact" : ""
+              }`}
+              open={secondaryMissionOpen}
+              onToggle={(event) => setSecondaryMissionOpen(event.currentTarget.open)}
+              data-testid="career-secondary-details"
+            >
+              <summary data-testid="career-secondary-details-toggle">
+                <span>Secondary diagnostics</span>
+                <span className="muted">{secondaryMissionOpen ? "Collapse" : "Expand"}</span>
+              </summary>
+              <div className="career-secondary-details-body">{secondaryMissionContent}</div>
+            </details>
           </div>
         </section>
 
@@ -461,6 +603,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               <div className="card-stack career-stack career-stack-next">
                 <CareerProgressCard state={state} nowMs={nowMs} />
                 <CareerStageChoiceSummary state={state} />
+                {choiceQueueCard}
               </div>
             </details>
           ) : (
@@ -473,6 +616,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               <div className="card-stack career-stack career-stack-next">
                 <CareerProgressCard state={state} nowMs={nowMs} />
                 <CareerStageChoiceSummary state={state} />
+                {choiceQueueCard}
               </div>
             </>
           )}
@@ -541,14 +685,26 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           <p className="eyebrow">Now</p>
           <p>{nextActionCue.label}</p>
         </div>
-        <button
-          type="button"
-          data-testid="career-mobile-now-rail-action"
-          disabled={mobileRailAction.disabled}
-          onClick={mobileRailAction.onClick}
-        >
-          {mobileRailAction.label}
-        </button>
+        <div className="career-mobile-now-rail-actions">
+          <button
+            type="button"
+            data-testid="career-mobile-now-rail-action"
+            disabled={mobileRailAction.disabled}
+            onClick={mobileRailAction.onClick}
+          >
+            {mobileRailAction.label}
+          </button>
+          {showProgressionShortcut ? (
+            <button
+              type="button"
+              className="secondary"
+              data-testid="career-mobile-now-rail-progression"
+              onClick={openProgressDetails}
+            >
+              Progression
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

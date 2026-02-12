@@ -1,38 +1,22 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
+import { createInitialState, getWatchModels } from "../src/game/state";
+
+function getModelIdForTier(tierId: string): string {
+  const model = getWatchModels().find((entry) => entry.tierId === tierId);
+  if (!model) {
+    throw new Error(`Missing model for tier: ${tierId}`);
+  }
+  return model.id;
+}
+
+const highlightedModelId = getModelIdForTier("quartz");
 const seededState = {
+  ...createInitialState(),
   currencyCents: 5_000_000_00,
   enjoymentCents: 5_000_000_00,
-  items: { quartz: 150, automatic: 0, manual: 0, tourbillon: 0 },
-  upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-  unlockedMilestones: [],
-  workshopBlueprints: 0,
-  workshopPrestigeCount: 0,
-  workshopUpgrades: {
-    "etched-ledgers": false,
-    "vault-calibration": false,
-    "heritage-templates": false,
-    "automation-blueprints": false,
-  },
-  maisonHeritage: 0,
-  maisonReputation: 0,
-  maisonUpgrades: {
-    "atelier-charter": false,
-    "heritage-loom": false,
-    "global-vitrine": false,
-  },
-  maisonLines: {
-    "atelier-line": false,
-    "heritage-line": false,
-    "complication-line": false,
-  },
-  achievementUnlocks: [],
-  eventStates: {
-    "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
-  },
-  discoveredCatalogEntries: [],
-  catalogTierUnlocks: [],
+  discoveredCatalogEntries: [highlightedModelId],
 };
 
 const seededSettings = {
@@ -51,17 +35,18 @@ const getCardStyles = async (element: HTMLElement) => {
   };
 };
 
-const getCatalogCardStyles = async (page: Page) => {
+const getCatalogCardStyles = async (page: Page, highlightedEntryId: string) => {
   await page.goto("http://127.0.0.1:5177/emilyidle/");
   const catalogTab = page.getByRole("tab", { name: "Catalog" });
   await catalogTab.click();
   await expect(page.getByTestId("catalog-grid")).toBeVisible();
 
-  const actionableButton = page.locator('[data-testid^="catalog-buy-"]').first();
-  const actionableCard = actionableButton.locator(
+  const highlightedButton = page.getByTestId(`catalog-buy-${highlightedEntryId}`);
+  const highlightedCard = highlightedButton.locator(
     'xpath=ancestor::article[@data-testid="catalog-card"][1]',
   );
-  await expect(actionableCard).toBeVisible();
+  await expect(highlightedCard).toBeVisible();
+  await expect(highlightedCard).toContainText("0 owned");
 
   const nonActionableGate = page.locator('[data-testid^="catalog-gate-"]').first();
   const nonActionableCard = nonActionableGate.locator(
@@ -69,10 +54,10 @@ const getCatalogCardStyles = async (page: Page) => {
   );
   await expect(nonActionableCard).toBeVisible();
 
-  const actionableStyles = await actionableCard.evaluate(getCardStyles);
+  const highlightedStyles = await highlightedCard.evaluate(getCardStyles);
   const nonActionableStyles = await nonActionableCard.evaluate(getCardStyles);
 
-  return { actionableStyles, nonActionableStyles, actionableCard, nonActionableCard };
+  return { highlightedStyles, nonActionableStyles, highlightedCard, nonActionableCard };
 };
 
 test("catalog actionable styling differs in dark and light themes", async ({ page }) => {
@@ -95,22 +80,23 @@ test("catalog actionable styling differs in dark and light themes", async ({ pag
     { state: seededState, lastSimulatedAtMs: Date.now(), settings: seededSettings },
   );
 
-  const { actionableStyles, nonActionableStyles, actionableCard, nonActionableCard } =
-    await getCatalogCardStyles(page);
+  const { highlightedStyles, nonActionableStyles, highlightedCard, nonActionableCard } =
+    await getCatalogCardStyles(page, highlightedModelId);
 
-  expect(actionableStyles.opacity).toBe("1");
-  expect(actionableStyles.boxShadow).not.toBe("none");
+  expect(highlightedStyles.opacity).toBe("1");
+  expect(highlightedStyles.boxShadow).not.toBe("none");
   expect(Number(nonActionableStyles.opacity)).toBeLessThan(1);
   expect(nonActionableStyles.boxShadow).toBe("none");
 
-  await expect(actionableCard).toHaveClass(/catalog-actionable/);
+  await expect(highlightedCard).toHaveClass(/catalog-actionable/);
   await expect(nonActionableCard).toHaveClass(/catalog-nonactionable/);
+  await expect(nonActionableCard).not.toHaveClass(/catalog-actionable/);
 
   const viewport = page.viewportSize();
   if (!viewport || viewport.width >= 720) {
-    const preview = actionableCard.locator('[data-testid^="catalog-preview-"]').first();
+    const preview = highlightedCard.locator('[data-testid^="catalog-preview-"]').first();
     await expect(preview).toHaveCSS("opacity", "0");
-    await actionableCard.hover();
+    await highlightedCard.hover();
     await expect(preview).toHaveCSS("opacity", "1");
     await page.mouse.move(0, 0);
   }
@@ -122,9 +108,9 @@ test("catalog actionable styling differs in dark and light themes", async ({ pag
 
   await page.reload();
 
-  const lightStyles = await getCatalogCardStyles(page);
-  expect(lightStyles.actionableStyles.opacity).toBe("1");
-  expect(lightStyles.actionableStyles.boxShadow).not.toBe("none");
+  const lightStyles = await getCatalogCardStyles(page, highlightedModelId);
+  expect(lightStyles.highlightedStyles.opacity).toBe("1");
+  expect(lightStyles.highlightedStyles.boxShadow).not.toBe("none");
   expect(Number(lightStyles.nonActionableStyles.opacity)).toBeLessThan(1);
   expect(lightStyles.nonActionableStyles.boxShadow).toBe("none");
 });

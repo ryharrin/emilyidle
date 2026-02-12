@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { vi } from "vitest";
+import { beforeEach, vi } from "vitest";
 
 Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
   value: vi.fn(),
@@ -39,4 +39,68 @@ Object.defineProperty(window, "matchMedia", {
   writable: true,
   configurable: true,
   value: (query: string) => createMediaQueryList(query),
+});
+
+type StorageSurface = Pick<
+  Storage,
+  "clear" | "getItem" | "key" | "removeItem" | "setItem"
+> & { length: number };
+
+const isStorageSurface = (value: unknown): value is StorageSurface => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<StorageSurface>;
+  return (
+    typeof candidate.clear === "function" &&
+    typeof candidate.getItem === "function" &&
+    typeof candidate.key === "function" &&
+    typeof candidate.removeItem === "function" &&
+    typeof candidate.setItem === "function" &&
+    typeof candidate.length === "number"
+  );
+};
+
+const createStorageShim = (): Storage => {
+  const values = new Map<string, string>();
+
+  return {
+    get length() {
+      return values.size;
+    },
+    clear() {
+      values.clear();
+    },
+    getItem(key: string) {
+      const normalizedKey = String(key);
+      return values.has(normalizedKey) ? values.get(normalizedKey)! : null;
+    },
+    key(index: number) {
+      return Array.from(values.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      values.delete(String(key));
+    },
+    setItem(key: string, value: string) {
+      values.set(String(key), String(value));
+    },
+  } as Storage;
+};
+
+const ensureStorageSurface = (storageKey: "localStorage" | "sessionStorage") => {
+  if (isStorageSurface(window[storageKey])) {
+    return;
+  }
+
+  Object.defineProperty(window, storageKey, {
+    configurable: true,
+    writable: true,
+    value: createStorageShim(),
+  });
+};
+
+beforeEach(() => {
+  ensureStorageSurface("localStorage");
+  ensureStorageSurface("sessionStorage");
 });

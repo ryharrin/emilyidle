@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-07 closeout sync)
 
 **Core value:** A satisfying watch-collecting idle loop that saves reliably and stays pleasant to play and maintain.
-**Current focus:** Milestone v5.0 planning is now defined from unfinished-note inputs; next execution should route into Phase 57 plan authoring and implementation.
+**Current focus:** Milestone v5.0 is fully complete (Phases 57-60); next focus is defining the next milestone package.
 
 ## Current Position
 
-Phase: 53 complete (6/6 executed)
-Plan: 53-reliability-career-clarity (re-execution)
-Status: Completed the Phase 53 reliability + career clarity suite, including the verification backfills and summary assets.
-Last activity: 2026-02-10 — Completed Phase 53 plan 5 (verification backfill) and published the artifacts.
-Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 complete (6/6) [██████████], Phase 54 complete (7/7) [██████████], Phase 55 complete (8/8) [██████████], Phase 56 complete (9/9) [██████████]
-Next Phase: Phase 57 planning (v5.0) remains the next milestone.
+Phase: 60 complete (1/1 executed)
+Plan: 60-regression-guardrails-maintainability-closure (execution complete)
+Status: Completed v5 Phase 59+60 data/media closure plus guardrail+debt split package; v5.0 milestone is complete.
+Last activity: 2026-02-11 — Implemented Phase 59/60, added targeted contracts, split catalog tab logic into dedicated modules, and reran verification gates.
+Progress: Phase 50 complete (5/5 executed) [██████████], Phase 51 complete (5/5 executed) [██████████], Phase 52 complete (3/3) [██████████], Phase 53 complete (6/6) [██████████], Phase 54 complete (7/7) [██████████], Phase 55 complete (8/8) [██████████], Phase 56 complete (9/9) [██████████], Phase 57 complete (1/1) [██████████], Phase 58 complete (1/1) [██████████], Phase 59 complete (1/1) [██████████], Phase 60 complete (1/1) [██████████]
+Next Phase: New milestone definition (post-v5 planning).
 
 ## Accumulated Context
 
@@ -33,7 +33,10 @@ Next Phase: Phase 57 planning (v5.0) remains the next milestone.
 
 ### Carried Gaps / Tech Debt
 
-- None — Phase 13/18 verification backfills and therapist session E2E coverage are now captured in the Phase 53 reliability execution.
+- Large touched modules remain a maintainability risk:
+  - `src/App.tsx`
+  - `src/game/selectors/index.ts`
+  - `src/style.css`
 
 ### Decisions Made
 
@@ -119,9 +122,13 @@ Next Phase: Phase 57 planning (v5.0) remains the next milestone.
 | 56 | Define one-primary-action-first contract per tab and prohibit overlay occlusion of that zone | Reduces decision paralysis and interruption friction in high-frequency gameplay loops |
 | 56 | Execute full UI audit captures as tab-scoped tests that emit per-tab manifests and coverage summaries | Improves failure isolation and keeps audit evidence deterministic for desktop/mobile regressions |
 | 56 | Generate rubric-tagged audit indexes/checklists (`nav`, `cta`, `overlay`, `density`, `gating`, `meta`) from manifests | Eliminates manual file crawling and speeds review triage across 396 captured artifacts |
+| 59 | Add decision-oriented catalog detail signals (movement, tier, progression) only in details contexts | Increases purchase relevance depth while keeping first-viewport density focused on core actions |
+| 60 | Extract catalog details/presentation logic into `src/ui/tabs/catalog/*` modules | Creates a concrete file-boundary maintainability split inside the largest v5-touched surface |
+| 58 | Scope catalog affordability highlight to discovered + unowned + buyable cards | Makes first-glance CTA signaling truthful while preserving non-actionable contrast and reduced-motion-safe styling |
+| 58 | Compute catalog readiness from real new-watch affordability conditions | Keeps `tab-ready-catalog` aligned with what players can actually buy now and avoids false-positive readiness cues |
 
 ## Session Continuity
 
-Last session: 2026-02-10T22:20:41Z
-Stopped at: Completed Phase 53 plan 5 (verification backfill) and published the artifacts.
-Resume file: None
+Last session: 2026-02-11T22:25:00Z
+Stopped at: Completed Phase 59/60 implementation and synced v5 milestone closeout docs.
+Resume file: `.planning/milestones/v5.0-ROADMAP.md`

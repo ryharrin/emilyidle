@@ -2,6 +2,7 @@ import React from "react";
 
 import { PrestigeIcon } from "../icons/coreIcons";
 import { PrestigeSummary } from "../components/PrestigeSummary";
+import { PrestigeResetMatrix } from "../components/PrestigeResetMatrix";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 import { WorkshopCraftingSection } from "./WorkshopCraftingSection";
@@ -11,6 +12,7 @@ import { AnchoredTooltip, type AnchoredTooltipContent } from "../components/Anch
 import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 
 import {
+  getAffordabilityEtaSecondsForDeficit,
   buyWorkshopUpgrade,
   canBuyWorkshopUpgrade,
   getEnjoymentThresholdLabel,
@@ -20,6 +22,7 @@ import {
   getWorkshopNextBlueprintProgress,
   getWorkshopPrestigeThresholdCents,
   getPrestigeLegacyMultiplierBreakdown,
+  getResourceDeficit,
   prestigeWorkshop,
 } from "../../game/state";
 import { formatMoneyFromCents } from "../../game/format";
@@ -70,6 +73,7 @@ export function WorkshopTab({
   state,
   showWorkshopSection,
   showWorkshopPanel,
+  onNavigate,
   workshopPrestigeGain,
   workshopRevealProgress,
   workshopResetArmed,
@@ -116,10 +120,8 @@ export function WorkshopTab({
         : `${Math.ceil(nextBlueprintProgress.etaSeconds / 60)}m`;
   const resetProgress = getPrestigeUnlockProgressDetail(state, "workshop");
   const enjoymentRate = getEnjoymentRateCentsPerSec(state);
-  const resetEtaSeconds =
-    enjoymentRate > 0
-      ? Math.ceil(Math.max(0, resetProgress.threshold - resetProgress.current) / enjoymentRate)
-      : null;
+  const resetDeficitCents = getResourceDeficit(resetProgress.threshold, resetProgress.current);
+  const resetEtaSeconds = getAffordabilityEtaSecondsForDeficit(resetDeficitCents, enjoymentRate);
   const resetEtaLabel =
     resetEtaSeconds === null
       ? "ETA unavailable"
@@ -152,7 +154,7 @@ export function WorkshopTab({
                           data-testid="workshop-complication-power-reserve"
                         >
                           <p className="surface-complication-label workshop-complication-label">
-                            Power reserve
+                            Power reserve · Blueprint bank
                           </p>
                           <p className="surface-complication-value workshop-complication-value">
                             {state.workshopBlueprints.toLocaleString()} banked
@@ -166,7 +168,7 @@ export function WorkshopTab({
                           data-testid="workshop-complication-chronograph"
                         >
                           <p className="surface-complication-label workshop-complication-label">
-                            Chronograph
+                            Chronograph · Reset readiness
                           </p>
                           <p className="surface-complication-value workshop-complication-value">
                             {Math.round(resetProgress.ratio * 100)}% ready
@@ -180,7 +182,7 @@ export function WorkshopTab({
                           data-testid="workshop-complication-date-wheel"
                         >
                           <p className="surface-complication-label workshop-complication-label">
-                            Date wheel
+                            Date wheel · Next blueprint
                           </p>
                           <p className="surface-complication-value workshop-complication-value">
                             {formatMoneyFromCents(nextBlueprintProgress.enjoymentRemainingCents)}
@@ -194,7 +196,7 @@ export function WorkshopTab({
                           data-testid="workshop-complication-moonphase"
                         >
                           <p className="surface-complication-label workshop-complication-label">
-                            Moonphase
+                            Moonphase · Permanent bonus
                           </p>
                           <p className="surface-complication-value workshop-complication-value">
                             ×{atelierBonus.multiplier01.toFixed(2)}
@@ -211,7 +213,7 @@ export function WorkshopTab({
                       {state.workshopBlueprints.toLocaleString()} Blueprints
                     </div>
                   </header>
-                  <div className="workshop-reset" data-testid="workshop-reset">
+                  <div className="workshop-reset" data-testid="workshop-reset" id="workshop-reset">
                     <div>
                       <p className="workshop-label">Reset threshold</p>
                       <p className="workshop-value">
@@ -290,6 +292,19 @@ export function WorkshopTab({
                       Current run resources reset. Atelier upgrades, crafting progress, Maison
                       legacy, and Nostalgia progression carry forward.
                     </p>
+                    <PrestigeResetMatrix
+                      testId="workshop-reset-matrix"
+                      resets={[
+                        "Current run cash and enjoyment",
+                        "Owned watches and active run inventory",
+                        "Temporary run momentum and interaction charge",
+                      ]}
+                      carries={[
+                        "Atelier upgrades already installed",
+                        "Crafting parts and crafted boosts",
+                        "Maison legacy and Nostalgia progression",
+                      ]}
+                    />
                     {workshopResetArmed ? (
                       <div className="workshop-confirm meta-action-controls">
                         <button
@@ -328,12 +343,34 @@ export function WorkshopTab({
                     )}
                     <p className="muted" aria-live="polite">
                       {workshopResetArmed
-                        ? "Review Current run, Next run keeps, and Delta, then confirm reset."
+                        ? "Review reset checklist (Current run, Next run keeps, Delta), then confirm reset."
                         : canPrestigeWorkshop
-                          ? "Open reset review to compare what resets against what carries forward."
-                          : "Requires reaching the enjoyment threshold."}
+                          ? "Open reset checklist to compare what resets against what carries forward."
+                          : `Blocked: need ${formatMoneyFromCents(resetDeficitCents)} more enjoyment (ETA ${resetEtaLabel}).`}
                     </p>
                   </fieldset>
+                  <div className="card-actions" data-testid="workshop-handoff-actions">
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="workshop-open-catalog"
+                      onClick={() => onNavigate("catalog", "catalog-shop")}
+                    >
+                      Open Catalog shop
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="workshop-open-upgrades-hub"
+                      onClick={() => onNavigate("upgrades")}
+                    >
+                      Open Upgrades hub
+                    </button>
+                  </div>
+                  <p className="muted">
+                    Rebuild run cashflow in Catalog, then install permanent gains in the Upgrades
+                    hub.
+                  </p>
 
                   {workshopResetArmed && (
                     <PrestigeSummary
@@ -348,6 +385,10 @@ export function WorkshopTab({
                       {workshopUpgrades.map((upgrade) => {
                         const owned = state.workshopUpgrades[upgrade.id] ?? false;
                         const canAfford = canBuyWorkshopUpgrade(state, upgrade.id);
+                        const blueprintDeficit = Math.max(
+                          0,
+                          upgrade.blueprintCost - state.workshopBlueprints,
+                        );
                         const effectLabel = (() => {
                           if (upgrade.incomeMultiplier) {
                             return `+${Math.round((upgrade.incomeMultiplier - 1) * 100)}% enjoyment`;
@@ -388,6 +429,13 @@ export function WorkshopTab({
                                 {owned ? "Installed" : `Buy (${upgrade.blueprintCost} Blueprints)`}
                               </button>
                             </div>
+                            {owned ? (
+                              <p className="muted">Installed: this Atelier upgrade is already active.</p>
+                            ) : !canAfford ? (
+                              <p className="muted">
+                                Blocked: need {blueprintDeficit.toLocaleString()} more Blueprints.
+                              </p>
+                            ) : null}
                           </div>
                         );
                       })}

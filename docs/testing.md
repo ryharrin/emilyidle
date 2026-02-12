@@ -16,18 +16,18 @@ Do not run unit and e2e suites concurrently on the same runner/workspace.
 ## Stable Commands
 
 - Full stable gate (serial policy): `pnpm test:ci:stable`
+- Stable e2e project matrix only: `pnpm test:e2e:stable-projects`
 - Full unit suite: `pnpm test:unit`
 - Full e2e matrix: `pnpm test:e2e`
 - E2E desktop project only: `pnpm test:e2e:chromium`
-- E2E mobile Pixel 5 project only: `pnpm test:e2e:chromium-mobile`
-- E2E mobile iPhone 12 project only: `pnpm test:e2e:webkit-mobile`
+- E2E mobile WebKit project only: `pnpm test:e2e:webkit-mobile`
 
 ## Scoped Suite Examples
 
 - Unit single file: `pnpm test:unit -- tests/localstorage-schema.unit.test.tsx`
 - Unit by test name: `pnpm test:unit -- -t "localStorage key string contracts"`
 - E2E single spec on desktop: `pnpm test:e2e:chromium -- tests/career-landing.spec.ts`
-- E2E grep on mobile project: `pnpm test:e2e:chromium-mobile -- -g "selector contract"`
+- E2E grep on mobile project: `pnpm test:e2e:webkit-mobile -- -g "selector contract"`
 
 ## CI Runner Guidance
 

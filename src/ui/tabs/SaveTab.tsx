@@ -56,6 +56,8 @@ type SaveTabProps = {
   persistSettings: (nextSettings: Settings) => void;
   visibleTabOptions: TabOption[];
   hiddenTabsSet: Set<TabId>;
+  hiddenTabCount: number;
+  onRestoreHiddenTabs: () => void;
   devSettings: DevSettings;
   setDevSettings: React.Dispatch<React.SetStateAction<DevSettings>>;
   onPurchase: (nextState: GameState) => void;
@@ -78,6 +80,8 @@ export function SaveTab({
   persistSettings,
   visibleTabOptions,
   hiddenTabsSet,
+  hiddenTabCount,
+  onRestoreHiddenTabs,
   devSettings,
   setDevSettings,
   onPurchase,
@@ -125,7 +129,7 @@ export function SaveTab({
                   data-testid="save-complication-power-reserve"
                 >
                   <p className="surface-complication-label save-complication-label">
-                    Power reserve
+                    Power reserve · Save status
                   </p>
                   <p className="surface-complication-value save-complication-value">
                     {saveStatusSummary}
@@ -138,7 +142,9 @@ export function SaveTab({
                   className="surface-complication save-complication"
                   data-testid="save-complication-chronograph"
                 >
-                  <p className="surface-complication-label save-complication-label">Chronograph</p>
+                  <p className="surface-complication-label save-complication-label">
+                    Chronograph · Theme and tabs
+                  </p>
                   <p className="surface-complication-value save-complication-value">
                     Theme {settings.themeMode}
                   </p>
@@ -150,7 +156,9 @@ export function SaveTab({
                   className="surface-complication save-complication"
                   data-testid="save-complication-date-wheel"
                 >
-                  <p className="surface-complication-label save-complication-label">Date wheel</p>
+                  <p className="surface-complication-label save-complication-label">
+                    Date wheel · Audio profile
+                  </p>
                   <p className="surface-complication-value save-complication-value">
                     {audioStatusLabel}
                   </p>
@@ -162,7 +170,9 @@ export function SaveTab({
                   className="surface-complication save-complication"
                   data-testid="save-complication-moonphase"
                 >
-                  <p className="surface-complication-label save-complication-label">Moonphase</p>
+                  <p className="surface-complication-label save-complication-label">
+                    Moonphase · Notification coverage
+                  </p>
                   <p className="surface-complication-value save-complication-value">
                     {notificationEnabledCount}/4 notifications
                   </p>
@@ -457,10 +467,23 @@ export function SaveTab({
             </fieldset>
 
             <fieldset
+              id="settings-visibility"
               className="settings-section settings-section--visibility"
               data-testid="settings-visibility"
             >
               <legend>Visible tabs</legend>
+              {hiddenTabCount > 0 ? (
+                <div className="control-row control-row--end">
+                  <button
+                    type="button"
+                    className="secondary"
+                    data-testid="settings-restore-hidden-tabs"
+                    onClick={onRestoreHiddenTabs}
+                  >
+                    Restore hidden tabs ({hiddenTabCount})
+                  </button>
+                </div>
+              ) : null}
               <div className="controls settings-visibility-grid">
                 {visibleTabOptions.map((tab) => (
                   <label key={tab.id} className="settings-control">

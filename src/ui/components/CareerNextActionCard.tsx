@@ -10,6 +10,7 @@ type CareerNextActionCardProps = {
   nowMs: number;
   statusLabel: string;
   onPurchase: (nextState: GameState) => void;
+  onOpenProgressionChoices: () => void;
 };
 
 export function CareerNextActionCard({
@@ -17,8 +18,16 @@ export function CareerNextActionCard({
   nowMs,
   statusLabel,
   onPurchase,
+  onOpenProgressionChoices,
 }: CareerNextActionCardProps) {
   const cue = getCareerNextActionCue(state, nowMs);
+  const isChoiceCue =
+    cue.id === "choose-track" ||
+    cue.id === "choose-modality" ||
+    cue.id === "choose-operating-style" ||
+    cue.id === "choose-expansion-focus";
+  const showProgressionCta = isChoiceCue || cue.id === "passive-xp";
+  const progressionCtaLabel = isChoiceCue ? "Open progression choices" : "Open progression";
 
   const secondaryHint = (() => {
     if (cue.id === "choose-track" || cue.id === "choose-modality") {
@@ -66,6 +75,18 @@ export function CareerNextActionCard({
             sectionId={HELP_SECTION_IDS.careerStart}
             label="Explain starting your career"
           />
+        </div>
+      ) : null}
+      {showProgressionCta ? (
+        <div className="card-actions">
+          <button
+            type="button"
+            className="secondary"
+            data-testid="career-next-action-open-progression"
+            onClick={onOpenProgressionChoices}
+          >
+            {progressionCtaLabel}
+          </button>
         </div>
       ) : null}
     </article>

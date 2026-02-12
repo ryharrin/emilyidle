@@ -9,6 +9,7 @@ declare module "node:fs/promises" {
 
   export function readFile(path: PathLike, encoding: "utf8"): Promise<string>;
   export function writeFile(path: PathLike, data: string, encoding: "utf8"): Promise<void>;
+  export function appendFile(path: PathLike, data: string, encoding: "utf8"): Promise<void>;
   export function mkdir(
     path: PathLike,
     options?: {
@@ -34,8 +35,16 @@ declare module "node:path" {
   const path: {
     sep: string;
     basename(path: string): string;
+    dirname(path: string): string;
     join(...paths: string[]): string;
     relative(from: string, to: string): string;
   };
   export default path;
+}
+
+declare module "node:process" {
+  const process: {
+    pid: number;
+  };
+  export default process;
 }

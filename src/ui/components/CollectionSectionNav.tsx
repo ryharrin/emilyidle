@@ -1,5 +1,3 @@
-import React from "react";
-
 import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { OnboardingCoachmark, type OnboardingCoachmarkDefinition } from "./OnboardingCoachmark";
 
@@ -16,6 +14,7 @@ type CollectionSectionNavProps = {
 
 const NAV_OFFSET_FALLBACK = 120;
 const SCROLL_BUFFER = 16;
+const OVERFLOW_EDGE_TOLERANCE = 2;
 
 const readNavOffset = () => {
   if (typeof window === "undefined") {
@@ -49,14 +48,91 @@ const getTargetTop = (sectionId: string) => {
   return scrollTop + element.getBoundingClientRect().top;
 };
 
+const prefersReducedMotion = () => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+
 export function CollectionSectionNav({ sections, onCoachmarkDismiss }: CollectionSectionNavProps) {
   const [activeId, setActiveId] = useState(sections[0]?.id ?? "");
+  const [hasOverflowStart, setHasOverflowStart] = useState(false);
+  const [hasOverflowEnd, setHasOverflowEnd] = useState(false);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
   const skipActiveUpdateRef = useRef(false);
   const activeUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const updateOverflowState = useCallback(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) {
+      return;
+    }
+
+    const maxScrollLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+    if (maxScrollLeft <= OVERFLOW_EDGE_TOLERANCE) {
+      setHasOverflowStart(false);
+      setHasOverflowEnd(false);
+      return;
+    }
+
+    setHasOverflowStart(scroller.scrollLeft > OVERFLOW_EDGE_TOLERANCE);
+    setHasOverflowEnd(scroller.scrollLeft < maxScrollLeft - OVERFLOW_EDGE_TOLERANCE);
+  }, []);
 
   useEffect(() => {
     setActiveId(sections[0]?.id ?? "");
   }, [sections]);
+
+  useEffect(() => {
+    updateOverflowState();
+  }, [sections, updateOverflowState]);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) {
+      return;
+    }
+
+    const handleScrollOrResize = () => {
+      updateOverflowState();
+    };
+
+    scroller.addEventListener("scroll", handleScrollOrResize, { passive: true });
+    window.addEventListener("resize", handleScrollOrResize);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        handleScrollOrResize();
+      });
+      resizeObserver.observe(scroller);
+    }
+
+    return () => {
+      scroller.removeEventListener("scroll", handleScrollOrResize);
+      window.removeEventListener("resize", handleScrollOrResize);
+      resizeObserver?.disconnect();
+    };
+  }, [updateOverflowState]);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller || !activeId) {
+      return;
+    }
+    const activeButton = scroller.querySelector<HTMLButtonElement>(
+      `[data-section-nav-id="${activeId}"]`,
+    );
+    if (!activeButton) {
+      return;
+    }
+    activeButton.scrollIntoView({
+      inline: "nearest",
+      block: "nearest",
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+  }, [activeId]);
 
   useEffect(() => {
     if (sections.length === 0 || typeof window === "undefined") {
@@ -128,11 +204,12 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
     }
     const offset = readNavOffset() + SCROLL_BUFFER;
     const destination = Math.max(targetTop - offset, 0);
+    const behavior = prefersReducedMotion() ? "auto" : "smooth";
     const scrollEl = getScrollElement();
     if (scrollEl) {
-      scrollEl.scrollTo({ top: destination, behavior: "smooth" });
+      scrollEl.scrollTo({ top: destination, behavior });
     } else {
-      window.scrollTo({ top: destination, behavior: "smooth" });
+      window.scrollTo({ top: destination, behavior });
     }
     setActiveId(sectionId);
     skipActiveUpdateRef.current = true;
@@ -155,8 +232,10 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
       aria-label="Collection section navigation"
       data-testid="collection-section-nav"
       data-active-section={activeId || undefined}
+      data-overflow-start={hasOverflowStart ? "true" : "false"}
+      data-overflow-end={hasOverflowEnd ? "true" : "false"}
     >
-      <div className="collection-section-nav__scroller">
+      <div className="collection-section-nav__scroller" ref={scrollerRef}>
         {sections.map((section) => (
           <div
             key={section.id}
@@ -168,6 +247,7 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
               className={`collection-section-nav__link ${activeId === section.id ? "is-active" : ""}`}
               onClick={(event) => handleJump(event, section.id)}
               aria-current={activeId === section.id ? "location" : undefined}
+              data-section-nav-id={section.id}
             >
               {section.label}
             </button>

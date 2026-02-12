@@ -166,31 +166,57 @@ export function getSetBonusProgressRows(state: GameState): SetBonusProgressRow[]
 }
 
 export function getNextPrestigePreview(state: GameState): PrestigePreview | null {
-  const current = Math.max(0, Math.floor(state.enjoymentCents));
+  const workshopUnlocked =
+    state.workshopPrestigeCount > 0 ||
+    state.workshopBlueprints > 0 ||
+    state.maisonHeritage > 0 ||
+    state.maisonReputation > 0 ||
+    state.nostalgiaPoints > 0 ||
+    state.nostalgiaResets > 0;
+  const maisonUnlocked =
+    state.maisonHeritage > 0 ||
+    state.maisonReputation > 0 ||
+    state.nostalgiaPoints > 0 ||
+    state.nostalgiaResets > 0;
 
-  const targets: Array<{ id: PrestigeTargetId; label: string; threshold: number }> = [
-    { id: "workshop", label: "Workshop prestige", threshold: WORKSHOP_PRESTIGE_THRESHOLD_CENTS },
-    { id: "maison", label: "Maison prestige", threshold: MAISON_PRESTIGE_THRESHOLD_CENTS },
-    { id: "nostalgia", label: "Nostalgia prestige", threshold: NOSTALGIA_PRESTIGE_THRESHOLD_CENTS },
-  ];
+  const target: { id: PrestigeTargetId; label: string; threshold: number } = maisonUnlocked
+    ? {
+        id: "nostalgia",
+        label: "Nostalgia prestige",
+        threshold: NOSTALGIA_PRESTIGE_THRESHOLD_CENTS,
+      }
+    : workshopUnlocked
+      ? { id: "maison", label: "Maison prestige", threshold: MAISON_PRESTIGE_THRESHOLD_CENTS }
+      : {
+          id: "workshop",
+          label: "Workshop prestige",
+          threshold: WORKSHOP_PRESTIGE_THRESHOLD_CENTS,
+        };
 
-  const nearest = targets
-    .filter((target) => current < target.threshold)
-    .sort((a, b) => a.threshold - b.threshold)[0];
+  const rawCurrent =
+    target.id === "workshop"
+      ? Math.max(0, Math.floor(state.enjoymentCents))
+      : target.id === "maison"
+        ? Math.max(
+            0,
+            Math.floor(state.enjoymentCents + state.workshopBlueprints * target.threshold),
+          )
+        : Math.max(0, Math.floor(state.nostalgiaEnjoymentEarnedCents));
 
-  if (!nearest) {
+  // Preserve the historical fully-prestiged fallback for states that overshoot all enjoyment tiers.
+  if (target.id === "workshop" && rawCurrent >= NOSTALGIA_PRESTIGE_THRESHOLD_CENTS) {
     return null;
   }
 
-  const remaining = Math.max(0, nearest.threshold - current);
+  const remaining = Math.max(0, target.threshold - rawCurrent);
   return {
-    id: nearest.id,
-    label: nearest.label,
-    current: Math.min(current, nearest.threshold),
-    threshold: nearest.threshold,
+    id: target.id,
+    label: target.label,
+    current: Math.min(rawCurrent, target.threshold),
+    threshold: target.threshold,
     remaining,
-    ratio: clampRatio(current, nearest.threshold),
-    effectSummary: PRESTIGE_EFFECT_SUMMARIES[nearest.id],
+    ratio: clampRatio(rawCurrent, target.threshold),
+    effectSummary: PRESTIGE_EFFECT_SUMMARIES[target.id],
   };
 }
 
