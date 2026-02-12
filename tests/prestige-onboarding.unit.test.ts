@@ -91,6 +91,6 @@ describe("prestige onboarding copy", () => {
     expect(nostalgia.body).toContain("+4");
     expect(nostalgia.carryForward.length).toBeGreaterThan(0);
     expect(nostalgia.resets.length).toBeGreaterThan(0);
-    expect(nostalgia.recoveryHint).toContain("Nostalgia unlocks");
+    expect(nostalgia.recoveryHint).toContain("Nostalgia unlock");
   });
 });

@@ -150,7 +150,7 @@ const UPGRADE_INTENT_META: Record<
   },
   meta: {
     label: "Meta progression",
-    summary: "Strengthens prestige loops and softcap resilience.",
+    summary: "Strengthens prestige cycles and softcap resilience.",
   },
 };
 

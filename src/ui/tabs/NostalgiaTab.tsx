@@ -158,7 +158,7 @@ export function NostalgiaTab({
             <>
               <header className="panel-header">
                 <div>
-                  <p className="eyebrow">Prestige loop</p>
+                  <p className="eyebrow">Prestige cycle</p>
                   <h3 id="nostalgia-title">Nostalgia</h3>
                   <p className="muted">
                     Reset your collection to bank Nostalgia points and carry your collection
@@ -246,7 +246,7 @@ export function NostalgiaTab({
                   )}
                   <div className="card-actions">
                     <button type="button" className="secondary" onClick={onDismissResults}>
-                      Back to progress
+                      Continue to progress
                     </button>
                   </div>
                 </div>
@@ -272,9 +272,9 @@ export function NostalgiaTab({
                 <h4>Projected nostalgia</h4>
                 <p className="muted">Reset now to gain +{nostalgiaPrestigeGain} Nostalgia.</p>
                 <p>Current balance: {state.nostalgiaPoints.toLocaleString()} Nostalgia</p>
-                <p className="muted">
-                  Recovery ETA at current enjoyment pace: {nostalgiaRecoveryEtaLabel}.
-                </p>
+                  <p className="muted">
+                    Keep buying or upgrading to shorten recovery ETA: {nostalgiaRecoveryEtaLabel}.
+                  </p>
                 <p className="muted">
                   Current run resets; owned watches, catalog discovery, achievements, and Nostalgia
                   unlock purchases carry forward.
@@ -361,9 +361,9 @@ export function NostalgiaTab({
                       const nostalgiaGap = Math.max(0, cost - state.nostalgiaPoints);
                       const lockReason = !unlocked
                         ? missingPrereq
-                          ? `Unlock ${watchItemsById.get(previousId)?.name ?? previousId} first`
+                          ? `Unlock ${watchItemsById.get(previousId)?.name ?? previousId} first, then return here.`
                           : nostalgiaGap > 0
-                            ? `Need ${nostalgiaGap.toLocaleString()} more Nostalgia`
+                            ? `Earn ${nostalgiaGap.toLocaleString()} more Nostalgia, then unlock.`
                             : null
                         : null;
 
@@ -509,7 +509,7 @@ export function NostalgiaTab({
             </>
           ) : (
             <div className="panel-teaser-content" data-testid="nostalgia-teaser">
-              <p className="eyebrow">Prestige loop</p>
+              <p className="eyebrow">Prestige cycle</p>
               <h3>Nostalgia</h3>
               <p className="muted">Your collection is nearing its first nostalgia reset.</p>
               <div className="teaser-progress">

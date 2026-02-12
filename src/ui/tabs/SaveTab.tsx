@@ -180,7 +180,7 @@ export function SaveTab({
             >
               <legend>Save safety</legend>
               <p className="muted">
-                Export before making risky changes so you always have a recovery snapshot.
+                Export before risky changes so you can restore this run if needed.
               </p>
               <div className="control-row">
                 <button
@@ -190,13 +190,13 @@ export function SaveTab({
                   data-testid="export-save-trigger"
                   onClick={onExport}
                 >
-                  Export backup
+                  Export save backup
                 </button>
               </div>
             </fieldset>
 
             <fieldset className="settings-section settings-section--import">
-              <legend>Import / restore</legend>
+              <legend>Import / restore backup</legend>
               <label htmlFor="import-save-text">Import data</label>
               <textarea
                 id="import-save-text"
@@ -216,6 +216,7 @@ export function SaveTab({
                   Import
                 </button>
               </div>
+              <p className="muted">Paste an export string or choose a JSON file, then select Import.</p>
               <div className="file-import">
                 <label htmlFor="import-save-file">Import from file</label>
                 <input
@@ -229,7 +230,7 @@ export function SaveTab({
                     event.target.value = "";
                   }}
                 />
-                <p className="muted">Use a JSON export from this game.</p>
+                <p className="muted">Use a JSON export created by this game.</p>
               </div>
             </fieldset>
 
@@ -461,6 +462,9 @@ export function SaveTab({
               data-testid="settings-visibility"
             >
               <legend>Visible tabs</legend>
+              <p className="muted">
+                Missing a tab? Re-enable it here, then open it from the top navigation.
+              </p>
               <div className="controls settings-visibility-grid">
                 {visibleTabOptions.map((tab) => (
                   <label key={tab.id} className="settings-control">
@@ -490,7 +494,8 @@ export function SaveTab({
             >
               <legend>Danger zone</legend>
               <p className="muted">
-                Clear save removes local progress on this device after confirmation.
+                Clear save removes local progress on this device after confirmation. Export first if
+                you want a recovery backup.
               </p>
               <div className="control-row">
                 <button

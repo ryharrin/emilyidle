@@ -140,7 +140,7 @@ export function WorkshopTab({
                 <>
                   <header className="panel-header">
                     <div>
-                      <p className="eyebrow">Reset loop</p>
+                      <p className="eyebrow">Reset cycle</p>
                       <h3 id="workshop-title">Atelier</h3>
                       <p className="muted">Trade enjoyment for Blueprints and permanent boosts.</p>
                       <div
@@ -396,7 +396,7 @@ export function WorkshopTab({
                 </>
               ) : (
                 <div className="panel-teaser-content" data-testid="workshop-teaser">
-                  <p className="eyebrow">Reset loop</p>
+                  <p className="eyebrow">Reset cycle</p>
                   <h3>Atelier</h3>
                   <p className="muted">Your collection is close to yielding Blueprints.</p>
                   <div className="teaser-progress">

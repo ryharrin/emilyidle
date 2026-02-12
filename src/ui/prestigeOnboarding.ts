@@ -100,7 +100,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
         "Maison and Nostalgia legacy resources",
       ],
       resets: ["Collection cash/enjoyment", "Collection watch ownership and upgrades"],
-      recoveryHint: "Spend Blueprints first, then rebuild Collection to recover reset momentum.",
+      recoveryHint: "Spend Blueprints first, then rebuild Collection to recover momentum.",
       recommended: {
         label: "Spend your Blueprints on an Atelier upgrade",
         tabId: "workshop",
@@ -124,7 +124,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
         "Atelier Blueprints and Workshop run progress",
       ],
       recoveryHint:
-        "Rebuild Collection flow first, then loop back into Atelier for the next Maison gain.",
+        "Rebuild Collection first, then return to Atelier for your next Maison cycle.",
       recommended: {
         label: "Return to Collection and rebuild enjoyment for the next legacy",
         tabId: "collection",
@@ -147,7 +147,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
       "Atelier + Maison resources and upgrades",
     ],
     recoveryHint:
-      "Use Nostalgia unlocks early, then re-open Collection and Career loops in that order.",
+      "Buy a Nostalgia unlock first, then reopen Collection and Career to restart your cycle.",
     recommended: {
       label: "Visit the Unlock store to spend Nostalgia",
       tabId: "nostalgia",

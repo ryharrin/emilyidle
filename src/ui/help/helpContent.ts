@@ -31,7 +31,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       "Start in Career: enter the PhD program to begin earning cash/sec.",
       "Buy watches in Catalog to build enjoyment and unlock new tiers.",
       "Dollars come from your career salary and sessions, not from owning watches.",
-      "Prestige loops reset short-term progress to earn long-term bonuses.",
+      "Prestige cycles reset short-term progress to earn long-term bonuses.",
     ],
   },
   {
@@ -118,7 +118,7 @@ export const HELP_SECTIONS: HelpSection[] = [
     body: [
       "Stages unlock at specific career levels and only the next choice is shown.",
       "Stage choices are permanent, but you can respec to reallocate points later.",
-      "Retirement ends sessions, so focus on shopping and prestige loops for progress.",
+      "Retirement ends sessions, so focus on shopping and prestige cycles for progress.",
     ],
   },
   {
