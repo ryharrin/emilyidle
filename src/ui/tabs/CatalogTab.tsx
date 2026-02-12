@@ -1134,9 +1134,6 @@ export function CatalogPurchasePanel({
               testId={`power-reserve-hint-${entry.id}`}
             />
           )}
-          {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
-            <p className="muted">Dismantle value: {craftingPartsPerWatch[tierId] ?? 0} parts</p>
-          )}
           <div className="catalog-action-bar">
             <div className="catalog-action-meta">
               {isWorn && (
@@ -1146,7 +1143,6 @@ export function CatalogPurchasePanel({
               )}
               <span className="catalog-owned">{ownedCount} owned</span>
               <span className="catalog-price">{formatMoneyFromCents(gate.cashPriceCents)}</span>
-              <span className="catalog-duplicate">Next x{duplicateMultiplier.toFixed(2)}</span>
             </div>
             <div className="catalog-primary-actions">
               <CatalogPurchaseGate
@@ -1162,6 +1158,20 @@ export function CatalogPurchasePanel({
               />
             </div>
           </div>
+          <details
+            className="catalog-economics-disclosure"
+            data-testid={`catalog-advanced-economics-${entry.id}`}
+          >
+            <summary>Advanced economics</summary>
+            <div className="catalog-economics-disclosure__body">
+              <p className="catalog-duplicate">Next duplicate multiplier x{duplicateMultiplier.toFixed(2)}</p>
+              {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
+                <p className="muted">
+                  Dismantle yield: {craftingPartsPerWatch[tierId] ?? 0} parts per watch
+                </p>
+              )}
+            </div>
+          </details>
           <div className="catalog-secondary-actions">
             <button
               type="button"

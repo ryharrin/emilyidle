@@ -4898,6 +4898,37 @@ button[data-testid^="catalog-buy-"]:disabled {
   min-height: 44px;
 }
 
+.catalog-economics-disclosure {
+  margin-top: 8px;
+  border: 1px solid rgba(95, 104, 120, 0.45);
+  border-radius: 10px;
+  background: rgba(18, 22, 30, 0.55);
+}
+
+.catalog-economics-disclosure summary {
+  cursor: pointer;
+  padding: 8px 10px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d5dbe6;
+}
+
+.catalog-economics-disclosure__body {
+  padding: 0 10px 10px;
+  display: grid;
+  gap: 6px;
+}
+
+[data-theme="light"] .catalog-economics-disclosure {
+  background: rgba(243, 240, 232, 0.85);
+  border-color: rgba(145, 128, 96, 0.35);
+}
+
+[data-theme="light"] .catalog-economics-disclosure summary {
+  color: #4a3e2f;
+}
+
 .catalog-sheet-actions {
   margin-top: 16px;
   padding-top: 12px;
