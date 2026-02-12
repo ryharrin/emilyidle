@@ -1,7 +1,9 @@
 import React, { createContext, useContext } from "react";
 
+import type { HelpOpenSource } from "../telemetry/events";
+
 export type HelpContextValue = {
-  openHelpTo: (sectionId: string) => void;
+  openHelpTo: (sectionId: string, source?: HelpOpenSource) => void;
 };
 
 const HelpContext = createContext<HelpContextValue | null>(null);

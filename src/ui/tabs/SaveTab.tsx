@@ -66,6 +66,8 @@ type SaveTabProps = {
   onImportFile: (file: File | null) => void;
   saveStatus: string;
   onClearSave: () => void;
+  onResetConfirm?: () => void;
+  onResetCancel?: () => void;
 };
 
 export function SaveTab({
@@ -88,6 +90,8 @@ export function SaveTab({
   onImportFile,
   saveStatus,
   onClearSave,
+  onResetConfirm,
+  onResetCancel,
 }: SaveTabProps) {
   const [confirmClearOpen, setConfirmClearOpen] = React.useState(false);
   const saveStatusSummary = saveStatus.trim().length > 0 ? saveStatus : "No recent save action";
@@ -517,9 +521,13 @@ export function SaveTab({
               confirmClassName="danger"
               confirmTestId="settings-clear-save-confirm"
               cancelTestId="settings-clear-save-cancel"
-              onCancel={() => setConfirmClearOpen(false)}
+              onCancel={() => {
+                setConfirmClearOpen(false);
+                onResetCancel?.();
+              }}
               onConfirm={() => {
                 setConfirmClearOpen(false);
+                onResetConfirm?.();
                 onClearSave();
               }}
             />

@@ -4,6 +4,8 @@ import { enterPhdProgram, getCareerNextActionCue } from "../../game/state";
 import type { GameState } from "../../game/state";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
+import { emitTelemetryEvent } from "../telemetry/emitter";
+import { TELEMETRY_EVENTS } from "../telemetry/events";
 
 type CareerNextActionCardProps = {
   state: GameState;
@@ -58,7 +60,14 @@ export function CareerNextActionCard({
           <button
             type="button"
             data-testid="career-next-action-start"
-            onClick={() => onPurchase(enterPhdProgram(state, nowMs))}
+            onClick={() => {
+              emitTelemetryEvent(TELEMETRY_EVENTS.nextActionCtaClick, {
+                cueId: cue.id,
+                ctaId: "enter-program",
+                nowMs,
+              });
+              onPurchase(enterPhdProgram(state, nowMs));
+            }}
           >
             Enter program
           </button>

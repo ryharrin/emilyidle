@@ -1,6 +1,8 @@
 import React from "react";
 
 import { HelpIcon } from "../icons/coreIcons";
+import { emitTelemetryEvent } from "../telemetry/emitter";
+import { TELEMETRY_EVENTS } from "../telemetry/events";
 import { useHelp } from "./helpContext";
 
 type ExplainButtonProps = {
@@ -20,7 +22,10 @@ export function ExplainButton({ sectionId, label, className }: ExplainButtonProp
       className={classes}
       aria-label={label ?? "Explain"}
       data-testid={`explain-${sectionId}`}
-      onClick={() => openHelpTo(sectionId)}
+      onClick={() => {
+        emitTelemetryEvent(TELEMETRY_EVENTS.explainClick, { sectionId });
+        openHelpTo(sectionId, "explain-button");
+      }}
     >
       <HelpIcon size={16} />
     </button>

@@ -27,6 +27,8 @@ import { PageTabRail } from "./ui/navigation/PageTabRail";
 import { TabSwitchSkeleton } from "./ui/navigation/TabSwitchSkeleton";
 import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
+import { emitTelemetryEvent } from "./ui/telemetry/emitter";
+import { TELEMETRY_EVENTS, type HelpOpenSource } from "./ui/telemetry/events";
 
 import { formatDurationFromMs, formatMoneyFromCents, formatSoftcapEfficiency } from "./game/format";
 import {
@@ -884,6 +886,10 @@ export default function App() {
     const nextId = resolveHelpSectionId(stored?.lastSectionId ?? null);
     setHelpSectionId(nextId);
     setHelpOpen(true);
+    emitTelemetryEvent(TELEMETRY_EVENTS.helpOpen, {
+      source: "header-help-button",
+      sectionId: nextId,
+    });
   };
 
   const handleHelpKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -911,13 +917,17 @@ export default function App() {
     persistHelpState({ lastSectionId: nextId });
   };
 
-  const openHelpTo = (sectionId: string) => {
+  const openHelpTo = (sectionId: string, source: HelpOpenSource = "context") => {
     const nextId = resolveHelpSectionId(sectionId);
     setHelpSectionId(nextId);
     if (nextId) {
       persistHelpState({ lastSectionId: nextId });
     }
     setHelpOpen(true);
+    emitTelemetryEvent(TELEMETRY_EVENTS.helpOpen, {
+      source,
+      sectionId: nextId,
+    });
   };
 
   const handleExport = async () => {
@@ -2014,6 +2024,12 @@ export default function App() {
             onImportFile={handleImportFile}
             saveStatus={saveStatus}
             onClearSave={handleClearSave}
+            onResetConfirm={() =>
+              emitTelemetryEvent(TELEMETRY_EVENTS.resetConfirm, { surface: "settings-save" })
+            }
+            onResetCancel={() =>
+              emitTelemetryEvent(TELEMETRY_EVENTS.resetCancel, { surface: "settings-save" })
+            }
           />
 
           {prestigeOnboarding && (
