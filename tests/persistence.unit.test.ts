@@ -23,7 +23,7 @@ describe("persistence", () => {
         },
       };
 
-      const encoded = encodeSaveString(seededState, 0, new Date(0));
+      const encoded = encodeSaveString(seededState, new Date(0));
       const decoded = decodeSaveString(encoded);
       expect(decoded.ok).toBe(true);
       if (!decoded.ok) {

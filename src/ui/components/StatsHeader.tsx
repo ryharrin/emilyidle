@@ -25,6 +25,7 @@ type StatsSystemMetrics = {
 type StatsHeaderProps = {
   stats: StatsSummary;
   systemStats: StatsSystemMetrics;
+  eventMultiplier?: number;
 };
 
 const MOBILE_STATS_QUERY = "(max-width: 900px)";
@@ -36,7 +37,7 @@ const getIsCompactStatsViewport = () => {
   return window.matchMedia(MOBILE_STATS_QUERY).matches;
 };
 
-export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
+export function StatsHeader({ stats, systemStats, eventMultiplier }: StatsHeaderProps) {
   const [isCompactLayout, setIsCompactLayout] = React.useState(getIsCompactStatsViewport);
   const [progressionOpen, setProgressionOpen] = React.useState(() => !getIsCompactStatsViewport());
   const [systemOpen, setSystemOpen] = React.useState(() => !getIsCompactStatsViewport());
@@ -127,13 +128,19 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
               </dt>
               <dd
                 id="income"
-                className="stats-header__metric-value stats-header__metric-value--hero"
+                className="stats-header__metric-value stats-header__metric-value--hero stats-header__metric-value--rate"
               >
                 <ValueTicker
                   value={stats.cashRate}
                   formatValue={formatRateFromCentsPerSec}
                   testId="value-ticker-income"
                 />
+                <span className="stats-header__rate-badge">/sec</span>
+                {eventMultiplier && eventMultiplier > 1 && (
+                  <span className="stats-header__event-badge">
+                    +{Math.round((eventMultiplier - 1) * 100)}% event
+                  </span>
+                )}
               </dd>
             </div>
           </dl>
@@ -168,12 +175,21 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
             </div>
             <div>
               <dt className="stats-header__metric-label">Enjoyment / sec</dt>
-              <dd id="enjoyment-rate" className="stats-header__metric-value">
+              <dd
+                id="enjoyment-rate"
+                className="stats-header__metric-value stats-header__metric-value--rate"
+              >
                 <ValueTicker
                   value={stats.enjoymentRate}
                   formatValue={formatRateFromCentsPerSec}
                   testId="value-ticker-enjoyment-rate"
                 />
+                <span className="stats-header__rate-badge">/sec</span>
+                {eventMultiplier && eventMultiplier > 1 && (
+                  <span className="stats-header__event-badge">
+                    +{Math.round((eventMultiplier - 1) * 100)}% event
+                  </span>
+                )}
               </dd>
             </div>
             <div>

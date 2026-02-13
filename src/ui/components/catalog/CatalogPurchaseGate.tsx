@@ -1,7 +1,7 @@
 import React from "react";
 
 import { formatMoneyFromCents } from "../../../game/format";
-import type { UnlockProgressDetail, WatchModelPurchaseGate } from "../../../game/state";
+import type { GameState, UnlockProgressDetail, WatchModelPurchaseGate } from "../../../game/state";
 
 import {
   CatalogDisabledExplanation,
@@ -19,6 +19,7 @@ type CatalogPurchaseGateProps = {
   buyLabel: string;
   onBuy: () => void;
   extraReasons?: CatalogDisabledReason[];
+  state?: GameState;
 };
 
 export function CatalogPurchaseGate({
@@ -32,6 +33,7 @@ export function CatalogPurchaseGate({
   buyLabel,
   onBuy,
   extraReasons = [],
+  state,
 }: CatalogPurchaseGateProps): JSX.Element {
   if (unlocked && gate.ok) {
     return (
@@ -49,18 +51,43 @@ export function CatalogPurchaseGate({
   let gateCopy: React.ReactNode = "Locked";
   if (unlocked && !gate.ok) {
     if (gate.blocksBy === "enjoyment") {
+      const haveAmount = state ? formatMoneyFromCents(state.enjoymentCents) : null;
+      const needAmount = formatMoneyFromCents(gate.enjoymentRequiredCents);
       gateCopy = (
         <>
-          Requires {formatMoneyFromCents(gate.enjoymentRequiredCents)}
-          {gate.enjoymentDeficitCents !== undefined && (
-            <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
+          {haveAmount !== null ? (
+            <p className="catalog-gate-comparison">
+              <span>Have: {haveAmount}</span>
+              <span>Need: {needAmount}</span>
+            </p>
+          ) : (
+            <>
+              Requires {needAmount}
+              {gate.enjoymentDeficitCents !== undefined && (
+                <> ({formatMoneyFromCents(gate.enjoymentDeficitCents)} more)</>
+              )}
+            </>
           )}
         </>
       );
     }
 
     if (gate.blocksBy === "cash") {
-      gateCopy = <>Need {formatMoneyFromCents(gate.cashDeficitCents ?? 0)} more</>;
+      const haveAmount = state ? formatMoneyFromCents(state.currencyCents) : null;
+      const needAmount = formatMoneyFromCents(gate.cashPriceCents);
+      const deficit = gate.cashDeficitCents ?? 0;
+      gateCopy = (
+        <>
+          {haveAmount !== null ? (
+            <p className="catalog-gate-comparison">
+              <span>Have: {haveAmount}</span>
+              <span>Need: {needAmount}</span>
+            </p>
+          ) : (
+            <>Need {formatMoneyFromCents(deficit)} more</>
+          )}
+        </>
+      );
     }
   }
 

@@ -380,7 +380,8 @@ export function CatalogPurchasePanel({
 
   const [filtersOpen, setFiltersOpen] = React.useState<boolean>(() => isTestEnvironment());
   const [catalogFavoritesOnly, setCatalogFavoritesOnly] = React.useState(false);
-  const [catalogQuickPreset, setCatalogQuickPreset] = React.useState<CatalogQuickPreset>("all");
+  const [catalogQuickPreset, setCatalogQuickPreset] =
+    React.useState<CatalogQuickPreset>("affordable");
   const favoriteIdsSignature = React.useMemo(
     () => (state.favoriteWatchIds ?? []).join(","),
     [state.favoriteWatchIds],
@@ -1237,6 +1238,7 @@ export function CatalogPurchasePanel({
                 gate={gate}
                 buyLabel={buyLabel}
                 onBuy={() => handlePurchase(entry.id)}
+                state={state}
                 extraReasons={
                   gateEtaLabel
                     ? [
@@ -1338,9 +1340,12 @@ export function CatalogPurchasePanel({
                   More
                 </button>
               )}
-              {showExpertSecondaryActions && canShowInteract && ownedCount > 0 && interactionHint && (
-                <span className="muted catalog-interaction-hint">{interactionHint}</span>
-              )}
+              {showExpertSecondaryActions &&
+                canShowInteract &&
+                ownedCount > 0 &&
+                interactionHint && (
+                  <span className="muted catalog-interaction-hint">{interactionHint}</span>
+                )}
               {showExpertSecondaryActions && canShowInteract && (
                 <ExplainButton
                   sectionId={HELP_SECTION_IDS.interactions}

@@ -547,6 +547,28 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
         </div>
       </header>
 
+      <section className="career-mini-progress" data-testid="career-mini-progress">
+        <div className="career-mini-progress__level">
+          <span className="eyebrow">Level</span>
+          <span className="career-mini-progress__value">{career.level}</span>
+        </div>
+        <div className="career-mini-progress__xp">
+          <div className="career-mini-progress__xp-bar-bg">
+            <div
+              className="career-mini-progress__xp-bar"
+              style={{ width: `${Math.min(100, (career.xp / nextXpRequired) * 100)}%` }}
+            />
+          </div>
+          <span className="career-mini-progress__xp-text">
+            {career.xp.toLocaleString()} / {nextXpRequired.toLocaleString()} XP
+          </span>
+        </div>
+        <div className="career-mini-progress__next">
+          <span className="eyebrow">Next</span>
+          <span className="career-mini-progress__value">{nearTermUnlock.title}</span>
+        </div>
+      </section>
+
       <div className="career-layout">
         <section
           className="career-priority-section career-priority-now"

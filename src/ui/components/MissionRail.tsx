@@ -201,6 +201,17 @@ export function MissionRail({
           </div>
         </article>
       )}
+
+      {/* Mobile sticky CTA - only visible on small screens */}
+      <section className="mission-rail__mobile-cta" data-testid="mission-mobile-cta">
+        <div className="mission-rail__mobile-cta-copy">
+          <p className="eyebrow">Now</p>
+          <p>{primary.label}</p>
+        </div>
+        <button type="button" data-testid={primary.testId} onClick={primary.onAction}>
+          {primary.actionLabel}
+        </button>
+      </section>
     </section>
   );
 }

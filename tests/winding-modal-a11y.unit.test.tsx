@@ -3,7 +3,15 @@ import { cleanup, render, screen, within, waitFor } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 
 import App from "../src/App";
-import { createInitialState } from "../src/game/state";
+import { createInitialState, getWatchModels } from "../src/game/state";
+
+function getModelIdForTier(tierId: string): string {
+  const model = getWatchModels().find((entry) => entry.tierId === tierId);
+  if (!model) {
+    throw new Error(`Missing model for tier: ${tierId}`);
+  }
+  return model.id;
+}
 
 const setupCatalog = async () => {
   const user = userEvent.setup();
@@ -15,38 +23,37 @@ const setupCatalog = async () => {
 };
 
 const openWindingModal = async (user: ReturnType<typeof userEvent.setup>) => {
-  await waitFor(() =>
-    expect(screen.queryAllByTestId(/vault-interact-/i).length).toBeGreaterThan(0),
-  );
-  const interactButtons = await screen.findAllByTestId(/vault-interact-/i);
-  const manualInteract = interactButtons.find((button) => {
-    const testId = button.getAttribute("data-testid") ?? "";
-    const isManual = /vault-interact-(manual|tourbillon)/i.test(testId);
-    return isManual && !(button as HTMLButtonElement).disabled;
-  });
-  const interact =
-    manualInteract ?? interactButtons.find((button) => !(button as HTMLButtonElement).disabled);
-  expect(interact).toBeTruthy();
-  await user.click(interact as HTMLElement);
+  const interactButtons = await screen.findAllByTestId("vault-interact-manual");
+  const manualInteract = interactButtons.find((button) => !(button as HTMLButtonElement).disabled);
+  expect(manualInteract).toBeTruthy();
+  await user.click(manualInteract as HTMLElement);
 };
 
 describe("winding modal accessibility", () => {
   beforeEach(async () => {
     localStorage.clear();
     const baseState = createInitialState();
+    const manualModelId = getModelIdForTier("manual");
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: {
           ...baseState,
+          currencyCents: 100000000,
+          enjoymentCents: 100000000,
           items: {
             ...baseState.items,
             quartz: 1,
             manual: 1,
           },
+          watchModels: {
+            ...baseState.watchModels,
+            [manualModelId]: 1,
+          },
+          discoveredCatalogEntries: [manualModelId],
+          unlockedMilestones: ["showcase"],
           upgrades: {
             ...baseState.upgrades,
             "archive-guides": 0,

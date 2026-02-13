@@ -124,7 +124,7 @@ describe("nostalgia unlocks", () => {
       nostalgiaUnlockedItems: unlocked,
     };
 
-    const encoded = encodeSaveString(seededState, Date.now());
+    const encoded = encodeSaveString(seededState);
     const decoded = decodeSaveString(encoded);
 
     expect(decoded.ok).toBe(true);
