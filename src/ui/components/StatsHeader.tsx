@@ -117,7 +117,7 @@ export function StatsHeader({ stats, systemStats }: StatsHeaderProps) {
           </dl>
         </details>
 
-        <details className="stats-header__group stats-header__group--collapsible" open>
+        <details className="stats-header__group stats-header__group--collapsible">
           <summary className="stats-header__group-summary">
             <span className="eyebrow">System</span>
             <span className="stats-header__toggle-icon" aria-hidden="true">
