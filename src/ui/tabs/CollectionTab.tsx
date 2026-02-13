@@ -213,21 +213,38 @@ export function CollectionTab({
 
   {
     const detail = getPrestigeUnlockProgressDetail(state, "workshop");
-    const workshopDetail = detail.label
-      .replace(/Atelier/g, "Workshop")
-      .replace(/atelier/g, "workshop");
     if (detail.ratio < 1) {
       nextUnlockItems.push({
         id: "workshop",
         eyebrow: "Next unlock",
         title: "Workshop",
-        detail: workshopDetail,
+        detail: detail.label,
         currentLabel: formatMoneyFromCents(detail.current),
         thresholdLabel: formatMoneyFromCents(detail.threshold),
         ratio: getUnlockRevealProgressRatio(detail.ratio),
         cta: {
           label: "Build collection",
           testId: "next-unlock-cta-workshop",
+          onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
+        },
+      });
+    }
+  }
+
+  {
+    const detail = getPrestigeUnlockProgressDetail(state, "maison");
+    if (detail.ratio < 1) {
+      nextUnlockItems.push({
+        id: "maison",
+        eyebrow: "Next unlock",
+        title: "Maison",
+        detail: detail.label,
+        currentLabel: formatMoneyFromCents(detail.current),
+        thresholdLabel: formatMoneyFromCents(detail.threshold),
+        ratio: getUnlockRevealProgressRatio(detail.ratio),
+        cta: {
+          label: "Build collection",
+          testId: "next-unlock-cta-maison",
           onClick: () => onNavigate(collectionListCta.tabId, collectionListCta.scrollTargetId),
         },
       });
@@ -280,7 +297,7 @@ export function CollectionTab({
                     {autoBuyEnabled ? "Auto-buy on" : "Auto-buy off"}
                   </button>
                 ) : (
-                  <p className="muted">Unlock automation with Workshop blueprints.</p>
+                  <p className="muted">Unlock automation with Atelier blueprints.</p>
                 )}
               </fieldset>
               <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
