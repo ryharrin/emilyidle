@@ -14,14 +14,9 @@ export function getPrestigeLegacyMultiplier(state: GameState): number {
   const workshopPrestigeCount = Number.isFinite(state.workshopPrestigeCount)
     ? Math.max(0, Math.floor(state.workshopPrestigeCount))
     : 0;
-  const maisonHeritage = Number.isFinite(state.maisonHeritage)
-    ? Math.max(0, Math.floor(state.maisonHeritage))
-    : 0;
 
-  const atelierLegacy = Math.pow(1.05, workshopPrestigeCount);
-  const maisonLegacy = Math.pow(1.03, maisonHeritage);
-
-  return Math.min(10, atelierLegacy * maisonLegacy);
+  // Wave 1 compensation after Maison removal: slightly stronger workshop legacy scaling.
+  return Math.min(10, Math.pow(1.06, workshopPrestigeCount));
 }
 
 export function getEnjoymentRateCentsPerSec(state: GameState): number {
