@@ -5,7 +5,7 @@ import { getPrestigeOnboardingContent, type PrestigeEvent } from "../prestigeOnb
 type PrestigeOnboardingModalProps = {
   event: PrestigeEvent;
   onClose: () => void;
-  onRecommendedAction: (tabId: "collection" | "workshop" | "maison" | "nostalgia") => void;
+  onRecommendedAction: (tabId: "collection" | "workshop" | "nostalgia") => void;
 };
 
 export function PrestigeOnboardingModal({

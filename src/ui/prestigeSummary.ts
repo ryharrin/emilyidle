@@ -1,4 +1,4 @@
-export type PrestigeTier = "workshop" | "maison" | "nostalgia";
+export type PrestigeTier = "workshop" | "nostalgia";
 
 export type PrestigeSummary = {
   tier: PrestigeTier;
@@ -27,28 +27,6 @@ export function buildWorkshopPrestigeSummary(gainBlueprints: number): PrestigeSu
   };
 }
 
-export function buildMaisonPrestigeSummary(
-  gainHeritage: number,
-  gainReputation: number,
-): PrestigeSummary {
-  return {
-    tier: "maison",
-    title: "Legacy prestige",
-    gain: [`+${gainHeritage} Heritage`, `+${gainReputation} Reputation`],
-    keep: [
-      "Legacy upgrades and active lines",
-      "Crafting parts and crafted boosts",
-      "Nostalgia points and unlock store purchases",
-      "Catalog discoveries and achievements",
-    ],
-    lose: [
-      "Vault cash and enjoyment totals",
-      "Owned watch counts in your vault",
-      "Vault upgrades and Workshop progress (Blueprints and upgrades)",
-    ],
-  };
-}
-
 export function buildNostalgiaPrestigeSummary(gainNostalgia: number): PrestigeSummary {
   return {
     tier: "nostalgia",
@@ -64,7 +42,7 @@ export function buildNostalgiaPrestigeSummary(gainNostalgia: number): PrestigeSu
       "Vault cash and enjoyment totals",
       "Career level and cooldown progress",
       "All vault upgrades and automation",
-      "Workshop legacy progress (Blueprints, Heritage, Reputation, lines)",
+      "Workshop legacy progress (Blueprints and upgrades)",
       "Events, crafting parts, and crafted boosts",
     ],
   };

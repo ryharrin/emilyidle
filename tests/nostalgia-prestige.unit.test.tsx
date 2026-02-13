@@ -76,16 +76,6 @@ describe("nostalgia prestige", () => {
         ...baseState.workshopUpgrades,
         "etched-ledgers": true,
       },
-      maisonHeritage: 3,
-      maisonReputation: 2,
-      maisonUpgrades: {
-        ...baseState.maisonUpgrades,
-        "atelier-charter": true,
-      },
-      maisonLines: {
-        ...baseState.maisonLines,
-        "atelier-line": true,
-      },
       therapistCareer: {
         level: 4,
         xp: 120,
@@ -117,10 +107,6 @@ describe("nostalgia prestige", () => {
     expect(resetState.workshopBlueprints).toBe(0);
     expect(resetState.workshopPrestigeCount).toBe(0);
     expect(resetState.workshopUpgrades).toEqual(baseState.workshopUpgrades);
-    expect(resetState.maisonHeritage).toBe(0);
-    expect(resetState.maisonReputation).toBe(0);
-    expect(resetState.maisonUpgrades).toEqual(baseState.maisonUpgrades);
-    expect(resetState.maisonLines).toEqual(baseState.maisonLines);
     expect(resetState.eventStates).toEqual(baseState.eventStates);
     expect(resetState.craftingParts).toBe(0);
     expect(resetState.craftedBoosts).toEqual(baseState.craftedBoosts);

@@ -13,10 +13,6 @@ import type {
   EventId,
   EventState,
   GameState,
-  MaisonLineDefinition,
-  MaisonLineId,
-  MaisonUpgradeDefinition,
-  MaisonUpgradeId,
   MilestoneDefinition,
   MilestoneId,
   PersistedGameState,
@@ -65,60 +61,6 @@ export const WORKSHOP_UPGRADES: ReadonlyArray<WorkshopUpgradeDefinition> = [
     description: "Permanent automation unlocks for future runs.",
     blueprintCost: 8,
     unlocks: { autoBuyEnabled: true },
-  },
-];
-
-export const MAISON_UPGRADES: ReadonlyArray<MaisonUpgradeDefinition> = [
-  {
-    id: "atelier-charter",
-    name: "Atelier charter",
-    description: "Legacy charters elevate every collection release.",
-    currency: "heritage",
-    cost: 3,
-    incomeMultiplier: 1.12,
-  },
-  {
-    id: "heritage-loom",
-    name: "Heritage loom",
-    description: "Woven provenance amplifies collection bonuses.",
-    currency: "heritage",
-    cost: 6,
-    collectionBonusMultiplier: 1.2,
-  },
-  {
-    id: "global-vitrine",
-    name: "Global vitrine",
-    description: "International vitrines loosen the income softcap.",
-    currency: "reputation",
-    cost: 4,
-    softcapMultiplier: 1.2,
-  },
-];
-
-export const MAISON_LINES: ReadonlyArray<MaisonLineDefinition> = [
-  {
-    id: "atelier-line",
-    name: "Atelier line",
-    description: "Unify the atelier workflow for steady cash gains.",
-    currency: "heritage",
-    cost: 5,
-    incomeMultiplier: 1.1,
-  },
-  {
-    id: "heritage-line",
-    name: "Heritage line",
-    description: "Signature heritage releases amplify collection prestige.",
-    currency: "heritage",
-    cost: 9,
-    collectionBonusMultiplier: 1.1,
-  },
-  {
-    id: "complication-line",
-    name: "Complication line",
-    description: "Introduce high complications to boost blueprint yields.",
-    currency: "reputation",
-    cost: 6,
-    workshopBlueprintBonus: 1,
   },
 ];
 
@@ -366,10 +308,6 @@ export function createInitialState(): GameState {
     workshopBlueprints: 0,
     workshopPrestigeCount: 0,
     workshopUpgrades: createWorkshopUpgradeStates(),
-    maisonHeritage: 0,
-    maisonReputation: 0,
-    maisonUpgrades: createMaisonUpgradeStates(),
-    maisonLines: createMaisonLineStates(),
     achievementUnlocks: [],
     eventStates: createEventStates(),
     discoveredCatalogEntries: [],
@@ -387,8 +325,6 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const items = createItemCounts();
   const upgrades = createUpgradeLevels();
   const workshopUpgrades = createWorkshopUpgradeStates();
-  const maisonUpgrades = createMaisonUpgradeStates();
-  const maisonLines = createMaisonLineStates();
   const eventStates = createEventStates();
 
   const therapistRaw = saved.therapistCareer;
@@ -429,22 +365,6 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     for (const [key, value] of Object.entries(saved.workshopUpgrades)) {
       if (key in workshopUpgrades) {
         workshopUpgrades[key as WorkshopUpgradeId] = Boolean(value);
-      }
-    }
-  }
-
-  if (saved.maisonUpgrades) {
-    for (const [key, value] of Object.entries(saved.maisonUpgrades)) {
-      if (key in maisonUpgrades) {
-        maisonUpgrades[key as MaisonUpgradeId] = Boolean(value);
-      }
-    }
-  }
-
-  if (saved.maisonLines) {
-    for (const [key, value] of Object.entries(saved.maisonLines)) {
-      if (key in maisonLines) {
-        maisonLines[key as MaisonLineId] = Boolean(value);
       }
     }
   }
@@ -550,8 +470,14 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
   const legacyMaisonReputation = Number.isFinite(saved.maisonReputation ?? 0)
     ? Math.max(0, Math.floor(saved.maisonReputation ?? 0))
     : 0;
-  const legacyMaisonUpgradeCount = Object.values(maisonUpgrades).filter(Boolean).length;
-  const legacyMaisonLineCount = Object.values(maisonLines).filter(Boolean).length;
+  const legacyMaisonUpgradeCount =
+    saved.maisonUpgrades && typeof saved.maisonUpgrades === "object"
+      ? Object.values(saved.maisonUpgrades).filter(Boolean).length
+      : 0;
+  const legacyMaisonLineCount =
+    saved.maisonLines && typeof saved.maisonLines === "object"
+      ? Object.values(saved.maisonLines).filter(Boolean).length
+      : 0;
   const migratedWorkshopBlueprints =
     workshopBlueprints +
     legacyMaisonHeritage +
@@ -576,11 +502,6 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     workshopBlueprints: migratedWorkshopBlueprints,
     workshopPrestigeCount: migratedWorkshopPrestigeCount,
     workshopUpgrades,
-    // Wave 1 migration: Maison progression is folded into workshop values above.
-    maisonHeritage: 0,
-    maisonReputation: 0,
-    maisonUpgrades: createMaisonUpgradeStates(),
-    maisonLines: createMaisonLineStates(),
     achievementUnlocks,
     eventStates,
     discoveredCatalogEntries,
@@ -617,20 +538,6 @@ export function createWorkshopUpgradeStates(): Record<WorkshopUpgradeId, boolean
   return WORKSHOP_UPGRADES.reduce(
     (states, upgrade) => ({ ...states, [upgrade.id]: false }),
     {} as Record<WorkshopUpgradeId, boolean>,
-  );
-}
-
-export function createMaisonUpgradeStates(): Record<MaisonUpgradeId, boolean> {
-  return MAISON_UPGRADES.reduce(
-    (states, upgrade) => ({ ...states, [upgrade.id]: false }),
-    {} as Record<MaisonUpgradeId, boolean>,
-  );
-}
-
-export function createMaisonLineStates(): Record<MaisonLineId, boolean> {
-  return MAISON_LINES.reduce(
-    (states, line) => ({ ...states, [line.id]: false }),
-    {} as Record<MaisonLineId, boolean>,
   );
 }
 

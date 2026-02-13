@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CatalogTab } from "./ui/tabs/CatalogTab";
 import { CareerTab } from "./ui/tabs/CareerTab";
 import { CollectionTab } from "./ui/tabs/CollectionTab";
-import { MaisonTab } from "./ui/tabs/MaisonTab";
 import { NostalgiaTab } from "./ui/tabs/NostalgiaTab";
 import { SaveTab } from "./ui/tabs/SaveTab";
 import { StatsTab } from "./ui/tabs/StatsTab";
@@ -33,7 +32,6 @@ import { useGameRuntime } from "./game/runtime/useGameRuntime";
 import {
   applyWindSessionRewards,
   buyItem,
-  canMaisonPrestige,
   canWorkshopPrestige,
   canNostalgiaPrestige,
   createInitialState,
@@ -64,13 +62,9 @@ import {
   getUpgrades,
   getSetBonuses,
   getEvents,
-  getMaisonUpgrades,
-  getMaisonPrestigeGain,
-  getMaisonPrestigeThresholdCents,
   getEventIncomeMultiplier,
   getItemCount,
   getAutoBuyEnabled,
-  getMaisonReputationGain,
   getMaxAffordableItemCount,
   getNostalgiaUnlockCost,
   getNostalgiaUnlockIds,
@@ -94,7 +88,6 @@ const TAB_DEFINITIONS = [
   { id: "collection", label: "Vault" },
   { id: "career", label: "Career" },
   { id: "workshop", label: "Workshop" },
-  { id: "maison", label: "Maison" },
   { id: "nostalgia", label: "Nostalgia" },
   { id: "catalog", label: "Catalog" },
   { id: "stats", label: "Stats" },
@@ -113,7 +106,7 @@ type AudioSettings = {
 };
 
 type ThemeMode = "system" | "light" | "dark";
-const HIDEABLE_TAB_IDS: TabId[] = ["workshop", "maison", "catalog", "stats"];
+const HIDEABLE_TAB_IDS: TabId[] = ["workshop", "catalog", "stats"];
 
 type Settings = {
   themeMode: ThemeMode;
@@ -243,7 +236,6 @@ export default function App() {
   );
   const [catalogTab, setCatalogTab] = useState<"unowned" | "owned">("unowned");
   const [workshopResetArmed, setWorkshopResetArmed] = useState(false);
-  const [maisonResetArmed, setMaisonResetArmed] = useState(false);
   const [nostalgiaModalOpen, setNostalgiaModalOpen] = useState(false);
   const [nostalgiaResultsDismissed, setNostalgiaResultsDismissed] = useState(false);
   const [nostalgiaUnlockPending, setNostalgiaUnlockPending] = useState<WatchItemId | null>(null);
@@ -559,21 +551,16 @@ export default function App() {
   const achievements = useMemo(() => getAchievements(), []);
   const events = useMemo(() => getEvents(), []);
   const workshopUpgrades = useMemo(() => getWorkshopUpgrades(), []);
-  const maisonUpgrades = useMemo(() => getMaisonUpgrades(), []);
   const catalogEntries = useMemo(() => getCatalogEntries(), []);
   const discoveredCatalogIds = useMemo(() => getCatalogDiscovery(state), [state]);
   const workshopPrestigeGain = useMemo(() => getWorkshopPrestigeGain(state), [state]);
-  const maisonPrestigeGain = useMemo(() => getMaisonPrestigeGain(state), [state]);
   const nostalgiaPrestigeGain = useMemo(() => getNostalgiaPrestigeGain(state), [state]);
   const canPrestigeWorkshop = useMemo(() => canWorkshopPrestige(state), [state]);
-  const canPrestigeMaison = useMemo(() => canMaisonPrestige(state), [state]);
   const canPrestigeNostalgia = useMemo(() => canNostalgiaPrestige(state), [state]);
   const showWorkshopPanel =
     canPrestigeWorkshop || state.workshopPrestigeCount > 0 || state.workshopBlueprints > 0;
   const showWorkshopTeaser = !showWorkshopPanel && isWorkshopRevealReady(state);
   const showWorkshopSection = showWorkshopPanel || showWorkshopTeaser;
-  const showMaisonPanel = false;
-  const showMaisonSection = false;
   const nostalgiaPrestigeThreshold = getNostalgiaPrestigeThresholdCents();
   const nostalgiaEarned = state.nostalgiaEnjoymentEarnedCents;
   const nostalgiaProgress = Math.min(1, nostalgiaEarned / nostalgiaPrestigeThreshold);
@@ -587,10 +574,6 @@ export default function App() {
   const workshopRevealProgress = Math.min(
     1,
     state.enjoymentCents / getWorkshopPrestigeThresholdCents(),
-  );
-  const maisonRevealProgress = Math.min(
-    1,
-    state.enjoymentCents / getMaisonPrestigeThresholdCents(),
   );
   const nowMs = Date.now();
   const currentEventMultiplier = useMemo(
@@ -617,13 +600,11 @@ export default function App() {
       catalog: showcaseVisibilityRatio >= 0.8,
       stats: statsVisibilityRatio >= 0.8,
       workshop: showWorkshopSection,
-      maison: false,
     }),
     [
       showcaseVisibilityRatio,
       statsVisibilityRatio,
       showWorkshopSection,
-      showMaisonSection,
       showNostalgiaSection,
       state.unlockedMilestones,
     ],
@@ -638,7 +619,6 @@ export default function App() {
       catalog: tabVisibility.catalog && !hiddenTabsSet.has("catalog"),
       stats: tabVisibility.stats && !hiddenTabsSet.has("stats"),
       workshop: tabVisibility.workshop && !hiddenTabsSet.has("workshop"),
-      maison: tabVisibility.maison && !hiddenTabsSet.has("maison"),
     }),
     [hiddenTabsSet, tabVisibility],
   );
@@ -837,7 +817,6 @@ export default function App() {
 
   const autoBuyUnlocked = useMemo(() => getAutoBuyEnabled(state), [state]);
   const autoBuyEnabled = autoBuyUnlocked && autoBuyToggle;
-  const maisonReputationGain = useMemo(() => getMaisonReputationGain(state), [state]);
   const catalogTierDefinitions = useMemo(() => getCatalogTierDefinitions(), []);
   const catalogTierProgress = useMemo(() => getCatalogTierProgress(state), [state]);
   const catalogTierUnlocks = useMemo(() => getCatalogTierUnlocks(state), [state]);
@@ -1134,22 +1113,6 @@ export default function App() {
           craftingPartsPerWatch={craftingPartsPerWatch}
           renderCraftingRecipes={renderCraftingRecipes}
           renderCraftingBoosts={renderCraftingBoosts}
-        />
-
-        <MaisonTab
-          isActive={activeTab === "maison"}
-          state={state}
-          showMaisonSection={showMaisonSection}
-          showMaisonPanel={showMaisonPanel}
-          onNavigate={navigateTo}
-          maisonPrestigeGain={maisonPrestigeGain}
-          maisonReputationGain={maisonReputationGain}
-          maisonRevealProgress={maisonRevealProgress}
-          maisonResetArmed={maisonResetArmed}
-          onToggleMaisonResetArmed={(next) => setMaisonResetArmed(next)}
-          canPrestigeMaison={canPrestigeMaison}
-          onPurchase={handlePurchase}
-          maisonUpgrades={maisonUpgrades}
         />
 
         <NostalgiaTab

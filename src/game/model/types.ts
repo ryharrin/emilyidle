@@ -18,9 +18,6 @@ export type WorkshopUpgradeId =
   | "heritage-templates"
   | "automation-blueprints";
 
-export type MaisonCurrency = "heritage" | "reputation";
-export type MaisonUpgradeId = "atelier-charter" | "heritage-loom" | "global-vitrine";
-
 export type WatchItemDefinition = {
   id: WatchItemId;
   name: string;
@@ -54,30 +51,6 @@ export type WorkshopUpgradeDefinition = {
   unlocks?: {
     autoBuyEnabled?: boolean;
   };
-};
-
-export type MaisonUpgradeDefinition = {
-  id: MaisonUpgradeId;
-  name: string;
-  description: string;
-  currency: MaisonCurrency;
-  cost: number;
-  incomeMultiplier?: number;
-  softcapMultiplier?: number;
-  collectionBonusMultiplier?: number;
-};
-
-export type MaisonLineId = "atelier-line" | "heritage-line" | "complication-line";
-
-export type MaisonLineDefinition = {
-  id: MaisonLineId;
-  name: string;
-  description: string;
-  currency: MaisonCurrency;
-  cost: number;
-  incomeMultiplier?: number;
-  collectionBonusMultiplier?: number;
-  workshopBlueprintBonus?: number;
 };
 
 export type MilestoneRequirement =
@@ -186,10 +159,6 @@ export type GameState = {
   workshopBlueprints: number;
   workshopPrestigeCount: number;
   workshopUpgrades: Record<WorkshopUpgradeId, boolean>;
-  maisonHeritage: number;
-  maisonReputation: number;
-  maisonUpgrades: Record<MaisonUpgradeId, boolean>;
-  maisonLines: Record<MaisonLineId, boolean>;
   achievementUnlocks: AchievementId[];
   eventStates: Record<EventId, EventState>;
   discoveredCatalogEntries: CatalogEntryId[];
