@@ -16,6 +16,7 @@ type CollectionInsightsPanelProps = {
     tabId: "collection" | "career" | "upgrades" | "workshop" | "maison" | "nostalgia" | "catalog",
     scrollTargetId?: string,
   ) => void;
+  showSetBonusesSection: boolean;
 };
 
 const formatPercent = (ratio: number) => `${Math.round(ratio * 100)}%`;
@@ -24,6 +25,7 @@ export function CollectionInsightsPanel({
   state,
   watchItemLabels,
   onNavigate,
+  showSetBonusesSection,
 }: CollectionInsightsPanelProps) {
   const setBonusRows = getSetBonusProgressRows(state);
   const prestigePreview = getNextPrestigePreview(state);
@@ -93,53 +95,55 @@ export function CollectionInsightsPanel({
       className="collection-insights panel collection-insights-panel-cluster"
       data-testid="collection-insights-panel"
     >
-      <div
-        className="collection-insights__set-bonuses panel-cluster-grid"
-        data-testid="collection-set-bonus-grid"
-      >
-        {setBonusRows.map((row) => (
-          <article
-            key={row.id}
-            className={`collection-insights__set-bonus-card collection-insights__module-card ${row.active ? "is-active" : ""}`}
-            data-testid="collection-set-bonus-card"
-            data-bonus-id={row.id}
-          >
-            <div className="collection-insights__set-card-header collection-insights__module-header">
-              <p className="eyebrow">Set bonus</p>
-              <h3>{row.name}</h3>
-            </div>
-            <div className="collection-insights__set-card-progress">
-              <span>
-                {row.metCount}/{row.requiredCount}
-              </span>
-              <span>{formatPercent(row.ratio)}</span>
-            </div>
-            <p className="collection-insights__set-card-status">
-              {row.active ? "Active" : row.nextNeedLabel}
-            </p>
-            <ul className="collection-insights__set-card-requirements">
-              {row.requirements.map((entry) => (
-                <li key={entry.itemId} className={entry.met ? "is-met" : ""}>
-                  <div>
-                    <strong>{watchItemLabels.get(entry.itemId) ?? entry.itemId}</strong>{" "}
-                    {entry.currentCount}/{entry.requiredCount}
-                  </div>
-                  {!entry.met ? (
-                    <button
-                      type="button"
-                      className="secondary"
-                      data-testid={`collection-set-bonus-find-${row.id}-${entry.itemId}`}
-                      onClick={() => onNavigate("catalog", "catalog-shop")}
-                    >
-                      Find in Catalog
-                    </button>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </article>
-        ))}
-      </div>
+      {showSetBonusesSection && (
+        <div
+          className="collection-insights__set-bonuses panel-cluster-grid"
+          data-testid="collection-set-bonus-grid"
+        >
+          {setBonusRows.map((row) => (
+            <article
+              key={row.id}
+              className={`collection-insights__set-bonus-card collection-insights__module-card ${row.active ? "is-active" : ""}`}
+              data-testid="collection-set-bonus-card"
+              data-bonus-id={row.id}
+            >
+              <div className="collection-insights__set-card-header collection-insights__module-header">
+                <p className="eyebrow">Set bonus</p>
+                <h3>{row.name}</h3>
+              </div>
+              <div className="collection-insights__set-card-progress">
+                <span>
+                  {row.metCount}/{row.requiredCount}
+                </span>
+                <span>{formatPercent(row.ratio)}</span>
+              </div>
+              <p className="collection-insights__set-card-status">
+                {row.active ? "Active" : row.nextNeedLabel}
+              </p>
+              <ul className="collection-insights__set-card-requirements">
+                {row.requirements.map((entry) => (
+                  <li key={entry.itemId} className={entry.met ? "is-met" : ""}>
+                    <div>
+                      <strong>{watchItemLabels.get(entry.itemId) ?? entry.itemId}</strong>{" "}
+                      {entry.currentCount}/{entry.requiredCount}
+                    </div>
+                    {!entry.met ? (
+                      <button
+                        type="button"
+                        className="secondary"
+                        data-testid={`collection-set-bonus-find-${row.id}-${entry.itemId}`}
+                        onClick={() => onNavigate("catalog", "catalog-shop")}
+                      >
+                        Find in Catalog
+                      </button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      )}
       <div className="collection-insights__right panel-cluster-column">
         <article
           className="collection-insights__prestige collection-insights__module-card"

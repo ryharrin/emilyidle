@@ -4,19 +4,18 @@ import { createStateFromSave } from "./state";
 
 const SAVE_KEY = "emily-idle:save";
 const LEGACY_SAVE_KEY = "watch-idle:save";
-const CURRENT_SAVE_VERSION = 3 as const;
-type LegacySaveVersion = 1 | 2;
+const CURRENT_SAVE_VERSION = 4 as const;
+type LegacySaveVersion = 1 | 2 | 3;
 
-type SaveV3 = {
+type SaveV4 = {
   version: typeof CURRENT_SAVE_VERSION;
   savedAt: string;
-  lastSimulatedAtMs: number;
   state: GameState;
 };
 
 type SaveDecodeSuccess = {
   ok: true;
-  save: SaveV3;
+  save: SaveV4;
   migratedFromVersion?: LegacySaveVersion;
 };
 
@@ -43,15 +42,10 @@ function getSafeSavedAtIso(savedAt: string): string {
   return new Date().toISOString();
 }
 
-function buildCanonicalSave(
-  state: GameState,
-  lastSimulatedAtMs: number,
-  savedAtIso: string,
-): SaveV3 {
+function buildCanonicalSave(state: GameState, savedAtIso: string): SaveV4 {
   return {
     version: CURRENT_SAVE_VERSION,
     savedAt: getSafeSavedAtIso(savedAtIso),
-    lastSimulatedAtMs,
     state,
   };
 }
@@ -257,12 +251,8 @@ function sanitizeState(value: unknown): GameState | null {
   return createStateFromSave(persisted);
 }
 
-export function encodeSaveString(
-  state: GameState,
-  lastSimulatedAtMs: number,
-  savedAt: Date = new Date(),
-): string {
-  const save = buildCanonicalSave(state, lastSimulatedAtMs, savedAt.toISOString());
+export function encodeSaveString(state: GameState, savedAt: Date = new Date()): string {
+  const save = buildCanonicalSave(state, savedAt.toISOString());
 
   return JSON.stringify(save);
 }
@@ -286,7 +276,7 @@ function decodeSavePayload(raw: string): SaveParseResult {
   const record = parsed as Record<string, unknown>;
   const version = record.version;
 
-  if (version !== 1 && version !== 2 && version !== CURRENT_SAVE_VERSION) {
+  if (version !== 1 && version !== 2 && version !== 3 && version !== CURRENT_SAVE_VERSION) {
     return { ok: false, error: `Unsupported save version: ${String(version)}` };
   }
 
@@ -295,18 +285,13 @@ function decodeSavePayload(raw: string): SaveParseResult {
     return { ok: false, error: "Invalid save payload: missing savedAt" };
   }
 
-  const lastSimulatedAtMs = record.lastSimulatedAtMs;
-  if (!isFiniteNumber(lastSimulatedAtMs) || lastSimulatedAtMs < 0) {
-    return { ok: false, error: "Invalid save payload: invalid lastSimulatedAtMs" };
-  }
-
   const state = sanitizeState(record.state);
   if (!state) {
     return { ok: false, error: "Invalid save payload: invalid state" };
   }
 
-  const migratedFromVersion = version === CURRENT_SAVE_VERSION ? undefined : (version as 1 | 2);
-  const save = buildCanonicalSave(state, lastSimulatedAtMs, savedAt);
+  const migratedFromVersion = version === CURRENT_SAVE_VERSION ? undefined : (version as 1 | 2 | 3);
+  const save = buildCanonicalSave(state, savedAt);
 
   return {
     ok: true,
@@ -361,11 +346,7 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
   if (raw !== null) {
     try {
       const shouldRewrite = source === "legacy" || decoded.migratedFromVersion !== undefined;
-      const canonicalSave = buildCanonicalSave(
-        decoded.save.state,
-        decoded.save.lastSimulatedAtMs,
-        decoded.save.savedAt,
-      );
+      const canonicalSave = buildCanonicalSave(decoded.save.state, decoded.save.savedAt);
       const canonicalRaw = shouldRewrite ? JSON.stringify(canonicalSave) : raw;
       localStorage.setItem(SAVE_KEY, canonicalRaw);
       localStorage.removeItem(LEGACY_SAVE_KEY);
@@ -382,10 +363,9 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
 
 export function persistSaveToLocalStorage(
   state: GameState,
-  lastSimulatedAtMs: number,
   savedAt: Date = new Date(),
 ): SavePersistResult {
-  const encoded = encodeSaveString(state, lastSimulatedAtMs, savedAt);
+  const encoded = encodeSaveString(state, savedAt);
 
   try {
     localStorage.setItem(SAVE_KEY, encoded);

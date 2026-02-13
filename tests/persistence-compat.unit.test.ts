@@ -8,22 +8,20 @@ import {
 import { type MilestoneId, createInitialState } from "../src/game/state";
 
 describe("persistence compatibility", () => {
-  it("encodeSaveString produces a v3 payload with required fields", () => {
+  it("encodeSaveString produces a v4 payload with required fields", () => {
     const state = createInitialState();
-    const lastSimulatedAtMs = 42_000;
     const savedAt = new Date(0);
 
-    const raw = encodeSaveString(state, lastSimulatedAtMs, savedAt);
+    const raw = encodeSaveString(state, savedAt);
     const parsed = JSON.parse(raw) as Record<string, unknown>;
 
-    expect(parsed.version).toBe(3);
+    expect(parsed.version).toBe(4);
     expect(parsed.savedAt).toBe(savedAt.toISOString());
-    expect(parsed.lastSimulatedAtMs).toBe(lastSimulatedAtMs);
     expect(parsed.state).toBeTruthy();
     expect(typeof parsed.state).toBe("object");
   });
 
-  it("decodeSaveString accepts v1 payloads and normalizes them to v3", () => {
+  it("decodeSaveString accepts v1 payloads and normalizes them to v4", () => {
     const raw = JSON.stringify({
       version: 1,
       savedAt: new Date(0).toISOString(),
@@ -37,11 +35,11 @@ describe("persistence compatibility", () => {
       return;
     }
 
-    expect(decoded.save.version).toBe(3);
+    expect(decoded.save.version).toBe(4);
     expect(decoded.migratedFromVersion).toBe(1);
   });
 
-  it("decodeSaveString accepts v2 payloads and normalizes them to v3", () => {
+  it("decodeSaveString accepts v2 payloads and normalizes them to v4", () => {
     const raw = JSON.stringify({
       version: 2,
       savedAt: new Date(0).toISOString(),
@@ -55,11 +53,29 @@ describe("persistence compatibility", () => {
       return;
     }
 
-    expect(decoded.save.version).toBe(3);
+    expect(decoded.save.version).toBe(4);
     expect(decoded.migratedFromVersion).toBe(2);
   });
 
-  it("loadSaveFromLocalStorage migrates legacy watch-idle:save to canonical v3 emily-idle:save", () => {
+  it("decodeSaveString accepts v3 payloads and normalizes them to v4", () => {
+    const raw = JSON.stringify({
+      version: 3,
+      savedAt: new Date(0).toISOString(),
+      lastSimulatedAtMs: 789,
+      state: { currencyCents: 789 },
+    });
+
+    const decoded = decodeSaveString(raw);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) {
+      return;
+    }
+
+    expect(decoded.save.version).toBe(4);
+    expect(decoded.migratedFromVersion).toBe(3);
+  });
+
+  it("loadSaveFromLocalStorage migrates legacy watch-idle:save to canonical v4 emily-idle:save", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -94,7 +110,7 @@ describe("persistence compatibility", () => {
       return;
     }
 
-    expect(loaded.save.version).toBe(3);
+    expect(loaded.save.version).toBe(4);
     expect(loaded.migratedFromVersion).toBe(2);
 
     const canonicalRaw = localStorage.getItem("emily-idle:save");
@@ -102,7 +118,7 @@ describe("persistence compatibility", () => {
     expect(localStorage.getItem("watch-idle:save")).toBeNull();
     if (canonicalRaw) {
       const canonicalParsed = JSON.parse(canonicalRaw) as { version: number };
-      expect(canonicalParsed.version).toBe(3);
+      expect(canonicalParsed.version).toBe(4);
     }
 
     expect(loaded.save.state.currencyCents).toBe(12_345);

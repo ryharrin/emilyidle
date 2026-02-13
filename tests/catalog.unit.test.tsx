@@ -21,6 +21,8 @@ function getModelIdForTier(tierId: string): string {
   return model.id;
 }
 
+const ALL_CATALOG_IDS = getWatchModels().map((m) => m.id);
+
 const evaluateMediaQuery = (query: string, width: number) => {
   const maxMatch = /max-width:\s*(\d+)px/.exec(query);
   const minMatch = /min-width:\s*(\d+)px/.exec(query);
@@ -42,6 +44,11 @@ const createMatchMediaMock = (width: number): typeof window.matchMedia =>
     removeListener: () => {},
     dispatchEvent: () => false,
   })) as typeof window.matchMedia;
+
+const switchToAllPreset = async (user: ReturnType<typeof userEvent.setup>) => {
+  const presetSelect = screen.getByLabelText(/Quick preset/i);
+  await user.selectOptions(presetSelect, "all");
+};
 
 describe("interaction movement gating", () => {
   it("allows automatic watches for rotor interactions", () => {
@@ -245,9 +252,8 @@ describe("primary navigation tabs", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: baseState,
       }),
     );
@@ -267,9 +273,8 @@ describe("primary navigation tabs", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: baseState,
       }),
     );
@@ -289,9 +294,8 @@ describe("primary navigation tabs", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: baseState,
       }),
     );
@@ -417,9 +421,8 @@ describe("career tab unlock", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -469,9 +472,8 @@ describe("catalog tier bonuses", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -518,9 +520,8 @@ describe("set bonuses", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -564,6 +565,9 @@ describe("catalog filters", () => {
     const tourbillonModelId = getModelIdForTier("tourbillon");
     const seededState = {
       ...baseState,
+      currencyCents: 100000000,
+      enjoymentCents: 100000000,
+      discoveredCatalogEntries: ALL_CATALOG_IDS,
       items: {
         ...baseState.items,
         manual: 2,
@@ -579,9 +583,8 @@ describe("catalog filters", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -980,9 +983,8 @@ describe("catalog filters", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -994,6 +996,8 @@ describe("catalog filters", () => {
     const primaryTabs = screen.getByRole("tablist", { name: /Primary navigation/i });
     const catalogTab = within(primaryTabs).getByRole("tab", { name: /Catalog/i });
     await user.click(catalogTab);
+
+    await switchToAllPreset(user);
 
     const tabList = screen.getByRole("tablist", { name: /Catalog ownership/i });
     const ownedTab = within(tabList).getByRole("tab", { name: /^Owned/ });
@@ -1036,9 +1040,8 @@ describe("catalog filters", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1082,7 +1085,9 @@ describe("catalog filters", () => {
 
     const catalogGrid = screen.getByTestId("catalog-grid");
     const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
-    const years = cards.map((card) => card.querySelector(".catalog-year")?.textContent?.trim() ?? "");
+    const years = cards.map(
+      (card) => card.querySelector(".catalog-year")?.textContent?.trim() ?? "",
+    );
 
     expect(years.length).toBeGreaterThan(0);
     expect(years.some((value) => /unknown/i.test(value))).toBe(true);
@@ -1204,9 +1209,8 @@ describe("catalog purchase CTA", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1276,6 +1280,9 @@ describe("catalog purchase CTA", () => {
   });
 
   it("does not mark non-actionable catalog cards as actionable", async () => {
+    const user = userEvent.setup();
+    await switchToAllPreset(user);
+
     const catalogGrid = screen.getByTestId("catalog-grid");
     const gates = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-gate-/));
     expect(gates.length).toBeGreaterThan(0);
@@ -1373,9 +1380,8 @@ describe("catalog card affordances", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1432,9 +1438,8 @@ describe("catalog gating explanations", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1456,6 +1461,8 @@ describe("catalog gating explanations", () => {
 
   it("renders lock overlay and explainer for gated entries", async () => {
     const user = userEvent.setup();
+    await switchToAllPreset(user);
+
     const catalogFilters = screen.getByTestId("catalog-filters");
     const searchInput = within(catalogFilters).getByTestId("catalog-search");
 
@@ -1528,9 +1535,8 @@ describe("catalog ownership tabs", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1557,9 +1563,8 @@ describe("catalog ownership tabs", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1604,9 +1609,8 @@ describe("catalog ownership tabs", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1646,9 +1650,8 @@ describe("catalog ownership tabs", () => {
     const chronographModelId = getModelIdForTier("manual");
     const tourbillonModelId = getModelIdForTier("tourbillon");
     const ownedPayload = {
-      version: 2,
+      version: 4,
       savedAt: new Date(0).toISOString(),
-      lastSimulatedAtMs: Date.now(),
       state: {
         ...baseState,
         items: { quartz: 1, automatic: 0, manual: 2, tourbillon: 0 },
@@ -1673,6 +1676,8 @@ describe("catalog ownership tabs", () => {
     const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
 
     await user.click(catalogTab);
+
+    await switchToAllPreset(user);
 
     const unownedGrid = screen.getByTestId("catalog-grid");
     await waitFor(() => within(unownedGrid).getAllByTestId(/catalog-card/));
@@ -1714,19 +1719,29 @@ describe("wind minigame", () => {
     localStorage.clear();
 
     const baseState = createInitialState();
+    const manualModelId = getModelIdForTier("manual");
+    const tourbillonModelId = getModelIdForTier("tourbillon");
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: {
           ...baseState,
+          currencyCents: 100000000,
+          enjoymentCents: 100000000,
+          discoveredCatalogEntries: [manualModelId, tourbillonModelId],
           items: {
             ...baseState.items,
             manual: 1,
             tourbillon: 1,
           },
+          watchModels: {
+            ...baseState.watchModels,
+            [manualModelId]: 1,
+            [tourbillonModelId]: 1,
+          },
+          unlockedMilestones: ["showcase", "atelier"],
           upgrades: {
             ...baseState.upgrades,
             "archive-guides": 0,
@@ -1741,6 +1756,8 @@ describe("wind minigame", () => {
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     await user.click(catalogTab);
+
+    await switchToAllPreset(user);
   });
 
   afterEach(() => {
@@ -1750,6 +1767,9 @@ describe("wind minigame", () => {
   it("opens and closes the wind session modal and resets progress", async () => {
     const user = userEvent.setup();
 
+    await waitFor(() =>
+      expect(screen.queryAllByTestId(/vault-interact-/i).length).toBeGreaterThan(0),
+    );
     const chronographButtons = screen.getAllByTestId("vault-interact-manual");
     const chronographInteract = chronographButtons.find(
       (button) => !(button as HTMLButtonElement).disabled,
@@ -1802,18 +1822,25 @@ describe("quartz minigame", () => {
     localStorage.clear();
 
     const baseState = createInitialState();
+    const quartzModelId = getModelIdForTier("quartz");
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: {
           ...baseState,
+          currencyCents: 100000000,
+          discoveredCatalogEntries: [quartzModelId],
           items: {
             ...baseState.items,
             quartz: 1,
           },
+          watchModels: {
+            ...baseState.watchModels,
+            [quartzModelId]: 1,
+          },
+          unlockedMilestones: ["showcase"],
           upgrades: {
             ...baseState.upgrades,
             "archive-guides": 0,
@@ -1952,9 +1979,8 @@ describe("settings preferences", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -1972,9 +1998,8 @@ describe("settings preferences", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );
@@ -2290,9 +2315,8 @@ describe("atelier crafting UI", () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
-        version: 2,
+        version: 4,
         savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
         state: seededState,
       }),
     );

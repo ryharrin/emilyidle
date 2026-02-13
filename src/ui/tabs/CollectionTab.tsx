@@ -12,6 +12,7 @@ import {
 } from "../components/CollectionSectionNav";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
+import { PrestigeComparisonCard } from "../components/PrestigeComparisonCard";
 
 import { formatMoneyFromCents } from "../../game/format";
 import {
@@ -132,6 +133,21 @@ const getIsCompactCollectionViewport = () => {
   return window.matchMedia(MOBILE_COLLECTION_QUERY).matches;
 };
 
+type PrestigeLayerInfo = {
+  visible: boolean;
+  ratio: number;
+  gain: number;
+  thresholdCents: number;
+  resetsWhat: string[];
+  carriesWhat: string[];
+};
+
+type PrestigeComparisonInfo = {
+  atelier: PrestigeLayerInfo;
+  maison: PrestigeLayerInfo;
+  nostalgia: PrestigeLayerInfo;
+};
+
 type CollectionTabProps = {
   isActive: boolean;
   state: GameState;
@@ -163,6 +179,13 @@ type CollectionTabProps = {
   currentEventMultiplier: number;
   nowMs: number;
   onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
+  showTourbillonSegment: boolean;
+  showSetBonusesSection: boolean;
+  showCraftingSection: boolean;
+  showMilestonesSection: boolean;
+  showAchievementsSection: boolean;
+  showEventsSection: boolean;
+  prestigeComparisonInfo: PrestigeComparisonInfo;
 };
 
 type CollectionMobileSectionId =
@@ -207,6 +230,13 @@ export function CollectionTab({
   currentEventMultiplier,
   nowMs,
   onPurchase,
+  showTourbillonSegment,
+  showSetBonusesSection,
+  showCraftingSection,
+  showMilestonesSection,
+  showAchievementsSection,
+  showEventsSection,
+  prestigeComparisonInfo,
 }: CollectionTabProps) {
   const watchModels = getWatchModels();
   const watchModelById = new Map(watchModels.map((model) => [model.id, model]));
@@ -363,7 +393,9 @@ export function CollectionTab({
   const interactionPerfectStreak = state.interactionPerfectStreak;
   const interactionBestPerfectStreak = state.interactionBestPerfectStreak;
   const interactionPrecisionPercent =
-    interactionRunsTotal > 0 ? Math.round((interactionPerfectRuns / interactionRunsTotal) * 100) : 0;
+    interactionRunsTotal > 0
+      ? Math.round((interactionPerfectRuns / interactionRunsTotal) * 100)
+      : 0;
   const interactionOutcomeSummary =
     interactionPerfectStreak > 0
       ? `Live streak: ${interactionPerfectStreak} perfect run${
@@ -440,6 +472,7 @@ export function CollectionTab({
                   state={state}
                   watchItemLabels={watchItemLabels}
                   onNavigate={onNavigate}
+                  showSetBonusesSection={showSetBonusesSection}
                 />
                 <div id="collection-overview" className="collection-section collection-overview">
                   <h2>Collection</h2>
@@ -447,6 +480,7 @@ export function CollectionTab({
                     Manage your owned watches here. Track movement coverage and optimize equipped
                     output.
                   </p>
+                  <PrestigeComparisonCard {...prestigeComparisonInfo} />
                   <div
                     className="surface-complication-strip collection-complication-strip"
                     data-testid="collection-complication-strip"
@@ -495,7 +529,10 @@ export function CollectionTab({
                       <p className="surface-complication-detail">{archiveComplicationDetail}</p>
                     </article>
                   </div>
-                  <article className="card interaction-feed-card" data-testid="collection-interaction-feed">
+                  <article
+                    className="card interaction-feed-card"
+                    data-testid="collection-interaction-feed"
+                  >
                     <header className="interaction-feed-card__header">
                       <div>
                         <p className="eyebrow">Interaction outcomes</p>
@@ -507,7 +544,8 @@ export function CollectionTab({
                       <div>
                         <dt>Perfect runs</dt>
                         <dd>
-                          {interactionPerfectRuns.toLocaleString()} / {interactionRunsTotal.toLocaleString()}
+                          {interactionPerfectRuns.toLocaleString()} /{" "}
+                          {interactionRunsTotal.toLocaleString()}
                         </dd>
                       </div>
                       <div>
@@ -558,7 +596,10 @@ export function CollectionTab({
                           </span>
                         </summary>
                         <div className="collection-mobile-accordion-body">
-                          <div className="panel catalog-tier-panel" data-testid="catalog-tier-panel">
+                          <div
+                            className="panel catalog-tier-panel"
+                            data-testid="catalog-tier-panel"
+                          >
                             <header className="panel-header">
                               <div>
                                 <p className="eyebrow">Archive bonuses</p>
@@ -568,13 +609,18 @@ export function CollectionTab({
                                 </p>
                               </div>
                               <div className="results-count" data-testid="catalog-tier-count">
-                                {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                                {catalogTierUnlocks.length} / {catalogTierDefinitions.length}{" "}
+                                unlocked
                               </div>
                             </header>
                             {archiveCuratorMilestone && (
-                              <div className="catalog-tier-curator" data-testid="catalog-curator-hint">
+                              <div
+                                className="catalog-tier-curator"
+                                data-testid="catalog-curator-hint"
+                              >
                                 <p className="muted">
-                                  Archive curator {archiveCuratorProgress} / {archiveCuratorThreshold}
+                                  Archive curator {archiveCuratorProgress} /{" "}
+                                  {archiveCuratorThreshold}
                                   {" · "}Unlock Archive guides to boost collection income.
                                 </p>
                                 <p className="catalog-tier-curator-status">
@@ -602,15 +648,23 @@ export function CollectionTab({
                                         <p>{tier.description}</p>
                                       </div>
                                       <div className="muted">
-                                        {unlocked ? "Unlocked" : `${progress} / ${tier.requiredCount}`}
+                                        {unlocked
+                                          ? "Unlocked"
+                                          : `${progress} / ${tier.requiredCount}`}
                                       </div>
                                     </div>
-                                    <p className="muted">Income x{tier.incomeMultiplier.toFixed(2)}</p>
+                                    <p className="muted">
+                                      Income x{tier.incomeMultiplier.toFixed(2)}
+                                    </p>
                                   </div>
                                 );
                               })}
                             </div>
-                            <p className="muted" aria-live="polite" data-testid="catalog-tier-status">
+                            <p
+                              className="muted"
+                              aria-live="polite"
+                              data-testid="catalog-tier-status"
+                            >
                               {catalogTierBonuses.length > 0
                                 ? `Active bonus x${catalogTierBonusMultiplier.toFixed(2)}`
                                 : "Discover references to unlock tier bonuses."}
@@ -701,7 +755,10 @@ export function CollectionTab({
                           <span className="muted">Badge help</span>
                         </div>
                       </header>
-                      <CollectionTierSegments segments={tierSummary} />
+                      <CollectionTierSegments
+                        segments={tierSummary}
+                        showTourbillonSegment={showTourbillonSegment}
+                      />
                     </section>
                   </div>
                 </div>
@@ -781,7 +838,11 @@ export function CollectionTab({
                                 })();
 
                                 return (
-                                  <div className="card" key={line.id} data-testid="maison-line-card">
+                                  <div
+                                    className="card"
+                                    key={line.id}
+                                    data-testid="maison-line-card"
+                                  >
                                     <div className="card-header">
                                       <div>
                                         <h4>{line.name}</h4>
@@ -817,7 +878,9 @@ export function CollectionTab({
                           <div>
                             <p className="eyebrow">Maison expansion</p>
                             <h3>Maison lines</h3>
-                            <p className="muted">Invest Heritage or Reputation to expand your house.</p>
+                            <p className="muted">
+                              Invest Heritage or Reputation to expand your house.
+                            </p>
                           </div>
                           <div className="results-count" data-testid="maison-lines-count">
                             {Object.values(state.maisonLines).filter(Boolean).length} /{" "}
@@ -915,21 +978,28 @@ export function CollectionTab({
                           </p>
                         </section>
                       </div>
-                      <section className="panel per-watch-contribution" data-testid="per-watch-contribution">
+                      <section
+                        className="panel per-watch-contribution"
+                        data-testid="per-watch-contribution"
+                      >
                         <header className="panel-header">
                           <div>
                             <p className="eyebrow">Contribution</p>
                             <h3>Equipped watch</h3>
-                            <p className="muted">{wornModel ? wornModel.displayName : "No watch worn"}</p>
+                            <p className="muted">
+                              {wornModel ? wornModel.displayName : "No watch worn"}
+                            </p>
                           </div>
                         </header>
                         <div className="per-watch-contribution-body">
                           <div className="per-watch-contribution-metric">
                             <strong data-testid="per-watch-contribution-enjoyment">
-                              {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
+                              {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)}{" "}
+                              /s
                             </strong>
                             <span>
-                              Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
+                              Enjoyment delta (x
+                              {equippedContribution.enjoymentMultiplier.toFixed(2)})
                             </span>
                           </div>
                           <div className="per-watch-contribution-metric">
@@ -992,7 +1062,8 @@ export function CollectionTab({
                       <div className="per-watch-contribution-body">
                         <div className="per-watch-contribution-metric">
                           <strong data-testid="per-watch-contribution-enjoyment">
-                            {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)} /s
+                            {formatMoneyFromCents(equippedContribution.enjoymentDeltaCentsPerSec)}{" "}
+                            /s
                           </strong>
                           <span>
                             Enjoyment delta (x{equippedContribution.enjoymentMultiplier.toFixed(2)})
@@ -1150,23 +1221,44 @@ export function CollectionTab({
               </div>
             )}
 
-            {isCompactLayout ? (
-              <details
-                id="collection-milestones"
-                className="collection-section collection-mobile-accordion"
-                open={isMobileSectionOpen("milestones")}
-                onToggle={(event) =>
-                  handleMobileSectionToggle("milestones", event.currentTarget.open)
-                }
-                data-testid="collection-milestones-details"
-              >
-                <summary data-testid="collection-milestones-toggle">
-                  <span>Milestones</span>
-                  <span className="muted">
-                    {isMobileSectionOpen("milestones") ? "Collapse" : "Expand"}
-                  </span>
-                </summary>
-                <div className="collection-mobile-accordion-body">
+            {showMilestonesSection &&
+              (isCompactLayout ? (
+                <details
+                  id="collection-milestones"
+                  className="collection-section collection-mobile-accordion"
+                  open={isMobileSectionOpen("milestones")}
+                  onToggle={(event) =>
+                    handleMobileSectionToggle("milestones", event.currentTarget.open)
+                  }
+                  data-testid="collection-milestones-details"
+                >
+                  <summary data-testid="collection-milestones-toggle">
+                    <span>Milestones</span>
+                    <span className="muted">
+                      {isMobileSectionOpen("milestones") ? "Collapse" : "Expand"}
+                    </span>
+                  </summary>
+                  <div className="collection-mobile-accordion-body">
+                    <div className="panel">
+                      <h3>Milestones</h3>
+                      <div id="milestone-list" className="card-stack">
+                        {milestones.map((milestone) => {
+                          const unlocked = state.unlockedMilestones.includes(milestone.id);
+                          return (
+                            <div className="card" key={milestone.id}>
+                              <h3>{milestone.name}</h3>
+                              <p>{milestone.description}</p>
+                              <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
+                              <p>{unlocked ? "Unlocked" : "Locked"}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              ) : (
+                <section id="collection-milestones" className="collection-section">
                   <div className="panel">
                     <h3>Milestones</h3>
                     <div id="milestone-list" className="card-stack">
@@ -1183,46 +1275,73 @@ export function CollectionTab({
                       })}
                     </div>
                   </div>
-                </div>
-              </details>
-            ) : (
-              <section id="collection-milestones" className="collection-section">
-                <div className="panel">
-                  <h3>Milestones</h3>
-                  <div id="milestone-list" className="card-stack">
-                    {milestones.map((milestone) => {
-                      const unlocked = state.unlockedMilestones.includes(milestone.id);
-                      return (
-                        <div className="card" key={milestone.id}>
-                          <h3>{milestone.name}</h3>
-                          <p>{milestone.description}</p>
-                          <p className="muted">{getMilestoneRequirementLabel(milestone.id)}</p>
-                          <p>{unlocked ? "Unlocked" : "Locked"}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </section>
-            )}
+                </section>
+              ))}
 
-            {isCompactLayout ? (
-              <details
-                id="collection-achievements"
-                className="collection-section collection-mobile-accordion"
-                open={isMobileSectionOpen("achievements")}
-                onToggle={(event) =>
-                  handleMobileSectionToggle("achievements", event.currentTarget.open)
-                }
-                data-testid="collection-achievements-details"
-              >
-                <summary data-testid="collection-achievements-toggle">
-                  <span>Achievements</span>
-                  <span className="muted">
-                    {isMobileSectionOpen("achievements") ? "Collapse" : "Expand"}
-                  </span>
-                </summary>
-                <div className="collection-mobile-accordion-body">
+            {showAchievementsSection &&
+              (isCompactLayout ? (
+                <details
+                  id="collection-achievements"
+                  className="collection-section collection-mobile-accordion"
+                  open={isMobileSectionOpen("achievements")}
+                  onToggle={(event) =>
+                    handleMobileSectionToggle("achievements", event.currentTarget.open)
+                  }
+                  data-testid="collection-achievements-details"
+                >
+                  <summary data-testid="collection-achievements-toggle">
+                    <span>Achievements</span>
+                    <span className="muted">
+                      {isMobileSectionOpen("achievements") ? "Collapse" : "Expand"}
+                    </span>
+                  </summary>
+                  <div className="collection-mobile-accordion-body">
+                    <div className="panel">
+                      <h3>Achievements</h3>
+                      <p className="muted">Permanent proof of your collection milestones.</p>
+                      <div className="card-stack">
+                        {achievements
+                          .filter((achievement) => {
+                            if (!settings.hideCompletedAchievements) {
+                              return true;
+                            }
+                            return !state.achievementUnlocks.includes(achievement.id);
+                          })
+                          .map((achievement) => {
+                            const unlocked = state.achievementUnlocks.includes(achievement.id);
+                            const progress = getAchievementUnlockProgressDetail(
+                              state,
+                              achievement.id,
+                            );
+                            const categoryLabel =
+                              achievement.category === "mini-game"
+                                ? "Mini-game"
+                                : achievement.category === "career"
+                                  ? "Career"
+                                  : achievement.category === "prestige"
+                                    ? "Prestige"
+                                    : "Collection";
+                            return (
+                              <div className="card" key={achievement.id}>
+                                <h3>{achievement.name}</h3>
+                                <p>{achievement.description}</p>
+                                <p className="muted">{categoryLabel}</p>
+                                <p className="muted">
+                                  {progress.current.toLocaleString()} /{" "}
+                                  {progress.threshold.toLocaleString()}
+                                </p>
+                                <p className="muted" aria-live="polite">
+                                  {unlocked ? "Unlocked" : "Locked"}
+                                </p>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              ) : (
+                <section id="collection-achievements" className="collection-section">
                   <div className="panel">
                     <h3>Achievements</h3>
                     <p className="muted">Permanent proof of your collection milestones.</p>
@@ -1236,7 +1355,10 @@ export function CollectionTab({
                         })
                         .map((achievement) => {
                           const unlocked = state.achievementUnlocks.includes(achievement.id);
-                          const progress = getAchievementUnlockProgressDetail(state, achievement.id);
+                          const progress = getAchievementUnlockProgressDetail(
+                            state,
+                            achievement.id,
+                          );
                           const categoryLabel =
                             achievement.category === "mini-game"
                               ? "Mini-game"
@@ -1262,67 +1384,63 @@ export function CollectionTab({
                         })}
                     </div>
                   </div>
-                </div>
-              </details>
-            ) : (
-              <section id="collection-achievements" className="collection-section">
-                <div className="panel">
-                  <h3>Achievements</h3>
-                  <p className="muted">Permanent proof of your collection milestones.</p>
-                  <div className="card-stack">
-                    {achievements
-                      .filter((achievement) => {
-                        if (!settings.hideCompletedAchievements) {
-                          return true;
-                        }
-                        return !state.achievementUnlocks.includes(achievement.id);
-                      })
-                      .map((achievement) => {
-                        const unlocked = state.achievementUnlocks.includes(achievement.id);
-                        const progress = getAchievementUnlockProgressDetail(state, achievement.id);
-                        const categoryLabel =
-                          achievement.category === "mini-game"
-                            ? "Mini-game"
-                            : achievement.category === "career"
-                              ? "Career"
-                              : achievement.category === "prestige"
-                                ? "Prestige"
-                                : "Collection";
-                        return (
-                          <div className="card" key={achievement.id}>
-                            <h3>{achievement.name}</h3>
-                            <p>{achievement.description}</p>
-                            <p className="muted">{categoryLabel}</p>
-                            <p className="muted">
-                              {progress.current.toLocaleString()} /{" "}
-                              {progress.threshold.toLocaleString()}
-                            </p>
-                            <p className="muted" aria-live="polite">
-                              {unlocked ? "Unlocked" : "Locked"}
-                            </p>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              </section>
-            )}
+                </section>
+              ))}
 
-            {isCompactLayout ? (
-              <details
-                id="collection-events"
-                className="collection-section collection-mobile-accordion"
-                open={isMobileSectionOpen("events")}
-                onToggle={(event) =>
-                  handleMobileSectionToggle("events", event.currentTarget.open)
-                }
-                data-testid="collection-events-details"
-              >
-                <summary data-testid="collection-events-toggle">
-                  <span>Events</span>
-                  <span className="muted">{isMobileSectionOpen("events") ? "Collapse" : "Expand"}</span>
-                </summary>
-                <div className="collection-mobile-accordion-body">
+            {showEventsSection &&
+              (isCompactLayout ? (
+                <details
+                  id="collection-events"
+                  className="collection-section collection-mobile-accordion"
+                  open={isMobileSectionOpen("events")}
+                  onToggle={(event) =>
+                    handleMobileSectionToggle("events", event.currentTarget.open)
+                  }
+                  data-testid="collection-events-details"
+                >
+                  <summary data-testid="collection-events-toggle">
+                    <span>Events</span>
+                    <span className="muted">
+                      {isMobileSectionOpen("events") ? "Collapse" : "Expand"}
+                    </span>
+                  </summary>
+                  <div className="collection-mobile-accordion-body">
+                    <div className="panel">
+                      <h3>Events</h3>
+                      <p className="muted">
+                        Live boosts cycle in and out. Current multiplier x
+                        {currentEventMultiplier.toFixed(2)}.
+                      </p>
+                      <div className="card-stack">
+                        {events.map((event) => {
+                          const active = isEventActive(state, event.id, nowMs);
+                          const effectiveMultiplier = active
+                            ? (state.eventStates[event.id]?.incomeMultiplier ??
+                              event.incomeMultiplier)
+                            : event.incomeMultiplier;
+                          const statusLabel = getEventStatusLabel(state, event.id, nowMs);
+                          return (
+                            <div className="card" key={event.id}>
+                              <div className="card-header">
+                                <div>
+                                  <h3>{event.name}</h3>
+                                  <p>{event.description}</p>
+                                </div>
+                                <div className="muted">{active ? "Live" : "Idle"}</div>
+                              </div>
+                              <p>Income x{effectiveMultiplier.toFixed(2)}</p>
+                              <p className="muted" aria-live="polite">
+                                {statusLabel}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              ) : (
+                <section id="collection-events" className="collection-section">
                   <div className="panel">
                     <h3>Events</h3>
                     <p className="muted">
@@ -1333,7 +1451,8 @@ export function CollectionTab({
                       {events.map((event) => {
                         const active = isEventActive(state, event.id, nowMs);
                         const effectiveMultiplier = active
-                          ? (state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier)
+                          ? (state.eventStates[event.id]?.incomeMultiplier ??
+                            event.incomeMultiplier)
                           : event.incomeMultiplier;
                         const statusLabel = getEventStatusLabel(state, event.id, nowMs);
                         return (
@@ -1354,61 +1473,42 @@ export function CollectionTab({
                       })}
                     </div>
                   </div>
-                </div>
-              </details>
-            ) : (
-              <section id="collection-events" className="collection-section">
-                <div className="panel">
-                  <h3>Events</h3>
-                  <p className="muted">
-                    Live boosts cycle in and out. Current multiplier x
-                    {currentEventMultiplier.toFixed(2)}.
-                  </p>
-                  <div className="card-stack">
-                    {events.map((event) => {
-                      const active = isEventActive(state, event.id, nowMs);
-                      const effectiveMultiplier = active
-                        ? (state.eventStates[event.id]?.incomeMultiplier ?? event.incomeMultiplier)
-                        : event.incomeMultiplier;
-                      const statusLabel = getEventStatusLabel(state, event.id, nowMs);
-                      return (
-                        <div className="card" key={event.id}>
-                          <div className="card-header">
-                            <div>
-                              <h3>{event.name}</h3>
-                              <p>{event.description}</p>
-                            </div>
-                            <div className="muted">{active ? "Live" : "Idle"}</div>
-                          </div>
-                          <p>Income x{effectiveMultiplier.toFixed(2)}</p>
-                          <p className="muted" aria-live="polite">
-                            {statusLabel}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </section>
-            )}
+                </section>
+              ))}
 
-            {isCompactLayout ? (
-              <details
-                id="collection-crafting"
-                className="collection-section collection-mobile-accordion"
-                open={isMobileSectionOpen("crafting")}
-                onToggle={(event) =>
-                  handleMobileSectionToggle("crafting", event.currentTarget.open)
-                }
-                data-testid="collection-crafting-details"
-              >
-                <summary data-testid="collection-crafting-toggle">
-                  <span>Crafting workshop</span>
-                  <span className="muted">
-                    {isMobileSectionOpen("crafting") ? "Collapse" : "Expand"}
-                  </span>
-                </summary>
-                <div className="collection-mobile-accordion-body">
+            {showCraftingSection &&
+              (isCompactLayout ? (
+                <details
+                  id="collection-crafting"
+                  className="collection-section collection-mobile-accordion"
+                  open={isMobileSectionOpen("crafting")}
+                  onToggle={(event) =>
+                    handleMobileSectionToggle("crafting", event.currentTarget.open)
+                  }
+                  data-testid="collection-crafting-details"
+                >
+                  <summary data-testid="collection-crafting-toggle">
+                    <span>Crafting workshop</span>
+                    <span className="muted">
+                      {isMobileSectionOpen("crafting") ? "Collapse" : "Expand"}
+                    </span>
+                  </summary>
+                  <div className="collection-mobile-accordion-body">
+                    <div className="panel" data-testid="crafting-panel">
+                      <h3>Crafting workshop</h3>
+                      <p className="muted">
+                        Break down watches into parts, then craft permanent collection boosts.
+                      </p>
+                      <div className="results-count" data-testid="crafting-parts">
+                        {craftingParts} parts
+                      </div>
+                      {renderCraftingRecipes("crafting-recipes")}
+                      {renderCraftingBoosts("crafting-boosts")}
+                    </div>
+                  </div>
+                </details>
+              ) : (
+                <section id="collection-crafting" className="collection-section">
                   <div className="panel" data-testid="crafting-panel">
                     <h3>Crafting workshop</h3>
                     <p className="muted">
@@ -1420,23 +1520,8 @@ export function CollectionTab({
                     {renderCraftingRecipes("crafting-recipes")}
                     {renderCraftingBoosts("crafting-boosts")}
                   </div>
-                </div>
-              </details>
-            ) : (
-              <section id="collection-crafting" className="collection-section">
-                <div className="panel" data-testid="crafting-panel">
-                  <h3>Crafting workshop</h3>
-                  <p className="muted">
-                    Break down watches into parts, then craft permanent collection boosts.
-                  </p>
-                  <div className="results-count" data-testid="crafting-parts">
-                    {craftingParts} parts
-                  </div>
-                  {renderCraftingRecipes("crafting-recipes")}
-                  {renderCraftingBoosts("crafting-boosts")}
-                </div>
-              </section>
-            )}
+                </section>
+              ))}
 
             {wornPickerOpen && (
               <div

@@ -18,6 +18,7 @@ import { PrestigeOnboardingModal } from "./ui/components/PrestigeOnboardingModal
 import { AutomaticMiniGameModal } from "./ui/components/AutomaticMiniGameModal";
 import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
+import { EventBanner } from "./ui/components/EventBanner";
 import { StatsHeader } from "./ui/components/StatsHeader";
 import { ToastStack, type ToastMessage } from "./ui/components/ToastStack";
 import { MissionRail } from "./ui/components/MissionRail";
@@ -28,7 +29,7 @@ import { TabSwitchSkeleton } from "./ui/navigation/TabSwitchSkeleton";
 import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
 
-import { formatDurationFromMs, formatMoneyFromCents, formatSoftcapEfficiency } from "./game/format";
+import { formatMoneyFromCents, formatSoftcapEfficiency } from "./game/format";
 import {
   clearLocalStorageSave,
   decodeSaveString,
@@ -37,7 +38,7 @@ import {
   persistSaveToLocalStorage,
 } from "./game/persistence";
 import { isTestEnvironment } from "./game/runtime/isTestEnvironment";
-import { useGameRuntime, type OfflineProgressInfo } from "./game/runtime/useGameRuntime";
+import { useGameRuntime } from "./game/runtime/useGameRuntime";
 import {
   INTERACTION_BASE_COOLDOWN_MS,
   applyAutomaticReward,
@@ -95,6 +96,9 @@ import {
   getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
   getMilestones,
+  getMilestoneUnlockProgressDetail,
+  getAchievementUnlockProgressDetail,
+  getEventCalendar,
   isEventActive,
   isItemUnlocked,
   isMaisonRevealReady,
@@ -224,8 +228,7 @@ const loadNavigationState = (): NavigationState | null => {
         : null;
     const catalogFilters: CatalogFilterState | undefined = catalogFiltersRaw
       ? {
-          search:
-            typeof catalogFiltersRaw.search === "string" ? catalogFiltersRaw.search : "",
+          search: typeof catalogFiltersRaw.search === "string" ? catalogFiltersRaw.search : "",
           brand: typeof catalogFiltersRaw.brand === "string" ? catalogFiltersRaw.brand : "All",
           style: catalogFiltersRaw.style === "womens" ? "womens" : "all",
           sort:
@@ -475,29 +478,6 @@ export default function App() {
     toastTimers.current.set(toast.id, timer);
   }, []);
 
-  const handleOfflineProgress = useCallback(
-    (info: OfflineProgressInfo) => {
-      if (info.appliedMs <= 0) {
-        return;
-      }
-
-      const elapsedLabel = formatDurationFromMs(info.elapsedMs);
-      const appliedLabel = formatDurationFromMs(info.appliedMs);
-      const currencyLabel = `${info.gainedCurrencyCents >= 0 ? "+" : ""}${formatMoneyFromCents(
-        info.gainedCurrencyCents,
-      )}`;
-      const enjoymentSign = info.gainedEnjoymentCents >= 0 ? "+" : "";
-      const enjoymentLabel = `${enjoymentSign}${Math.round(info.gainedEnjoymentCents).toLocaleString()} enjoyment`;
-
-      pushToast({
-        id: `offline-${Date.now()}`,
-        title: "Offline progress",
-        message: `Away for ${elapsedLabel} (applied ${appliedLabel}).`,
-        detail: `${currencyLabel} cash · ${enjoymentLabel}`,
-      });
-    },
-    [pushToast],
-  );
   const handlePersistError = useCallback((message: string) => {
     setSaveStatus(message);
   }, []);
@@ -510,7 +490,6 @@ export default function App() {
     persistSave: persistSaveToLocalStorage,
     devSettings,
     onPersistError: handlePersistError,
-    onOfflineProgress: handleOfflineProgress,
   });
   const lastNostalgiaToastRef = useRef(state.nostalgiaLastGain);
   const notificationsInitializedRef = useRef(false);
@@ -939,7 +918,7 @@ export default function App() {
   };
 
   const handleExport = async () => {
-    const saveString = encodeSaveString(state, Date.now());
+    const saveString = encodeSaveString(state);
     setImportText(saveString);
 
     if (navigator.clipboard?.writeText) {
@@ -1101,6 +1080,32 @@ export default function App() {
     1,
     state.enjoymentCents / getMaisonPrestigeThresholdCents(),
   );
+  const prestigeComparisonInfo = {
+    atelier: {
+      visible: showWorkshopSection,
+      ratio: workshopRevealProgress,
+      gain: workshopPrestigeGain,
+      thresholdCents: getWorkshopPrestigeThresholdCents(),
+      resetsWhat: ["Current run cash and enjoyment", "Owned watches", "Run momentum"],
+      carriesWhat: ["Atelier upgrades", "Crafting progress", "Maison & Nostalgia"],
+    },
+    maison: {
+      visible: showMaisonSection,
+      ratio: maisonRevealProgress,
+      gain: maisonPrestigeGain,
+      thresholdCents: getMaisonPrestigeThresholdCents(),
+      resetsWhat: ["Everything Atelier resets", "Atelier upgrades", "Blueprints"],
+      carriesWhat: ["Maison heritage", "Maison reputation", "Nostalgia progress"],
+    },
+    nostalgia: {
+      visible: showNostalgiaSection,
+      ratio: nostalgiaProgress,
+      gain: nostalgiaPrestigeGain,
+      thresholdCents: nostalgiaPrestigeThreshold,
+      resetsWhat: ["Everything Maison resets", "Maison bonuses", "Deep progression"],
+      carriesWhat: ["Nostalgia unlocks", "Permanent bonuses"],
+    },
+  };
   const nowMs = Date.now();
   const currentEventMultiplier = useMemo(
     () => getEventIncomeMultiplier(state, nowMs),
@@ -1333,11 +1338,6 @@ export default function App() {
         return;
       }
 
-      const match = /^Digit([1-8])$/.exec(event.code);
-      if (!match) {
-        return;
-      }
-
       const target = event.target as Element | null;
       if (target) {
         const tag = target.tagName;
@@ -1352,6 +1352,18 @@ export default function App() {
       }
 
       if (helpOpen || nostalgiaModalOpen || activeInteraction || prestigeOnboarding) {
+        return;
+      }
+
+      const isQuestionShortcut = event.key === "?";
+      if (isQuestionShortcut) {
+        event.preventDefault();
+        setShortcutModalOpen(true);
+        return;
+      }
+
+      const match = /^Digit([1-8])$/.exec(event.code);
+      if (!match) {
         return;
       }
 
@@ -1406,10 +1418,10 @@ export default function App() {
   );
   const actionableHiddenTabIds = useMemo(
     () =>
-      settings.hiddenTabs.filter((hiddenTabId) =>
-        visibleTabOptions.some((tabOption) => tabOption.id === hiddenTabId),
+      settings.hiddenTabs.filter(
+        (hiddenTabId) => HIDEABLE_TAB_IDS.includes(hiddenTabId) && tabVisibility[hiddenTabId],
       ),
-    [settings.hiddenTabs, visibleTabOptions],
+    [settings.hiddenTabs, tabVisibility],
   );
   const hiddenTabCount = actionableHiddenTabIds.length;
   const restoreAllHiddenTabs = useCallback(() => {
@@ -1736,6 +1748,38 @@ export default function App() {
     [state.maisonHeritage, state.maisonReputation, canPrestigeMaison],
   );
 
+  const collectionTierProgress = useMemo(() => getCatalogTierProgress(state), [state]);
+  const showTourbillonSegment = collectionTierProgress.tourbillon > 0;
+
+  const showSetBonusesSection = true;
+
+  const showCraftingSection = useMemo(
+    () => (craftingParts ?? 0) > 0 || showWorkshopSection,
+    [craftingParts, showWorkshopSection],
+  );
+
+  const showMilestonesSection = useMemo(
+    () => milestones.some((m) => getMilestoneUnlockProgressDetail(state, m.id).ratio > 0),
+    [state, milestones],
+  );
+
+  const showAchievementsSection = useMemo(
+    () => achievements.some((a) => getAchievementUnlockProgressDetail(state, a.id).ratio > 0),
+    [state, achievements],
+  );
+
+  const eventCalendar = useMemo(() => getEventCalendar(state, nowMs), [state, nowMs]);
+  const activeEventsForBanner = eventCalendar.active.map((entry) => ({
+    id: entry.id,
+    name: entry.name,
+    incomeMultiplier: entry.bonusMultiplier,
+    remainingMs: entry.countdownMs,
+  }));
+  const showEventsSection = useMemo(
+    () => eventCalendar.active.length > 0 || eventCalendar.ready.length > 0,
+    [eventCalendar],
+  );
+
   useEffect(() => {
     if (isTestEnvironment()) {
       return;
@@ -1860,7 +1904,13 @@ export default function App() {
         : "collection";
       navigateTo(destinationTab, action.target.scrollTargetId);
     },
-    [combinedTabVisibility, emitUxEvent, navigateTo, primaryLoopAction.primary, primaryLoopAction.secondary],
+    [
+      combinedTabVisibility,
+      emitUxEvent,
+      navigateTo,
+      primaryLoopAction.primary,
+      primaryLoopAction.secondary,
+    ],
   );
 
   const handleOpenHiddenTabRecovery = useCallback(() => {
@@ -1937,8 +1987,14 @@ export default function App() {
                 </div>
               ) : null}
             </div>
-            <StatsHeader stats={stats} systemStats={systemStats} />
+            <StatsHeader
+              stats={stats}
+              systemStats={systemStats}
+              eventMultiplier={currentEventMultiplier}
+            />
           </header>
+
+          {activeEventsForBanner.length > 0 && <EventBanner activeEvents={activeEventsForBanner} />}
 
           <MissionRail
             urgency={primaryLoopAction.urgency}
@@ -1994,6 +2050,13 @@ export default function App() {
             currentEventMultiplier={currentEventMultiplier}
             nowMs={nowMs}
             onPurchase={handlePurchase}
+            showTourbillonSegment={showTourbillonSegment}
+            showSetBonusesSection={showSetBonusesSection}
+            showCraftingSection={showCraftingSection}
+            showMilestonesSection={showMilestonesSection}
+            showAchievementsSection={showAchievementsSection}
+            showEventsSection={showEventsSection}
+            prestigeComparisonInfo={prestigeComparisonInfo}
           />
 
           <CatalogTab
@@ -2120,9 +2183,7 @@ export default function App() {
 
           <WindingMiniGameModal
             open={activeInteraction?.kind === "winding"}
-            itemId={
-              activeInteraction?.kind === "winding" ? activeInteraction.itemId : "manual"
-            }
+            itemId={activeInteraction?.kind === "winding" ? activeInteraction.itemId : "manual"}
             itemLabel={
               activeInteraction?.kind === "winding"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")
@@ -2157,7 +2218,9 @@ export default function App() {
 
           <AutomaticMiniGameModal
             open={activeInteraction?.kind === "automatic"}
-            itemId={activeInteraction?.kind === "automatic" ? activeInteraction.itemId : "automatic"}
+            itemId={
+              activeInteraction?.kind === "automatic" ? activeInteraction.itemId : "automatic"
+            }
             itemLabel={
               activeInteraction?.kind === "automatic"
                 ? (watchItemLabels.get(activeInteraction.itemId) ?? "")

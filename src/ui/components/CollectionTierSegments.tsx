@@ -13,6 +13,7 @@ export type TierSegmentSummary = {
 
 type CollectionTierSegmentsProps = {
   segments: TierSegmentSummary[];
+  showTourbillonSegment?: boolean;
 };
 
 const formatPercentage = (owned: number, total: number) => {
@@ -22,10 +23,16 @@ const formatPercentage = (owned: number, total: number) => {
   return `${Math.round((owned / total) * 100)}%`;
 };
 
-export function CollectionTierSegments({ segments }: CollectionTierSegmentsProps) {
+export function CollectionTierSegments({
+  segments,
+  showTourbillonSegment = false,
+}: CollectionTierSegmentsProps) {
+  const filteredSegments = showTourbillonSegment
+    ? segments
+    : segments.filter((segment) => segment.category !== "tourbillon");
   return (
     <div className="collection-tier-segments" data-testid="collection-tier-segments">
-      {segments.map((segment) => {
+      {filteredSegments.map((segment) => {
         const progressRatio =
           segment.totalModels > 0 ? segment.ownedCount / segment.totalModels : 0;
         return (

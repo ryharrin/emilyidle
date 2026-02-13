@@ -5,6 +5,10 @@ export const WINDING_PERFECT_THRESHOLD = 0.7;
 export const WINDING_SOFT_PENALTY_THRESHOLD = 0.97;
 export const WINDING_HARD_PENALTY_THRESHOLD = 0.985;
 
+export const WINDING_ZONE_MISS_MAX = WINDING_GOOD_THRESHOLD;
+export const WINDING_ZONE_GOOD_MAX = WINDING_PERFECT_THRESHOLD;
+export const WINDING_ZONE_PERFECT_MAX = WINDING_SOFT_PENALTY_THRESHOLD;
+
 export function clamp01(value: number): number {
   if (!Number.isFinite(value)) {
     return 0;

@@ -596,7 +596,7 @@ describe("crafting persistence", () => {
       },
     };
 
-    const encoded = encodeSaveString(seededState, Date.now(), new Date(0));
+    const encoded = encodeSaveString(seededState, new Date(0));
     const decoded = decodeSaveString(encoded);
     expect(decoded.ok).toBe(true);
     if (!decoded.ok) {
@@ -637,11 +637,10 @@ describe("crafting persistence", () => {
   it("clamps and ignores invalid crafting data", () => {
     const baseState = createInitialState();
 
-    const encoded = encodeSaveString(baseState, 0, new Date(0));
+    const encoded = encodeSaveString(baseState, new Date(0));
     const parsed = JSON.parse(encoded) as {
       version: number;
       savedAt: string;
-      lastSimulatedAtMs: number;
       state: Record<string, unknown>;
     };
 
