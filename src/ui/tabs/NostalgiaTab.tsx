@@ -24,7 +24,6 @@ type TabId =
   | "collection"
   | "career"
   | "workshop"
-  | "maison"
   | "nostalgia"
   | "catalog"
   | "stats"
@@ -39,7 +38,7 @@ type Settings = {
 };
 
 type PurchaseMeta = {
-  prestigeTier?: "workshop" | "maison" | "nostalgia";
+  prestigeTier?: "workshop" | "nostalgia";
 };
 
 type NostalgiaTabProps = {

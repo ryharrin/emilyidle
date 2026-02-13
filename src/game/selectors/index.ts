@@ -29,10 +29,6 @@ import type {
   EventDefinition,
   EventId,
   GameState,
-  MaisonLineDefinition,
-  MaisonLineId,
-  MaisonUpgradeDefinition,
-  MaisonUpgradeId,
   MilestoneDefinition,
   MilestoneId,
   SetBonusDefinition,
@@ -151,14 +147,6 @@ export function getEvents(): ReadonlyArray<EventDefinition> {
 
 export function getWorkshopUpgrades(): ReadonlyArray<WorkshopUpgradeDefinition> {
   return WORKSHOP_UPGRADES;
-}
-
-export function getMaisonUpgrades(): ReadonlyArray<MaisonUpgradeDefinition> {
-  return [];
-}
-
-export function getMaisonLines(): ReadonlyArray<MaisonLineDefinition> {
-  return [];
 }
 
 export function getCatalogEntries(): ReadonlyArray<CatalogEntry> {
@@ -330,26 +318,6 @@ export function canWorkshopPrestige(state: GameState): boolean {
   return getWorkshopPrestigeGain(state) > 0;
 }
 
-export function getMaisonPrestigeGain(state: GameState): number {
-  void state;
-  return 0;
-}
-
-export function getMaisonReputationGain(state: GameState): number {
-  void state;
-  return 0;
-}
-
-export function getMaisonLineBlueprintBonus(state: GameState): number {
-  void state;
-  return 0;
-}
-
-export function canMaisonPrestige(state: GameState): boolean {
-  void state;
-  return false;
-}
-
 export function getItemCount(state: GameState, id: WatchItemId): number {
   return state.items[id] ?? 0;
 }
@@ -366,27 +334,12 @@ export function getAutoBuyEnabled(state: GameState): boolean {
   return hasWorkshopUpgrade(state, "automation-blueprints");
 }
 
-export function canBuyMaisonLine(state: GameState, id: MaisonLineId): boolean {
-  void state;
-  void id;
-  return false;
-}
-
 export function getWorkshopPrestigeThresholdCents(): number {
-  return WORKSHOP_PRESTIGE_THRESHOLD_CENTS;
-}
-
-export function getMaisonPrestigeThresholdCents(): number {
   return WORKSHOP_PRESTIGE_THRESHOLD_CENTS;
 }
 
 export function isWorkshopRevealReady(state: GameState): boolean {
   return state.enjoymentCents >= WORKSHOP_PRESTIGE_THRESHOLD_CENTS * REVEAL_THRESHOLD_RATIO;
-}
-
-export function isMaisonRevealReady(state: GameState): boolean {
-  void state;
-  return false;
 }
 
 export function getUnlockVisibilityRatio(state: GameState, milestoneId: MilestoneId): number {
@@ -544,14 +497,12 @@ export function getAchievementUnlockProgressDetail(
 
 export function getPrestigeUnlockProgressDetail(
   state: GameState,
-  prestigeId: "workshop" | "maison" | "nostalgia",
+  prestigeId: "workshop" | "nostalgia",
 ): UnlockProgressDetail {
   const threshold =
     prestigeId === "workshop"
       ? getWorkshopPrestigeThresholdCents()
-      : prestigeId === "maison"
-        ? getMaisonPrestigeThresholdCents()
-        : getNostalgiaPrestigeThresholdCents();
+      : getNostalgiaPrestigeThresholdCents();
 
   const rawCurrent = state.enjoymentCents;
   const current = clampNumber(rawCurrent, 0, threshold);
@@ -567,14 +518,6 @@ export function getPrestigeUnlockProgressDetail(
 
 export function shouldShowUnlockTag(state: GameState, milestoneId: MilestoneId): boolean {
   return getUnlockVisibilityRatio(state, milestoneId) >= REVEAL_THRESHOLD_RATIO;
-}
-
-export function hasMaisonUpgrade(state: GameState, id: MaisonUpgradeId): boolean {
-  return state.maisonUpgrades[id] ?? false;
-}
-
-export function hasMaisonLine(state: GameState, id: MaisonLineId): boolean {
-  return state.maisonLines[id] ?? false;
 }
 
 export function getMilestoneRequirementLabel(milestoneId: MilestoneId): string {
@@ -604,11 +547,7 @@ export function getCollectionBonusMultiplier(state: GameState): number {
     }
   }
 
-  return (
-    multiplier *
-    getMaisonCollectionBonusMultiplier(state) *
-    getCraftedBoostCollectionMultiplier(state)
-  );
+  return multiplier * getCraftedBoostCollectionMultiplier(state);
 }
 
 export function getWatchAbilityIncomeMultiplier(state: GameState): number {
@@ -649,7 +588,6 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
 
   const collectionMultiplier = getCollectionBonusMultiplier(state);
   const workshopMultiplier = getWorkshopIncomeMultiplier(state);
-  const maisonMultiplier = getMaisonIncomeMultiplier(state);
   const catalogTierMultiplier = getCatalogTierIncomeMultiplier(state);
   const abilityMultiplier = getWatchAbilityIncomeMultiplier(state);
   const craftedMultiplier = getCraftedBoostIncomeMultiplier(state);
@@ -660,7 +598,6 @@ export function getRawIncomeRateCentsPerSec(state: GameState): number {
     setBonusMultiplier *
     collectionMultiplier *
     workshopMultiplier *
-    maisonMultiplier *
     catalogTierMultiplier *
     abilityMultiplier *
     craftedMultiplier *
@@ -771,7 +708,6 @@ export function getCashRateBreakdown(state: GameState, eventMultiplier = 1): Cas
     { id: "sets", label: "Sets", multiplier: setBonusMultiplier },
     { id: "collection", label: "Collection", multiplier: getCollectionBonusMultiplier(state) },
     { id: "workshop", label: "Workshop", multiplier: getWorkshopIncomeMultiplier(state) },
-    { id: "maison", label: "Maison", multiplier: getMaisonIncomeMultiplier(state) },
     { id: "catalog", label: "Catalog tiers", multiplier: getCatalogTierIncomeMultiplier(state) },
     { id: "abilities", label: "Abilities", multiplier: getWatchAbilityIncomeMultiplier(state) },
     { id: "crafted", label: "Crafted boosts", multiplier: getCraftedBoostIncomeMultiplier(state) },
@@ -1058,16 +994,6 @@ export function getWorkshopIncomeMultiplier(state: GameState): number {
   }, 1);
 }
 
-export function getMaisonIncomeMultiplier(state: GameState): number {
-  void state;
-  return 1;
-}
-
-export function getMaisonCollectionBonusMultiplier(state: GameState): number {
-  void state;
-  return 1;
-}
-
 export function getWorkshopSoftcapValue(state: GameState): number {
   return WORKSHOP_UPGRADES.reduce((value, upgrade) => {
     if (!upgrade.softcapMultiplier || !hasWorkshopUpgrade(state, upgrade.id)) {
@@ -1099,12 +1025,6 @@ export function canBuyWorkshopUpgrade(state: GameState, id: WorkshopUpgradeId): 
   }
 
   return state.workshopBlueprints >= upgrade.blueprintCost;
-}
-
-export function canBuyMaisonUpgrade(state: GameState, id: MaisonUpgradeId): boolean {
-  void state;
-  void id;
-  return false;
 }
 
 function requireWatchItem(id: WatchItemId): WatchItemDefinition {

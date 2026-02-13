@@ -14,7 +14,6 @@ type TabId =
   | "collection"
   | "career"
   | "workshop"
-  | "maison"
   | "nostalgia"
   | "catalog"
   | "stats"

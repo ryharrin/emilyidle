@@ -5,8 +5,6 @@ import {
   applyMilestoneUnlocks,
   createEventStates,
   createItemCounts,
-  createMaisonLineStates,
-  createMaisonUpgradeStates,
   createUpgradeLevels,
   createWorkshopUpgradeStates,
   getCollectionValueCents,
@@ -20,8 +18,6 @@ import type {
   EventId,
   EventState,
   GameState,
-  MaisonLineId,
-  MaisonUpgradeId,
   UpgradeId,
   WatchItemId,
   WorkshopUpgradeId,
@@ -190,10 +186,6 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
     workshopBlueprints: 0,
     workshopPrestigeCount: 0,
     workshopUpgrades: createWorkshopUpgradeStates(),
-    maisonHeritage: 0,
-    maisonReputation: 0,
-    maisonUpgrades: createMaisonUpgradeStates(),
-    maisonLines: createMaisonLineStates(),
     eventStates: createEventStates(),
     craftingParts: 0,
     craftedBoosts: {
@@ -224,15 +216,6 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
   };
 
   return applyMilestoneUnlocks(applyAchievementUnlocks(nextState));
-}
-
-export function prestigeMaison(state: GameState): GameState {
-  return state;
-}
-
-export function buyMaisonLine(state: GameState, id: MaisonLineId): GameState {
-  void id;
-  return state;
 }
 
 export function applyEventState(
@@ -498,11 +481,6 @@ export function buyWorkshopUpgrade(state: GameState, id: WorkshopUpgradeId): Gam
       [id]: true,
     },
   };
-}
-
-export function buyMaisonUpgrade(state: GameState, id: MaisonUpgradeId): GameState {
-  void id;
-  return state;
 }
 
 function isAchievementMet(state: GameState, achievement: AchievementDefinition): boolean {

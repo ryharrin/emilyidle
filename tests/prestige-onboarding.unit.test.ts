@@ -18,23 +18,6 @@ describe("prestige onboarding detection", () => {
     expect(event?.gained.blueprints).toBe(3);
   });
 
-  it("detects a maison prestige only when overridden", () => {
-    const prev = createInitialState();
-    const next = {
-      ...prev,
-      maisonHeritage: prev.maisonHeritage + 2,
-      maisonReputation: prev.maisonReputation + 1,
-    };
-
-    expect(detectPrestigeEvent(prev, next, 123)).toBeNull();
-
-    const event = detectPrestigeEvent(prev, next, 123, "maison");
-    expect(event).not.toBeNull();
-    expect(event?.tier).toBe("maison");
-    expect(event?.gained.heritage).toBe(2);
-    expect(event?.gained.reputation).toBe(1);
-  });
-
   it("detects a nostalgia prestige via nostalgiaResets delta", () => {
     const prev = createInitialState();
     const next = {
@@ -62,17 +45,6 @@ describe("prestige onboarding copy", () => {
       expect.objectContaining({ tabId: "workshop", label: expect.any(String) }),
     );
     expect(workshop.body).toContain("+3");
-
-    const maison = getPrestigeOnboardingContent({
-      tier: "maison",
-      gained: { heritage: 2, reputation: 1 },
-      occurredAtMs: 1,
-    });
-    expect(maison.recommended).toEqual(
-      expect.objectContaining({ tabId: "collection", label: expect.any(String) }),
-    );
-    expect(maison.body).toContain("+2");
-    expect(maison.body).toContain("+1");
 
     const nostalgia = getPrestigeOnboardingContent({
       tier: "nostalgia",

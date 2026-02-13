@@ -8,7 +8,6 @@ import {
   getPrestigeUnlockProgressDetail,
   getUnlockRevealProgressRatio,
   getWorkshopPrestigeThresholdCents,
-  getMaisonPrestigeThresholdCents,
   getNostalgiaPrestigeThresholdCents,
 } from "../src/game/state";
 
@@ -102,9 +101,6 @@ describe("unlock progress detail helpers", () => {
     expect(workshop.current).toBe(Math.min(seededState.enjoymentCents, workshop.threshold));
     expect(workshop.ratio).toBeGreaterThanOrEqual(0);
     expect(workshop.ratio).toBeLessThanOrEqual(1);
-
-    const maison = getPrestigeUnlockProgressDetail(seededState, "maison");
-    expect(maison.threshold).toBe(getMaisonPrestigeThresholdCents());
 
     const nostalgia = getPrestigeUnlockProgressDetail(seededState, "nostalgia");
     expect(nostalgia.threshold).toBe(getNostalgiaPrestigeThresholdCents());

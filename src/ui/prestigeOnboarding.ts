@@ -1,7 +1,7 @@
 import type { GameState } from "../game/state";
 
 export type PrestigeEvent = {
-  tier: "workshop" | "maison" | "nostalgia";
+  tier: "workshop" | "nostalgia";
   gained: Record<string, number>;
   occurredAtMs: number;
 };
@@ -22,17 +22,6 @@ export function detectPrestigeEvent(
         tier: "workshop",
         gained: {
           blueprints: clampGain(next.workshopBlueprints - prev.workshopBlueprints),
-        },
-        occurredAtMs,
-      };
-    }
-
-    if (prestigeTierOverride === "maison") {
-      return {
-        tier: "maison",
-        gained: {
-          heritage: clampGain(next.maisonHeritage - prev.maisonHeritage),
-          reputation: clampGain(next.maisonReputation - prev.maisonReputation),
         },
         occurredAtMs,
       };
@@ -83,7 +72,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
   body: string;
   recommended: {
     label: string;
-    tabId: "collection" | "workshop" | "maison" | "nostalgia";
+    tabId: "collection" | "workshop" | "nostalgia";
   };
 } {
   if (event.tier === "workshop") {
@@ -94,19 +83,6 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
       recommended: {
         label: "Spend your Blueprints on a Workshop upgrade",
         tabId: "workshop",
-      },
-    };
-  }
-
-  if (event.tier === "maison") {
-    const heritage = clampGain(event.gained.heritage ?? 0).toLocaleString();
-    const reputation = clampGain(event.gained.reputation ?? 0).toLocaleString();
-    return {
-      title: "Legacy prestige complete",
-      body: `You gained +${heritage} Heritage and +${reputation} Reputation. Your vault is reset while long-term legacy remains.`,
-      recommended: {
-        label: "Return to Vault and rebuild enjoyment for the next reset",
-        tabId: "collection",
       },
     };
   }
