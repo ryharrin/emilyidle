@@ -1538,9 +1538,7 @@ export default function App() {
         <main className="container">
           <header className="hero">
             <div>
-              <p className="eyebrow">Collection loop</p>
               <h1>Emily Idle</h1>
-              <p className="muted">Build your collection, unlock new lines, and stack bonuses.</p>
               <nav className="page-nav" aria-label="Primary navigation">
                 <div className="page-tab-rail__wrapper">
                   <PageTabRail

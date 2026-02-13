@@ -30,6 +30,7 @@ import type {
 } from "../../game/state";
 
 import { BlueprintCostDetail } from "../components/BlueprintCostDetail";
+import { TabDisclosure } from "../components/TabDisclosure";
 import { UnlockHint } from "../components/UnlockHint";
 import { buildBlueprintTooltip } from "../helpers/blueprintTooltip";
 import { ExplainButton } from "../help/ExplainButton";
@@ -780,57 +781,64 @@ export function UpgradesTab({
               <p className="muted">
                 Compare rate changes before committing to collection, Atelier, or Maison upgrades.
               </p>
-              <div
-                className="surface-complication-strip upgrades-complication-strip"
-                data-testid="upgrades-complication-strip"
+              <TabDisclosure
+                title="Upgrade telemetry"
+                summary={`${topRecommendations.length} recommended · ${collectionActionableCount} collection upgrades ready`}
+                className="upgrades-disclosure"
+                testId="upgrades-disclosure"
               >
-                <article
-                  className="surface-complication upgrades-complication"
-                  data-testid="upgrades-complication-power-reserve"
+                <div
+                  className="surface-complication-strip upgrades-complication-strip"
+                  data-testid="upgrades-complication-strip"
                 >
-                  <p className="surface-complication-label">Power reserve</p>
-                  <p className="surface-complication-value">
-                    {topRecommendations.length} recommended
-                  </p>
-                  <p className="surface-complication-detail">{recommendationLead}</p>
-                </article>
-                <article
-                  className="surface-complication upgrades-complication"
-                  data-testid="upgrades-complication-chronograph"
-                >
-                  <p className="surface-complication-label">Chronograph</p>
-                  <p className="surface-complication-value">
-                    {collectionActionableCount} collection upgrades ready
-                  </p>
-                  <p className="surface-complication-detail">
-                    Cash lane upgrades currently actionable
-                  </p>
-                </article>
-                <article
-                  className="surface-complication upgrades-complication"
-                  data-testid="upgrades-complication-date-wheel"
-                >
-                  <p className="surface-complication-label">Date wheel</p>
-                  <p className="surface-complication-value">
-                    {workshopInstalledCount} / {workshopUpgradeCards.length} Atelier installed
-                  </p>
-                  <p className="surface-complication-detail">
-                    {workshopActionableCount} Atelier upgrades ready to install
-                  </p>
-                </article>
-                <article
-                  className="surface-complication upgrades-complication"
-                  data-testid="upgrades-complication-moonphase"
-                >
-                  <p className="surface-complication-label">Moonphase</p>
-                  <p className="surface-complication-value">
-                    {maisonInstalledCount} / {maisonUpgradeCards.length} Maison installed
-                  </p>
-                  <p className="surface-complication-detail">
-                    {maisonActionableCount} Maison upgrades ready to install
-                  </p>
-                </article>
-              </div>
+                  <article
+                    className="surface-complication upgrades-complication"
+                    data-testid="upgrades-complication-power-reserve"
+                  >
+                    <p className="surface-complication-label">Power reserve</p>
+                    <p className="surface-complication-value">
+                      {topRecommendations.length} recommended
+                    </p>
+                    <p className="surface-complication-detail">{recommendationLead}</p>
+                  </article>
+                  <article
+                    className="surface-complication upgrades-complication"
+                    data-testid="upgrades-complication-chronograph"
+                  >
+                    <p className="surface-complication-label">Chronograph</p>
+                    <p className="surface-complication-value">
+                      {collectionActionableCount} collection upgrades ready
+                    </p>
+                    <p className="surface-complication-detail">
+                      Cash lane upgrades currently actionable
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication upgrades-complication"
+                    data-testid="upgrades-complication-date-wheel"
+                  >
+                    <p className="surface-complication-label">Date wheel</p>
+                    <p className="surface-complication-value">
+                      {workshopInstalledCount} / {workshopUpgradeCards.length} Atelier installed
+                    </p>
+                    <p className="surface-complication-detail">
+                      {workshopActionableCount} Atelier upgrades ready to install
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication upgrades-complication"
+                    data-testid="upgrades-complication-moonphase"
+                  >
+                    <p className="surface-complication-label">Moonphase</p>
+                    <p className="surface-complication-value">
+                      {maisonInstalledCount} / {maisonUpgradeCards.length} Maison installed
+                    </p>
+                    <p className="surface-complication-detail">
+                      {maisonActionableCount} Maison upgrades ready to install
+                    </p>
+                  </article>
+                </div>
+              </TabDisclosure>
               <div className="inline-icon-button">
                 <ExplainButton sectionId={HELP_SECTION_IDS.upgrades} label="Explain upgrades" />
                 <span className="muted">Upgrade help</span>

@@ -54,6 +54,7 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.getByTestId("catalog-shop")).toHaveCount(1);
   await expect(page.getByTestId("catalog-filters")).toBeVisible();
   await expect(page.getByTestId("catalog-search")).toBeVisible();
+  await page.getByRole("combobox", { name: "Quick preset" }).selectOption("All references");
 
   await page.getByTestId("catalog-search").fill("126713GRNR");
   await expect(page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`)).toBeVisible();

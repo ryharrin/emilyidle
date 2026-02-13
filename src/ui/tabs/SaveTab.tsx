@@ -3,6 +3,7 @@ import React from "react";
 import { createInitialState, getMilestones } from "../../game/state";
 import type { GameState, WatchItemDefinition } from "../../game/state";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { TabDisclosure } from "../components/TabDisclosure";
 
 type ThemeMode = "system" | "light" | "dark";
 
@@ -116,61 +117,70 @@ export function SaveTab({
               <p className="muted">
                 Back up your progress, import a save string, and adjust settings.
               </p>
-              <div
-                className="surface-complication-strip save-complication-strip"
-                data-testid="save-complication-strip"
+              <TabDisclosure
+                title="System snapshot"
+                summary={saveStatusSummary}
+                className="save-disclosure"
+                testId="save-disclosure"
               >
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-power-reserve"
+                <div
+                  className="surface-complication-strip save-complication-strip"
+                  data-testid="save-complication-strip"
                 >
-                  <p className="surface-complication-label save-complication-label">
-                    Power reserve
-                  </p>
-                  <p className="surface-complication-value save-complication-value">
-                    {saveStatusSummary}
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    Save pipeline status
-                  </p>
-                </article>
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-chronograph"
-                >
-                  <p className="surface-complication-label save-complication-label">Chronograph</p>
-                  <p className="surface-complication-value save-complication-value">
-                    Theme {settings.themeMode}
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    {visibleTabsCount}/{visibleTabOptions.length} tabs visible
-                  </p>
-                </article>
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-date-wheel"
-                >
-                  <p className="surface-complication-label save-complication-label">Date wheel</p>
-                  <p className="surface-complication-value save-complication-value">
-                    {audioStatusLabel}
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    Audio profile
-                  </p>
-                </article>
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-moonphase"
-                >
-                  <p className="surface-complication-label save-complication-label">Moonphase</p>
-                  <p className="surface-complication-value save-complication-value">
-                    {notificationEnabledCount}/4 notifications
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    Sessions, prestige, achievements, events
-                  </p>
-                </article>
-              </div>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-power-reserve"
+                  >
+                    <p className="surface-complication-label save-complication-label">
+                      Power reserve
+                    </p>
+                    <p className="surface-complication-value save-complication-value">
+                      {saveStatusSummary}
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      Save pipeline status
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-chronograph"
+                  >
+                    <p className="surface-complication-label save-complication-label">
+                      Chronograph
+                    </p>
+                    <p className="surface-complication-value save-complication-value">
+                      Theme {settings.themeMode}
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      {visibleTabsCount}/{visibleTabOptions.length} tabs visible
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-date-wheel"
+                  >
+                    <p className="surface-complication-label save-complication-label">Date wheel</p>
+                    <p className="surface-complication-value save-complication-value">
+                      {audioStatusLabel}
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      Audio profile
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-moonphase"
+                  >
+                    <p className="surface-complication-label save-complication-label">Moonphase</p>
+                    <p className="surface-complication-value save-complication-value">
+                      {notificationEnabledCount}/4 notifications
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      Sessions, prestige, achievements, events
+                    </p>
+                  </article>
+                </div>
+              </TabDisclosure>
             </div>
           </header>
           <div className="settings-shell">
