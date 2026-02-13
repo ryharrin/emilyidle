@@ -52,9 +52,9 @@ export const HELP_SECTIONS: HelpSection[] = [
     id: "prestige",
     title: "Prestige",
     body: [
-      "Atelier resets vault progress for Blueprints and permanent upgrades.",
-      "Maison resets further to earn Heritage and Reputation multipliers.",
-      "Nostalgia converts deep progress into a new currency and unlock store.",
+      "Workshop resets vault progress for Blueprints and permanent upgrades.",
+      "Nostalgia resets deeper progress into points for permanent unlocks.",
+      "Each prestige loop trades short-term momentum for long-term power.",
     ],
   },
   {

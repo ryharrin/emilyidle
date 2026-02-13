@@ -83,7 +83,6 @@ import {
   getWorkshopUpgrades,
   getMilestones,
   isItemUnlocked,
-  isMaisonRevealReady,
   isWorkshopRevealReady,
 } from "./game/state";
 import { getCatalogEntryTags } from "./game/catalog";
@@ -95,7 +94,7 @@ const SETTINGS_KEY = "emily-idle:settings";
 const TAB_DEFINITIONS = [
   { id: "collection", label: "Vault" },
   { id: "career", label: "Career" },
-  { id: "workshop", label: "Atelier" },
+  { id: "workshop", label: "Workshop" },
   { id: "maison", label: "Maison" },
   { id: "nostalgia", label: "Nostalgia" },
   { id: "catalog", label: "Catalog" },
@@ -574,10 +573,8 @@ export default function App() {
     canPrestigeWorkshop || state.workshopPrestigeCount > 0 || state.workshopBlueprints > 0;
   const showWorkshopTeaser = !showWorkshopPanel && isWorkshopRevealReady(state);
   const showWorkshopSection = showWorkshopPanel || showWorkshopTeaser;
-  const showMaisonPanel =
-    canPrestigeMaison || state.maisonHeritage > 0 || state.maisonReputation > 0;
-  const showMaisonTeaser = !showMaisonPanel && isMaisonRevealReady(state);
-  const showMaisonSection = showMaisonPanel || showMaisonTeaser;
+  const showMaisonPanel = false;
+  const showMaisonSection = false;
   const nostalgiaPrestigeThreshold = getNostalgiaPrestigeThresholdCents();
   const nostalgiaEarned = state.nostalgiaEnjoymentEarnedCents;
   const nostalgiaProgress = Math.min(1, nostalgiaEarned / nostalgiaPrestigeThreshold);
@@ -621,7 +618,7 @@ export default function App() {
       catalog: showcaseVisibilityRatio >= 0.8,
       stats: statsVisibilityRatio >= 0.8,
       workshop: showWorkshopSection,
-      maison: showMaisonSection,
+      maison: false,
     }),
     [
       showcaseVisibilityRatio,
@@ -681,13 +678,13 @@ export default function App() {
       },
       {
         id: "atelier-reset",
-        title: "Atelier reset",
-        text: "Prestige the atelier to convert enjoyment into blueprints.",
+        title: "Workshop reset",
+        text: "Reset the workshop loop to convert enjoyment into blueprints.",
       },
       {
         id: "maison-legacy",
-        title: "Maison legacy",
-        text: "Prestige further to earn Heritage and Reputation, powering long-term boosts.",
+        title: "Nostalgia prestige",
+        text: "Push deeper progress into Nostalgia points for permanent unlocks.",
       },
       {
         id: "set-bonuses",
@@ -872,10 +869,7 @@ export default function App() {
     ? getNostalgiaUnlockCost(nostalgiaUnlockPending)
     : 0;
 
-  const showMaisonLines = useMemo(
-    () => state.maisonHeritage > 0 || state.maisonReputation > 0 || canPrestigeMaison,
-    [state.maisonHeritage, state.maisonReputation, canPrestigeMaison],
-  );
+  const showMaisonLines = false;
 
   useEffect(() => {
     if (isTestEnvironment()) {
