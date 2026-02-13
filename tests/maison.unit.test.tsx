@@ -8,6 +8,7 @@ import {
   buyMaisonLine,
   buyMaisonUpgrade,
   createInitialState,
+  createStateFromSave,
   getCollectionBonusMultiplier,
   getCollectionValueCents,
   getCraftedBoostIncomeMultiplier,
@@ -28,7 +29,6 @@ import {
   getMilestones,
   getPrestigeLegacyMultiplier,
   getRawIncomeRateCentsPerSec,
-  getUpgrades,
   getWatchItemEnjoymentRateCentsPerSec,
   getWatchItems,
   getWorkshopIncomeMultiplier,
@@ -55,7 +55,7 @@ describe("maison prestige", () => {
     };
 
     expect(getMaisonPrestigeGain(baseState)).toBe(0);
-    expect(getMaisonPrestigeGain(seededState)).toBe(3);
+    expect(getMaisonPrestigeGain(seededState)).toBe(0);
   });
 
   it("activates set bonuses at thresholds", () => {
@@ -135,22 +135,48 @@ describe("maison prestige", () => {
       ...seededState,
       workshopPrestigeCount: 1,
     };
-    expect(getPrestigeLegacyMultiplier(withWorkshopPrestige)).toBeCloseTo(1.05, 8);
-    expect(getRawIncomeRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseIncome * 1.05, 6);
-    expect(getEnjoymentRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseEnjoyment * 1.05, 6);
+    expect(getPrestigeLegacyMultiplier(withWorkshopPrestige)).toBeCloseTo(1.06, 8);
+    expect(getRawIncomeRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseIncome * 1.06, 6);
+    expect(getEnjoymentRateCentsPerSec(withWorkshopPrestige)).toBeCloseTo(baseEnjoyment * 1.06, 6);
 
     const withHeritage = {
       ...seededState,
       maisonHeritage: 2,
     };
-    expect(getPrestigeLegacyMultiplier(withHeritage)).toBeCloseTo(Math.pow(1.03, 2), 8);
+    expect(getPrestigeLegacyMultiplier(withHeritage)).toBeCloseTo(1, 8);
   });
 
   it("lists maison line definitions", () => {
     const lines = getMaisonLines();
-    expect(lines).toHaveLength(3);
-    expect(lines.map((line) => line.id)).toContain("atelier-line");
-    expect(lines.map((line) => line.id)).toContain("complication-line");
+    expect(lines).toHaveLength(0);
+  });
+
+  it("migrates legacy maison progress into workshop progression on load", () => {
+    const baseState = createInitialState();
+    const restored = createStateFromSave({
+      ...baseState,
+      workshopBlueprints: 2,
+      workshopPrestigeCount: 1,
+      maisonHeritage: 4,
+      maisonReputation: 3,
+      maisonUpgrades: {
+        "atelier-charter": true,
+        "heritage-loom": false,
+        "global-vitrine": true,
+      },
+      maisonLines: {
+        "atelier-line": false,
+        "heritage-line": true,
+        "complication-line": false,
+      },
+    });
+
+    expect(restored.workshopBlueprints).toBe(10);
+    expect(restored.workshopPrestigeCount).toBe(4);
+    expect(restored.maisonHeritage).toBe(0);
+    expect(restored.maisonReputation).toBe(0);
+    expect(restored.maisonUpgrades["atelier-charter"]).toBe(false);
+    expect(restored.maisonLines["heritage-line"]).toBe(false);
   });
 
   it("unlocks achievements for Memories and prestige", () => {
@@ -240,7 +266,7 @@ describe("maison prestige", () => {
     expect(getEventStatusLabel(beforeBirthday, "emily-birthday", beforeBirthdayMs)).toBe("Ready");
   });
 
-  it("resets workshop progress but keeps maison upgrades", () => {
+  it("no-ops maison prestige after prestige-layer reduction", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -277,28 +303,10 @@ describe("maison prestige", () => {
     };
 
     const nextState = prestigeMaison(seededState);
-
-    expect(nextState.currencyCents).toBe(0);
-    expect(nextState.enjoymentCents).toBe(0);
-    expect(nextState.workshopBlueprints).toBe(0);
-    expect(nextState.workshopPrestigeCount).toBe(0);
-    expect(nextState.maisonHeritage).toBe(6);
-    expect(nextState.maisonReputation).toBe(3);
-    expect(nextState.maisonUpgrades["atelier-charter"]).toBe(true);
-    expect(nextState.maisonLines["atelier-line"]).toBe(true);
-
-    getWatchItems().forEach((item) => {
-      expect(nextState.items[item.id]).toBe(0);
-    });
-
-    getUpgrades().forEach((upgrade) => {
-      expect(nextState.upgrades[upgrade.id]).toBe(0);
-    });
-
-    expect(nextState.workshopUpgrades["vault-calibration"]).toBe(false);
+    expect(nextState).toEqual(seededState);
   });
 
-  it("spends currency when buying maison upgrades", () => {
+  it("does not spend currency when buying maison upgrades", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -311,13 +319,11 @@ describe("maison prestige", () => {
     const heritageState = buyMaisonUpgrade(seededState, "atelier-charter");
     const reputationState = buyMaisonUpgrade(seededState, "global-vitrine");
 
-    expect(heritageState.maisonHeritage).toBe(0);
-    expect(heritageState.maisonUpgrades["atelier-charter"]).toBe(true);
-    expect(reputationState.maisonReputation).toBe(0);
-    expect(reputationState.maisonUpgrades["global-vitrine"]).toBe(true);
+    expect(heritageState).toEqual(seededState);
+    expect(reputationState).toEqual(seededState);
   });
 
-  it("spends currency when activating maison lines", () => {
+  it("does not spend currency when activating maison lines", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -330,10 +336,8 @@ describe("maison prestige", () => {
     const heritageState = buyMaisonLine(seededState, "atelier-line");
     const reputationState = buyMaisonLine(seededState, "complication-line");
 
-    expect(heritageState.maisonHeritage).toBe(1);
-    expect(heritageState.maisonLines["atelier-line"]).toBe(true);
-    expect(reputationState.maisonReputation).toBe(0);
-    expect(reputationState.maisonLines["complication-line"]).toBe(true);
+    expect(heritageState).toEqual(seededState);
+    expect(reputationState).toEqual(seededState);
   });
 
   it("adds prestige bonuses from maison lines", () => {
@@ -355,8 +359,8 @@ describe("maison prestige", () => {
     expect(getMaisonLineBlueprintBonus(baseState)).toBe(0);
     expect(getWorkshopPrestigeGain(baseState)).toBe(0);
 
-    expect(getMaisonReputationGain(lineState)).toBe(2);
-    expect(getMaisonLineBlueprintBonus(lineState)).toBe(1);
+    expect(getMaisonReputationGain(lineState)).toBe(0);
+    expect(getMaisonLineBlueprintBonus(lineState)).toBe(0);
     expect(getWorkshopPrestigeGain(lineState)).toBe(2);
   });
 
@@ -447,9 +451,9 @@ describe("maison prestige", () => {
     expect(getMaisonCollectionBonusMultiplier(baseState)).toBe(1);
     expect(getWorkshopSoftcapValue(baseState)).toBe(60_000);
 
-    expect(getMaisonIncomeMultiplier(upgradedState)).toBeCloseTo(1.232, 5);
-    expect(getMaisonCollectionBonusMultiplier(upgradedState)).toBeCloseTo(1.32, 5);
-    expect(getWorkshopSoftcapValue(upgradedState)).toBeCloseTo(72_000, 5);
+    expect(getMaisonIncomeMultiplier(upgradedState)).toBe(1);
+    expect(getMaisonCollectionBonusMultiplier(upgradedState)).toBe(1);
+    expect(getWorkshopSoftcapValue(upgradedState)).toBe(60_000);
   });
 
   it("reveals workshop, maison, milestone, and achievement unlocks at 80%", () => {
@@ -479,7 +483,7 @@ describe("maison prestige", () => {
     };
 
     expect(isMaisonRevealReady(belowMaison)).toBe(false);
-    expect(isMaisonRevealReady(atMaison)).toBe(true);
+    expect(isMaisonRevealReady(atMaison)).toBe(false);
 
     const showcaseMilestone = getMilestones().find((milestone) => milestone.id === "showcase");
     if (!showcaseMilestone || showcaseMilestone.requirement.type !== "collectionValue") {

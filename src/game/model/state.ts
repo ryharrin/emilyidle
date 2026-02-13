@@ -544,6 +544,22 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       "artisan-jig": 0,
     },
   );
+  const legacyMaisonHeritage = Number.isFinite(saved.maisonHeritage ?? 0)
+    ? Math.max(0, Math.floor(saved.maisonHeritage ?? 0))
+    : 0;
+  const legacyMaisonReputation = Number.isFinite(saved.maisonReputation ?? 0)
+    ? Math.max(0, Math.floor(saved.maisonReputation ?? 0))
+    : 0;
+  const legacyMaisonUpgradeCount = Object.values(maisonUpgrades).filter(Boolean).length;
+  const legacyMaisonLineCount = Object.values(maisonLines).filter(Boolean).length;
+  const migratedWorkshopBlueprints =
+    workshopBlueprints +
+    legacyMaisonHeritage +
+    Math.floor(legacyMaisonReputation / 2) +
+    legacyMaisonUpgradeCount +
+    legacyMaisonLineCount;
+  const migratedWorkshopPrestigeCount =
+    workshopPrestigeCount + Math.floor(legacyMaisonHeritage / 2) + legacyMaisonLineCount;
   const restoredState = applyMilestoneUnlocks({
     currencyCents: Math.max(0, saved.currencyCents),
     enjoymentCents,
@@ -557,17 +573,14 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     items,
     upgrades,
     unlockedMilestones,
-    workshopBlueprints,
-    workshopPrestigeCount,
+    workshopBlueprints: migratedWorkshopBlueprints,
+    workshopPrestigeCount: migratedWorkshopPrestigeCount,
     workshopUpgrades,
-    maisonHeritage: Number.isFinite(saved.maisonHeritage ?? 0)
-      ? Math.max(0, Math.floor(saved.maisonHeritage ?? 0))
-      : 0,
-    maisonReputation: Number.isFinite(saved.maisonReputation ?? 0)
-      ? Math.max(0, Math.floor(saved.maisonReputation ?? 0))
-      : 0,
-    maisonUpgrades,
-    maisonLines,
+    // Wave 1 migration: Maison progression is folded into workshop values above.
+    maisonHeritage: 0,
+    maisonReputation: 0,
+    maisonUpgrades: createMaisonUpgradeStates(),
+    maisonLines: createMaisonLineStates(),
     achievementUnlocks,
     eventStates,
     discoveredCatalogEntries,

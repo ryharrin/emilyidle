@@ -467,7 +467,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.getByRole("tab", { name: "Workshop" }).click();
     await expect(page.locator(selectors.workshopPanel)).toBeVisible();
     await expect(page.locator(selectors.workshopGain).last()).toContainText("+1 Blueprints");
     await expect(page.locator(selectors.workshopResetButton)).toBeEnabled();
@@ -475,7 +475,7 @@ test.describe("collection loop", () => {
 
   test("automation toggle appears after automation upgrade", async ({ page }) => {
     const automationToggle = page.locator(selectors.automationToggle);
-    await expect(automationToggle).toContainText("Unlock automation with Atelier blueprints.");
+    await expect(automationToggle).toContainText("Unlock automation with Workshop blueprints.");
 
     const seededState = {
       currencyCents: 0,
@@ -533,9 +533,8 @@ test.describe("collection loop", () => {
     );
   });
 
-  test("maison panel shows gain and upgrades", async ({ page }) => {
-    const maisonPanel = page.locator(selectors.maisonPanel);
-    await expect(maisonPanel).toHaveCount(0);
+  test("nostalgia panel shows gain and prestige state", async ({ page }) => {
+    await expect(page.getByTestId("nostalgia-panel")).toHaveCount(0);
 
     const seededState = {
       currencyCents: 0,
@@ -567,6 +566,11 @@ test.describe("collection loop", () => {
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
+      nostalgiaPoints: 0,
+      nostalgiaResets: 0,
+      nostalgiaEnjoymentEarnedCents: 16_000_000,
+      nostalgiaLastGain: 0,
+      nostalgiaLastPrestigedAtMs: 0,
       discoveredCatalogEntries: [],
       catalogTierUnlocks: [],
     };
@@ -585,12 +589,11 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Maison" }).click();
-    await expect(page.locator(selectors.maisonPanel)).toBeVisible();
-    await expect(page.locator(selectors.maisonGain).nth(1)).toContainText("+2 Heritage");
-    await expect(page.locator(selectors.maisonGain).nth(2)).toContainText("+0 Reputation");
-    await expect(page.locator(selectors.maisonResetButton).first()).toBeEnabled();
-    await expect(page.locator(selectors.maisonUpgradeCards)).toHaveCount(3);
+    await page.getByRole("tab", { name: "Nostalgia" }).click();
+    await expect(page.getByTestId("nostalgia-panel")).toBeVisible();
+    await expect(page.getByTestId("nostalgia-preview")).toContainText("Projected nostalgia");
+    await expect(page.getByTestId("nostalgia-prestige-summary")).toContainText(/Nostalgia/);
+    await expect(page.getByTestId("nostalgia-prestige")).toBeEnabled();
   });
 
   test("achievements and events panels render", async ({ page }) => {
@@ -765,7 +768,7 @@ test.describe("collection loop", () => {
     );
 
     await page.goto("/");
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.getByRole("tab", { name: "Workshop" }).click();
 
     const parts = page.getByTestId("workshop-crafting-parts");
     await expect(parts).toContainText("0 parts");

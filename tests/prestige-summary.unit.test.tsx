@@ -12,7 +12,7 @@ describe("prestige summary builders", () => {
 
     expect(summary.tier).toBe("workshop");
     expect(summary.gain.join(" ")).toContain("+3 Blueprints");
-    expect(summary.keep.join(" ")).toContain("Atelier upgrades");
+    expect(summary.keep.join(" ")).toContain("Workshop upgrades");
     expect(summary.lose.join(" ")).toContain("Vault cash");
   });
 
@@ -22,8 +22,8 @@ describe("prestige summary builders", () => {
     expect(summary.tier).toBe("maison");
     expect(summary.gain.join(" ")).toContain("+2 Heritage");
     expect(summary.gain.join(" ")).toContain("+1 Reputation");
-    expect(summary.keep.join(" ")).toContain("Maison upgrades");
-    expect(summary.lose.join(" ")).toContain("Atelier progress");
+    expect(summary.keep.join(" ")).toContain("Legacy upgrades");
+    expect(summary.lose.join(" ")).toContain("Workshop progress");
   });
 
   it("builds nostalgia summary with the correct tier and gain", () => {

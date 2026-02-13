@@ -87,7 +87,7 @@ export function WorkshopTab({
                   <header className="panel-header">
                     <div>
                       <p className="eyebrow">Reset loop</p>
-                      <h3 id="workshop-title">Atelier</h3>
+                      <h3 id="workshop-title">Workshop</h3>
                       <p className="muted">Trade enjoyment for Blueprints and permanent boosts.</p>
                     </div>
                     <div className="results-count" data-testid="workshop-balance">
@@ -107,7 +107,7 @@ export function WorkshopTab({
                     </div>
                   </div>
                   <fieldset className="workshop-cta">
-                    <legend className="visually-hidden">Reset atelier</legend>
+                    <legend className="visually-hidden">Reset workshop</legend>
                     {workshopResetArmed ? (
                       <div className="workshop-confirm">
                         <button
@@ -141,7 +141,7 @@ export function WorkshopTab({
                         onClick={() => onToggleWorkshopResetArmed(true)}
                       >
                         <PrestigeIcon className="inline-icon" />
-                        Reset atelier
+                        Reset workshop
                       </button>
                     )}
                     <p className="muted" aria-live="polite">
@@ -215,7 +215,7 @@ export function WorkshopTab({
               ) : (
                 <div className="panel-teaser-content" data-testid="workshop-teaser">
                   <p className="eyebrow">Reset loop</p>
-                  <h3>Atelier</h3>
+                  <h3>Workshop</h3>
                   <p className="muted">Your vault is close to yielding Blueprints.</p>
                   <div className="teaser-progress">
                     <div className="teaser-track">

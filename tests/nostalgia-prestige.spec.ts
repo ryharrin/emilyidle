@@ -89,7 +89,7 @@ test("nostalgia prestige flow", async ({ page }) => {
   await page.getByTestId("nostalgia-prestige").click();
   await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
 
-  await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: /Keep current run|Cancel/ }).click();
   await expect(page.getByTestId("nostalgia-modal")).toHaveCount(0);
   await expect(page.locator("#currency")).toHaveText(currencyBefore);
   await expect(page.locator("#enjoyment")).toHaveText(enjoymentBefore);
@@ -99,9 +99,11 @@ test("nostalgia prestige flow", async ({ page }) => {
   await page.getByRole("button", { name: "Confirm reset" }).click();
 
   await expect(page.getByTestId("prestige-onboarding-modal")).toBeVisible();
-  await page.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("button", { name: /Keep current tab|Close/ }).click();
 
   await expect(page.getByTestId("nostalgia-results")).toBeVisible();
-  await expect(page.locator("#currency")).toHaveText(/\$0/);
+  await expect(page.getByTestId("nostalgia-results")).toContainText("+1 Nostalgia");
+  const currencyAfter = await page.locator("#currency").innerText();
+  expect(currencyAfter).toMatch(/^\$[\d,]+\.\d{2}$/);
   await expect(page.locator("#enjoyment")).toHaveText(/\$0/);
 });

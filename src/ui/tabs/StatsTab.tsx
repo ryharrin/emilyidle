@@ -71,16 +71,16 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
               <dd data-testid="stats-memories">{stats.sentimentalValue}</dd>
             </div>
             <div>
-              <dt>Atelier resets</dt>
+              <dt>Workshop resets</dt>
               <dd data-testid="stats-workshop-prestige">{state.workshopPrestigeCount}</dd>
             </div>
             <div>
-              <dt>Maison heritage</dt>
-              <dd data-testid="stats-maison-heritage">{state.maisonHeritage}</dd>
+              <dt>Workshop blueprints</dt>
+              <dd data-testid="stats-maison-heritage">{state.workshopBlueprints}</dd>
             </div>
             <div>
-              <dt>Maison reputation</dt>
-              <dd data-testid="stats-maison-reputation">{state.maisonReputation}</dd>
+              <dt>Nostalgia points</dt>
+              <dd data-testid="stats-maison-reputation">{state.nostalgiaPoints}</dd>
             </div>
             <div>
               <dt>Event multiplier</dt>
@@ -155,8 +155,8 @@ export function StatsTab({ isActive, state, stats, currentEventMultiplier }: Sta
                   },
                   {
                     id: "atelier",
-                    title: "Atelier nights",
-                    text: "Late hours in the atelier turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the vault responds in kind.",
+                    title: "Workshop nights",
+                    text: "Late hours in the workshop turn maintenance into ritual. Tools, patience, and a little obsession sharpen your eye—and the vault responds in kind.",
                   },
                 ] as const
               )

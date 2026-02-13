@@ -89,10 +89,10 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
   if (event.tier === "workshop") {
     const gained = clampGain(event.gained.blueprints ?? 0).toLocaleString();
     return {
-      title: "Atelier reset complete",
-      body: `You gained +${gained} Blueprints. Spend them to install Atelier upgrades for your next run.`,
+      title: "Workshop reset complete",
+      body: `You gained +${gained} Blueprints. Spend them to install Workshop upgrades for your next run.`,
       recommended: {
-        label: "Spend your Blueprints on an Atelier upgrade",
+        label: "Spend your Blueprints on a Workshop upgrade",
         tabId: "workshop",
       },
     };
@@ -102,10 +102,10 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
     const heritage = clampGain(event.gained.heritage ?? 0).toLocaleString();
     const reputation = clampGain(event.gained.reputation ?? 0).toLocaleString();
     return {
-      title: "Maison prestige complete",
-      body: `You gained +${heritage} Heritage and +${reputation} Reputation. Your vault is reset, but Maison legacy remains.`,
+      title: "Legacy prestige complete",
+      body: `You gained +${heritage} Heritage and +${reputation} Reputation. Your vault is reset while long-term legacy remains.`,
       recommended: {
-        label: "Return to Vault and rebuild enjoyment for the next legacy",
+        label: "Return to Vault and rebuild enjoyment for the next reset",
         tabId: "collection",
       },
     };

@@ -15,8 +15,6 @@ import {
   CATALOG_TIER_BONUSES,
   CRAFTED_BOOSTS,
   EVENTS,
-  MAISON_LINES,
-  MAISON_UPGRADES,
   WORKSHOP_UPGRADES,
   getCollectionValueCents,
   getTotalItemCount,
@@ -101,7 +99,6 @@ const CRAFTING_RECIPES: ReadonlyArray<{
 ];
 
 const WORKSHOP_PRESTIGE_THRESHOLD_CENTS = 800_000;
-const MAISON_PRESTIGE_THRESHOLD_CENTS = 4_000_000;
 const NOSTALGIA_PRESTIGE_THRESHOLD_CENTS = 12_000_000;
 const REVEAL_THRESHOLD_RATIO = 0.8;
 
@@ -122,8 +119,6 @@ const WATCH_ITEM_LOOKUP = new Map(WATCH_ITEMS.map((item) => [item.id, item]));
 const UPGRADE_LOOKUP = new Map(UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
 const MILESTONE_LOOKUP = new Map(MILESTONES.map((milestone) => [milestone.id, milestone]));
 const WORKSHOP_UPGRADE_LOOKUP = new Map(WORKSHOP_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
-const MAISON_UPGRADE_LOOKUP = new Map(MAISON_UPGRADES.map((upgrade) => [upgrade.id, upgrade]));
-const MAISON_LINE_LOOKUP = new Map(MAISON_LINES.map((line) => [line.id, line]));
 const CRAFTING_RECIPE_LOOKUP = new Map(CRAFTING_RECIPES.map((recipe) => [recipe.id, recipe]));
 
 export function getWatchItems(): ReadonlyArray<WatchItemDefinition> {
@@ -159,11 +154,11 @@ export function getWorkshopUpgrades(): ReadonlyArray<WorkshopUpgradeDefinition> 
 }
 
 export function getMaisonUpgrades(): ReadonlyArray<MaisonUpgradeDefinition> {
-  return MAISON_UPGRADES;
+  return [];
 }
 
 export function getMaisonLines(): ReadonlyArray<MaisonLineDefinition> {
-  return MAISON_LINES;
+  return [];
 }
 
 export function getCatalogEntries(): ReadonlyArray<CatalogEntry> {
@@ -325,8 +320,9 @@ export function canRefundNostalgiaUnlock(state: GameState, id: WatchItemId): boo
 export function getWorkshopPrestigeGain(state: GameState): number {
   const enjoyment = getEnjoymentCents(state);
   const baseGain = Math.max(0, Math.floor((enjoyment / WORKSHOP_PRESTIGE_THRESHOLD_CENTS) ** 0.5));
+  const compensationBonus = Math.floor(Math.max(0, state.workshopPrestigeCount) / 3);
   return Math.floor(
-    (baseGain + getMaisonLineBlueprintBonus(state)) * getCraftedBoostPrestigeMultiplier(state),
+    (baseGain + compensationBonus) * getCraftedBoostPrestigeMultiplier(state),
   );
 }
 
@@ -335,27 +331,23 @@ export function canWorkshopPrestige(state: GameState): boolean {
 }
 
 export function getMaisonPrestigeGain(state: GameState): number {
-  const enjoyment = getEnjoymentCents(state);
-  const combined = enjoyment / MAISON_PRESTIGE_THRESHOLD_CENTS + state.workshopBlueprints;
-  return Math.max(0, Math.floor(combined ** 0.5));
+  void state;
+  return 0;
 }
 
 export function getMaisonReputationGain(state: GameState): number {
-  return Math.max(0, Math.floor(state.workshopPrestigeCount / 2));
+  void state;
+  return 0;
 }
 
 export function getMaisonLineBlueprintBonus(state: GameState): number {
-  return MAISON_LINES.reduce((bonus, line) => {
-    if (!line.workshopBlueprintBonus || !hasMaisonLine(state, line.id)) {
-      return bonus;
-    }
-
-    return bonus + line.workshopBlueprintBonus;
-  }, 0);
+  void state;
+  return 0;
 }
 
 export function canMaisonPrestige(state: GameState): boolean {
-  return getMaisonPrestigeGain(state) > 0 || getMaisonReputationGain(state) > 0;
+  void state;
+  return false;
 }
 
 export function getItemCount(state: GameState, id: WatchItemId): number {
@@ -375,20 +367,9 @@ export function getAutoBuyEnabled(state: GameState): boolean {
 }
 
 export function canBuyMaisonLine(state: GameState, id: MaisonLineId): boolean {
-  const line = MAISON_LINE_LOOKUP.get(id);
-  if (!line) {
-    return false;
-  }
-
-  if (hasMaisonLine(state, id)) {
-    return false;
-  }
-
-  if (line.currency === "heritage") {
-    return state.maisonHeritage >= line.cost;
-  }
-
-  return state.maisonReputation >= line.cost;
+  void state;
+  void id;
+  return false;
 }
 
 export function getWorkshopPrestigeThresholdCents(): number {
@@ -396,7 +377,7 @@ export function getWorkshopPrestigeThresholdCents(): number {
 }
 
 export function getMaisonPrestigeThresholdCents(): number {
-  return MAISON_PRESTIGE_THRESHOLD_CENTS;
+  return WORKSHOP_PRESTIGE_THRESHOLD_CENTS;
 }
 
 export function isWorkshopRevealReady(state: GameState): boolean {
@@ -404,7 +385,8 @@ export function isWorkshopRevealReady(state: GameState): boolean {
 }
 
 export function isMaisonRevealReady(state: GameState): boolean {
-  return state.enjoymentCents >= MAISON_PRESTIGE_THRESHOLD_CENTS * REVEAL_THRESHOLD_RATIO;
+  void state;
+  return false;
 }
 
 export function getUnlockVisibilityRatio(state: GameState, milestoneId: MilestoneId): number {
@@ -1077,57 +1059,23 @@ export function getWorkshopIncomeMultiplier(state: GameState): number {
 }
 
 export function getMaisonIncomeMultiplier(state: GameState): number {
-  const upgradeMultiplier = MAISON_UPGRADES.reduce((multiplier, upgrade) => {
-    if (!upgrade.incomeMultiplier || !hasMaisonUpgrade(state, upgrade.id)) {
-      return multiplier;
-    }
-
-    return multiplier * upgrade.incomeMultiplier;
-  }, 1);
-
-  return MAISON_LINES.reduce((multiplier, line) => {
-    if (!line.incomeMultiplier || !hasMaisonLine(state, line.id)) {
-      return multiplier;
-    }
-
-    return multiplier * line.incomeMultiplier;
-  }, upgradeMultiplier);
+  void state;
+  return 1;
 }
 
 export function getMaisonCollectionBonusMultiplier(state: GameState): number {
-  const upgradeMultiplier = MAISON_UPGRADES.reduce((multiplier, upgrade) => {
-    if (!upgrade.collectionBonusMultiplier || !hasMaisonUpgrade(state, upgrade.id)) {
-      return multiplier;
-    }
-
-    return multiplier * upgrade.collectionBonusMultiplier;
-  }, 1);
-
-  return MAISON_LINES.reduce((multiplier, line) => {
-    if (!line.collectionBonusMultiplier || !hasMaisonLine(state, line.id)) {
-      return multiplier;
-    }
-
-    return multiplier * line.collectionBonusMultiplier;
-  }, upgradeMultiplier);
+  void state;
+  return 1;
 }
 
 export function getWorkshopSoftcapValue(state: GameState): number {
-  const baseValue = WORKSHOP_UPGRADES.reduce((value, upgrade) => {
+  return WORKSHOP_UPGRADES.reduce((value, upgrade) => {
     if (!upgrade.softcapMultiplier || !hasWorkshopUpgrade(state, upgrade.id)) {
       return value;
     }
 
     return value * upgrade.softcapMultiplier;
   }, INCOME_SOFTCAP_CENTS_PER_SEC);
-
-  return MAISON_UPGRADES.reduce((value, upgrade) => {
-    if (!upgrade.softcapMultiplier || !hasMaisonUpgrade(state, upgrade.id)) {
-      return value;
-    }
-
-    return value * upgrade.softcapMultiplier;
-  }, baseValue);
 }
 
 export function getWorkshopSoftcapExponent(state: GameState): number {
@@ -1154,20 +1102,9 @@ export function canBuyWorkshopUpgrade(state: GameState, id: WorkshopUpgradeId): 
 }
 
 export function canBuyMaisonUpgrade(state: GameState, id: MaisonUpgradeId): boolean {
-  const upgrade = MAISON_UPGRADE_LOOKUP.get(id);
-  if (!upgrade) {
-    return false;
-  }
-
-  if (hasMaisonUpgrade(state, id)) {
-    return false;
-  }
-
-  if (upgrade.currency === "heritage") {
-    return state.maisonHeritage >= upgrade.cost;
-  }
-
-  return state.maisonReputation >= upgrade.cost;
+  void state;
+  void id;
+  return false;
 }
 
 function requireWatchItem(id: WatchItemId): WatchItemDefinition {

@@ -20,7 +20,7 @@ async function seedSave(page: Page, state: unknown) {
   );
 }
 
-test("atelier back-out keeps stats, confirm shows onboarding", async ({ page }) => {
+test("workshop back-out keeps stats, confirm shows onboarding", async ({ page }) => {
   const seededState = {
     currencyCents: 12_345,
     enjoymentCents: 800_000,
@@ -58,20 +58,20 @@ test("atelier back-out keeps stats, confirm shows onboarding", async ({ page }) 
   await seedSave(page, seededState);
   await page.goto("/");
 
-  await page.getByRole("tab", { name: "Atelier" }).click();
+  await page.getByRole("tab", { name: "Workshop" }).click();
   await expect(page.getByTestId("workshop-panel")).toBeVisible();
 
   const currencyBefore = await page.locator("#currency").innerText();
   const enjoymentBefore = await page.locator("#enjoyment").innerText();
 
-  await page.getByRole("button", { name: "Reset atelier" }).click();
+  await page.getByRole("button", { name: "Reset workshop" }).click();
   await expect(page.getByTestId("workshop-prestige-summary")).toBeVisible();
 
   await page.getByRole("button", { name: "Cancel" }).click();
   await expect(page.locator("#currency")).toHaveText(currencyBefore);
   await expect(page.locator("#enjoyment")).toHaveText(enjoymentBefore);
 
-  await page.getByRole("button", { name: "Reset atelier" }).click();
+  await page.getByRole("button", { name: "Reset workshop" }).click();
   await page.getByRole("button", { name: "Confirm reset" }).click();
 
   await expect(page.getByTestId("prestige-onboarding-modal")).toBeVisible();
@@ -79,7 +79,7 @@ test("atelier back-out keeps stats, confirm shows onboarding", async ({ page }) 
   await expect(page.locator("#enjoyment")).toHaveText(/\$0/);
 });
 
-test("maison back-out keeps stats, confirm shows onboarding", async ({ page }) => {
+test("nostalgia back-out keeps stats, confirm shows onboarding", async ({ page }) => {
   const seededState = {
     currencyCents: 23_456,
     enjoymentCents: 4_000_000,
@@ -110,6 +110,11 @@ test("maison back-out keeps stats, confirm shows onboarding", async ({ page }) =
     eventStates: {
       "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
     },
+    nostalgiaPoints: 0,
+    nostalgiaResets: 0,
+    nostalgiaEnjoymentEarnedCents: 16_000_000,
+    nostalgiaLastGain: 0,
+    nostalgiaLastPrestigedAtMs: 0,
     discoveredCatalogEntries: [],
     catalogTierUnlocks: [],
   };
@@ -117,21 +122,21 @@ test("maison back-out keeps stats, confirm shows onboarding", async ({ page }) =
   await seedSave(page, seededState);
   await page.goto("/");
 
-  await page.getByRole("tab", { name: "Maison" }).click();
-  await expect(page.getByTestId("maison-panel")).toBeVisible();
+  await page.getByRole("tab", { name: "Nostalgia" }).click();
+  await expect(page.getByTestId("nostalgia-panel")).toBeVisible();
 
   const currencyBefore = await page.locator("#currency").innerText();
   const enjoymentBefore = await page.locator("#enjoyment").innerText();
 
-  await page.getByRole("button", { name: "Prestige atelier" }).click();
-  await expect(page.getByTestId("maison-prestige-summary")).toBeVisible();
+  await page.getByTestId("nostalgia-prestige").click();
+  await expect(page.getByTestId("nostalgia-modal")).toBeVisible();
 
-  await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: /Keep current run|Cancel/ }).click();
   await expect(page.locator("#currency")).toHaveText(currencyBefore);
   await expect(page.locator("#enjoyment")).toHaveText(enjoymentBefore);
 
-  await page.getByRole("button", { name: "Prestige atelier" }).click();
-  await page.getByRole("button", { name: "Confirm prestige" }).click();
+  await page.getByTestId("nostalgia-prestige").click();
+  await page.getByRole("button", { name: "Confirm reset" }).click();
 
   await expect(page.getByTestId("prestige-onboarding-modal")).toBeVisible();
 });

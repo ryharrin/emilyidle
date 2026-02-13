@@ -27,8 +27,6 @@ import type {
   WorkshopUpgradeId,
 } from "../model/types";
 import {
-  canBuyMaisonLine,
-  canBuyMaisonUpgrade,
   canBuyNostalgiaUnlock,
   canBuyWorkshopUpgrade,
   canCraftBoost,
@@ -39,10 +37,6 @@ import {
   getCraftingPartsPerWatch,
   getCraftingRecipes,
   getItemCount,
-  getMaisonLines,
-  getMaisonPrestigeGain,
-  getMaisonReputationGain,
-  getMaisonUpgrades,
   getNostalgiaPrestigeGain,
   getNostalgiaUnlockCost,
   getTherapistSessionCashPayoutCents,
@@ -211,13 +205,18 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
 }
 
 export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): GameState {
+  // Compensation for removing Maison: workshop resets now grant additional blueprints over time.
+  const compensationBonus = Math.floor(Math.max(0, state.workshopPrestigeCount) / 3);
   const nextState: GameState = {
     ...state,
     currencyCents: 0,
     enjoymentCents: 0,
     items: createItemCounts(),
     upgrades: createUpgradeLevels(),
-    workshopBlueprints: state.workshopBlueprints + Math.max(0, Math.floor(earnedPrestigeCurrency)),
+    workshopBlueprints:
+      state.workshopBlueprints +
+      Math.max(0, Math.floor(earnedPrestigeCurrency)) +
+      compensationBonus,
     workshopPrestigeCount: state.workshopPrestigeCount + 1,
     workshopUpgrades: { ...state.workshopUpgrades },
     craftingParts: state.craftingParts,
@@ -228,46 +227,12 @@ export function prestigeWorkshop(state: GameState, earnedPrestigeCurrency = 0): 
 }
 
 export function prestigeMaison(state: GameState): GameState {
-  const heritageGain = getMaisonPrestigeGain(state);
-  const reputationGain = getMaisonReputationGain(state);
-  const nextState: GameState = {
-    ...state,
-    currencyCents: 0,
-    enjoymentCents: 0,
-    items: createItemCounts(),
-    upgrades: createUpgradeLevels(),
-    workshopBlueprints: 0,
-    workshopPrestigeCount: 0,
-    workshopUpgrades: createWorkshopUpgradeStates(),
-    maisonHeritage: state.maisonHeritage + heritageGain,
-    maisonReputation: state.maisonReputation + reputationGain,
-    maisonUpgrades: { ...state.maisonUpgrades },
-    maisonLines: { ...state.maisonLines },
-    craftingParts: state.craftingParts,
-    craftedBoosts: { ...state.craftedBoosts },
-  };
-
-  return applyMilestoneUnlocks(applyAchievementUnlocks(nextState));
+  return state;
 }
 
 export function buyMaisonLine(state: GameState, id: MaisonLineId): GameState {
-  const line = getMaisonLines().find((entry) => entry.id === id);
-  if (!line || !canBuyMaisonLine(state, id)) {
-    return state;
-  }
-
-  const heritageCost = line.currency === "heritage" ? line.cost : 0;
-  const reputationCost = line.currency === "reputation" ? line.cost : 0;
-
-  return {
-    ...state,
-    maisonHeritage: state.maisonHeritage - heritageCost,
-    maisonReputation: state.maisonReputation - reputationCost,
-    maisonLines: {
-      ...state.maisonLines,
-      [id]: true,
-    },
-  };
+  void id;
+  return state;
 }
 
 export function applyEventState(
@@ -536,23 +501,8 @@ export function buyWorkshopUpgrade(state: GameState, id: WorkshopUpgradeId): Gam
 }
 
 export function buyMaisonUpgrade(state: GameState, id: MaisonUpgradeId): GameState {
-  const upgrade = getMaisonUpgrades().find((entry) => entry.id === id);
-  if (!upgrade || !canBuyMaisonUpgrade(state, id)) {
-    return state;
-  }
-
-  const heritageCost = upgrade.currency === "heritage" ? upgrade.cost : 0;
-  const reputationCost = upgrade.currency === "reputation" ? upgrade.cost : 0;
-
-  return {
-    ...state,
-    maisonHeritage: state.maisonHeritage - heritageCost,
-    maisonReputation: state.maisonReputation - reputationCost,
-    maisonUpgrades: {
-      ...state.maisonUpgrades,
-      [id]: true,
-    },
-  };
+  void id;
+  return state;
 }
 
 function isAchievementMet(state: GameState, achievement: AchievementDefinition): boolean {
