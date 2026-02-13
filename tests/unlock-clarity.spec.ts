@@ -58,7 +58,7 @@ test("vault shows next unlocks panel for hidden systems", async ({ page }) => {
   await expect(page.getByTestId("locked-upgrade-hint-assembly-jigs")).toBeVisible();
 });
 
-test("catalog empty state CTA returns to vault", async ({ page }) => {
+test("catalog empty state CTA opens catalog shop", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
@@ -116,7 +116,7 @@ test("catalog empty state CTA returns to vault", async ({ page }) => {
   await page.getByRole("tab", { name: "Catalog" }).click();
 
   await expect(page.getByTestId("catalog-discovered-empty")).toBeVisible();
-  await page.getByRole("button", { name: "Go to Vault" }).click();
+  await page.getByRole("button", { name: "Shop catalog" }).click();
 
-  await expect(page.getByRole("tab", { name: "Vault" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab", { name: "Catalog" })).toHaveAttribute("aria-selected", "true");
 });

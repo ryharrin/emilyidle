@@ -622,9 +622,9 @@ describe("catalog ownership tabs", () => {
     expect(metrics.textContent).toContain("Vault dollars");
     expect(metrics.textContent).toContain("Dollars / sec");
     expect(metrics.textContent).toContain("Memories");
-    expect(metrics.textContent).toContain("Atelier resets");
-    expect(metrics.textContent).toContain("Maison heritage");
-    expect(metrics.textContent).toContain("Maison reputation");
+    expect(metrics.textContent).toContain("Workshop resets");
+    expect(metrics.textContent).toContain("Workshop blueprints");
+    expect(metrics.textContent).toContain("Nostalgia points");
     expect(metrics.textContent).toContain("Event multiplier");
 
     expect(screen.getByTestId("stats-event-multiplier").textContent).toMatch(/^x\d+\.\d{2}$/);
@@ -1126,8 +1126,8 @@ describe("coachmarks", () => {
 
     expect(titles).toContain("Vault basics");
     expect(titles).toContain("Catalog archive");
-    expect(titles).toContain("Atelier reset");
-    expect(titles).toContain("Maison legacy");
+    expect(titles).toContain("Workshop reset");
+    expect(titles).toContain("Nostalgia prestige");
     expect(titles).toContain("Set bonuses");
     expect(titles).toContain("Crafting workshop");
   });
@@ -1232,14 +1232,14 @@ describe("dev mode controls", () => {
   });
 });
 
-describe("atelier crafting UI", () => {
-  const openAtelierTab = async () => {
+describe("workshop crafting UI", () => {
+  const openWorkshopTab = async () => {
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const atelierTab = within(tabList).getByRole("tab", { name: /Atelier/i });
+    const workshopTab = within(tabList).getByRole("tab", { name: /Workshop/i });
 
-    await user.click(atelierTab);
-    expect(atelierTab.getAttribute("aria-selected")).toBe("true");
+    await user.click(workshopTab);
+    expect(workshopTab.getAttribute("aria-selected")).toBe("true");
   };
 
   beforeEach(async () => {
@@ -1266,7 +1266,7 @@ describe("atelier crafting UI", () => {
     );
 
     render(<App />);
-    await openAtelierTab();
+    await openWorkshopTab();
   });
 
   afterEach(() => {

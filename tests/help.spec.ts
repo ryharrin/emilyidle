@@ -30,14 +30,14 @@ test.describe("help entry point", () => {
     await expect(page.getByTestId("help-modal")).toBeVisible();
 
     await page.getByRole("button", { name: "Prestige" }).click();
-    await expect(page.getByRole("heading", { name: "Prestige" })).toBeVisible();
+    await expect(page.getByTestId("help-active-section")).toHaveText("Prestige");
 
     await page.getByTestId("help-close").click();
     await expect(page.locator('[data-testid="help-modal"]')).toHaveCount(0);
 
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Prestige" })).toBeVisible();
+    await expect(page.getByTestId("help-active-section")).toHaveText("Prestige");
   });
 
   test("help button works after switching tabs", async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe("help entry point", () => {
     await seedSave(page, seededState);
     await page.goto("/");
 
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.getByRole("tab", { name: "Workshop" }).click();
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
   });
@@ -129,7 +129,7 @@ test.describe("icon cues", () => {
     await expect(gate.locator("svg.lucide-lock")).toHaveCount(1);
   });
 
-  test("prestige icon renders on atelier reset button", async ({ page }) => {
+  test("prestige icon renders on workshop reset button", async ({ page }) => {
     const seededState = {
       currencyCents: 0,
       enjoymentCents: 800_000,
@@ -166,12 +166,12 @@ test.describe("icon cues", () => {
 
     await seedSave(page, seededState);
     await page.goto("/");
-    await page.getByRole("tab", { name: "Atelier" }).click();
+    await page.getByRole("tab", { name: "Workshop" }).click();
 
     const workshopPanel = page.getByTestId("workshop-panel");
     await expect(workshopPanel).toBeVisible();
 
-    const resetButton = workshopPanel.getByRole("button", { name: "Reset atelier" });
+    const resetButton = workshopPanel.getByRole("button", { name: "Reset workshop" });
     await expect(resetButton).toBeVisible();
     await expect(resetButton.locator("svg")).toHaveCount(1);
   });
