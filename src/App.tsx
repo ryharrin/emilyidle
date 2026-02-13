@@ -65,7 +65,6 @@ import {
   getSetBonuses,
   getEvents,
   getMaisonUpgrades,
-  getMaisonLines,
   getMaisonPrestigeGain,
   getMaisonPrestigeThresholdCents,
   getEventIncomeMultiplier,
@@ -838,7 +837,6 @@ export default function App() {
 
   const autoBuyUnlocked = useMemo(() => getAutoBuyEnabled(state), [state]);
   const autoBuyEnabled = autoBuyUnlocked && autoBuyToggle;
-  const maisonLines = useMemo(() => getMaisonLines(), []);
   const maisonReputationGain = useMemo(() => getMaisonReputationGain(state), [state]);
   const catalogTierDefinitions = useMemo(() => getCatalogTierDefinitions(), []);
   const catalogTierProgress = useMemo(() => getCatalogTierProgress(state), [state]);
@@ -868,8 +866,6 @@ export default function App() {
   const pendingNostalgiaUnlockCost = nostalgiaUnlockPending
     ? getNostalgiaUnlockCost(nostalgiaUnlockPending)
     : 0;
-
-  const showMaisonLines = false;
 
   useEffect(() => {
     if (isTestEnvironment()) {
@@ -1094,8 +1090,6 @@ export default function App() {
           archiveCuratorProgress={archiveCuratorProgress}
           archiveCuratorThreshold={archiveCuratorThreshold}
           archiveCuratorUnlocked={archiveCuratorUnlocked}
-          showMaisonLines={showMaisonLines}
-          maisonLines={maisonLines}
           craftingParts={craftingParts}
           renderCraftingRecipes={renderCraftingRecipes}
           renderCraftingBoosts={renderCraftingBoosts}

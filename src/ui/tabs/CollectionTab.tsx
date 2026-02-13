@@ -9,9 +9,7 @@ import { LockIcon } from "../icons/coreIcons";
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 import {
   buyItem,
-  buyMaisonLine,
   buyUpgrade,
-  canBuyMaisonLine,
   canBuyUpgrade,
   getAchievementUnlockProgressDetail,
   dismantleItem,
@@ -35,7 +33,6 @@ import type {
   CatalogTierId,
   EventDefinition,
   GameState,
-  MaisonLineDefinition,
   MilestoneDefinition,
   SetBonusDefinition,
   UpgradeDefinition,
@@ -87,8 +84,6 @@ type CollectionTabProps = {
   archiveCuratorProgress: number;
   archiveCuratorThreshold: number;
   archiveCuratorUnlocked: boolean;
-  showMaisonLines: boolean;
-  maisonLines: ReadonlyArray<MaisonLineDefinition>;
   craftingParts: number;
   renderCraftingRecipes: (testId: string) => React.ReactNode;
   renderCraftingBoosts: (testId: string) => React.ReactNode;
@@ -125,8 +120,6 @@ export function CollectionTab({
   archiveCuratorProgress,
   archiveCuratorThreshold,
   archiveCuratorUnlocked,
-  showMaisonLines,
-  maisonLines,
   craftingParts,
   renderCraftingRecipes,
   renderCraftingBoosts,
@@ -337,66 +330,6 @@ export function CollectionTab({
                 </p>
               </div>
             </div>
-            {showMaisonLines && (
-              <div className="panel maison-lines" data-testid="maison-lines">
-                <header className="panel-header">
-                  <div>
-                    <p className="eyebrow">Maison expansion</p>
-                    <h3>Maison lines</h3>
-                    <p className="muted">Invest Heritage or Reputation to expand your house.</p>
-                  </div>
-                  <div className="results-count" data-testid="maison-lines-count">
-                    {Object.values(state.maisonLines).filter(Boolean).length} / {maisonLines.length}{" "}
-                    active
-                  </div>
-                </header>
-                <div className="card-stack" data-testid="maison-lines-list">
-                  {maisonLines.map((line) => {
-                    const owned = state.maisonLines[line.id] ?? false;
-                    const canAfford = canBuyMaisonLine(state, line.id);
-                    const costLabel =
-                      line.currency === "heritage"
-                        ? `${line.cost} Heritage`
-                        : `${line.cost} Reputation`;
-                    const effectLabel = (() => {
-                      if (line.incomeMultiplier) {
-                        return `+${Math.round((line.incomeMultiplier - 1) * 100)}% cash`;
-                      }
-                      if (line.collectionBonusMultiplier) {
-                        return `+${Math.round((line.collectionBonusMultiplier - 1) * 100)}% enjoyment`;
-                      }
-                      if (line.workshopBlueprintBonus) {
-                        return `+${line.workshopBlueprintBonus} Atelier blueprint per reset`;
-                      }
-                      return "Maison line";
-                    })();
-
-                    return (
-                      <div className="card" key={line.id} data-testid="maison-line-card">
-                        <div className="card-header">
-                          <div>
-                            <h4>{line.name}</h4>
-                            <p>{line.description}</p>
-                          </div>
-                          <div className="muted">{owned ? "Active" : costLabel}</div>
-                        </div>
-                        <p>{effectLabel}</p>
-                        <div className="card-actions">
-                          <button
-                            type="button"
-                            className="secondary"
-                            disabled={owned || !canAfford}
-                            onClick={() => onPurchase(buyMaisonLine(state, line.id))}
-                          >
-                            {owned ? "Live" : `Activate (${costLabel})`}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
             <div id="collection-list" className="card-stack">
               {watchItems.map((item) => {
                 const owned = state.items[item.id] ?? 0;

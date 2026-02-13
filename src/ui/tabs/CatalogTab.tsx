@@ -512,10 +512,10 @@ export function CatalogTab({
             </ul>
 
             <div className="panel catalog-dealers" data-testid="catalog-dealers">
-              <h3>Trusted dealers (external)</h3>
+              <h3>External reference marketplaces</h3>
               <p className="muted">
-                Dealer names are provided for reference only; no affiliation or endorsement is
-                implied.
+                Public marketplace names are listed for source context only and are separate from
+                the trusted dealer desks above.
               </p>
               <ul className="card-stack" data-testid="dealer-list">
                 {["Hodinkee", "Crown & Caliber", "WatchBox", "Bob's Watches", "Tourneau"].map(

@@ -672,17 +672,17 @@ describe("catalog ownership tabs", () => {
     expect(titles.some((text) => text?.includes("Atelier nights"))).toBe(false);
   });
 
-  it("renders trusted dealers panel under the catalog", async () => {
+  it("renders external reference marketplaces panel under the catalog", async () => {
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
 
     await user.click(catalogTab);
 
-    expect(screen.getByText(/Trusted dealers \(external\)/i)).toBeTruthy();
+    expect(screen.getByText(/External reference marketplaces/i)).toBeTruthy();
     expect(
       screen.getByText(
-        /Dealer names are provided for reference only; no affiliation or endorsement is implied\./i,
+        /Public marketplace names are listed for source context only and are separate from the trusted dealer desks above\./i,
       ),
     ).toBeTruthy();
 
