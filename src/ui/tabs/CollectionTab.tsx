@@ -10,6 +10,7 @@ import {
   CollectionSectionNav,
   type CollectionSectionNavLink,
 } from "../components/CollectionSectionNav";
+import { TabDisclosure } from "../components/TabDisclosure";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
 
@@ -360,54 +361,61 @@ export function CollectionTab({
                     Manage your owned watches here. Track movement coverage and optimize equipped
                     output.
                   </p>
-                  <div
-                    className="surface-complication-strip collection-complication-strip"
-                    data-testid="collection-complication-strip"
+                  <TabDisclosure
+                    title="Collection telemetry"
+                    summary={`${totalOwnedWatches.toLocaleString()} owned · ${catalogTierUnlocks.length}/${catalogTierDefinitions.length} movements unlocked`}
+                    className="collection-disclosure"
+                    testId="collection-disclosure"
                   >
-                    <article
-                      className="surface-complication collection-complication"
-                      data-testid="collection-complication-vault"
+                    <div
+                      className="surface-complication-strip collection-complication-strip"
+                      data-testid="collection-complication-strip"
                     >
-                      <p className="surface-complication-label">Vault</p>
-                      <p className="surface-complication-value">
-                        {totalOwnedWatches.toLocaleString()} owned
-                      </p>
-                      <p className="surface-complication-detail">
-                        Favorites {favoriteModels.length.toLocaleString()} | Discovered{" "}
-                        {discoveredCatalogEntries.length.toLocaleString()}
-                      </p>
-                    </article>
-                    <article
-                      className="surface-complication collection-complication"
-                      data-testid="collection-complication-chronograph"
-                    >
-                      <p className="surface-complication-label">Chronograph</p>
-                      <p className="surface-complication-value">{automationComplicationValue}</p>
-                      <p className="surface-complication-detail">
-                        {autoBuyUnlocked
-                          ? "Auto-buy instrumentation is unlocked."
-                          : "Unlock automation with Atelier blueprints."}
-                      </p>
-                    </article>
-                    <article
-                      className="surface-complication collection-complication"
-                      data-testid="collection-complication-date-wheel"
-                    >
-                      <p className="surface-complication-label">Date wheel</p>
-                      <p className="surface-complication-value">
-                        {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
-                      </p>
-                      <p className="surface-complication-detail">{movementComplicationDetail}</p>
-                    </article>
-                    <article
-                      className="surface-complication collection-complication"
-                      data-testid="collection-complication-moonphase"
-                    >
-                      <p className="surface-complication-label">Moonphase</p>
-                      <p className="surface-complication-value">{archiveComplicationValue}</p>
-                      <p className="surface-complication-detail">{archiveComplicationDetail}</p>
-                    </article>
-                  </div>
+                      <article
+                        className="surface-complication collection-complication"
+                        data-testid="collection-complication-vault"
+                      >
+                        <p className="surface-complication-label">Vault</p>
+                        <p className="surface-complication-value">
+                          {totalOwnedWatches.toLocaleString()} owned
+                        </p>
+                        <p className="surface-complication-detail">
+                          Favorites {favoriteModels.length.toLocaleString()} | Discovered{" "}
+                          {discoveredCatalogEntries.length.toLocaleString()}
+                        </p>
+                      </article>
+                      <article
+                        className="surface-complication collection-complication"
+                        data-testid="collection-complication-chronograph"
+                      >
+                        <p className="surface-complication-label">Chronograph</p>
+                        <p className="surface-complication-value">{automationComplicationValue}</p>
+                        <p className="surface-complication-detail">
+                          {autoBuyUnlocked
+                            ? "Auto-buy instrumentation is unlocked."
+                            : "Unlock automation with Atelier blueprints."}
+                        </p>
+                      </article>
+                      <article
+                        className="surface-complication collection-complication"
+                        data-testid="collection-complication-date-wheel"
+                      >
+                        <p className="surface-complication-label">Date wheel</p>
+                        <p className="surface-complication-value">
+                          {catalogTierUnlocks.length} / {catalogTierDefinitions.length} unlocked
+                        </p>
+                        <p className="surface-complication-detail">{movementComplicationDetail}</p>
+                      </article>
+                      <article
+                        className="surface-complication collection-complication"
+                        data-testid="collection-complication-moonphase"
+                      >
+                        <p className="surface-complication-label">Moonphase</p>
+                        <p className="surface-complication-value">{archiveComplicationValue}</p>
+                        <p className="surface-complication-detail">{archiveComplicationDetail}</p>
+                      </article>
+                    </div>
+                  </TabDisclosure>
                   <div className="inline-icon-button">
                     <ExplainButton
                       sectionId={HELP_SECTION_IDS.interactions}
