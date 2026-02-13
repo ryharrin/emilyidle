@@ -1252,6 +1252,21 @@ export function CatalogPurchasePanel({
             </div>
           </div>
           {gateEtaLabel && <p className="muted catalog-gate-eta">{gateEtaLabel}</p>}
+          {gateEtaLabel && <p className="muted catalog-gate-eta">{gateEtaLabel}</p>}
+          <details
+            className="catalog-economics-disclosure"
+            data-testid={`catalog-advanced-economics-${entry.id}`}
+          >
+            <summary>Advanced economics</summary>
+            <div className="catalog-economics-disclosure__body">
+              <p className="catalog-duplicate">Next duplicate multiplier x{duplicateMultiplier.toFixed(2)}</p>
+              {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
+                <p className="muted">
+                  Dismantle yield: {craftingPartsPerWatch[tierId] ?? 0} parts per watch
+                </p>
+              )}
+            </div>
+          </details>
           {showSecondaryActions && (
             <div className="catalog-secondary-actions">
               {showInlineSecondaryActions && (

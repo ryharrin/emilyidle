@@ -104,3 +104,4 @@ beforeEach(() => {
   ensureStorageSurface("localStorage");
   ensureStorageSurface("sessionStorage");
 });
+

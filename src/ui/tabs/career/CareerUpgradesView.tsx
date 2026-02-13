@@ -234,7 +234,7 @@ export function CareerUpgradesView({ state, nowMs, onPurchase }: CareerUpgradesV
         <div className="career-upgrades-section-card">
           <p className="career-upgrades-section-kicker">Core deck</p>
           <h5>Core foundations</h5>
-          <p className="muted">Baseline unlocks that improve your overall career loop.</p>
+          <p className="muted">Baseline unlocks that improve your overall career cycle.</p>
         </div>
         <div className="career-upgrades-section-card">
           <p className="career-upgrades-section-kicker">Active track</p>

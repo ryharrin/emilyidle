@@ -18,6 +18,7 @@ import { PrestigeOnboardingModal } from "./ui/components/PrestigeOnboardingModal
 import { AutomaticMiniGameModal } from "./ui/components/AutomaticMiniGameModal";
 import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
+import { NextActionChips, type NextActionChip } from "./ui/components/NextActionChips";
 import { StatsHeader } from "./ui/components/StatsHeader";
 import { ToastStack, type ToastMessage } from "./ui/components/ToastStack";
 import { MissionRail } from "./ui/components/MissionRail";
@@ -27,6 +28,8 @@ import { PageTabRail } from "./ui/navigation/PageTabRail";
 import { TabSwitchSkeleton } from "./ui/navigation/TabSwitchSkeleton";
 import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
+import { emitTelemetryEvent } from "./ui/telemetry/emitter";
+import { TELEMETRY_EVENTS, type HelpOpenSource } from "./ui/telemetry/events";
 
 import { formatDurationFromMs, formatMoneyFromCents, formatSoftcapEfficiency } from "./game/format";
 import {
@@ -132,6 +135,14 @@ type PurchaseMeta = {
   prestigeTier?: PrestigeEvent["tier"];
 };
 
+type NextActionMilestones = {
+  careerStarted: boolean;
+  firstPurchase: boolean;
+  prestigeWorkshop: boolean;
+  prestigeMaison: boolean;
+  prestigeNostalgia: boolean;
+};
+
 type InteractionKind = "winding" | "automatic" | "quartz";
 
 type AudioSettings = {
@@ -176,6 +187,25 @@ const DEFAULT_SETTINGS: Settings = {
     events: true,
   },
 };
+
+const NEXT_ACTION_DISMISS_KEYS = {
+  careerStarted: "next-action:career-started",
+  firstPurchase: "next-action:first-purchase",
+  prestigeWorkshop: "next-action:prestige-workshop",
+  prestigeMaison: "next-action:prestige-maison",
+  prestigeNostalgia: "next-action:prestige-nostalgia",
+} as const;
+
+const countOwnedWatchModels = (gameState: GameState): number =>
+  Object.values(gameState.watchModels).reduce((total, value) => total + Math.max(0, Math.floor(value)), 0);
+
+const getMilestonesFromState = (gameState: GameState): NextActionMilestones => ({
+  careerStarted: gameState.therapistCareer.careerStartId !== null,
+  firstPurchase: countOwnedWatchModels(gameState) > 0,
+  prestigeWorkshop: gameState.workshopPrestigeCount > 0,
+  prestigeMaison: gameState.maisonHeritage > 0 || gameState.maisonReputation > 0,
+  prestigeNostalgia: gameState.nostalgiaResets > 0,
+});
 
 const loadNavigationState = (): NavigationState | null => {
   if (typeof window === "undefined") {
@@ -453,6 +483,13 @@ export default function App() {
     () => settings.coachmarksDismissed,
   );
   const shortcutsHintDismissed = coachmarksDismissed["keyboard-shortcuts"] ?? false;
+  const [nextActionMilestones, setNextActionMilestones] = useState<NextActionMilestones>({
+    careerStarted: false,
+    firstPurchase: false,
+    prestigeWorkshop: false,
+    prestigeMaison: false,
+    prestigeNostalgia: false,
+  });
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const toastTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const pushToast = useCallback((toast: ToastMessage) => {
@@ -787,6 +824,115 @@ export default function App() {
     [activateTab, emitUxEvent, persistNavigationState, scrollToSection],
   );
 
+  const dismissNextAction = useCallback(
+    (dismissKey?: string) => {
+      if (!dismissKey || settings.coachmarksDismissed[dismissKey]) {
+        return;
+      }
+
+      persistSettings({
+        ...settings,
+        coachmarksDismissed: {
+          ...settings.coachmarksDismissed,
+          [dismissKey]: true,
+        },
+      });
+    },
+    [persistSettings, settings],
+  );
+
+  const nextActionChips = useMemo<NextActionChip[]>(() => {
+    const chips: NextActionChip[] = [];
+
+    if (
+      nextActionMilestones.careerStarted &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.careerStarted]
+    ) {
+      chips.push({
+        id: "career-started",
+        title: "Career started",
+        detail: "Nice start. Buy your first watch in Catalog to begin the collection loop.",
+        ctaLabel: "Open Catalog",
+        tabId: "catalog",
+        scrollTargetId: "catalog-shop",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.careerStarted,
+      });
+    }
+
+    if (
+      nextActionMilestones.firstPurchase &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.firstPurchase]
+    ) {
+      chips.push({
+        id: "first-purchase",
+        title: "First purchase complete",
+        detail: "Great. Jump back to Career and run sessions to fund your next upgrades.",
+        ctaLabel: "Open Career",
+        tabId: "career",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.firstPurchase,
+      });
+    }
+
+    if (
+      nextActionMilestones.prestigeWorkshop &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.prestigeWorkshop]
+    ) {
+      chips.push({
+        id: "prestige-workshop",
+        title: "Atelier prestige complete",
+        detail: "Spend Blueprints now to accelerate your rebuild.",
+        ctaLabel: "Open Atelier",
+        tabId: "workshop",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.prestigeWorkshop,
+      });
+    }
+
+    if (
+      nextActionMilestones.prestigeMaison &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.prestigeMaison]
+    ) {
+      chips.push({
+        id: "prestige-maison",
+        title: "Maison prestige complete",
+        detail: "Use your legacy gains on Maison upgrades, then resume your collection rebuild.",
+        ctaLabel: "Open Maison",
+        tabId: "maison",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.prestigeMaison,
+      });
+    }
+
+    if (
+      nextActionMilestones.prestigeNostalgia &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.prestigeNostalgia]
+    ) {
+      chips.push({
+        id: "prestige-nostalgia",
+        title: "Nostalgia prestige complete",
+        detail: "Spend Nostalgia in unlocks early to speed up the next run.",
+        ctaLabel: "Open Nostalgia",
+        tabId: "nostalgia",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.prestigeNostalgia,
+      });
+    }
+
+    return chips;
+  }, [nextActionMilestones, settings.coachmarksDismissed]);
+
+  const handleDismissNextActionChip = useCallback(
+    (chip: NextActionChip) => {
+      dismissNextAction(chip.dismissKey);
+    },
+    [dismissNextAction],
+  );
+
+  const handleSelectNextActionChip = useCallback(
+    (chip: NextActionChip) => {
+      navigateTo(chip.tabId, chip.scrollTargetId);
+      dismissNextAction(chip.dismissKey);
+    },
+    [dismissNextAction, navigateTo],
+  );
+
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (visibleTabs.length === 0) {
       return;
@@ -829,10 +975,31 @@ export default function App() {
   const handlePurchase = (nextState: GameState, meta?: PurchaseMeta) => {
     if (nextState !== state) {
       const nowMs = Date.now();
+      const previousMilestones = getMilestonesFromState(state);
+      const currentMilestones = getMilestonesFromState(nextState);
       const prestigeEvent = detectPrestigeEvent(state, nextState, nowMs, meta?.prestigeTier);
       if (prestigeEvent) {
         setPrestigeOnboarding(prestigeEvent);
       }
+
+      setNextActionMilestones((current) => ({
+        careerStarted:
+          current.careerStarted || (!previousMilestones.careerStarted && currentMilestones.careerStarted),
+        firstPurchase:
+          current.firstPurchase || (!previousMilestones.firstPurchase && currentMilestones.firstPurchase),
+        prestigeWorkshop:
+          current.prestigeWorkshop ||
+          prestigeEvent?.tier === "workshop" ||
+          (!previousMilestones.prestigeWorkshop && currentMilestones.prestigeWorkshop),
+        prestigeMaison:
+          current.prestigeMaison ||
+          prestigeEvent?.tier === "maison" ||
+          (!previousMilestones.prestigeMaison && currentMilestones.prestigeMaison),
+        prestigeNostalgia:
+          current.prestigeNostalgia ||
+          prestigeEvent?.tier === "nostalgia" ||
+          (!previousMilestones.prestigeNostalgia && currentMilestones.prestigeNostalgia),
+      }));
 
       setState(nextState);
       markSaveDirty();
@@ -902,6 +1069,10 @@ export default function App() {
     const nextId = resolveHelpSectionId(stored?.lastSectionId ?? null);
     setHelpSectionId(nextId);
     setHelpOpen(true);
+    emitTelemetryEvent(TELEMETRY_EVENTS.helpOpen, {
+      source: "header-help-button",
+      sectionId: nextId,
+    });
   };
 
   const handleHelpKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -929,13 +1100,17 @@ export default function App() {
     persistHelpState({ lastSectionId: nextId });
   };
 
-  const openHelpTo = (sectionId: string) => {
+  const openHelpTo = (sectionId: string, source: HelpOpenSource = "context") => {
     const nextId = resolveHelpSectionId(sectionId);
     setHelpSectionId(nextId);
     if (nextId) {
       persistHelpState({ lastSectionId: nextId });
     }
     setHelpOpen(true);
+    emitTelemetryEvent(TELEMETRY_EVENTS.helpOpen, {
+      source,
+      sectionId: nextId,
+    });
   };
 
   const handleExport = async () => {
@@ -1963,6 +2138,12 @@ export default function App() {
             forecast={primaryLoopAction.forecast}
           />
 
+          <NextActionChips
+            chips={nextActionChips}
+            onDismiss={handleDismissNextActionChip}
+            onSelect={handleSelectNextActionChip}
+          />
+
           <CollectionTab
             isActive={activeTab === "collection"}
             state={state}
@@ -2240,6 +2421,12 @@ export default function App() {
             onImportFile={handleImportFile}
             saveStatus={saveStatus}
             onClearSave={handleClearSave}
+            onResetConfirm={() =>
+              emitTelemetryEvent(TELEMETRY_EVENTS.resetConfirm, { surface: "settings-save" })
+            }
+            onResetCancel={() =>
+              emitTelemetryEvent(TELEMETRY_EVENTS.resetCancel, { surface: "settings-save" })
+            }
           />
 
           {prestigeOnboarding && (
