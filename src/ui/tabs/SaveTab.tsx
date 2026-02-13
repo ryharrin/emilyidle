@@ -3,6 +3,7 @@ import React from "react";
 import { createInitialState, getMilestones } from "../../game/state";
 import type { GameState, WatchItemDefinition } from "../../game/state";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { TabDisclosure } from "../components/TabDisclosure";
 
 type ThemeMode = "system" | "light" | "dark";
 
@@ -56,8 +57,6 @@ type SaveTabProps = {
   persistSettings: (nextSettings: Settings) => void;
   visibleTabOptions: TabOption[];
   hiddenTabsSet: Set<TabId>;
-  hiddenTabCount: number;
-  onRestoreHiddenTabs: () => void;
   devSettings: DevSettings;
   setDevSettings: React.Dispatch<React.SetStateAction<DevSettings>>;
   onPurchase: (nextState: GameState) => void;
@@ -68,8 +67,6 @@ type SaveTabProps = {
   onImportFile: (file: File | null) => void;
   saveStatus: string;
   onClearSave: () => void;
-  onResetConfirm?: () => void;
-  onResetCancel?: () => void;
 };
 
 export function SaveTab({
@@ -82,8 +79,6 @@ export function SaveTab({
   persistSettings,
   visibleTabOptions,
   hiddenTabsSet,
-  hiddenTabCount,
-  onRestoreHiddenTabs,
   devSettings,
   setDevSettings,
   onPurchase,
@@ -94,8 +89,6 @@ export function SaveTab({
   onImportFile,
   saveStatus,
   onClearSave,
-  onResetConfirm,
-  onResetCancel,
 }: SaveTabProps) {
   const [confirmClearOpen, setConfirmClearOpen] = React.useState(false);
   const saveStatusSummary = saveStatus.trim().length > 0 ? saveStatus : "No recent save action";
@@ -124,67 +117,70 @@ export function SaveTab({
               <p className="muted">
                 Back up your progress, import a save string, and adjust settings.
               </p>
-              <div
-                className="surface-complication-strip save-complication-strip"
-                data-testid="save-complication-strip"
+              <TabDisclosure
+                title="System snapshot"
+                summary={saveStatusSummary}
+                className="save-disclosure"
+                testId="save-disclosure"
               >
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-power-reserve"
+                <div
+                  className="surface-complication-strip save-complication-strip"
+                  data-testid="save-complication-strip"
                 >
-                  <p className="surface-complication-label save-complication-label">
-                    Power reserve · Save status
-                  </p>
-                  <p className="surface-complication-value save-complication-value">
-                    {saveStatusSummary}
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    Save pipeline status
-                  </p>
-                </article>
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-chronograph"
-                >
-                  <p className="surface-complication-label save-complication-label">
-                    Chronograph · Theme and tabs
-                  </p>
-                  <p className="surface-complication-value save-complication-value">
-                    Theme {settings.themeMode}
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    {visibleTabsCount}/{visibleTabOptions.length} tabs visible
-                  </p>
-                </article>
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-date-wheel"
-                >
-                  <p className="surface-complication-label save-complication-label">
-                    Date wheel · Audio profile
-                  </p>
-                  <p className="surface-complication-value save-complication-value">
-                    {audioStatusLabel}
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    Audio profile
-                  </p>
-                </article>
-                <article
-                  className="surface-complication save-complication"
-                  data-testid="save-complication-moonphase"
-                >
-                  <p className="surface-complication-label save-complication-label">
-                    Moonphase · Notification coverage
-                  </p>
-                  <p className="surface-complication-value save-complication-value">
-                    {notificationEnabledCount}/4 notifications
-                  </p>
-                  <p className="surface-complication-detail save-complication-detail">
-                    Sessions, prestige, achievements, events
-                  </p>
-                </article>
-              </div>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-power-reserve"
+                  >
+                    <p className="surface-complication-label save-complication-label">
+                      Power reserve
+                    </p>
+                    <p className="surface-complication-value save-complication-value">
+                      {saveStatusSummary}
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      Save pipeline status
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-chronograph"
+                  >
+                    <p className="surface-complication-label save-complication-label">
+                      Chronograph
+                    </p>
+                    <p className="surface-complication-value save-complication-value">
+                      Theme {settings.themeMode}
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      {visibleTabsCount}/{visibleTabOptions.length} tabs visible
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-date-wheel"
+                  >
+                    <p className="surface-complication-label save-complication-label">Date wheel</p>
+                    <p className="surface-complication-value save-complication-value">
+                      {audioStatusLabel}
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      Audio profile
+                    </p>
+                  </article>
+                  <article
+                    className="surface-complication save-complication"
+                    data-testid="save-complication-moonphase"
+                  >
+                    <p className="surface-complication-label save-complication-label">Moonphase</p>
+                    <p className="surface-complication-value save-complication-value">
+                      {notificationEnabledCount}/4 notifications
+                    </p>
+                    <p className="surface-complication-detail save-complication-detail">
+                      Sessions, prestige, achievements, events
+                    </p>
+                  </article>
+                </div>
+              </TabDisclosure>
             </div>
           </header>
           <div className="settings-shell">
@@ -194,7 +190,7 @@ export function SaveTab({
             >
               <legend>Save safety</legend>
               <p className="muted">
-                Export before risky changes so you can restore this run if needed.
+                Export before making risky changes so you always have a recovery snapshot.
               </p>
               <div className="control-row">
                 <button
@@ -204,13 +200,13 @@ export function SaveTab({
                   data-testid="export-save-trigger"
                   onClick={onExport}
                 >
-                  Export save backup
+                  Export backup
                 </button>
               </div>
             </fieldset>
 
             <fieldset className="settings-section settings-section--import">
-              <legend>Import / restore backup</legend>
+              <legend>Import / restore</legend>
               <label htmlFor="import-save-text">Import data</label>
               <textarea
                 id="import-save-text"
@@ -230,7 +226,6 @@ export function SaveTab({
                   Import
                 </button>
               </div>
-              <p className="muted">Paste an export string or choose a JSON file, then select Import.</p>
               <div className="file-import">
                 <label htmlFor="import-save-file">Import from file</label>
                 <input
@@ -244,7 +239,7 @@ export function SaveTab({
                     event.target.value = "";
                   }}
                 />
-                <p className="muted">Use a JSON export created by this game.</p>
+                <p className="muted">Use a JSON export from this game.</p>
               </div>
             </fieldset>
 
@@ -472,26 +467,10 @@ export function SaveTab({
             </fieldset>
 
             <fieldset
-              id="settings-visibility"
               className="settings-section settings-section--visibility"
               data-testid="settings-visibility"
             >
               <legend>Visible tabs</legend>
-<p className="muted">
-                Missing a tab? Re-enable it here, then open it from the top navigation.
-              </p>
-              {hiddenTabCount > 0 ? (
-                <div className="control-row control-row--end">
-                  <button
-                    type="button"
-                    className="secondary"
-                    data-testid="settings-restore-hidden-tabs"
-                    onClick={onRestoreHiddenTabs}
-                  >
-                    Restore hidden tabs ({hiddenTabCount})
-                  </button>
-                </div>
-              ) : null}
               <div className="controls settings-visibility-grid">
                 {visibleTabOptions.map((tab) => (
                   <label key={tab.id} className="settings-control">
@@ -521,8 +500,7 @@ export function SaveTab({
             >
               <legend>Danger zone</legend>
               <p className="muted">
-                Clear save removes local progress on this device after confirmation. Export first if
-                you want a recovery backup.
+                Clear save removes local progress on this device after confirmation.
               </p>
               <div className="control-row">
                 <button
@@ -544,13 +522,9 @@ export function SaveTab({
               confirmClassName="danger"
               confirmTestId="settings-clear-save-confirm"
               cancelTestId="settings-clear-save-cancel"
-              onCancel={() => {
-                setConfirmClearOpen(false);
-                onResetCancel?.();
-              }}
+              onCancel={() => setConfirmClearOpen(false)}
               onConfirm={() => {
                 setConfirmClearOpen(false);
-                onResetConfirm?.();
                 onClearSave();
               }}
             />

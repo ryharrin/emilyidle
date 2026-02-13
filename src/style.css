@@ -989,6 +989,59 @@ strong {
   padding: 0 10px 10px;
 }
 
+.tab-disclosure {
+  border: 1px solid #2a2f3b;
+  border-radius: 16px;
+  background: rgba(15, 17, 21, 0.74);
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+.tab-disclosure-summary {
+  cursor: pointer;
+  list-style: none;
+  min-height: 46px;
+  padding: 11px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.tab-disclosure-summary::-webkit-details-marker,
+.tab-disclosure-summary::marker {
+  display: none;
+}
+
+.tab-disclosure-summary .muted {
+  color: #a6afbd;
+  opacity: 0.9;
+  text-transform: none;
+  letter-spacing: 0.03em;
+  font-size: 0.76rem;
+}
+
+.tab-disclosure-body {
+  padding: 0 10px 10px;
+}
+
+.tab-disclosure-body .surface-complication-strip {
+  margin-top: 0;
+}
+
+[data-theme="light"] .tab-disclosure {
+  border-color: #d9d0c4;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+[data-theme="light"] .tab-disclosure-summary .muted {
+  color: #5f5547;
+}
+
 .stats-diagnostics-stack {
   display: grid;
   gap: 0;
