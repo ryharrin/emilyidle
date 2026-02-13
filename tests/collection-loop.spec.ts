@@ -475,7 +475,7 @@ test.describe("collection loop", () => {
 
   test("automation toggle appears after automation upgrade", async ({ page }) => {
     const automationToggle = page.locator(selectors.automationToggle);
-    await expect(automationToggle).toContainText("Unlock automation with Atelier blueprints.");
+    await expect(automationToggle).toContainText("Unlock automation with Workshop blueprints.");
 
     const seededState = {
       currencyCents: 0,

@@ -40,6 +40,29 @@ type CatalogTabProps = {
   hasOwnedCatalogTiers: boolean;
 };
 
+const trustedDealers = [
+  {
+    name: "Ethan",
+    desk: "Prime desk",
+    note: "Fast board refreshes with high-demand arrivals.",
+  },
+  {
+    name: "Michael Travis",
+    desk: "Client match desk",
+    note: "Keeps Emily's repeat picks in rotation for quick matching.",
+  },
+  {
+    name: "Lena",
+    desk: "Offer desk",
+    note: "Tracks limited windows and negotiated package pricing.",
+  },
+  {
+    name: "Jason",
+    desk: "Legacy desk",
+    note: "Maintains older references with detailed condition notes.",
+  },
+] as const;
+
 export function CatalogTab({
   isActive,
   onNavigate,
@@ -78,12 +101,38 @@ export function CatalogTab({
             <div>
               <p className="eyebrow">Archive</p>
               <h2>Catalog</h2>
-              <p className="muted">Explore reference pieces and track licensing sources.</p>
+              <p className="muted">
+                Browse dealer listings, then track reference details and source licenses.
+              </p>
             </div>
             <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
               {filteredCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
             </div>
           </header>
+          <section
+            className="dealer-market-shell"
+            aria-labelledby="dealer-market-title"
+            data-testid="dealer-market-shell"
+          >
+            <header className="dealer-market-header">
+              <div>
+                <p className="eyebrow">Trusted network</p>
+                <h3 id="dealer-market-title">Dealer marketplace desk</h3>
+              </div>
+              <p className="muted">
+                Daily partner coverage with direct lines for sourcing, matching, and negotiation.
+              </p>
+            </header>
+            <div className="dealer-market-grid" data-testid="dealer-market-grid">
+              {trustedDealers.map((dealer) => (
+                <article className="dealer-market-card" key={dealer.name}>
+                  <p className="dealer-market-desk">{dealer.desk}</p>
+                  <h4>{dealer.name}</h4>
+                  <p>{dealer.note}</p>
+                </article>
+              ))}
+            </div>
+          </section>
           <form
             className="catalog-filters"
             data-testid="catalog-filters"
