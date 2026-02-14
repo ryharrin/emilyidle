@@ -107,9 +107,13 @@ test.describe("help entry point", () => {
     await page.goto("/");
 
     await expect(page.getByTestId("mission-rail")).toBeVisible();
+    const missionPrimary = page.getByTestId("mission-primary-disclosure");
+    await expect(missionPrimary).toBeVisible();
+    await expect(missionPrimary).not.toHaveAttribute("open", "");
+    await page.getByTestId("mission-primary-toggle").click();
+    await expect(missionPrimary).toHaveAttribute("open", "");
     await expect(page.getByTestId("mission-guidance-lane-note")).toBeVisible();
-    await expect(page.getByTestId("mission-action-primary")).toBeVisible();
-    await expect(page.getByTestId("mission-action-secondary")).toBeVisible();
+    await expect(missionPrimary.getByTestId("mission-action-primary")).toBeVisible();
 
     await page.locator("#career-tab").click();
     await expect(page.getByTestId("career-panel")).toBeVisible();
@@ -121,11 +125,6 @@ test.describe("help entry point", () => {
     }
     expect(missionRailBox.y).toBeLessThan(careerNowBox.y);
 
-    const careerSecondaryDetails = page.getByTestId("career-secondary-details");
-    await expect(careerSecondaryDetails).toBeVisible();
-    await expect(careerSecondaryDetails).not.toHaveAttribute("open", "");
-    await page.getByTestId("career-secondary-details-toggle").click();
-    await expect(careerSecondaryDetails).toHaveAttribute("open", "");
     await expect(page.getByTestId("career-economy-summary")).toBeVisible();
 
     await page.locator("#save-tab").click();
@@ -137,7 +136,7 @@ test.describe("help entry point", () => {
     await page.getByTestId("hidden-tabs-recovery").click();
     await expect(page.getByTestId("settings-visibility")).toBeVisible();
 
-    await page.getByTestId("settings-restore-hidden-tabs").click();
+    await page.getByTestId("tab-visibility-career").check();
     await expect(page.getByTestId("hidden-tabs-recovery")).toHaveCount(0);
     await expect(page.locator("#career-tab")).toBeVisible();
   });

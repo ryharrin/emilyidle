@@ -123,7 +123,7 @@ test("therapist sessions apply cash/enjoyment deltas and expose cooldown state",
   await page.getByTestId("career-action").click();
   await expect(page.getByTestId("career-session-cooldown-ring")).toBeVisible();
   await expect(page.getByTestId("career-action")).toBeEnabled();
-  await expect(page.getByTestId("career-session-run-now-cost")).toContainText("rush fee");
+  await expect(page.getByTestId("career-session-run-now-cost")).toContainText("Run now total");
   await page.waitForFunction(
     () => {
       const raw = window.localStorage.getItem("emily-idle:save");

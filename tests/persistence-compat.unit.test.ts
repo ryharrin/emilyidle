@@ -81,6 +81,10 @@ describe("persistence compatibility", () => {
       ...baseState,
       currencyCents: 12_345,
       enjoymentCents: 6_789,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        careerStartId: "phd-program" as const,
+      },
       items: {
         ...baseState.items,
         quartz: 5,

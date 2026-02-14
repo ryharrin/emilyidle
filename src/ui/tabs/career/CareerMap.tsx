@@ -114,7 +114,7 @@ function layoutCareerMap(state: GameState): {
 
   const stageGapX = 260;
   const stageWidth = 220;
-  const stageHeight = 84;
+  const stageHeight = 126;
   const stageY = 40;
   const stageX0 = 40;
 

@@ -5,7 +5,6 @@ import { CAREER_STAGES } from "../../../game/data/careerStages";
 import { formatMoneyFromCents } from "../../../game/format";
 import {
   canPerformTherapistSession,
-  enterPhdProgram,
   getCareerNextActionCue,
   getTherapistCareerChoiceStatus,
   getTherapistCareer,
@@ -18,6 +17,7 @@ import {
   getTherapistXpRequiredForNextLevel,
   getTherapistSalaryExpirationAlert,
   performTherapistSession,
+  startCareerWithKickoffSession,
 } from "../../../game/state";
 import type { GameState } from "../../../game/state";
 import { CareerProgressCard } from "../../components/CareerProgressCard";
@@ -63,22 +63,35 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const [isCompactLayout, setIsCompactLayout] = React.useState(getIsCompactCareerViewport);
   const [deepDetailsOpen, setDeepDetailsOpen] = React.useState(() => !getIsCompactCareerViewport());
   const [nextSectionOpen, setNextSectionOpen] = React.useState(() => !getIsCompactCareerViewport());
-  const [secondaryMissionOpen, setSecondaryMissionOpen] = React.useState(false);
+  const [sessionEconomicsOpen, setSessionEconomicsOpen] = React.useState(false);
   const career = getTherapistCareer(state);
   const nextActionCue = getCareerNextActionCue(state, nowMs);
   const nextXpRequired = getTherapistXpRequiredForNextLevel(career.level);
   const sessionPolicy = getTherapistSessionPolicy(state, nowMs);
   const costLabel = getTherapistSessionCostLabel(state, nowMs);
   const canPerform = canPerformTherapistSession(state, nowMs);
-  const cooldownSeconds = Math.max(0, Math.ceil((career.nextAvailableAtMs - nowMs) / 1000));
+  const canBootstrapKickoffSession = career.careerStartId === null && career.freeSessionAvailable;
+  const runSessionDisabled = canBootstrapKickoffSession
+    ? false
+    : !sessionPolicy.supportsSessions || !canPerform;
+  const runSessionAction = () =>
+    onPurchase(
+      canBootstrapKickoffSession
+        ? startCareerWithKickoffSession(state, nowMs)
+        : performTherapistSession(state, nowMs),
+    );
+  const cooldownSeconds = Math.max(0, Math.ceil(sessionPolicy.cooldownRemainingMs / 1000));
   const trackUnlocked = career.level >= TRACK_CHOICE_UNLOCK_LEVEL;
   const activeTrack = CAREER_TRACKS.find((track) => track.id === career.activeTrackId) ?? null;
-  const remainingMs = Math.max(0, career.nextAvailableAtMs - nowMs);
+  const remainingMs = Math.max(0, sessionPolicy.cooldownRemainingMs);
   const showCooldownRing =
-    sessionPolicy.supportsSessions && remainingMs > 0 && sessionPolicy.cooldownMs > 0;
+    sessionPolicy.supportsSessions &&
+    sessionPolicy.premiumCount > 0 &&
+    remainingMs > 0 &&
+    sessionPolicy.cooldownMs > 0;
   const cooldownProgress =
     sessionPolicy.cooldownMs > 0 ? clamp01(1 - remainingMs / sessionPolicy.cooldownMs) : 1;
-  const cooldownLabel = `Cooldown ${Math.max(0, Math.ceil(remainingMs / 1000))}s`;
+  const cooldownLabel = `Cost recovery ${Math.max(0, Math.ceil(remainingMs / 1000))}s`;
   const salaryAlert = getTherapistSalaryExpirationAlert(state, nowMs);
   const salaryWindowSummary = getTherapistSalaryWindowSummary(state, nowMs);
   const sessionValueSummary = getTherapistSessionValueDeltaSummary(state, nowMs);
@@ -89,7 +102,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const salaryRemainingLabel = formatDuration(salaryAlert.remainingMs);
   const showSalaryAlert = salaryAlert.level !== "none";
   const cooldownComplicationValue =
-    showCooldownRing && cooldownSeconds > 0 ? formatDuration(remainingMs) : "Ready now";
+    showCooldownRing && cooldownSeconds > 0 ? formatDuration(remainingMs) : "Base tier";
   const salaryComplicationValue = salaryWindowSummary.isActive
     ? `${formatDuration(salaryWindowSummary.remainingMs)} left`
     : "Inactive";
@@ -107,8 +120,8 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     }
     if (cooldownSeconds > 0) {
       return canPerform
-        ? `Cooldown ${cooldownSeconds}s · Rush available`
-        : `Cooldown ${cooldownSeconds}s`;
+        ? `Cost tier recovers in ${cooldownSeconds}s`
+        : `Need more enjoyment · tier recovers in ${cooldownSeconds}s`;
     }
     if (canPerform) {
       return "Ready";
@@ -124,6 +137,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
 
   const sessionCostNote = (() => {
     if (career.careerStartId === null) {
+      if (career.freeSessionAvailable) {
+        return "Run one free kickoff session to start your career economy.";
+      }
       return "Enter the PhD program to begin earning salary and unlock career progression.";
     }
     if (!sessionPolicy.supportsSessions) {
@@ -137,14 +153,17 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     if (career.freeSessionAvailable) {
       return "First session is free. Additional sessions spend enjoyment.";
     }
-    if (sessionPolicy.cooldownRemainingMs > 0 && sessionPolicy.cooldownRushExtraCents > 0) {
-      return "Cooldown rush is active. Running now adds a rush fee.";
+    if (sessionPolicy.premiumCount > 0 && sessionPolicy.cooldownRemainingMs > 0) {
+      return "Back-to-back sessions raise cost; each cooldown interval drops one tier.";
     }
-    return "Running again before cooldown ends adds a rush fee.";
+    return "Run sessions to earn cash and XP. Cost rises with rapid repeats.";
   })();
 
   const runNowCostLabel = (() => {
     if (career.careerStartId === null) {
+      if (career.freeSessionAvailable) {
+        return "Run now: 0 enjoyment (starts career + free kickoff session).";
+      }
       return "Run now: unavailable until career starts.";
     }
     if (!sessionPolicy.supportsSessions) {
@@ -153,13 +172,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     if (career.freeSessionAvailable) {
       return "Run now: 0 enjoyment (first session free).";
     }
-
-    const sessionCost = formatMoneyFromCents(sessionPolicy.premiumEnjoymentCostCents);
-    const totalCost = formatMoneyFromCents(sessionPolicy.effectiveEnjoymentCostCents);
-    if (sessionPolicy.cooldownRushExtraCents > 0) {
-      return `Run now total: ${totalCost} (${sessionCost} session cost + ${formatMoneyFromCents(sessionPolicy.cooldownRushExtraCents)} rush fee).`;
-    }
-    return `Run now total: ${totalCost} (${sessionCost} session cost).`;
+    return `Run now total: ${formatMoneyFromCents(sessionPolicy.effectiveEnjoymentCostCents)}.`;
   })();
 
   React.useEffect(() => {
@@ -173,7 +186,6 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       if (matches) {
         setDeepDetailsOpen(false);
         setNextSectionOpen(false);
-        setSecondaryMissionOpen(false);
         return;
       }
 
@@ -284,7 +296,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       return {
         label: "Enter program",
         disabled: false,
-        onClick: () => onPurchase(enterPhdProgram(state, nowMs)),
+        onClick: () => onPurchase(startCareerWithKickoffSession(state, nowMs)),
       };
     }
 
@@ -303,14 +315,9 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
 
     if (nextActionCue.id === "perform-session") {
       return {
-        label:
-          canPerform && sessionPolicy.cooldownRemainingMs > 0
-            ? "Run session (rush)"
-            : canPerform
-              ? "Run session"
-              : "Run session (locked)",
-        disabled: !sessionPolicy.supportsSessions || !canPerform,
-        onClick: () => onPurchase(performTherapistSession(state, nowMs)),
+        label: canPerform ? "Run session" : "Need enjoyment",
+        disabled: runSessionDisabled,
+        onClick: runSessionAction,
       };
     }
 
@@ -352,63 +359,81 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       </article>
       <article className="card career-economy-summary" data-testid="career-economy-summary">
         <header className="career-economy-summary-header">
-          <h4>Session economics</h4>
-          <p className="muted">Live payout, timing, and cadence for your next run.</p>
+          <div>
+            <h4>Session economics</h4>
+            <p className="muted">Live payout, timing, and cadence for your next run.</p>
+          </div>
+          <button
+            type="button"
+            className="secondary career-economy-summary-toggle"
+            data-testid="career-economy-summary-toggle"
+            aria-expanded={sessionEconomicsOpen}
+            onClick={() => setSessionEconomicsOpen((current) => !current)}
+          >
+            {sessionEconomicsOpen ? "Collapse" : "Expand"}
+          </button>
         </header>
-        <dl className="career-economy-summary-grid" data-testid="session-delta-breakdown">
-          <div className="career-economy-summary-metric career-economy-summary-metric-cash">
-            <dt>Session Cash</dt>
-            <dd>
-              +{formatMoneyFromCents(sessionValueSummary.cashPayoutCents)}
-              {sessionValueSummary.supportsSessions ? "" : " (locked)"}
-            </dd>
-          </div>
-          <div className="career-economy-summary-metric">
-            <dt>Run now cost</dt>
-            <dd>
-              {sessionValueSummary.isFreeSession
-                ? "0 (free)"
-                : `-${formatMoneyFromCents(sessionValueSummary.effectiveEnjoymentCostCents)}`}
-            </dd>
-          </div>
-          <div className="career-economy-summary-metric">
-            <dt>Cooldown</dt>
-            <dd>{formatDuration(sessionValueSummary.cooldownMs)}</dd>
-          </div>
-          <div className="career-economy-summary-metric">
-            <dt>Cadence premium</dt>
-            <dd>
-              {sessionValueSummary.premiumCount > 0
-                ? `+${Math.max(0, Math.round((sessionValueSummary.premiumMultiplier - 1) * 100))}%`
-                : "None"}
-            </dd>
-          </div>
-          <div className="career-economy-summary-metric">
-            <dt>Cooldown rush</dt>
-            <dd>
-              {sessionValueSummary.cooldownRushExtraCents > 0
-                ? `+${formatMoneyFromCents(sessionValueSummary.cooldownRushExtraCents)}`
-                : "None"}
-            </dd>
-          </div>
-        </dl>
-        <p className="career-economy-summary-window" data-testid="salary-window-summary">
-          <span className="career-economy-summary-window-label">Salary window</span>
-          <span className="career-economy-summary-window-value">
-            {salaryWindowSummary.statusLabel === "active"
-              ? `Active now • refreshes in ${formatDuration(salaryWindowSummary.remainingMs)}`
-              : "Inactive • waiting for the next rollover"}
-          </span>
-          <span className="career-economy-summary-window-detail">
-            Window cadence: {formatDuration(salaryWindowSummary.windowMs)}.
-          </span>
-        </p>
-        <p className="career-economy-summary-note" data-testid="near-term-unlock-summary">
-          <span className="career-economy-summary-note-label">Near-term unlock</span>
-          <strong>{nearTermUnlock.title}</strong>
-          <span className="career-economy-summary-note-summary">{nearTermUnlock.summaryText}</span>
-          <span className="career-economy-summary-note-detail">{nearTermUnlock.detail}</span>
-        </p>
+        {sessionEconomicsOpen ? (
+          <>
+            <dl className="career-economy-summary-grid" data-testid="session-delta-breakdown">
+              <div className="career-economy-summary-metric career-economy-summary-metric-cash">
+                <dt>Session Cash</dt>
+                <dd>
+                  +{formatMoneyFromCents(sessionValueSummary.cashPayoutCents)}
+                  {sessionValueSummary.supportsSessions ? "" : " (locked)"}
+                </dd>
+              </div>
+              <div className="career-economy-summary-metric">
+                <dt>Run now cost</dt>
+                <dd>
+                  {sessionValueSummary.isFreeSession
+                    ? "0 (free)"
+                    : `-${formatMoneyFromCents(sessionValueSummary.effectiveEnjoymentCostCents)}`}
+                </dd>
+              </div>
+              <div className="career-economy-summary-metric">
+                <dt>Cooldown</dt>
+                <dd>{formatDuration(sessionValueSummary.cooldownMs)}</dd>
+              </div>
+              <div className="career-economy-summary-metric">
+                <dt>Cadence premium</dt>
+                <dd>
+                  {sessionValueSummary.premiumCount > 0
+                    ? `+${Math.max(0, Math.round((sessionValueSummary.premiumMultiplier - 1) * 100))}%`
+                    : "None"}
+                </dd>
+              </div>
+              <div className="career-economy-summary-metric">
+                <dt>Cost recovery</dt>
+                <dd>
+                  {sessionValueSummary.premiumCount > 0 &&
+                  sessionValueSummary.cooldownRemainingMs > 0
+                    ? formatDuration(sessionValueSummary.cooldownRemainingMs)
+                    : "Base cost"}
+                </dd>
+              </div>
+            </dl>
+            <p className="career-economy-summary-window" data-testid="salary-window-summary">
+              <span className="career-economy-summary-window-label">Salary window</span>
+              <span className="career-economy-summary-window-value">
+                {salaryWindowSummary.statusLabel === "active"
+                  ? `Active now • refreshes in ${formatDuration(salaryWindowSummary.remainingMs)}`
+                  : "Inactive • waiting for the next rollover"}
+              </span>
+              <span className="career-economy-summary-window-detail">
+                Window cadence: {formatDuration(salaryWindowSummary.windowMs)}.
+              </span>
+            </p>
+            <p className="career-economy-summary-note" data-testid="near-term-unlock-summary">
+              <span className="career-economy-summary-note-label">Near-term unlock</span>
+              <strong>{nearTermUnlock.title}</strong>
+              <span className="career-economy-summary-note-summary">
+                {nearTermUnlock.summaryText}
+              </span>
+              <span className="career-economy-summary-note-detail">{nearTermUnlock.detail}</span>
+            </p>
+          </>
+        ) : null}
       </article>
       <div className="card career-session">
         <div className="career-session-header">
@@ -459,7 +484,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
                 </span>
               </div>
               <p className="career-session-premium-note">
-                {sessionPolicy.premiumNote || "Waiting twice the cooldown resets the premium."}
+                {sessionPolicy.premiumNote || "Session cost drops one tier each cooldown interval."}
               </p>
             </div>
           )}
@@ -483,12 +508,10 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
           <button
             type="button"
             data-testid="career-action"
-            disabled={!sessionPolicy.supportsSessions || !canPerform}
-            onClick={() => onPurchase(performTherapistSession(state, nowMs))}
+            disabled={runSessionDisabled}
+            onClick={runSessionAction}
           >
-            {canPerform && sessionPolicy.cooldownRemainingMs > 0
-              ? "Run session (rush)"
-              : "Run session"}
+            Run session
           </button>
         </div>
       </div>
@@ -520,10 +543,12 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               </p>
             </article>
             <article className="career-complication" data-testid="career-complication-chronograph">
-              <p className="career-complication-label">Chronograph · Session cooldown</p>
+              <p className="career-complication-label">Chronograph · Cost recovery</p>
               <p className="career-complication-value">{cooldownComplicationValue}</p>
               <p className="career-complication-detail">
-                {showCooldownRing ? "Cooldown to next full-value run" : "Session timing is clear"}
+                {showCooldownRing
+                  ? "Time until the next session-cost tier drop"
+                  : "Session cost is at base tier"}
               </p>
             </article>
             <article className="career-complication" data-testid="career-complication-date-wheel">
@@ -590,20 +615,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               onPurchase={onPurchase}
               onOpenProgressionChoices={openProgressDetails}
             />
-            <details
-              className={`career-next-details career-secondary-details ${
-                isCompactLayout ? "career-secondary-details-compact" : ""
-              }`}
-              open={secondaryMissionOpen}
-              onToggle={(event) => setSecondaryMissionOpen(event.currentTarget.open)}
-              data-testid="career-secondary-details"
-            >
-              <summary data-testid="career-secondary-details-toggle">
-                <span>Secondary diagnostics</span>
-                <span className="muted">{secondaryMissionOpen ? "Collapse" : "Expand"}</span>
-              </summary>
-              <div className="career-secondary-details-body">{secondaryMissionContent}</div>
-            </details>
+            {secondaryMissionContent}
           </div>
         </section>
 

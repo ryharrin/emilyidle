@@ -6299,14 +6299,30 @@ button[data-testid^="catalog-buy-"]:disabled {
 }
 
 .career-economy-summary-header {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(161, 179, 204, 0.2);
 }
 
+.career-economy-summary-header > div {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
 .career-economy-summary-header h4 {
   margin: 0;
+}
+
+.career-economy-summary-toggle {
+  flex-shrink: 0;
+  min-height: 34px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.66rem;
 }
 
 .career-economy-summary-grid {
@@ -6522,6 +6538,10 @@ button[data-testid^="catalog-buy-"]:disabled {
 
 [data-theme="light"] .career-economy-summary-header {
   border-color: rgba(170, 130, 86, 0.24);
+}
+
+[data-theme="light"] .career-economy-summary-toggle {
+  border-color: rgba(170, 130, 86, 0.28);
 }
 
 [data-theme="light"] .career-economy-summary-grid > .career-economy-summary-metric {
@@ -7851,12 +7871,32 @@ button[data-testid^="catalog-buy-"]:disabled {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--career-text-soft);
-  align-self: center;
+}
+
+.career-canvas-control-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.career-canvas-control-hint {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--career-text-muted);
+  line-height: 1.3;
 }
 
 .career-canvas-control-buttons {
   display: flex;
   gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.career-canvas-control-buttons .secondary {
+  min-width: 42px;
+  min-height: 34px;
+  padding: 6px 12px;
 }
 
 .career-map-shell {
@@ -7961,6 +8001,8 @@ button[data-testid^="catalog-buy-"]:disabled {
 }
 
 .career-map-node {
+  box-sizing: border-box;
+  overflow: hidden;
   border: 1px solid var(--career-panel-border);
   background:
     linear-gradient(180deg, rgba(38, 51, 73, 0.58), rgba(16, 24, 36, 0.82)),
@@ -8000,6 +8042,26 @@ button[data-testid^="catalog-buy-"]:disabled {
 .career-map-node-meta {
   border-style: solid;
   background: rgba(12, 19, 30, 0.62);
+}
+
+.career-map-node-meta-compact {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border-color: rgba(157, 178, 205, 0.34);
+  background: rgba(8, 14, 23, 0.8);
+  box-shadow: none;
+}
+
+.career-map-node-meta-compact .career-map-node-title {
+  width: 100%;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .career-map-node-title {
@@ -8263,6 +8325,11 @@ button[data-testid^="catalog-buy-"]:disabled {
   box-shadow: inset 0 0 0 1px rgba(163, 142, 115, 0.1);
 }
 
+[data-theme="light"] .career-map-node-meta-compact {
+  border-color: rgba(145, 123, 96, 0.34);
+  background: rgba(255, 251, 245, 0.94);
+}
+
 [data-theme="light"] .career-map-node-tag {
   border-color: rgba(145, 123, 96, 0.32);
   color: rgba(101, 84, 66, 0.84);
@@ -8314,6 +8381,10 @@ button[data-testid^="catalog-buy-"]:disabled {
   .career-upgrades-hud {
     position: static;
     border-radius: 10px;
+    width: 100%;
+  }
+
+  .career-canvas-control-buttons {
     width: 100%;
   }
 }

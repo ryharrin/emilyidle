@@ -14,7 +14,7 @@ test("fresh saves land on Career by default", async ({ page }) => {
   await expect(page.getByTestId("career-panel")).toBeVisible();
 });
 
-test("deep links do not overwrite last-tab persistence for existing saves", async ({ page }) => {
+test("existing saves and deep links still open Career first", async ({ page }) => {
   const seededState = {
     currencyCents: 0,
     enjoymentCents: 0,
@@ -73,16 +73,19 @@ test("deep links do not overwrite last-tab persistence for existing saves", asyn
   const careerTab = tabList.getByRole("tab", { name: "Career" });
   const catalogTab = tabList.getByRole("tab", { name: "Catalog" });
 
-  await expect(saveTab).toHaveAttribute("aria-selected", "true");
+  await expect(careerTab).toHaveAttribute("aria-selected", "true");
 
   await page.goto("/?tab=career");
   await expect(careerTab).toHaveAttribute("aria-selected", "true");
 
   await page.goto("/");
-  await expect(saveTab).toHaveAttribute("aria-selected", "true");
+  await expect(careerTab).toHaveAttribute("aria-selected", "true");
 
   await page.goto("/?tab=catalog");
-  await expect(catalogTab).toHaveAttribute("aria-selected", "true");
+  await expect(careerTab).toHaveAttribute("aria-selected", "true");
+
+  await expect(saveTab).toHaveAttribute("aria-selected", "false");
+  await expect(catalogTab).toHaveAttribute("aria-selected", "false");
 
   const stored = await page.evaluate(() => window.localStorage.getItem("emily-idle:navigation"));
   expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });

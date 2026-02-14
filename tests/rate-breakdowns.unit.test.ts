@@ -173,7 +173,7 @@ describe("rate breakdown selectors", () => {
     expect(breakdown.sessionCadence.cooldownMs).toBeGreaterThan(0);
   });
 
-  it("keeps premium-window and rush semantics consistent across policy and breakdowns", () => {
+  it("keeps premium decay semantics consistent across policy and breakdowns", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -190,32 +190,32 @@ describe("rate breakdown selectors", () => {
     const firstPolicy = getTherapistSessionPolicy(seededState, firstNow);
     const afterFirst = performTherapistSession(seededState, firstNow);
     const rushNow = firstNow + Math.max(1, Math.floor(firstPolicy.cooldownMs / 2));
-    const rushPolicy = getTherapistSessionPolicy(afterFirst, rushNow);
-    const rushBreakdown = getCashRateBreakdown(afterFirst, rushNow, 1);
+    const rampPolicy = getTherapistSessionPolicy(afterFirst, rushNow);
+    const rampBreakdown = getCashRateBreakdown(afterFirst, rushNow, 1);
 
-    expect(rushPolicy.premiumCount).toBe(1);
-    expect(rushPolicy.premiumLabel).toBe("Second session premium");
-    expect(rushPolicy.premiumNote).toBe("Waiting twice the cooldown resets the premium.");
-    expect(rushPolicy.cooldownRemainingMs).toBeGreaterThan(0);
-    expect(rushPolicy.cooldownRushMultiplier).toBeGreaterThan(1);
-    expect(rushPolicy.cooldownRushExtraCents).toBeGreaterThan(0);
-    expect(rushPolicy.effectiveEnjoymentCostCents).toBe(
-      rushPolicy.premiumEnjoymentCostCents + rushPolicy.cooldownRushExtraCents,
+    expect(rampPolicy.premiumCount).toBe(1);
+    expect(rampPolicy.premiumLabel).toBe("Second session premium");
+    expect(rampPolicy.premiumNote).toBe("Session cost drops one tier each cooldown interval.");
+    expect(rampPolicy.cooldownRemainingMs).toBeGreaterThan(0);
+    expect(rampPolicy.cooldownRushMultiplier).toBe(1);
+    expect(rampPolicy.cooldownRushExtraCents).toBe(0);
+    expect(rampPolicy.effectiveEnjoymentCostCents).toBe(
+      rampPolicy.premiumEnjoymentCostCents + rampPolicy.cooldownRushExtraCents,
     );
-    expect(rushBreakdown.sessionCadence.enjoymentCostCents).toBe(
-      rushPolicy.effectiveEnjoymentCostCents,
+    expect(rampBreakdown.sessionCadence.enjoymentCostCents).toBe(
+      rampPolicy.effectiveEnjoymentCostCents,
     );
-    expect(rushBreakdown.sessionCadence.cooldownRemainingMs).toBe(rushPolicy.cooldownRemainingMs);
+    expect(rampBreakdown.sessionCadence.cooldownRemainingMs).toBe(rampPolicy.cooldownRemainingMs);
 
-    const readyNow = afterFirst.therapistCareer.nextAvailableAtMs;
+    const readyNow = rushNow + firstPolicy.cooldownMs;
     const readyPolicy = getTherapistSessionPolicy(afterFirst, readyNow);
     const readyBreakdown = getCashRateBreakdown(afterFirst, readyNow, 1);
 
-    expect(readyPolicy.premiumCount).toBe(1);
+    expect(readyPolicy.premiumCount).toBe(0);
     expect(readyPolicy.cooldownRemainingMs).toBe(0);
     expect(readyPolicy.cooldownRushMultiplier).toBe(1);
     expect(readyPolicy.cooldownRushExtraCents).toBe(0);
-    expect(readyPolicy.effectiveEnjoymentCostCents).toBe(readyPolicy.premiumEnjoymentCostCents);
+    expect(readyPolicy.effectiveEnjoymentCostCents).toBe(readyPolicy.enjoymentCostCents);
     expect(readyBreakdown.sessionCadence.enjoymentCostCents).toBe(
       readyPolicy.effectiveEnjoymentCostCents,
     );

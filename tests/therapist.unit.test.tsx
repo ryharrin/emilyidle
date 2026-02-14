@@ -246,7 +246,7 @@ describe("therapist career", () => {
     const afterFirst = performTherapistSession(seededState, firstNow);
     expect(afterFirst.therapistCareer.sessionPremiumCount).toBe(1);
 
-    const secondNow = afterFirst.therapistCareer.nextAvailableAtMs;
+    const secondNow = firstNow + 1_000;
     const secondPolicy = getTherapistSessionPolicy(afterFirst, secondNow);
     expect(secondPolicy.premiumCount).toBe(1);
     expect(secondPolicy.premiumEnjoymentCostCents).toBeGreaterThan(secondPolicy.enjoymentCostCents);
@@ -258,7 +258,7 @@ describe("therapist career", () => {
     );
   });
 
-  it("resets the premium after waiting beyond the window", () => {
+  it("decays the premium tier over cooldown intervals", () => {
     const baseState = createInitialState();
     const seededState = {
       ...baseState,
@@ -273,15 +273,21 @@ describe("therapist career", () => {
 
     const firstNow = 1_000;
     const afterFirst = performTherapistSession(seededState, firstNow);
-    const secondNow = afterFirst.therapistCareer.nextAvailableAtMs;
+    const firstPolicy = getTherapistSessionPolicy(seededState, firstNow);
+    const secondNow = firstNow + 1_000;
     const secondPolicy = getTherapistSessionPolicy(afterFirst, secondNow);
     const afterSecond = performTherapistSession(afterFirst, secondNow);
 
-    const thirdNow =
-      afterSecond.therapistCareer.lastSessionAtMs + secondPolicy.premiumWindowMs + 10;
+    const thirdNow = secondNow + firstPolicy.cooldownMs + 10;
     const thirdPolicy = getTherapistSessionPolicy(afterSecond, thirdNow);
-    expect(thirdPolicy.premiumCount).toBe(0);
-    expect(thirdPolicy.premiumMultiplier).toBe(1);
+    expect(secondPolicy.premiumCount).toBe(1);
+    expect(afterSecond.therapistCareer.sessionPremiumCount).toBe(2);
+    expect(thirdPolicy.premiumCount).toBe(1);
+
+    const fourthNow = thirdNow + firstPolicy.cooldownMs + 10;
+    const fourthPolicy = getTherapistSessionPolicy(afterSecond, fourthNow);
+    expect(fourthPolicy.premiumCount).toBe(0);
+    expect(fourthPolicy.premiumMultiplier).toBe(1);
   });
 });
 
@@ -352,5 +358,30 @@ describe("therapist persistence", () => {
     expect(decoded.save.state.therapistCareer.freeSessionAvailable).toBe(true);
     expect(decoded.save.state.therapistCareer.sessionPremiumCount).toBe(0);
     expect(decoded.save.state.therapistCareer.lastSessionAtMs).toBe(0);
+  });
+
+  it("forces cash to zero when the saved career has not started", () => {
+    const baseState = createInitialState();
+    const raw = JSON.stringify({
+      version: 4,
+      savedAt: new Date(0).toISOString(),
+      state: {
+        ...baseState,
+        currencyCents: 25_000,
+        therapistCareer: {
+          ...baseState.therapistCareer,
+          careerStartId: null,
+        },
+      },
+    });
+
+    const decoded = decodeSaveString(raw);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) {
+      return;
+    }
+
+    expect(decoded.save.state.currencyCents).toBe(0);
+    expect(decoded.save.state.therapistCareer.careerStartId).toBeNull();
   });
 });

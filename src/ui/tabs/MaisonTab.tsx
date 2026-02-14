@@ -277,7 +277,7 @@ export function MaisonTab({
                     )}
                     <p className="muted" aria-live="polite">
                       {maisonResetArmed
-                        ? "Review reset checklist (Current run, Next run keeps, Delta), then confirm reset."
+                        ? "Review Current run, Next run keeps, and Delta, then confirm reset."
                         : canPrestigeMaison
                           ? "Open reset checklist to compare what resets against what carries forward."
                           : `Blocked: need ${formatMoneyFromCents(resetDeficitCents)} more enjoyment-equivalent progress (ETA ${resetEtaLabel}).`}

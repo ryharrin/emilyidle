@@ -1,7 +1,6 @@
 import type { GameState, WatchItemId } from "./state";
 import {
   applyAchievementUnlocks,
-  applyTherapistPassiveProgress,
   applyEventState,
   discoverCatalogEntries,
   getCatalogEntryIdsForItems,
@@ -87,11 +86,6 @@ export function step(state: GameState, dtMs: number, nowMs?: number): GameState 
     nostalgiaEnjoymentEarnedCents: withEvents.nostalgiaEnjoymentEarnedCents + earnedEnjoyment,
   };
 
-  const withCareerProgress = applyTherapistPassiveProgress(withIncome, clampedDtMs);
-
-  const withDiscovery = discoverCatalogEntries(
-    withCareerProgress,
-    getCatalogEntryIdsForItems(withCareerProgress),
-  );
+  const withDiscovery = discoverCatalogEntries(withIncome, getCatalogEntryIdsForItems(withIncome));
   return applyAchievementUnlocks(withDiscovery);
 }

@@ -10,7 +10,6 @@ import {
 } from "./therapistPolicy";
 import { getTherapistCareerStageId } from "./careerStages";
 
-const SESSION_PREMIUM_WINDOW_MULTIPLIER = 2;
 const SESSION_PREMIUM_STEP = 0.2;
 const SESSION_PREMIUM_MAX_COUNT = 3;
 const SESSION_PREMIUM_LABELS = [
@@ -18,7 +17,7 @@ const SESSION_PREMIUM_LABELS = [
   "Third session premium",
   "Back-to-back premium",
 ];
-const SESSION_PREMIUM_NOTE = "Waiting twice the cooldown resets the premium.";
+const SESSION_PREMIUM_NOTE = "Session cost drops one tier each cooldown interval.";
 
 function normalizeNowMs(nowMs: number): number {
   return Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
@@ -138,17 +137,16 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
   const baseEnjoymentCost = getTherapistSessionEnjoymentCostCents(state, trackId);
   const cooldownMs = getTherapistSessionCooldownMs(state, trackId);
   const cashPayoutCents = getTherapistSessionCashPayoutCents(state, trackId);
-  const premiumWindowMs = Math.max(0, Math.floor(cooldownMs * SESSION_PREMIUM_WINDOW_MULTIPLIER));
   const lastSessionAtMs = normalizeNonNegativeInteger(state.therapistCareer.lastSessionAtMs);
-  const nextAvailableAtMs = normalizeNonNegativeInteger(state.therapistCareer.nextAvailableAtMs);
   const storedPremiumCount = normalizeNonNegativeInteger(state.therapistCareer.sessionPremiumCount);
-  const hasSessionChain = storedPremiumCount > 0;
-  const withinWindow =
-    premiumWindowMs > 0 &&
-    hasSessionChain &&
-    clampedNowMs >= lastSessionAtMs &&
-    clampedNowMs - lastSessionAtMs < premiumWindowMs;
-  const premiumCount = withinWindow ? Math.min(SESSION_PREMIUM_MAX_COUNT, storedPremiumCount) : 0;
+  const elapsedSinceLastSessionMs =
+    clampedNowMs >= lastSessionAtMs ? clampedNowMs - lastSessionAtMs : 0;
+  const decaySteps =
+    cooldownMs > 0 ? Math.max(0, Math.floor(elapsedSinceLastSessionMs / cooldownMs)) : 0;
+  const premiumCount = Math.min(
+    SESSION_PREMIUM_MAX_COUNT,
+    Math.max(0, storedPremiumCount - decaySteps),
+  );
   const premiumMultiplier = 1 + premiumCount * SESSION_PREMIUM_STEP;
   const premiumEnjoymentCostCents = Math.max(0, Math.floor(baseEnjoymentCost * premiumMultiplier));
   const premiumLabel =
@@ -156,18 +154,17 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
       ? SESSION_PREMIUM_LABELS[Math.min(premiumCount - 1, SESSION_PREMIUM_LABELS.length - 1)]
       : "";
   const premiumNote = premiumCount > 0 ? SESSION_PREMIUM_NOTE : "";
-  const cooldownRemainingMs = Math.max(0, nextAvailableAtMs - clampedNowMs);
-  const cooldownRushProgress01 =
-    cooldownMs > 0 ? Math.max(0, Math.min(1, cooldownRemainingMs / cooldownMs)) : 0;
-  const cooldownRushMultiplier = 1 + cooldownRushProgress01;
-  const effectiveEnjoymentCostCents = Math.max(
-    0,
-    Math.floor(premiumEnjoymentCostCents * cooldownRushMultiplier),
-  );
-  const cooldownRushExtraCents = Math.max(
-    0,
-    effectiveEnjoymentCostCents - premiumEnjoymentCostCents,
-  );
+  const elapsedInCurrentTierMs =
+    cooldownMs > 0 ? Math.max(0, elapsedSinceLastSessionMs % cooldownMs) : 0;
+  const cooldownRemainingMs =
+    premiumCount > 0 && cooldownMs > 0
+      ? elapsedInCurrentTierMs === 0
+        ? cooldownMs
+        : cooldownMs - elapsedInCurrentTierMs
+      : 0;
+  const cooldownRushMultiplier = 1;
+  const effectiveEnjoymentCostCents = premiumEnjoymentCostCents;
+  const cooldownRushExtraCents = 0;
 
   return {
     supportsSessions,
@@ -178,7 +175,7 @@ export function getTherapistSessionPolicy(state: GameState, nowMs: number): Ther
     premiumCount,
     premiumLabel,
     premiumNote,
-    premiumWindowMs,
+    premiumWindowMs: cooldownMs,
     cashPayoutCents,
     cooldownMs,
     cooldownRemainingMs,
@@ -195,9 +192,6 @@ export function getTherapistSessionCostLabel(state: GameState, nowMs: number): s
   }
   if (career.freeSessionAvailable) {
     return "Free first session";
-  }
-  if (policy.cooldownRemainingMs > 0 && policy.cooldownRushExtraCents > 0) {
-    return `${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment (includes cooldown rush fee)`;
   }
   return `${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment`;
 }

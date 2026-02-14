@@ -10,14 +10,7 @@ import { useStableCatalogEntries } from "../hooks/useStableCatalogEntries";
 import { useCatalogVirtualizer } from "../hooks/useCatalogVirtualizer";
 import type { CatalogVirtualizerResult } from "../hooks/useCatalogVirtualizer";
 import { LockIcon } from "../icons/coreIcons";
-import { getCatalogCollectionContext } from "../catalog/collectionContext";
-import { getCatalogUpgradeContext } from "../catalog/upgradeContext";
-import { PerWatchStatsTable } from "../components/PerWatchStatsTable";
 import { TierBadge } from "../components/TierBadge";
-import {
-  WatchComparePanel,
-  type CompareSlotPayload,
-} from "../components/catalog/WatchComparePanel";
 import { PowerReserveHint } from "../components/PowerReserveHint";
 import {
   buildCatalogDecisionInfo,
@@ -37,14 +30,12 @@ import {
   CATALOG_VIRTUALIZATION_THRESHOLD,
   CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT,
   CATALOG_VIRTUALIZER_OVERSCAN,
-  describeGateStatus,
   formatEtaLabel,
-  formatMovementLabel,
   getGateEtaLabel,
   type CatalogQuickPreset,
 } from "./catalog/catalogPresentation";
 
-import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
+import { formatMoneyFromCents } from "../../game/format";
 import { isTestEnvironment } from "../../game/runtime/isTestEnvironment";
 import {
   CATALOG_TIER_SEQUENCE,
@@ -288,8 +279,6 @@ export function CatalogPurchasePanel({
     () => new Map(watchModels.map((model) => [model.id, model])),
     [watchModels],
   );
-  const [compareSlots, setCompareSlots] = React.useState<string[]>([]);
-  const comparedEntries = React.useMemo(() => new Set(compareSlots), [compareSlots]);
   const modelOwnedByTier = new Map<WatchItemId, number>();
   const firstModelByTier = new Map<WatchItemId, string>();
 
@@ -421,11 +410,6 @@ export function CatalogPurchasePanel({
     catalogType !== "all",
     catalogQuickPreset !== "all",
   ].filter(Boolean).length;
-  React.useEffect(() => {
-    if (activeFilterCount > 0 && !filtersOpen) {
-      setFiltersOpen(true);
-    }
-  }, [activeFilterCount, filtersOpen]);
   const toggleFilters = React.useCallback(() => {
     setFiltersOpen((value) => !value);
   }, []);
@@ -467,19 +451,6 @@ export function CatalogPurchasePanel({
     return getPerWatchStatsRows(state, effectiveNowMs, currentEventMultiplier);
   }, [state, nowMs, currentEventMultiplier]);
 
-  const previewStatsByEntry = React.useMemo(() => {
-    const map = new Map<string, { enjoyment: string; cash: string }>();
-    for (const row of perWatchRows) {
-      const stats = {
-        enjoyment: formatRateFromCentsPerSec(row.enjoymentCentsPerSec),
-        cash: formatRateFromCentsPerSec(row.cashCentsPerSec),
-      };
-      row.catalogEntryIds.forEach((entryId) => {
-        map.set(entryId, stats);
-      });
-    }
-    return map;
-  }, [perWatchRows]);
   const previewRateByEntry = React.useMemo(() => {
     const map = new Map<string, number>();
     for (const row of perWatchRows) {
@@ -490,18 +461,6 @@ export function CatalogPurchasePanel({
     }
     return map;
   }, [perWatchRows]);
-
-  const { ownedCount, maxCapacity, collectionValueCents } = getCatalogCollectionContext(state);
-  const upgradeContext = getCatalogUpgradeContext(state);
-  const ownedCountLabel = formatCount(ownedCount);
-  const maxCapacityLabel = formatCount(maxCapacity);
-  const upgradeLevelsLabel = formatCount(upgradeContext.totalUpgradeLevels);
-  const workshopOwnedLabel = formatCount(upgradeContext.workshopOwned);
-  const workshopTotalLabel = formatCount(upgradeContext.workshopTotal);
-  const maisonOwnedLabel = formatCount(upgradeContext.maisonOwned);
-  const maisonTotalLabel = formatCount(upgradeContext.maisonTotal);
-  const maisonLinesActiveLabel = formatCount(upgradeContext.maisonLinesActive);
-  const maisonLinesTotalLabel = formatCount(upgradeContext.maisonLinesTotal);
 
   const handleBrowseWatches = React.useCallback(() => {
     onCatalogTabChange("unowned");
@@ -516,30 +475,6 @@ export function CatalogPurchasePanel({
       ...prev,
       [entryId]: isOpen,
     }));
-  }, []);
-
-  const handleCompareToggle = React.useCallback((entryId: string) => {
-    setCompareSlots((prev) => {
-      if (prev.includes(entryId)) {
-        return prev.filter((id) => id !== entryId);
-      }
-      if (prev.length < 2) {
-        return [...prev, entryId];
-      }
-      return [prev[1], entryId];
-    });
-  }, []);
-
-  const handleClearCompareSlot = React.useCallback((index: number) => {
-    setCompareSlots((prev) => prev.filter((_, slotIndex) => slotIndex !== index));
-  }, []);
-
-  const handleClearAllCompare = React.useCallback(() => {
-    setCompareSlots([]);
-  }, []);
-
-  const handleSwapCompareOrder = React.useCallback(() => {
-    setCompareSlots((prev) => (prev.length === 2 ? [prev[1], prev[0]] : prev));
   }, []);
 
   const triggerPurchaseHighlight = React.useCallback((entryId: string) => {
@@ -739,74 +674,6 @@ export function CatalogPurchasePanel({
       ),
     [hasQuickActionForOwnedEntry, stableCatalogEntries, state],
   );
-  const readyToBuyCount = React.useMemo(
-    () =>
-      stableCatalogEntries.reduce((count, entry) => {
-        if (getWatchModelOwnedCount(state, entry.id) > 0) {
-          return count;
-        }
-        return count + (getWatchModelPurchaseGate(state, entry.id).ok ? 1 : 0);
-      }, 0),
-    [stableCatalogEntries, state],
-  );
-  const readyOwnedQuickActionsCount = React.useMemo(
-    () =>
-      stableCatalogEntries.reduce((count, entry) => {
-        if (getWatchModelOwnedCount(state, entry.id) <= 0) {
-          return count;
-        }
-        return count + (hasQuickActionForOwnedEntry(entry.id) ? 1 : 0);
-      }, 0),
-    [hasQuickActionForOwnedEntry, stableCatalogEntries, state],
-  );
-  const undoComplicationValue =
-    undoStatus === "available"
-      ? `Available · ${Math.ceil(undoRemainingMs / 1_000)}s left`
-      : undoStatus === "expired"
-        ? "Expired"
-        : "No undo yet";
-  const undoComplicationDetail =
-    undoStatus === "available"
-      ? `Last purchase ${lastPurchaseModelId} can be reversed until the timer reaches 0s.`
-      : undoStatus === "expired"
-        ? `Last purchase ${lastPurchaseModelId} passed the ${PURCHASE_UNDO_WINDOW_SECONDS}s undo window.`
-        : `Buy a watch to open a ${PURCHASE_UNDO_WINDOW_SECONDS}s undo window.`;
-
-  const compareSlotPayloads = React.useMemo<
-    [CompareSlotPayload | null, CompareSlotPayload | null]
-  >(() => {
-    const normalizedSlots: [string | null, string | null] = [
-      compareSlots[0] ?? null,
-      compareSlots[1] ?? null,
-    ];
-    const buildPayload = (entryId: string | null): CompareSlotPayload | null => {
-      if (!entryId) {
-        return null;
-      }
-      const entry = catalogEntryById.get(entryId);
-      if (!entry) {
-        return null;
-      }
-      const watchModel = watchModelById.get(entryId);
-      const tierId = getWatchModelTierId(entryId);
-      const tierItem = watchItemById.get(tierId);
-      const gate = getWatchModelPurchaseGate(state, entryId);
-      const preview = previewStatsByEntry.get(entryId);
-      return {
-        entry,
-        movementLabel: formatMovementLabel(tierItem?.movement),
-        priceLabel: formatMoneyFromCents(gate.cashPriceCents),
-        gateDescription: describeGateStatus(gate),
-        tierBadge: getWatchModelTierBadge(entryId, watchModel?.tierBadge),
-        enjoymentLabel: preview?.enjoyment ?? "-",
-        cashLabel: preview?.cash ?? "-",
-        ready: gate.ok,
-      };
-    };
-
-    return [buildPayload(normalizedSlots[0]), buildPayload(normalizedSlots[1])];
-  }, [compareSlots, catalogEntryById, previewStatsByEntry, state, watchItemById, watchModelById]);
-
   const buildDecisionInfoForEntry = (entryId: string): CatalogDecisionInfo => {
     const tierId = getWatchModelTierId(entryId);
     const tierItem = watchItemById.get(tierId);
@@ -928,8 +795,6 @@ export function CatalogPurchasePanel({
     const canShowInteract = Boolean(onInteract) && typeof nowMs === "number";
     const showSecondaryInteract = canShowInteract && ownedCount > 0;
     const isFavorite = favoriteSet.has(entry.id);
-    const isCompared = comparedEntries.has(entry.id);
-
     return (
       <div className="catalog-sheet-actions" data-testid={`catalog-sheet-actions-${entry.id}`}>
         <p className="catalog-sheet-actions-title">Quick actions</p>
@@ -942,15 +807,6 @@ export function CatalogPurchasePanel({
             onClick={() => onPurchase(toggleWatchFavorite(state, entry.id))}
           >
             {isFavorite ? "Favorited" : "Favorite"}
-          </button>
-          <button
-            type="button"
-            className={`catalog-compare-toggle secondary ${isCompared ? "catalog-compare-toggle-active" : ""}`}
-            data-testid={`catalog-compare-toggle-${entry.id}`}
-            aria-pressed={isCompared}
-            onClick={() => handleCompareToggle(entry.id)}
-          >
-            {isCompared ? "Selected" : "Compare"}
           </button>
           {canWear && (
             <button
@@ -1045,13 +901,11 @@ export function CatalogPurchasePanel({
       effectiveCashRateCentsPerSec,
       effectiveEnjoymentRateCentsPerSec,
     );
-    const previewStats = previewStatsByEntry.get(entry.id);
     const isActionable = unlocked && gate.ok;
     const hasAffordabilityHighlight = discovered && ownedCount === 0 && isActionable;
     const duplicateMultiplier = getNextDuplicateRewardMultiplier(state, entry.id);
     const buyLabel = ownedCount > 0 ? "Buy another" : "Buy";
     const isHighlighted = purchaseHighlights[entry.id];
-    const isCompared = comparedEntries.has(entry.id);
     const isDetailsOpen = detailsSheetTarget?.entryId === entry.id;
     const isFavorite = favoriteSet.has(entry.id);
 
@@ -1108,32 +962,9 @@ export function CatalogPurchasePanel({
           hasAffordabilityHighlight ? "catalog-actionable" : ""
         } ${
           isActionable ? "" : "catalog-nonactionable"
-        } ${isCompared ? "catalog-card-compared" : ""} ${
-          isCompactDensity ? "catalog-card-compact" : "catalog-card-expanded"
-        }`}
+        } ${isCompactDensity ? "catalog-card-compact" : "catalog-card-expanded"}`}
         data-testid="catalog-card"
       >
-        {previewStats && (
-          <div
-            className="catalog-card-preview"
-            data-testid={`catalog-preview-${entry.id}`}
-            aria-hidden="true"
-            data-label="Stat preview"
-          >
-            <div className="catalog-card-preview__rows">
-              <div
-                className="catalog-card-preview__row catalog-card-preview__row--enjoyment"
-                data-label="Enjoyment / sec"
-                data-value={previewStats.enjoyment}
-              />
-              <div
-                className="catalog-card-preview__row catalog-card-preview__row--cash"
-                data-label="Cash / sec"
-                data-value={previewStats.cash}
-              />
-            </div>
-          </div>
-        )}
         <div className="catalog-media">
           <img
             src={getCatalogImageUrl(entry)}
@@ -1281,15 +1112,6 @@ export function CatalogPurchasePanel({
                     onClick={() => onPurchase(toggleWatchFavorite(state, entry.id))}
                   >
                     {isFavorite ? "Favorited" : "Favorite"}
-                  </button>
-                  <button
-                    type="button"
-                    className={`catalog-compare-toggle secondary ${isCompared ? "catalog-compare-toggle-active" : ""}`}
-                    data-testid={`catalog-compare-toggle-${entry.id}`}
-                    aria-pressed={isCompared}
-                    onClick={() => handleCompareToggle(entry.id)}
-                  >
-                    {isCompared ? "Selected" : "Compare"}
                   </button>
                   {canWear && (
                     <button
@@ -1508,84 +1330,11 @@ export function CatalogPurchasePanel({
           {embeddedInVault ? <h3>Shop</h3> : <h2>Catalog</h2>}
           <p className="muted">
             {embeddedInVault
-              ? "Buy watches here, then explore catalog references and licensing details."
-              : "Buy watches directly from catalog cards and track references as you discover them."}
+              ? "Buy watches and manage owned references."
+              : "Buy watches and track discovered references."}
           </p>
-          <div
-            className="surface-complication-strip catalog-complication-strip"
-            data-testid="catalog-complication-strip"
-          >
-            <article
-              className="surface-complication catalog-complication"
-              data-testid="catalog-complication-power-reserve"
-            >
-              <p className="surface-complication-label">Power reserve · Visible catalog</p>
-              <p className="surface-complication-value">
-                {stableCatalogEntries.length} visible references
-              </p>
-              <p className="surface-complication-detail">
-                {discoveredCatalogEntries.length} discovered in archive
-              </p>
-            </article>
-            <article
-              className="surface-complication catalog-complication"
-              data-testid="catalog-complication-chronograph"
-            >
-              <p className="surface-complication-label">Chronograph · Ready to buy</p>
-              <p className="surface-complication-value">{readyToBuyCount} ready to buy</p>
-              <p className="surface-complication-detail">
-                {unownedReady
-                  ? "Unowned references are currently affordable."
-                  : "Build cash or enjoyment to open more purchase gates."}
-              </p>
-            </article>
-            <article
-              className="surface-complication catalog-complication"
-              data-testid="catalog-complication-date-wheel"
-            >
-              <p className="surface-complication-label">Date wheel · Owned actions</p>
-              <p className="surface-complication-value">
-                {readyOwnedQuickActionsCount} quick actions
-              </p>
-              <p className="surface-complication-detail">
-                {ownedReady
-                  ? "Owned references have interaction or dismantle actions ready."
-                  : "No owned quick actions are currently available."}
-              </p>
-            </article>
-            <article
-              className="surface-complication catalog-complication"
-              data-testid="catalog-complication-moonphase"
-            >
-              <p className="surface-complication-label">Moonphase · Undo window</p>
-              <p className="surface-complication-value">{undoComplicationValue}</p>
-              <p className="surface-complication-detail">{undoComplicationDetail}</p>
-            </article>
-          </div>
         </div>
         <div className="catalog-header-actions">
-          <div className="catalog-collection-context" data-testid="catalog-collection-context">
-            <span>
-              Collection: {ownedCountLabel} / {maxCapacityLabel}
-            </span>
-            <span> · </span>
-            <span>Collection value: {formatMoneyFromCents(collectionValueCents)}</span>
-          </div>
-          <div className="catalog-upgrade-context" data-testid="catalog-upgrade-context">
-            <span>Upgrades: {upgradeLevelsLabel} levels</span>
-            <span> · </span>
-            <span>
-              Workshop {workshopOwnedLabel}/{workshopTotalLabel}
-            </span>
-            <span> · </span>
-            <span>
-              Maison {maisonOwnedLabel}/{maisonTotalLabel}
-            </span>
-            <span> · </span>
-            <span>
-              Lines {maisonLinesActiveLabel}/{maisonLinesTotalLabel}
-            </span>
-          </div>
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
             {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
           </div>
@@ -1888,17 +1637,6 @@ export function CatalogPurchasePanel({
           </div>
         </div>
       </form>
-
-      <WatchComparePanel
-        slots={compareSlotPayloads}
-        onClearSlot={handleClearCompareSlot}
-        onClearAll={handleClearAllCompare}
-        onSwap={handleSwapCompareOrder}
-      />
-
-      <section className="panel per-watch-stats-panel" data-testid="per-watch-stats-section">
-        <PerWatchStatsTable rows={perWatchRows} highlightModelId={state.wornWatchId ?? null} />
-      </section>
 
       <section
         id="catalog-unowned"

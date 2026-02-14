@@ -430,10 +430,8 @@ export function getNostalgiaUnlockIds(): WatchItemId[] {
 }
 
 export function createInitialState(): GameState {
-  const starterPriceCents = WATCH_ITEM_LOOKUP.get("quartz")?.basePriceCents ?? 0;
-
   return {
-    currencyCents: starterPriceCents,
+    currencyCents: 0,
     enjoymentCents: 0,
     nostalgiaPoints: 0,
     nostalgiaResets: 0,
@@ -871,7 +869,8 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     interactionBestPerfectStreakRaw,
   );
   const restoredState = applyMilestoneUnlocks({
-    currencyCents: Math.max(0, saved.currencyCents),
+    currencyCents:
+      therapistCareer.careerStartId === null ? 0 : Math.max(0, Math.floor(saved.currencyCents)),
     enjoymentCents,
     nostalgiaPoints,
     nostalgiaResets,

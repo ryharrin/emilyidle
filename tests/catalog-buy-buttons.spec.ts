@@ -14,8 +14,7 @@ test("fresh save shows catalog buy buttons in collection shop", async ({ page })
   const openCatalog = callout.getByRole("button", { name: "Open Catalog" });
   await clickLocatorSafely(openCatalog);
 
-  await expect(page.getByTestId("catalog-collection-context")).toBeVisible();
-  await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();
+  await expect(page.getByTestId("catalog-results-count")).toBeVisible();
 
   const buyButtons = page.locator('[data-testid^="catalog-buy-"]');
   await expect(buyButtons.first()).toBeInViewport();

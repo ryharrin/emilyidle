@@ -40,6 +40,11 @@ const getCatalogCardStyles = async (page: Page, highlightedEntryId: string) => {
   const catalogTab = page.getByRole("tab", { name: "Catalog" });
   await catalogTab.click();
   await expect(page.getByTestId("catalog-grid")).toBeVisible();
+  const filterToggle = page.getByTestId("catalog-filter-toggle");
+  if ((await filterToggle.getAttribute("aria-expanded")) !== "true") {
+    await filterToggle.click();
+  }
+  await page.getByTestId("catalog-quick-preset").selectOption("all");
 
   const highlightedButton = page.getByTestId(`catalog-buy-${highlightedEntryId}`);
   const highlightedCard = highlightedButton.locator(
@@ -92,14 +97,7 @@ test("catalog actionable styling differs in dark and light themes", async ({ pag
   await expect(nonActionableCard).toHaveClass(/catalog-nonactionable/);
   await expect(nonActionableCard).not.toHaveClass(/catalog-actionable/);
 
-  const viewport = page.viewportSize();
-  if (!viewport || viewport.width >= 720) {
-    const preview = highlightedCard.locator('[data-testid^="catalog-preview-"]').first();
-    await expect(preview).toHaveCSS("opacity", "0");
-    await highlightedCard.hover();
-    await expect(preview).toHaveCSS("opacity", "1");
-    await page.mouse.move(0, 0);
-  }
+  await expect(highlightedCard.locator('[data-testid^="catalog-preview-"]')).toHaveCount(0);
 
   await page.evaluate((settings) => {
     const nextSettings = { ...settings, themeMode: "light" };

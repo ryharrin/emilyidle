@@ -43,25 +43,12 @@ export function resolveLandingTab(args: {
   navigationState: NavigationState | null;
   isVisible: (tabId: TabId) => boolean;
 }): { tabId: TabId; source: TabActivationSource } {
-  const params = new URLSearchParams(args.search);
-  const deepLinkRaw = params.get("tab");
-  const deepLinkTabId = deepLinkRaw ? resolveTabAlias(deepLinkRaw) : null;
+  void args.search;
+  void args.hasSave;
+  void args.navigationState;
 
-  if (deepLinkTabId && args.isVisible(deepLinkTabId)) {
-    return { tabId: deepLinkTabId, source: "deep-link" };
-  }
-
-  const lastTabId = args.navigationState?.lastTabId;
-  if (args.hasSave && lastTabId && args.isVisible(lastTabId)) {
-    return { tabId: lastTabId, source: "system" };
-  }
-
-  if (!args.hasSave) {
-    if (args.isVisible("career")) {
-      return { tabId: "career", source: "system" };
-    }
-
-    return { tabId: "collection", source: "system" };
+  if (args.isVisible("career")) {
+    return { tabId: "career", source: "system" };
   }
 
   return { tabId: "collection", source: "system" };

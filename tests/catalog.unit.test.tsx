@@ -246,7 +246,7 @@ describe("primary navigation tabs", () => {
     expect(screen.getByRole("tabpanel", { name: /Catalog/i })).toBeTruthy();
   });
 
-  it("restores the last visited tab for existing saves", () => {
+  it("always lands on Career for existing saves", () => {
     cleanup();
     const baseState = createInitialState();
     localStorage.setItem(
@@ -262,12 +262,12 @@ describe("primary navigation tabs", () => {
     render(<App />);
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const saveTab = within(tabList).getByRole("tab", { name: /Settings/i });
+    const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
 
-    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+    expect(careerTab.getAttribute("aria-selected")).toBe("true");
   });
 
-  it("restores catalog last-tab when it is visible", () => {
+  it("ignores stored catalog last-tab on initial landing", () => {
     cleanup();
     const baseState = createInitialState();
     localStorage.setItem(
@@ -283,12 +283,12 @@ describe("primary navigation tabs", () => {
     render(<App />);
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
 
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    expect(careerTab.getAttribute("aria-selected")).toBe("true");
   });
 
-  it("honors catalog deep links without persisting last-tab", () => {
+  it("ignores initial deep-link tabs and keeps Career as first landing", () => {
     cleanup();
     const baseState = createInitialState();
     localStorage.setItem(
@@ -305,9 +305,9 @@ describe("primary navigation tabs", () => {
     const { unmount } = render(<App />);
 
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    const careerTab = within(tabList).getByRole("tab", { name: /Career/i });
 
-    expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    expect(careerTab.getAttribute("aria-selected")).toBe("true");
 
     const stored = localStorage.getItem("emily-idle:navigation");
     expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });
@@ -318,8 +318,8 @@ describe("primary navigation tabs", () => {
     render(<App />);
 
     const refreshedList = screen.getByRole("tablist", { name: /Primary navigation/i });
-    const saveTab = within(refreshedList).getByRole("tab", { name: /Settings/i });
-    expect(saveTab.getAttribute("aria-selected")).toBe("true");
+    const refreshedCareerTab = within(refreshedList).getByRole("tab", { name: /Career/i });
+    expect(refreshedCareerTab.getAttribute("aria-selected")).toBe("true");
   });
 
   it("scrolls buy watch CTAs to the catalog shop", async () => {
@@ -374,6 +374,48 @@ describe("primary navigation tabs", () => {
       scrollSpy.mockRestore();
       rafSpy.mockRestore();
     }
+  });
+
+  it("opens the owned catalog view from collection when owned references exist", async () => {
+    cleanup();
+    localStorage.clear();
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        quartz: 2,
+      },
+    };
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 4,
+        savedAt: new Date(0).toISOString(),
+        state: seededState,
+      }),
+    );
+    render(<App />);
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const collectionTab = within(tabList).getByRole("tab", { name: /Collection/i });
+    const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
+    await user.click(collectionTab);
+
+    const callout = screen.getByTestId("catalog-shop-callout");
+    const ownedCta = within(callout).getByRole("button", { name: "Open Owned" });
+    expect(ownedCta).toBeEnabled();
+    await user.click(ownedCta);
+
+    await waitFor(() => {
+      expect(catalogTab.getAttribute("aria-selected")).toBe("true");
+    });
+
+    const ownedTab = screen.getByRole("tab", { name: "Owned" });
+    await waitFor(() => {
+      expect(ownedTab.getAttribute("aria-selected")).toBe("true");
+    });
   });
 
   it("keeps catalog buy buttons inside the catalog tabpanel", async () => {
@@ -845,15 +887,10 @@ describe("catalog filters", () => {
     }
   });
 
-  it("renders the catalog collection context pill", () => {
-    const context = screen.getByTestId("catalog-collection-context");
-    const contextText = context.textContent ?? "";
-
-    expect(contextText).toMatch(/Collection:\s*[\d,]+\s*\/\s*[\d,]+/);
-    expect(contextText).toMatch(/Collection value:/);
-
-    const upgradeContext = screen.getByTestId("catalog-upgrade-context");
-    expect(upgradeContext.textContent).toContain("Upgrades");
+  it("renders the simplified catalog header status line", () => {
+    const results = screen.getByTestId("catalog-results-count");
+    expect(results.textContent).toMatch(/\d+\s+results/);
+    expect(results.textContent).toMatch(/\d+\s+discovered/);
   });
 
   it("filters catalog by search text", async () => {
@@ -1308,14 +1345,12 @@ describe("catalog purchase CTA", () => {
     }
 
     const favoriteToggle = within(card).getByTestId(/catalog-favorite-toggle-/);
-    const compareToggle = within(card).getByTestId(/catalog-compare-toggle-/);
     const primaryActions = card.querySelector(".catalog-primary-actions");
     const primaryButtons = primaryActions?.querySelectorAll(".catalog-primary-action");
 
     expect(buyButton.classList.contains("catalog-primary-action")).toBe(true);
     expect(primaryButtons?.length).toBe(1);
     expect(favoriteToggle.classList.contains("secondary")).toBe(true);
-    expect(compareToggle.classList.contains("secondary")).toBe(true);
   });
 });
 
@@ -1334,21 +1369,14 @@ describe("catalog card affordances", () => {
     cleanup();
   });
 
-  it("shows stat preview overlays on catalog cards", async () => {
+  it("does not render stat preview overlays on catalog cards", async () => {
     localStorage.clear();
     render(<App />);
     await openCatalogTab();
 
     const catalogGrid = await waitFor(() => screen.getByTestId("catalog-grid"));
     const cards = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-card/));
-    const preview = await waitFor(() => within(cards[0]).getByTestId(/catalog-preview-/));
-    const rows = preview.querySelectorAll(".catalog-card-preview__row");
-    expect(rows.length).toBe(2);
-    expect(preview.getAttribute("data-label")).toBe("Stat preview");
-    expect(rows[0]?.getAttribute("data-label")).toBe("Enjoyment / sec");
-    expect(rows[0]?.getAttribute("data-value")).toBeTruthy();
-    expect(rows[1]?.getAttribute("data-label")).toBe("Cash / sec");
-    expect(rows[1]?.getAttribute("data-value")).toBeTruthy();
+    expect(within(cards[0]).queryByTestId(/catalog-preview-/)).toBeNull();
   });
 
   it("hides dismantle actions until the workshop unlocks", async () => {
@@ -1586,12 +1614,51 @@ describe("catalog ownership tabs", () => {
     expect(metrics.textContent).toContain("Enjoyment");
     expect(metrics.textContent).toContain("Enjoyment / sec");
     expect(metrics.textContent).toContain("Memories");
-    expect(metrics.textContent).toContain("Atelier resets");
-    expect(metrics.textContent).toContain("Maison heritage");
-    expect(metrics.textContent).toContain("Maison reputation");
-    expect(metrics.textContent).toContain("Event multiplier");
+    expect(screen.queryByTestId("stats-system-details")).toBeNull();
+    expect(screen.queryByTestId("stats-event-multiplier")).toBeNull();
+  });
 
-    expect(screen.getByTestId("stats-event-multiplier").textContent).toMatch(/^x\d+\.\d{2}$/);
+  it("renders only discovered entries in the system card", async () => {
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        quartz: 10,
+      },
+      enjoymentCents: 0,
+      workshopPrestigeCount: 1,
+      workshopBlueprints: 0,
+      achievementUnlocks: ["first-drawer"],
+      unlockedMilestones: ["collector-shelf", "showcase"],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 4,
+        savedAt: new Date(0).toISOString(),
+        state: seededState,
+      }),
+    );
+
+    cleanup();
+    render(<App />);
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const statsTab = within(tabList).getByRole("tab", { name: /Stats/i });
+
+    await user.click(statsTab);
+
+    expect(statsTab.getAttribute("aria-selected")).toBe("true");
+
+    const systemDetails = screen.getByTestId("stats-system-details");
+    expect(systemDetails.textContent).toContain("Atelier resets");
+    expect(systemDetails.textContent).not.toContain("Maison heritage");
+    expect(systemDetails.textContent).not.toContain("Maison reputation");
+    expect(systemDetails.textContent).not.toContain("Event multiplier");
+    expect(screen.queryByTestId("stats-event-multiplier")).toBeNull();
   });
 
   it("unlocks lore chapters based on milestones", async () => {

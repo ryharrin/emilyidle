@@ -27,6 +27,7 @@ import type {
   WatchPurchaseSnapshot,
   WorkshopUpgradeId,
 } from "../model/types";
+import { enterPhdProgram as enterPhdProgramAction } from "./therapistCareer";
 import {
   canBuyMaisonLine,
   canBuyMaisonUpgrade,
@@ -72,54 +73,7 @@ export {
 } from "./therapistCareer";
 
 const THERAPIST_SESSION_XP_GAIN = 8;
-const THERAPIST_PASSIVE_XP_PER_SEC = 3;
 export const WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS = 10_000;
-
-export function applyTherapistPassiveProgress(state: GameState, dtMs: number): GameState {
-  if (state.therapistCareer.careerStartId === null) {
-    return state;
-  }
-  const clampedDtMs = Math.max(0, Math.floor(dtMs));
-  if (clampedDtMs <= 0) {
-    return state;
-  }
-
-  const xpGain = Math.floor((THERAPIST_PASSIVE_XP_PER_SEC * clampedDtMs) / 1_000);
-  if (xpGain <= 0) {
-    return state;
-  }
-
-  const career = state.therapistCareer;
-  let nextLevel = career.level;
-  let nextXp = career.xp + xpGain;
-  let levelsGained = 0;
-
-  while (nextXp >= getTherapistXpRequiredForNextLevel(nextLevel)) {
-    nextXp -= getTherapistXpRequiredForNextLevel(nextLevel);
-    nextLevel += 1;
-    levelsGained += 1;
-  }
-
-  if (levelsGained <= 0) {
-    return {
-      ...state,
-      therapistCareer: {
-        ...career,
-        xp: nextXp,
-      },
-    };
-  }
-
-  return {
-    ...state,
-    therapistCareer: {
-      ...career,
-      level: nextLevel,
-      xp: nextXp,
-      pointsAvailable: career.pointsAvailable + levelsGained,
-    },
-  };
-}
 
 export function setWornWatchId(state: GameState, modelId: string | null): GameState {
   const wornWatchId =
@@ -538,24 +492,7 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
 
   const salaryWindowMs = getTherapistSalaryActiveWindowMs(state);
   const salaryActiveUntilMs = Math.max(career.salaryActiveUntilMs, clampedNowMs + salaryWindowMs);
-  const currentPremiumCount = Number.isFinite(career.sessionPremiumCount)
-    ? Math.max(0, Math.floor(career.sessionPremiumCount))
-    : 0;
-  const lastSessionAtMs = Number.isFinite(career.lastSessionAtMs)
-    ? Math.max(0, Math.floor(career.lastSessionAtMs))
-    : 0;
-  const hasSessionChain = currentPremiumCount > 0;
-  const withinPremiumWindow =
-    policy.premiumWindowMs > 0 &&
-    hasSessionChain &&
-    clampedNowMs >= lastSessionAtMs &&
-    clampedNowMs - lastSessionAtMs < policy.premiumWindowMs;
-  const nextPremiumCount =
-    policy.premiumWindowMs > 0
-      ? withinPremiumWindow
-        ? Math.min(3, currentPremiumCount + 1)
-        : 1
-      : 0;
+  const nextPremiumCount = Math.min(3, Math.max(0, policy.premiumCount + 1));
 
   return {
     ...state,
@@ -572,6 +509,19 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
       lastSessionAtMs: clampedNowMs,
     },
   };
+}
+
+export function startCareerWithKickoffSession(state: GameState, nowMs: number): GameState {
+  const started = enterPhdProgramAction(state, nowMs);
+  if (started === state) {
+    return state;
+  }
+
+  if (!started.therapistCareer.freeSessionAvailable) {
+    return started;
+  }
+
+  return performTherapistSession(started, nowMs);
 }
 
 export function buyItem(state: GameState, id: WatchItemId, quantity = 1): GameState {

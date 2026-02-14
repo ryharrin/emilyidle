@@ -8,6 +8,7 @@ import {
   getCashRateBreakdown,
   getEffectiveCashRateCentsPerSec,
   getEventIncomeMultiplier,
+  startCareerWithKickoffSession,
   getTherapistSessionCostLabel,
   getTherapistSessionPolicy,
   getTotalCashRateCentsPerSec,
@@ -15,8 +16,38 @@ import {
   performTherapistSession,
 } from "../src/game/state";
 import type { CareerTrackId } from "../src/game/model/types";
+import { step } from "../src/game/sim";
 
 describe("career-first economy", () => {
+  it("kickstarts a fresh run with one free starter session", () => {
+    const fresh = createInitialState();
+    const nowMs = 1_000;
+
+    const started = startCareerWithKickoffSession(fresh, nowMs);
+
+    expect(started.therapistCareer.careerStartId).toBe("phd-program");
+    expect(started.currencyCents).toBeGreaterThan(0);
+    expect(started.therapistCareer.xp).toBeGreaterThan(0);
+    expect(started.therapistCareer.nextAvailableAtMs).toBeGreaterThan(nowMs);
+    expect(started.therapistCareer.freeSessionAvailable).toBe(false);
+    expect(started.enjoymentCents).toBe(fresh.enjoymentCents);
+  });
+
+  it("starts at zero cash and stays there before career start", () => {
+    let state = createInitialState();
+    expect(state.currencyCents).toBe(0);
+    expect(state.therapistCareer.careerStartId).toBeNull();
+    expect(getTotalCashRateCentsPerSec(state, 0)).toBe(0);
+
+    let nowMs = 0;
+    for (let i = 0; i < 60; i += 1) {
+      state = step(state, 1_000, nowMs);
+      nowMs += 1_000;
+    }
+
+    expect(state.currencyCents).toBe(0);
+  });
+
   it("keeps cash rate tied to career only, even with watches and events", () => {
     const nowMs = 1_700_000_000_000;
     const baseStateRaw = createInitialState();
@@ -66,7 +97,7 @@ describe("career-first economy", () => {
     expect(breakdown.totalCentsPerSec).toBeCloseTo(effectiveRate, 6);
   });
 
-  it("runs sessions during cooldown when the rush-adjusted cost is affordable", () => {
+  it("supports back-to-back sessions with escalating cost that decays over time", () => {
     const baseState = createInitialState();
     const nowMs = 0;
     const sessionState = {
@@ -86,24 +117,24 @@ describe("career-first economy", () => {
     const afterSession = performTherapistSession(sessionState, nowMs);
     const policy = getTherapistSessionPolicy(sessionState, nowMs);
     const cooldownNow = nowMs + Math.max(1, Math.floor(policy.cooldownMs / 2));
-    const cooldownRushPolicy = getTherapistSessionPolicy(afterSession, cooldownNow);
+    const cooldownPolicy = getTherapistSessionPolicy(afterSession, cooldownNow);
     const readyNow = nowMs + policy.cooldownMs;
     const readyPolicy = getTherapistSessionPolicy(afterSession, readyNow);
 
     expect(afterSession.therapistCareer.freeSessionAvailable).toBe(false);
     expect(afterSession.enjoymentCents).toBe(sessionState.enjoymentCents);
-    expect(cooldownRushPolicy.premiumCount).toBe(1);
-    expect(cooldownRushPolicy.cooldownRemainingMs).toBeGreaterThan(0);
-    expect(cooldownRushPolicy.cooldownRushExtraCents).toBeGreaterThan(0);
-    expect(cooldownRushPolicy.effectiveEnjoymentCostCents).toBeGreaterThan(
-      cooldownRushPolicy.premiumEnjoymentCostCents,
+    expect(cooldownPolicy.premiumCount).toBe(1);
+    expect(cooldownPolicy.cooldownRemainingMs).toBeGreaterThan(0);
+    expect(cooldownPolicy.cooldownRushExtraCents).toBe(0);
+    expect(cooldownPolicy.effectiveEnjoymentCostCents).toBe(
+      cooldownPolicy.premiumEnjoymentCostCents,
     );
-    expect(readyPolicy.premiumCount).toBe(1);
+    expect(readyPolicy.premiumCount).toBe(0);
     expect(readyPolicy.cooldownRemainingMs).toBe(0);
     expect(readyPolicy.cooldownRushExtraCents).toBe(0);
     expect(readyPolicy.effectiveEnjoymentCostCents).toBe(readyPolicy.premiumEnjoymentCostCents);
     expect(getTherapistSessionCostLabel(afterSession, cooldownNow)).toBe(
-      `${formatMoneyFromCents(cooldownRushPolicy.effectiveEnjoymentCostCents)} enjoyment (includes cooldown rush fee)`,
+      `${formatMoneyFromCents(cooldownPolicy.effectiveEnjoymentCostCents)} enjoyment`,
     );
     expect(getTherapistSessionCostLabel(afterSession, readyNow)).toBe(
       `${formatMoneyFromCents(readyPolicy.effectiveEnjoymentCostCents)} enjoyment`,
@@ -111,20 +142,27 @@ describe("career-first economy", () => {
 
     const affordableDuringCooldown = {
       ...afterSession,
-      enjoymentCents: cooldownRushPolicy.effectiveEnjoymentCostCents,
+      enjoymentCents: cooldownPolicy.effectiveEnjoymentCostCents,
     };
     expect(canPerformTherapistSession(affordableDuringCooldown, cooldownNow)).toBe(true);
 
-    const afterRushSession = performTherapistSession(affordableDuringCooldown, cooldownNow);
-    expect(afterRushSession).not.toBe(affordableDuringCooldown);
-    expect(afterRushSession.enjoymentCents).toBe(0);
-    expect(afterRushSession.currencyCents).toBe(
-      affordableDuringCooldown.currencyCents + cooldownRushPolicy.cashPayoutCents,
+    const afterSecondSession = performTherapistSession(affordableDuringCooldown, cooldownNow);
+    expect(afterSecondSession).not.toBe(affordableDuringCooldown);
+    expect(afterSecondSession.enjoymentCents).toBe(0);
+    expect(afterSecondSession.currencyCents).toBe(
+      affordableDuringCooldown.currencyCents + cooldownPolicy.cashPayoutCents,
     );
-    expect(afterRushSession.therapistCareer.sessionPremiumCount).toBe(2);
+    expect(afterSecondSession.therapistCareer.sessionPremiumCount).toBe(2);
+
+    const decayNow = cooldownNow + policy.cooldownMs;
+    const decayedPolicy = getTherapistSessionPolicy(afterSecondSession, decayNow);
+    expect(decayedPolicy.premiumCount).toBe(1);
+    expect(decayedPolicy.effectiveEnjoymentCostCents).toBeLessThan(
+      getTherapistSessionPolicy(afterSecondSession, cooldownNow).effectiveEnjoymentCostCents,
+    );
   });
 
-  it("blocks cooldown rush when the rush-adjusted cost is not affordable", () => {
+  it("blocks sessions when the current premium-adjusted cost is not affordable", () => {
     const baseState = createInitialState();
     const nowMs = 0;
     const sessionState = {
@@ -142,19 +180,17 @@ describe("career-first economy", () => {
     const afterSession = performTherapistSession(sessionState, nowMs);
     const policy = getTherapistSessionPolicy(sessionState, nowMs);
     const cooldownNow = nowMs + Math.max(1, Math.floor(policy.cooldownMs / 2));
-    const cooldownRushPolicy = getTherapistSessionPolicy(afterSession, cooldownNow);
+    const cooldownPolicy = getTherapistSessionPolicy(afterSession, cooldownNow);
 
-    expect(cooldownRushPolicy.effectiveEnjoymentCostCents).toBeGreaterThan(0);
+    expect(cooldownPolicy.effectiveEnjoymentCostCents).toBeGreaterThan(0);
 
     const lowEnjoymentState = {
       ...afterSession,
-      enjoymentCents: cooldownRushPolicy.effectiveEnjoymentCostCents - 1,
+      enjoymentCents: cooldownPolicy.effectiveEnjoymentCostCents - 1,
     };
 
     expect(canPerformTherapistSession(lowEnjoymentState, cooldownNow)).toBe(false);
-    expect(getTherapistSessionCostLabel(lowEnjoymentState, cooldownNow)).toContain(
-      "includes cooldown rush fee",
-    );
+    expect(getTherapistSessionCostLabel(lowEnjoymentState, cooldownNow)).toContain("enjoyment");
     expect(performTherapistSession(lowEnjoymentState, cooldownNow)).toBe(lowEnjoymentState);
   });
 

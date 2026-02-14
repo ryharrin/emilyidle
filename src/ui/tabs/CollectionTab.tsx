@@ -258,6 +258,9 @@ export function CollectionTab({
     () => watchModels.filter((model) => favoriteSet.has(model.id)),
     [favoriteSet, watchModels],
   );
+  const ownedReferenceCount = ownedWearableModels.length;
+  const hasOwnedReferences = ownedReferenceCount > 0;
+  const discoveredReferenceCount = discoveredCatalogEntries.length;
 
   const tierCategories: ReadonlyArray<TierBadgeCategory> = [
     "quartz",
@@ -291,7 +294,29 @@ export function CollectionTab({
     );
   }, [coachmarksDismissed]);
   const navigationSections = React.useMemo<CollectionSectionNavLink[]>(() => {
-    return COLLECTION_SECTION_NAV_LINKS.map((link) => {
+    const visibleLinks = COLLECTION_SECTION_NAV_LINKS.filter((link) => {
+      if (link.id === "collection-segment-tourbillon") {
+        return showTourbillonSegment;
+      }
+      if (link.id === "collection-set-bonuses") {
+        return showSetBonusesSection;
+      }
+      if (link.id === "collection-milestones") {
+        return showMilestonesSection;
+      }
+      if (link.id === "collection-achievements") {
+        return showAchievementsSection;
+      }
+      if (link.id === "collection-events") {
+        return showEventsSection;
+      }
+      if (link.id === "collection-crafting") {
+        return showCraftingSection;
+      }
+      return true;
+    });
+
+    return visibleLinks.map((link) => {
       if (
         link.coachmark &&
         activeCoachmarkSection?.coachmark &&
@@ -304,7 +329,15 @@ export function CollectionTab({
       }
       return link;
     });
-  }, [activeCoachmarkSection]);
+  }, [
+    activeCoachmarkSection,
+    showAchievementsSection,
+    showCraftingSection,
+    showEventsSection,
+    showMilestonesSection,
+    showSetBonusesSection,
+    showTourbillonSegment,
+  ]);
   const handleDismissSectionCoachmark = React.useCallback(
     (coachmarkId: string) => {
       if (settings.coachmarksDismissed[coachmarkId]) {
@@ -775,10 +808,23 @@ export function CollectionTab({
                         Purchases happen in Catalog. Collection focuses on owned-watch management,
                         bonuses, and progression.
                       </p>
+                      <p className="muted" data-testid="collection-catalog-linkage">
+                        {ownedReferenceCount} owned reference
+                        {ownedReferenceCount === 1 ? "" : "s"} · {discoveredReferenceCount}{" "}
+                        discovered
+                      </p>
                     </div>
                     <div className="card-actions">
                       <button type="button" onClick={() => onNavigate("catalog", "catalog-shop")}>
                         Open Catalog
+                      </button>
+                      <button
+                        type="button"
+                        className="secondary"
+                        disabled={!hasOwnedReferences}
+                        onClick={() => onNavigate("catalog", "catalog-owned")}
+                      >
+                        Open Owned
                       </button>
                     </div>
                   </header>

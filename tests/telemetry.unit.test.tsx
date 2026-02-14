@@ -91,6 +91,7 @@ describe("telemetry instrumentation", () => {
           nowMs={1234}
           statusLabel="Start your career"
           onPurchase={onPurchase}
+          onOpenProgressionChoices={vi.fn()}
         />
       </HelpProvider>,
     );

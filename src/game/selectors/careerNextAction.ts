@@ -23,7 +23,7 @@ export function getCareerNextActionCue(state: GameState, nowMs: number): CareerN
     return {
       id: "start-career",
       label: "Enter the PhD program",
-      detail: "Starting your career enables a stipend, passive XP, and unlocks sessions soon.",
+      detail: "Starting your career enables a stipend and unlocks sessions soon.",
     };
   }
 
@@ -61,10 +61,7 @@ export function getCareerNextActionCue(state: GameState, nowMs: number): CareerN
 
   const policy = getTherapistSessionPolicy(state, nowMs);
   if (policy.supportsSessions) {
-    const seconds = Math.max(
-      0,
-      Math.ceil((state.therapistCareer.nextAvailableAtMs - nowMs) / 1000),
-    );
+    const seconds = Math.max(0, Math.ceil(policy.cooldownRemainingMs / 1000));
 
     if (!isTherapistSalaryActive(state, nowMs)) {
       const canPerform = canPerformTherapistSession(state, nowMs);
@@ -73,9 +70,9 @@ export function getCareerNextActionCue(state: GameState, nowMs: number): CareerN
         label: "Run a session to resume salary",
         detail: canPerform
           ? seconds > 0
-            ? `Refresh salary now for ${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment (rush available).`
+            ? `Refresh salary now for ${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment (cost tier recovers in ${seconds}s).`
             : "Refresh your salary window."
-          : "Wait for cooldown or earn more enjoyment.",
+          : "Build more enjoyment to cover the current session cost.",
       };
     }
 
@@ -83,17 +80,17 @@ export function getCareerNextActionCue(state: GameState, nowMs: number): CareerN
     if (canPerform) {
       return {
         id: "perform-session",
-        label: seconds > 0 ? "Run a session (rush available)" : "Run a session",
+        label: "Run a session",
         detail:
           seconds > 0
-            ? `Cooldown: ${seconds}s. Run now for ${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment.`
+            ? `Run now for ${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment. Cost tier drops in ${seconds}s.`
             : "Sessions give a cash burst and career XP.",
       };
     }
 
     const detail =
       seconds > 0
-        ? `Cooldown: ${seconds}s. Need ${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment to rush now.`
+        ? `Need ${formatMoneyFromCents(policy.effectiveEnjoymentCostCents)} enjoyment. Cost tier drops in ${seconds}s.`
         : "Need more enjoyment to pay the cost.";
     return {
       id: "perform-session",
@@ -105,6 +102,6 @@ export function getCareerNextActionCue(state: GameState, nowMs: number): CareerN
   return {
     id: "passive-xp",
     label: "Keep playing",
-    detail: "Career XP accrues passively over time.",
+    detail: "Career XP only comes from running sessions.",
   };
 }

@@ -128,25 +128,25 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       await expectTabSelected(page, "Career");
     });
 
-    test("2. Existing save + last-tab persistence: lands on Settings when lastTabId=save", async ({
+    test("2. Existing save: still lands on Career first", async ({
       page,
     }) => {
       await seedExistingSave(page, "save");
 
       await gotoApp(page);
 
-      await expectTabSelected(page, "Settings");
+      await expectTabSelected(page, "Career");
     });
 
-    test("3. Deep link non-persistence: ?tab=career opens Career, then / returns to Settings", async ({
+    test("3. Deep links are ignored for first landing and Career remains default", async ({
       page,
     }) => {
       await seedExistingSave(page, "save");
 
-      // First visit - should land on Settings
+      // First visit - should land on Career
       await gotoApp(page);
 
-      await expectTabSelected(page, "Settings");
+      await expectTabSelected(page, "Career");
 
       // Deep link to Career
       await gotoApp(page, "/?tab=career");
@@ -158,9 +158,9 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       );
       expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });
 
-      // Visit / again - should return to Settings
+      // Visit / again - should remain Career
       await gotoApp(page);
-      await expectTabSelected(page, "Settings");
+      await expectTabSelected(page, "Career");
 
       // Final verification: navigation still shows "save"
       const storedFinal = await page.evaluate(() =>
@@ -169,12 +169,12 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       expect(storedFinal ? JSON.parse(storedFinal) : null).toEqual({ lastTabId: "save" });
     });
 
-    test("4. Deep link alias: ?tab=catalog lands on Catalog", async ({ page }) => {
+    test("4. Deep link alias: ?tab=catalog still lands on Career", async ({ page }) => {
       await seedExistingSave(page, "save");
 
       await gotoApp(page, "/?tab=catalog");
 
-      await expectTabSelected(page, "Catalog");
+      await expectTabSelected(page, "Career");
     });
   });
 
@@ -214,18 +214,15 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       await expectTabSelected(page, "Career");
     });
 
-    test("3. Deep link non-persistence mobile: ?tab=career opens Career, then / returns to Settings", async ({
+    test("3. Deep links are ignored on mobile and Career remains default", async ({
       page,
     }) => {
       await seedExistingSave(page, "save");
 
-      // First visit - should land on Settings
+      // First visit - should land on Career
       await gotoApp(page);
 
-      await expectTabSelected(page, "Settings");
-
-      // Take screenshot of Settings tab on mobile
-      await captureBestEffort(page, "test-results/uat-mobile-save-tab.png");
+      await expectTabSelected(page, "Career");
 
       // Deep link to Career
       await gotoApp(page, "/?tab=career");
@@ -240,9 +237,9 @@ test.describe("Phase 32 UAT: Landing + Navigation Rules", () => {
       );
       expect(stored ? JSON.parse(stored) : null).toEqual({ lastTabId: "save" });
 
-      // Visit / again - should return to Settings
+      // Visit / again - should remain Career
       await gotoApp(page);
-      await expectTabSelected(page, "Settings");
+      await expectTabSelected(page, "Career");
     });
 
     test("Mobile layout: tablist does not break at small viewport", async ({ page }) => {

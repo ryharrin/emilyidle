@@ -136,7 +136,10 @@ export function CareerUpgradesCanvas({
   return (
     <div className="career-upgrades-canvas" data-testid="career-tree">
       <div className="career-upgrades-controls">
-        <p className="career-canvas-control-label">Lens controls</p>
+        <div className="career-canvas-control-copy">
+          <p className="career-canvas-control-label">Canvas controls</p>
+          <p className="career-canvas-control-hint">Zoom and reset view</p>
+        </div>
         <div className="career-canvas-control-buttons">
           <button
             type="button"

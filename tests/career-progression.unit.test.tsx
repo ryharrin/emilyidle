@@ -11,10 +11,11 @@ import { createInitialState, enterPhdProgram } from "../src/game/state";
 import { step } from "../src/game/sim";
 
 describe("career progression", () => {
-  it("starts with a spendable point and gains points on passive level-ups", () => {
+  it("does not grant career XP or levels from idle sim ticks", () => {
     let state = enterPhdProgram(createInitialState(), 0);
     expect(state.therapistCareer.level).toBe(1);
     expect(state.therapistCareer.pointsAvailable).toBe(0);
+    expect(state.therapistCareer.xp).toBe(0);
 
     let nowMs = 0;
     for (let i = 0; i < 120; i += 1) {
@@ -22,8 +23,9 @@ describe("career progression", () => {
       nowMs += 1_000;
     }
 
-    expect(state.therapistCareer.level).toBeGreaterThanOrEqual(2);
-    expect(state.therapistCareer.pointsAvailable).toBeGreaterThanOrEqual(1);
+    expect(state.therapistCareer.level).toBe(1);
+    expect(state.therapistCareer.pointsAvailable).toBe(0);
+    expect(state.therapistCareer.xp).toBe(0);
   });
 
   afterEach(() => {
@@ -129,12 +131,9 @@ describe("career progression", () => {
     expect(screen.getByTestId("career-complication-date-wheel")).toBeVisible();
     expect(screen.getByTestId("career-complication-moonphase")).toBeVisible();
 
-    const secondaryDetails = screen.getByTestId("career-secondary-details");
-    if (!secondaryDetails.hasAttribute("open")) {
-      await userEvent.click(screen.getByTestId("career-secondary-details-toggle"));
-    }
-
     expect(screen.getByTestId("career-economy-summary")).toBeVisible();
+    expect(screen.queryByTestId("session-delta-breakdown")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("career-economy-summary-toggle"));
     expect(screen.getByTestId("session-delta-breakdown")).toBeVisible();
     expect(screen.getByTestId("salary-window-summary")).toBeVisible();
     expect(screen.getByTestId("near-term-unlock-summary")).toBeVisible();

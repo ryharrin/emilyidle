@@ -18,17 +18,17 @@ test("Career sessions available pre-track selection", async ({ page }, testInfo:
   const careerPanel = page.locator('[data-testid="career-panel"]');
   await expect(careerPanel).toBeVisible();
 
-  // Click the start-career CTA (button with text "Enter program")
-  const startButton = page.locator('[data-testid="career-next-action-start"]');
-  await expect(startButton).toBeVisible();
-  await expect(startButton).toHaveText("Enter program");
-  await clickLocatorSafely(startButton);
-
-  // Verify sessions are supported pre-track:
-  // The run session button should be enabled
+  // Fresh saves should allow bootstrap directly from the Run session action.
   const runSessionButton = page.locator('[data-testid="career-action"]');
   await expect(runSessionButton).toBeVisible();
   await expect(runSessionButton).toBeEnabled();
+  await clickLocatorSafely(runSessionButton);
+
+  // Verify sessions are supported pre-track:
+  // Kickoff flow may consume the free first session immediately.
+  // Ensure the session surface is present and actionable state is rendered.
+  await expect(runSessionButton).toBeVisible();
+  await expect(page.locator('[data-testid="career-next-action-start"]')).toHaveCount(0);
 
   // Check that session payout and cooldown values are NOT "Unavailable"
   const careerPanelText = await careerPanel.textContent();
@@ -41,8 +41,10 @@ test("Career sessions available pre-track selection", async ({ page }, testInfo:
     fullPage: false,
   });
 
-  // Click Run session button
-  await clickLocatorSafely(runSessionButton);
+  const canRunSession = await runSessionButton.isEnabled();
+  if (canRunSession) {
+    await clickLocatorSafely(runSessionButton);
+  }
 
   await expect
     .poll(async () => {

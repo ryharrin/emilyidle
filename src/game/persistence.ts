@@ -10,6 +10,7 @@ type LegacySaveVersion = 1 | 2 | 3;
 type SaveV4 = {
   version: typeof CURRENT_SAVE_VERSION;
   savedAt: string;
+  lastSimulatedAtMs: number;
   state: GameState;
 };
 
@@ -42,11 +43,129 @@ function getSafeSavedAtIso(savedAt: string): string {
   return new Date().toISOString();
 }
 
-function buildCanonicalSave(state: GameState, savedAtIso: string): SaveV4 {
+function normalizeTimestampMs(value: unknown): number {
+  if (!isFiniteNumber(value)) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, Math.floor(value)));
+}
+
+function getSafeLastSimulatedAtMs(lastSimulatedAtMs: unknown, savedAtIso: string): number {
+  const normalized = normalizeTimestampMs(lastSimulatedAtMs);
+  if (normalized > 0) {
+    return normalized;
+  }
+
+  return normalizeTimestampMs(Date.parse(savedAtIso));
+}
+
+function buildCanonicalSave(
+  state: GameState,
+  savedAtIso: string,
+  lastSimulatedAtMs?: unknown,
+): SaveV4 {
+  const safeSavedAtIso = getSafeSavedAtIso(savedAtIso);
   return {
     version: CURRENT_SAVE_VERSION,
-    savedAt: getSafeSavedAtIso(savedAtIso),
+    savedAt: safeSavedAtIso,
+    lastSimulatedAtMs: getSafeLastSimulatedAtMs(lastSimulatedAtMs, safeSavedAtIso),
     state,
+  };
+}
+
+function shiftFutureTimestampMs(timestampMs: number, elapsedMs: number): number {
+  const normalizedTimestamp = normalizeTimestampMs(timestampMs);
+  const normalizedElapsedMs = normalizeTimestampMs(elapsedMs);
+  if (normalizedTimestamp === 0 || normalizedElapsedMs === 0) {
+    return normalizedTimestamp;
+  }
+
+  return Math.min(Number.MAX_SAFE_INTEGER, normalizedTimestamp + normalizedElapsedMs);
+}
+
+function pauseOfflineTimerProgress(state: GameState, elapsedMs: number): GameState {
+  const normalizedElapsedMs = normalizeTimestampMs(elapsedMs);
+  if (normalizedElapsedMs <= 0) {
+    return state;
+  }
+
+  let changed = false;
+
+  const therapistCareer = state.therapistCareer;
+  const nextTherapistCareer = {
+    ...therapistCareer,
+    salaryActiveUntilMs: shiftFutureTimestampMs(
+      therapistCareer.salaryActiveUntilMs,
+      normalizedElapsedMs,
+    ),
+    nextAvailableAtMs: shiftFutureTimestampMs(therapistCareer.nextAvailableAtMs, normalizedElapsedMs),
+    lastSessionAtMs: shiftFutureTimestampMs(therapistCareer.lastSessionAtMs, normalizedElapsedMs),
+  };
+  const therapistChanged =
+    nextTherapistCareer.salaryActiveUntilMs !== therapistCareer.salaryActiveUntilMs ||
+    nextTherapistCareer.nextAvailableAtMs !== therapistCareer.nextAvailableAtMs ||
+    nextTherapistCareer.lastSessionAtMs !== therapistCareer.lastSessionAtMs;
+  if (therapistChanged) {
+    changed = true;
+  }
+
+  let interactionChanged = false;
+  const nextInteractionTimers: Partial<Record<string, number>> = {};
+  for (const [itemId, rawTimestamp] of Object.entries(state.interactionNextAvailableAtMsByItem)) {
+    const shifted = shiftFutureTimestampMs(rawTimestamp, normalizedElapsedMs);
+    nextInteractionTimers[itemId] = shifted;
+    if (shifted !== rawTimestamp) {
+      interactionChanged = true;
+      changed = true;
+    }
+  }
+
+  let eventChanged = false;
+  const nextEventStates: GameState["eventStates"] = {} as GameState["eventStates"];
+  for (const [eventId, eventState] of Object.entries(state.eventStates)) {
+    const shiftedActiveUntilMs = shiftFutureTimestampMs(eventState.activeUntilMs, normalizedElapsedMs);
+    const shiftedNextAvailableAtMs = shiftFutureTimestampMs(
+      eventState.nextAvailableAtMs,
+      normalizedElapsedMs,
+    );
+    nextEventStates[eventId as keyof GameState["eventStates"]] = {
+      ...eventState,
+      activeUntilMs: shiftedActiveUntilMs,
+      nextAvailableAtMs: shiftedNextAvailableAtMs,
+    };
+    if (
+      shiftedActiveUntilMs !== eventState.activeUntilMs ||
+      shiftedNextAvailableAtMs !== eventState.nextAvailableAtMs
+    ) {
+      eventChanged = true;
+      changed = true;
+    }
+  }
+
+  const nextLastPurchase = state.lastPurchase
+    ? {
+        ...state.lastPurchase,
+        purchasedAtMs: shiftFutureTimestampMs(state.lastPurchase.purchasedAtMs, normalizedElapsedMs),
+      }
+    : null;
+  const lastPurchaseChanged = nextLastPurchase?.purchasedAtMs !== state.lastPurchase?.purchasedAtMs;
+  if (lastPurchaseChanged) {
+    changed = true;
+  }
+
+  if (!changed) {
+    return state;
+  }
+
+  return {
+    ...state,
+    therapistCareer: therapistChanged ? nextTherapistCareer : therapistCareer,
+    interactionNextAvailableAtMsByItem: interactionChanged
+      ? (nextInteractionTimers as GameState["interactionNextAvailableAtMsByItem"])
+      : state.interactionNextAvailableAtMsByItem,
+    eventStates: eventChanged ? nextEventStates : state.eventStates,
+    lastPurchase: lastPurchaseChanged ? nextLastPurchase : state.lastPurchase,
   };
 }
 
@@ -252,7 +371,7 @@ function sanitizeState(value: unknown): GameState | null {
 }
 
 export function encodeSaveString(state: GameState, savedAt: Date = new Date()): string {
-  const save = buildCanonicalSave(state, savedAt.toISOString());
+  const save = buildCanonicalSave(state, savedAt.toISOString(), savedAt.getTime());
 
   return JSON.stringify(save);
 }
@@ -291,7 +410,7 @@ function decodeSavePayload(raw: string): SaveParseResult {
   }
 
   const migratedFromVersion = version === CURRENT_SAVE_VERSION ? undefined : (version as 1 | 2 | 3);
-  const save = buildCanonicalSave(state, savedAt);
+  const save = buildCanonicalSave(state, savedAt, record.lastSimulatedAtMs);
 
   return {
     ok: true,
@@ -343,10 +462,30 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
     return { ok: false, error: decoded.error };
   }
 
+  const nowMs = normalizeTimestampMs(Date.now());
+  const elapsedSinceLastSimulationMs = Math.max(0, nowMs - decoded.save.lastSimulatedAtMs);
+  const stateWithoutOfflineProgress = pauseOfflineTimerProgress(
+    decoded.save.state,
+    elapsedSinceLastSimulationMs,
+  );
+  const hasOfflineTimerAdjustment = stateWithoutOfflineProgress !== decoded.save.state;
+  const loadedSave = hasOfflineTimerAdjustment
+    ? buildCanonicalSave(stateWithoutOfflineProgress, new Date(nowMs).toISOString(), nowMs)
+    : decoded.save;
+
   if (raw !== null) {
     try {
-      const shouldRewrite = source === "legacy" || decoded.migratedFromVersion !== undefined;
-      const canonicalSave = buildCanonicalSave(decoded.save.state, decoded.save.savedAt);
+      const shouldRewrite =
+        source === "legacy" ||
+        decoded.migratedFromVersion !== undefined ||
+        hasOfflineTimerAdjustment;
+      const canonicalSave = hasOfflineTimerAdjustment
+        ? loadedSave
+        : buildCanonicalSave(
+            decoded.save.state,
+            decoded.save.savedAt,
+            decoded.save.lastSimulatedAtMs,
+          );
       const canonicalRaw = shouldRewrite ? JSON.stringify(canonicalSave) : raw;
       localStorage.setItem(SAVE_KEY, canonicalRaw);
       localStorage.removeItem(LEGACY_SAVE_KEY);
@@ -358,7 +497,10 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
     }
   }
 
-  return decoded;
+  return {
+    ...decoded,
+    save: loadedSave,
+  };
 }
 
 export function persistSaveToLocalStorage(

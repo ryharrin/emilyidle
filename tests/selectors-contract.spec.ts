@@ -44,8 +44,7 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(callout).toBeVisible();
   const openCatalog = callout.getByRole("button", { name: "Open Catalog" });
   await clickLocatorSafely(openCatalog);
-  await expect(page.getByTestId("catalog-collection-context")).toBeVisible();
-  await expect(page.getByTestId("catalog-upgrade-context")).toBeVisible();
+  await expect(page.getByTestId("catalog-results-count")).toBeVisible();
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   await openCatalogFilters(page);

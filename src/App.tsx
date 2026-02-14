@@ -19,6 +19,7 @@ import { AutomaticMiniGameModal } from "./ui/components/AutomaticMiniGameModal";
 import { QuartzMiniGameModal } from "./ui/components/QuartzMiniGameModal";
 import { WindingMiniGameModal } from "./ui/components/WindingMiniGameModal";
 import { EventBanner } from "./ui/components/EventBanner";
+import { NextActionChips, type NextActionChip } from "./ui/components/NextActionChips";
 import { StatsHeader } from "./ui/components/StatsHeader";
 import { ToastStack, type ToastMessage } from "./ui/components/ToastStack";
 import { MissionRail } from "./ui/components/MissionRail";
@@ -28,6 +29,8 @@ import { PageTabRail } from "./ui/navigation/PageTabRail";
 import { TabSwitchSkeleton } from "./ui/navigation/TabSwitchSkeleton";
 import { getTabReadiness } from "./ui/navigation/tabReadiness";
 import { TAB_DEFINITIONS, type TabId } from "./ui/navigation/tabMeta";
+import { emitTelemetryEvent } from "./ui/telemetry/emitter";
+import { TELEMETRY_EVENTS, type HelpOpenSource } from "./ui/telemetry/events";
 
 import { formatMoneyFromCents, formatSoftcapEfficiency } from "./game/format";
 import {
@@ -136,6 +139,14 @@ type PurchaseMeta = {
   prestigeTier?: PrestigeEvent["tier"];
 };
 
+type NextActionMilestones = {
+  careerStarted: boolean;
+  firstPurchase: boolean;
+  prestigeWorkshop: boolean;
+  prestigeMaison: boolean;
+  prestigeNostalgia: boolean;
+};
+
 type InteractionKind = "winding" | "automatic" | "quartz";
 
 type AudioSettings = {
@@ -180,6 +191,28 @@ const DEFAULT_SETTINGS: Settings = {
     events: true,
   },
 };
+
+const NEXT_ACTION_DISMISS_KEYS = {
+  careerStarted: "next-action:career-started",
+  firstPurchase: "next-action:first-purchase",
+  prestigeWorkshop: "next-action:prestige-workshop",
+  prestigeMaison: "next-action:prestige-maison",
+  prestigeNostalgia: "next-action:prestige-nostalgia",
+} as const;
+
+const countOwnedWatchModels = (gameState: GameState): number =>
+  Object.values(gameState.watchModels).reduce(
+    (total, value) => total + Math.max(0, Math.floor(value)),
+    0,
+  );
+
+const getNextActionMilestones = (gameState: GameState): NextActionMilestones => ({
+  careerStarted: gameState.therapistCareer.careerStartId !== null,
+  firstPurchase: countOwnedWatchModels(gameState) > 0,
+  prestigeWorkshop: gameState.workshopPrestigeCount > 0,
+  prestigeMaison: gameState.maisonHeritage > 0 || gameState.maisonReputation > 0,
+  prestigeNostalgia: gameState.nostalgiaResets > 0,
+});
 
 const loadNavigationState = (): NavigationState | null => {
   if (typeof window === "undefined") {
@@ -585,15 +618,15 @@ export default function App() {
   }, []);
 
   const tabs = useMemo(() => TAB_DEFINITIONS, []);
-  const [activeTab, setActiveTab] = useState<TabId>("collection");
-  const [focusedTab, setFocusedTab] = useState<TabId>("collection");
+  const [activeTab, setActiveTab] = useState<TabId>("career");
+  const [focusedTab, setFocusedTab] = useState<TabId>("career");
   const [hasResolvedInitialTab, setHasResolvedInitialTab] = useState(false);
   const hasHydratedCatalogFilterPersistenceRef = useRef(false);
   const tabRefs = useRef(new Map<TabId, HTMLButtonElement>());
   const tabSectionMemoryRef = useRef<Partial<Record<TabId, string>>>(
     initialNavigationState?.tabSectionMemory ?? {},
   );
-  const lastNavigatedTabRef = useRef<TabId>(initialNavigationState?.lastTabId ?? "collection");
+  const lastNavigatedTabRef = useRef<TabId>("career");
   const handleTabRef = useCallback((tabId: TabId, node: HTMLButtonElement | null) => {
     if (!node) {
       tabRefs.current.delete(tabId);
@@ -656,6 +689,12 @@ export default function App() {
       return;
     }
 
+    if (targetId === "catalog-owned") {
+      setCatalogTab("owned");
+    } else if (targetId === "catalog-shop" || targetId === "catalog-unowned") {
+      setCatalogTab("unowned");
+    }
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const target = document.getElementById(targetId);
@@ -667,6 +706,16 @@ export default function App() {
           const buyButton = target.querySelector('[data-testid^="catalog-buy-"]');
           if (buyButton instanceof HTMLElement) {
             buyButton.scrollIntoView({ block: "start", behavior: "auto" });
+            return;
+          }
+        }
+
+        if (targetId === "catalog-owned") {
+          const interactButton = target.querySelector(
+            '[data-testid^="vault-interact-"], [data-testid^="watch-wear-"]',
+          );
+          if (interactButton instanceof HTMLElement) {
+            interactButton.scrollIntoView({ block: "start", behavior: "auto" });
             return;
           }
         }
@@ -879,6 +928,10 @@ export default function App() {
   const handleOpenHelp = () => {
     const stored = loadHelpState();
     const nextId = resolveHelpSectionId(stored?.lastSectionId ?? null);
+    emitTelemetryEvent(TELEMETRY_EVENTS.helpOpen, {
+      source: "header-help-button",
+      sectionId: nextId,
+    });
     setHelpSectionId(nextId);
     setHelpOpen(true);
   };
@@ -908,8 +961,12 @@ export default function App() {
     persistHelpState({ lastSectionId: nextId });
   };
 
-  const openHelpTo = (sectionId: string) => {
+  const openHelpTo = (sectionId: string, source: HelpOpenSource = "context") => {
     const nextId = resolveHelpSectionId(sectionId);
+    emitTelemetryEvent(TELEMETRY_EVENTS.helpOpen, {
+      source,
+      sectionId: nextId,
+    });
     setHelpSectionId(nextId);
     if (nextId) {
       persistHelpState({ lastSectionId: nextId });
@@ -1159,6 +1216,7 @@ export default function App() {
     () => tabs.filter((tab) => combinedTabVisibility[tab.id]),
     [tabs, combinedTabVisibility],
   );
+  const nextActionMilestones = useMemo(() => getNextActionMilestones(state), [state]);
 
   useEffect(() => {
     const sessionReady = canPerformTherapistSession(state, nowMs);
@@ -1288,7 +1346,7 @@ export default function App() {
     const isVisible = (tabId: TabId) => combinedTabVisibility[tabId];
 
     if (typeof window === "undefined") {
-      return { tabId: "collection", source: "system" };
+      return { tabId: "career", source: "system" };
     }
 
     const navigationState = initialNavigationState;
@@ -1779,6 +1837,12 @@ export default function App() {
     () => eventCalendar.active.length > 0 || eventCalendar.ready.length > 0,
     [eventCalendar],
   );
+  const hasActiveEvent = eventCalendar.active.length > 0;
+  const systemVisibility = {
+    atelier: showWorkshopPanel,
+    maison: showMaisonPanel,
+    events: hasActiveEvent,
+  };
 
   useEffect(() => {
     if (isTestEnvironment()) {
@@ -1891,6 +1955,116 @@ export default function App() {
     </div>
   );
 
+  const dismissNextAction = useCallback(
+    (dismissKey?: string) => {
+      if (!dismissKey || settings.coachmarksDismissed[dismissKey]) {
+        return;
+      }
+
+      persistSettings({
+        ...settings,
+        coachmarksDismissed: {
+          ...settings.coachmarksDismissed,
+          [dismissKey]: true,
+        },
+      });
+    },
+    [persistSettings, settings],
+  );
+
+  const nextActionChips = useMemo<NextActionChip[]>(() => {
+    const chips: NextActionChip[] = [];
+
+    if (
+      nextActionMilestones.careerStarted &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.careerStarted]
+    ) {
+      chips.push({
+        id: "career-started",
+        title: "Career started",
+        detail: "Nice start. Buy your first watch in Catalog to begin the collection loop.",
+        ctaLabel: "Open Catalog",
+        tabId: "catalog",
+        scrollTargetId: "catalog-shop",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.careerStarted,
+      });
+    }
+
+    if (
+      nextActionMilestones.firstPurchase &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.firstPurchase]
+    ) {
+      chips.push({
+        id: "first-purchase",
+        title: "First purchase complete",
+        detail: "Great. Jump back to Career and run sessions to fund your next upgrades.",
+        ctaLabel: "Open Career",
+        tabId: "career",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.firstPurchase,
+      });
+    }
+
+    if (
+      nextActionMilestones.prestigeWorkshop &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.prestigeWorkshop]
+    ) {
+      chips.push({
+        id: "prestige-workshop",
+        title: "Atelier prestige complete",
+        detail: "Spend Blueprints now to accelerate your rebuild.",
+        ctaLabel: "Open Atelier",
+        tabId: "workshop",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.prestigeWorkshop,
+      });
+    }
+
+    if (
+      nextActionMilestones.prestigeMaison &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.prestigeMaison]
+    ) {
+      chips.push({
+        id: "prestige-maison",
+        title: "Maison prestige complete",
+        detail: "Use your legacy gains on Maison upgrades, then resume your collection rebuild.",
+        ctaLabel: "Open Maison",
+        tabId: "maison",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.prestigeMaison,
+      });
+    }
+
+    if (
+      nextActionMilestones.prestigeNostalgia &&
+      !settings.coachmarksDismissed[NEXT_ACTION_DISMISS_KEYS.prestigeNostalgia]
+    ) {
+      chips.push({
+        id: "prestige-nostalgia",
+        title: "Nostalgia prestige complete",
+        detail: "Spend Nostalgia in unlocks early to speed up the next run.",
+        ctaLabel: "Open Nostalgia",
+        tabId: "nostalgia",
+        dismissKey: NEXT_ACTION_DISMISS_KEYS.prestigeNostalgia,
+      });
+    }
+
+    return chips;
+  }, [nextActionMilestones, settings.coachmarksDismissed]);
+
+  const handleDismissNextActionChip = useCallback(
+    (chip: NextActionChip) => {
+      dismissNextAction(chip.dismissKey);
+    },
+    [dismissNextAction],
+  );
+
+  const handleSelectNextActionChip = useCallback(
+    (chip: NextActionChip) => {
+      const destinationTab = combinedTabVisibility[chip.tabId] ? chip.tabId : "collection";
+      navigateTo(destinationTab, chip.scrollTargetId);
+      dismissNextAction(chip.dismissKey);
+    },
+    [combinedTabVisibility, dismissNextAction, navigateTo],
+  );
+
   const runMissionAction = useCallback(
     (action: typeof primaryLoopAction.primary | typeof primaryLoopAction.secondary) => {
       emitUxEvent("mission.action", {
@@ -1990,6 +2164,7 @@ export default function App() {
             <StatsHeader
               stats={stats}
               systemStats={systemStats}
+              systemVisibility={systemVisibility}
               eventMultiplier={currentEventMultiplier}
             />
           </header>
@@ -2007,16 +2182,13 @@ export default function App() {
               onAction: () => runMissionAction(primaryLoopAction.primary),
               testId: "mission-action-primary",
             }}
-            secondary={{
-              label: primaryLoopAction.secondary.label,
-              detail: primaryLoopAction.secondary.detail,
-              actionLabel: primaryLoopAction.secondary.actionLabel,
-              whyNow: primaryLoopAction.secondary.whyNow,
-              onAction: () => runMissionAction(primaryLoopAction.secondary),
-              testId: "mission-action-secondary",
-            }}
             checklist={primaryLoopAction.checklist}
-            forecast={primaryLoopAction.forecast}
+          />
+
+          <NextActionChips
+            chips={nextActionChips}
+            onDismiss={handleDismissNextActionChip}
+            onSelect={handleSelectNextActionChip}
           />
 
           <CollectionTab

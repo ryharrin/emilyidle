@@ -160,7 +160,10 @@ export function CareerMapCanvas({
   return (
     <div className="career-map" data-testid="career-map">
       <div className="career-map-controls">
-        <p className="career-canvas-control-label">Lens controls</p>
+        <div className="career-canvas-control-copy">
+          <p className="career-canvas-control-label">Canvas controls</p>
+          <p className="career-canvas-control-hint">Zoom and reset view</p>
+        </div>
         <div className="career-canvas-control-buttons">
           <button
             type="button"
@@ -244,38 +247,48 @@ export function CareerMapCanvas({
           </svg>
 
           {nodes.map((node) => (
-            <button
-              key={node.id}
-              type="button"
-              className={[
-                "career-map-node",
-                `career-map-node-${node.kind}`,
-                node.status ? `career-map-${node.status}` : null,
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
-              data-testid={node.testId}
-              data-node-kind={node.kind}
-              data-node-status={node.status}
-              disabled={isNodeInteractive ? !isNodeInteractive(node.id) : false}
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={() => onNodeClick(node.id)}
-            >
-              <div className="career-map-node-tag" aria-hidden="true">
-                {node.kind === "choice-option"
-                  ? "Complication"
-                  : node.kind === "stage"
-                    ? "Milestone"
-                    : "Ledger"}
-              </div>
-              <div className="career-map-node-title">{node.label}</div>
-              {node.description ? (
-                <div className="career-map-node-desc">{node.description}</div>
-              ) : null}
-              {node.hint ? <div className="career-map-node-hint">{node.hint}</div> : null}
-              {renderNodeBody ? renderNodeBody(node.id) : null}
-            </button>
+            (() => {
+              const isCompactMetaNode =
+                node.kind === "meta" && (node.id.startsWith("meta-") || node.id.endsWith("-title"));
+              const isInteractive = isNodeInteractive ? isNodeInteractive(node.id) : true;
+
+              return (
+                <button
+                  key={node.id}
+                  type="button"
+                  className={[
+                    "career-map-node",
+                    `career-map-node-${node.kind}`,
+                    isCompactMetaNode ? "career-map-node-meta-compact" : null,
+                    node.status ? `career-map-${node.status}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
+                  data-testid={node.testId}
+                  data-node-kind={node.kind}
+                  data-node-status={node.status}
+                  disabled={!isInteractive}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={() => onNodeClick(node.id)}
+                  title={node.label}
+                >
+                  {node.kind !== "meta" ? (
+                    <div className="career-map-node-tag" aria-hidden="true">
+                      {node.kind === "choice-option" ? "Complication" : "Milestone"}
+                    </div>
+                  ) : null}
+                  <div className="career-map-node-title">{node.label}</div>
+                  {!isCompactMetaNode && node.description ? (
+                    <div className="career-map-node-desc">{node.description}</div>
+                  ) : null}
+                  {!isCompactMetaNode && node.hint ? (
+                    <div className="career-map-node-hint">{node.hint}</div>
+                  ) : null}
+                  {!isCompactMetaNode && renderNodeBody ? renderNodeBody(node.id) : null}
+                </button>
+              );
+            })()
           ))}
         </div>
       </div>

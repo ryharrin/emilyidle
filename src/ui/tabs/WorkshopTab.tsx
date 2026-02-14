@@ -343,7 +343,7 @@ export function WorkshopTab({
                     )}
                     <p className="muted" aria-live="polite">
                       {workshopResetArmed
-                        ? "Review reset checklist (Current run, Next run keeps, Delta), then confirm reset."
+                        ? "Review Current run, Next run keeps, and Delta, then confirm reset."
                         : canPrestigeWorkshop
                           ? "Open reset checklist to compare what resets against what carries forward."
                           : `Blocked: need ${formatMoneyFromCents(resetDeficitCents)} more enjoyment (ETA ${resetEtaLabel}).`}

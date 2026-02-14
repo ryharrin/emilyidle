@@ -4,6 +4,8 @@ import { createInitialState, getMilestones } from "../../game/state";
 import type { GameState, WatchItemDefinition } from "../../game/state";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { TabDisclosure } from "../components/TabDisclosure";
+import { emitTelemetryEvent } from "../telemetry/emitter";
+import { TELEMETRY_EVENTS } from "../telemetry/events";
 
 type ThemeMode = "system" | "light" | "dark";
 
@@ -51,6 +53,8 @@ type SaveTabProps = {
   isActive: boolean;
   state: GameState;
   watchItems: ReadonlyArray<WatchItemDefinition>;
+  hiddenTabCount?: number;
+  onRestoreHiddenTabs?: () => void;
   audioSettings: AudioSettings;
   onUpdateAudioSettings: (nextSettings: AudioSettings) => void;
   settings: Settings;
@@ -522,9 +526,17 @@ export function SaveTab({
               confirmClassName="danger"
               confirmTestId="settings-clear-save-confirm"
               cancelTestId="settings-clear-save-cancel"
-              onCancel={() => setConfirmClearOpen(false)}
+              onCancel={() => {
+                setConfirmClearOpen(false);
+                emitTelemetryEvent(TELEMETRY_EVENTS.resetCancel, {
+                  surface: "settings-save",
+                });
+              }}
               onConfirm={() => {
                 setConfirmClearOpen(false);
+                emitTelemetryEvent(TELEMETRY_EVENTS.resetConfirm, {
+                  surface: "settings-save",
+                });
                 onClearSave();
               }}
             />
