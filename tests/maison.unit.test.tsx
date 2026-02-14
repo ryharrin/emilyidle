@@ -500,18 +500,18 @@ describe("maison prestige", () => {
     expect(getWorkshopSoftcapValue(upgradedState)).toBeCloseTo(72_000, 5);
   });
 
-  it("reveals workshop, maison, milestone, and achievement unlocks at 80%", () => {
+  it("reveals workshop, maison, milestone, and achievement unlocks at 70%", () => {
     const baseState = createInitialState();
     const workshopThreshold = getWorkshopPrestigeThresholdCents();
     const maisonThreshold = getMaisonPrestigeThresholdCents();
 
     const belowWorkshop = {
       ...baseState,
-      enjoymentCents: workshopThreshold * 0.79,
+      enjoymentCents: workshopThreshold * 0.69,
     };
     const atWorkshop = {
       ...baseState,
-      enjoymentCents: workshopThreshold * 0.8,
+      enjoymentCents: workshopThreshold * 0.7,
     };
 
     expect(isWorkshopRevealReady(belowWorkshop)).toBe(false);
@@ -519,11 +519,11 @@ describe("maison prestige", () => {
 
     const belowMaison = {
       ...baseState,
-      enjoymentCents: maisonThreshold * 0.79,
+      enjoymentCents: maisonThreshold * 0.69,
     };
     const atMaison = {
       ...baseState,
-      enjoymentCents: maisonThreshold * 0.8,
+      enjoymentCents: maisonThreshold * 0.7,
     };
 
     expect(isMaisonRevealReady(belowMaison)).toBe(false);
@@ -536,7 +536,9 @@ describe("maison prestige", () => {
 
     const chronographModelId = getModelIdForTier("manual");
 
-    const belowMilestone = {
+    const belowMilestone = baseState;
+
+    const atMilestone = {
       ...baseState,
       items: {
         ...baseState.items,
@@ -548,18 +550,6 @@ describe("maison prestige", () => {
       },
     };
 
-    const atMilestone = {
-      ...baseState,
-      items: {
-        ...baseState.items,
-        manual: 2,
-      },
-      watchModels: {
-        ...baseState.watchModels,
-        [chronographModelId]: 2,
-      },
-    };
-
     expect(shouldShowUnlockTag(belowMilestone, "showcase")).toBe(false);
     expect(shouldShowUnlockTag(atMilestone, "showcase")).toBe(true);
 
@@ -567,19 +557,19 @@ describe("maison prestige", () => {
       ...baseState,
       items: {
         ...baseState.items,
-        quartz: 9,
+        quartz: 8,
       },
     };
     const atAchievement = {
       ...baseState,
       items: {
         ...baseState.items,
-        quartz: 10,
+        quartz: 9,
       },
     };
 
-    expect(getAchievementProgressRatio(belowAchievement, "first-drawer")).toBeLessThan(0.8);
-    expect(getAchievementProgressRatio(atAchievement, "first-drawer")).toBeGreaterThanOrEqual(0.8);
+    expect(getAchievementProgressRatio(belowAchievement, "first-drawer")).toBeLessThan(0.7);
+    expect(getAchievementProgressRatio(atAchievement, "first-drawer")).toBeGreaterThanOrEqual(0.7);
   });
 });
 

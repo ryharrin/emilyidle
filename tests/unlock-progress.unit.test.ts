@@ -83,10 +83,10 @@ describe("unlock progress detail helpers", () => {
     expect(detail.label).toMatch(/Hold 12 watches/);
   });
 
-  it("computes reveal progress ratio normalized to the 80% reveal threshold", () => {
+  it("computes reveal progress ratio normalized to the 70% reveal threshold", () => {
     expect(getUnlockRevealProgressRatio(0)).toBe(0);
-    expect(getUnlockRevealProgressRatio(0.4)).toBeCloseTo(0.5, 8);
-    expect(getUnlockRevealProgressRatio(0.8)).toBe(1);
+    expect(getUnlockRevealProgressRatio(0.35)).toBeCloseTo(0.5, 8);
+    expect(getUnlockRevealProgressRatio(0.7)).toBe(1);
     expect(getUnlockRevealProgressRatio(1.2)).toBe(1);
   });
 
