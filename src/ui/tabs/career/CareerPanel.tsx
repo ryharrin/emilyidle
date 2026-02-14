@@ -5,6 +5,7 @@ import { CAREER_STAGES } from "../../../game/data/careerStages";
 import { formatMoneyFromCents } from "../../../game/format";
 import {
   canPerformTherapistSession,
+  enterPhdProgram,
   getCareerNextActionCue,
   getTherapistCareerChoiceStatus,
   getTherapistCareer,
@@ -296,7 +297,7 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       return {
         label: "Enter program",
         disabled: false,
-        onClick: () => onPurchase(startCareerWithKickoffSession(state, nowMs)),
+        onClick: () => onPurchase(enterPhdProgram(state, nowMs)),
       };
     }
 

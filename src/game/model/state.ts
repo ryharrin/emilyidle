@@ -432,7 +432,7 @@ export function getNostalgiaUnlockIds(): WatchItemId[] {
 export function createInitialState(): GameState {
   return {
     currencyCents: 0,
-    enjoymentCents: 0,
+    enjoymentCents: 200,
     nostalgiaPoints: 0,
     nostalgiaResets: 0,
     nostalgiaUnlockedItems: [],

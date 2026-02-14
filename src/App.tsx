@@ -1047,7 +1047,6 @@ export default function App() {
     const fresh = createInitialState();
     setState(fresh);
     resetSimulationClock();
-    persistNow("clear-save", fresh);
 
     setImportText("");
     setSaveStatus("Cleared save. Starting fresh.");
