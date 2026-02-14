@@ -34,11 +34,14 @@ import { TELEMETRY_EVENTS, type HelpOpenSource } from "./ui/telemetry/events";
 
 import { formatMoneyFromCents, formatSoftcapEfficiency } from "./game/format";
 import {
+  bumpSaveClearEpoch,
   clearLocalStorageSave,
   decodeSaveString,
   encodeSaveString,
+  getSaveClearEpoch,
   loadSaveFromLocalStorage,
   persistSaveToLocalStorage,
+  type SavePersistResult,
 } from "./game/persistence";
 import { isTestEnvironment } from "./game/runtime/isTestEnvironment";
 import { useGameRuntime } from "./game/runtime/useGameRuntime";
@@ -488,6 +491,7 @@ export default function App() {
   const [coachmarksDismissed, setCoachmarksDismissed] = useState<Record<string, boolean>>(
     () => settings.coachmarksDismissed,
   );
+  const [sessionSaveClearEpoch] = useState(() => getSaveClearEpoch());
   const shortcutsHintDismissed = coachmarksDismissed["keyboard-shortcuts"] ?? false;
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const toastTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -515,12 +519,27 @@ export default function App() {
     setSaveStatus(message);
   }, []);
 
+  const persistSaveWithSessionEpochGuard = useCallback(
+    (nextState: GameState): SavePersistResult => {
+      const currentEpoch = getSaveClearEpoch();
+      if (currentEpoch !== sessionSaveClearEpoch) {
+        return {
+          ok: false,
+          error: "Save blocked in a stale tab after clear save; reload this tab and try again.",
+        };
+      }
+
+      return persistSaveToLocalStorage(nextState);
+    },
+    [sessionSaveClearEpoch],
+  );
+
   const { state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
     initialState: createInitialState,
     step,
     loadSave: loadSaveFromLocalStorage,
     clearSave: clearLocalStorageSave,
-    persistSave: persistSaveToLocalStorage,
+    persistSave: persistSaveWithSessionEpochGuard,
     devSettings,
     onPersistError: handlePersistError,
   });
@@ -1041,7 +1060,16 @@ export default function App() {
       return;
     }
 
-    clearLocalStorageSave();
+    const bumpEpochResult = bumpSaveClearEpoch();
+    if (!bumpEpochResult.ok) {
+      console.warn(`Failed to update clear-save epoch. ${bumpEpochResult.error}`);
+    }
+
+    const clearResult = clearLocalStorageSave();
+    if (!clearResult.ok) {
+      console.warn(`Failed to clear save data. ${clearResult.error}`);
+    }
+
     window.localStorage.removeItem(NAVIGATION_KEY);
 
     const fresh = createInitialState();
@@ -1055,6 +1083,8 @@ export default function App() {
     setFocusedTab("career");
     focusTabById("career");
     window.localStorage.setItem(NAVIGATION_KEY, JSON.stringify({ lastTabId: "career" }));
+
+    window.location.reload();
   };
 
   const stats = useMemo(() => {
@@ -1806,7 +1836,6 @@ export default function App() {
   );
 
   const collectionTierProgress = useMemo(() => getCatalogTierProgress(state), [state]);
-  const showTourbillonSegment = collectionTierProgress.tourbillon > 0;
 
   const showSetBonusesSection = true;
 
@@ -2221,7 +2250,6 @@ export default function App() {
             currentEventMultiplier={currentEventMultiplier}
             nowMs={nowMs}
             onPurchase={handlePurchase}
-            showTourbillonSegment={showTourbillonSegment}
             showSetBonusesSection={showSetBonusesSection}
             showCraftingSection={showCraftingSection}
             showMilestonesSection={showMilestonesSection}

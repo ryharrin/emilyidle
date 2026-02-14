@@ -186,6 +186,7 @@ describe("interactions", () => {
     const baseState = createInitialState();
     const seededState: GameState = {
       ...baseState,
+      enjoymentCents: 0,
       items: {
         ...baseState.items,
         manual: 1,
@@ -196,21 +197,11 @@ describe("interactions", () => {
     expect(first.enjoymentCents).toBe(150);
     expect(getInteractionStreakDetail(first).currentStreak).toBe(1);
 
-    const second = applyWindingReward(
-      first,
-      "manual",
-      INTERACTION_BASE_COOLDOWN_MS,
-      "perfect",
-    );
+    const second = applyWindingReward(first, "manual", INTERACTION_BASE_COOLDOWN_MS, "perfect");
     expect(second.enjoymentCents).toBe(315);
     expect(getInteractionStreakDetail(second).currentStreak).toBe(2);
 
-    const third = applyWindingReward(
-      second,
-      "manual",
-      INTERACTION_BASE_COOLDOWN_MS * 2,
-      "miss",
-    );
+    const third = applyWindingReward(second, "manual", INTERACTION_BASE_COOLDOWN_MS * 2, "miss");
     expect(getInteractionStreakDetail(third).currentStreak).toBe(0);
 
     const afterReset = applyWindingReward(

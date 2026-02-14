@@ -1325,7 +1325,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["quartz", "citizen", "dress"],
     image: {
       url: "/catalog/placeholders/quartz-tier.svg",
-      sourceUrl: "https://www.citizenwatch-global.com/the-citizen/lineup/5sec/AQ4020-54Y/index.html",
+      sourceUrl:
+        "https://www.citizenwatch-global.com/the-citizen/lineup/5sec/AQ4020-54Y/index.html",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1389,7 +1390,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["quartz", "tag heuer", "diver"],
     image: {
       url: "/catalog/placeholders/quartz-tier.svg",
-      sourceUrl: "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-aquaracer/41-mm-quartz/WAY111A.BA0928.html",
+      sourceUrl:
+        "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-aquaracer/41-mm-quartz/WAY111A.BA0928.html",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1453,7 +1455,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["manual", "omega", "sport"],
     image: {
       url: "/catalog/placeholders/mid-tier.svg",
-      sourceUrl: "https://www.omegawatches.com/watch-omega-speedmaster-moonwatch-professional-co-axial-master-chronometer-chronograph-42-mm-31030425001001",
+      sourceUrl:
+        "https://www.omegawatches.com/watch-omega-speedmaster-moonwatch-professional-co-axial-master-chronometer-chronograph-42-mm-31030425001001",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1517,7 +1520,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["manual", "panerai", "sport"],
     image: {
       url: "/catalog/placeholders/mid-tier.svg",
-      sourceUrl: "https://www.panerai.com/us/en/collections/watch-collection/radiomir/pam00753-radiomir-base-logo---45mm.html",
+      sourceUrl:
+        "https://www.panerai.com/us/en/collections/watch-collection/radiomir/pam00753-radiomir-base-logo---45mm.html",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1533,7 +1537,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["manual", "iwc", "dress"],
     image: {
       url: "/catalog/placeholders/mid-tier.svg",
-      sourceUrl: "https://www.iwc.com/us/en/watch-collections/portugieser/iw510203-portugieser-hand-wound-eight-days.html",
+      sourceUrl:
+        "https://www.iwc.com/us/en/watch-collections/portugieser/iw510203-portugieser-hand-wound-eight-days.html",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1629,7 +1634,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["tourbillon", "vacheron constantin", "dress"],
     image: {
       url: "/catalog/placeholders/lux-tier.svg",
-      sourceUrl: "https://www.vacheron-constantin.com/ww/en/collections/traditionnelle/6000t-000r-b346.html",
+      sourceUrl:
+        "https://www.vacheron-constantin.com/ww/en/collections/traditionnelle/6000t-000r-b346.html",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1640,12 +1646,14 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     id: "audemars-piguet-royal-oak-selfwinding-flying-tourbillon-26730st",
     brand: "Audemars Piguet",
     model: "Royal Oak Selfwinding Flying Tourbillon 26730ST",
-    description: "Real reference profile for Audemars Piguet Royal Oak Selfwinding Flying Tourbillon.",
+    description:
+      "Real reference profile for Audemars Piguet Royal Oak Selfwinding Flying Tourbillon.",
     year: "2022",
     tags: ["tourbillon", "audemars piguet", "sport"],
     image: {
       url: "/catalog/placeholders/lux-tier.svg",
-      sourceUrl: "https://www.audemarspiguet.com/com/en/watch-collection/royal-oak/26730ST.OO.1320ST.01.html",
+      sourceUrl:
+        "https://www.audemarspiguet.com/com/en/watch-collection/royal-oak/26730ST.OO.1320ST.01.html",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1661,7 +1669,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["tourbillon", "jaeger-lecoultre", "dress"],
     image: {
       url: "/catalog/placeholders/lux-tier.svg",
-      sourceUrl: "https://www.jaeger-lecoultre.com/us-en/watches/master-grande-tradition/master-grande-tradition-tourbillon-cylindrique",
+      sourceUrl:
+        "https://www.jaeger-lecoultre.com/us-en/watches/master-grande-tradition/master-grande-tradition-tourbillon-cylindrique",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1709,7 +1718,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["tourbillon", "blancpain", "dress"],
     image: {
       url: "/catalog/placeholders/lux-tier.svg",
-      sourceUrl: "https://www.blancpain.com/en/villeret/tourbillon-volant-heures-sautantes-66260-3633-55b",
+      sourceUrl:
+        "https://www.blancpain.com/en/villeret/tourbillon-volant-heures-sautantes-66260-3633-55b",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1741,7 +1751,8 @@ const MOVEMENT_EXPANSION_ENTRIES: CatalogEntryBase[] = [
     tags: ["tourbillon", "tag heuer", "sport"],
     image: {
       url: "/catalog/placeholders/lux-tier.svg",
-      sourceUrl: "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-carrera/45-mm-calibre-heuer02t-automatic/CBU2050.FC8316.html",
+      sourceUrl:
+        "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-carrera/45-mm-calibre-heuer02t-automatic/CBU2050.FC8316.html",
       licenseName: "CC0",
       licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
       author: "Emily Idle Team",
@@ -1769,6 +1780,48 @@ const LOCAL_CATALOG_OVERRIDES: Record<string, string> = {
     "0/0f/Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo,_meta_anni_Novanta.jpg",
   "b/b1/Rolex_Datejust_ref._16013%2C_seconda_met%C3%A0_anni_%2770-primi_%2780.jpg":
     "b/b1/Rolex_Datejust_ref._16013,_seconda_meta_anni_'70-primi_'80.jpg",
+};
+const PLACEHOLDER_CATALOG_IMAGE_PATTERN = /^\/?catalog\/placeholders\/[^/]+\.svg$/;
+const PLACEHOLDER_SOURCE_LABEL = "Wikimedia Commons reference image metadata";
+const PLACEHOLDER_TIER_REPRESENTATIVE_IMAGES: Readonly<Record<CatalogTierId, CatalogImage>> = {
+  quartz: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/0/02/Rolex_Day-Date_Lacquered_Stella_Dial.jpg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex_Day-Date_Lacquered_Stella_Dial.jpg",
+    licenseName: "CC0",
+    licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+    author: "Kevin Sweeney",
+    attribution: "File:Rolex Day-Date Lacquered Stella Dial.jpg by Kevin Sweeney (CC0)",
+  },
+  automatic: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/3/35/Jaeger-LeCoultre_men%27s_dress_watch_ca._1950s.jpg",
+    sourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_men%27s_dress_watch_ca._1950s.jpg",
+    licenseName: "CC BY-SA 3.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
+    author: "Kjetil Ree",
+    attribution:
+      "File:Jaeger-LeCoultre men's dress watch ca. 1950s.jpg by Kjetil Ree (CC BY-SA 3.0)",
+  },
+  manual: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/0/04/Rolex_Daytona_ref._6265_in_oro%2C_primi_anni_Settanta.jpg",
+    sourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Daytona_ref._6265_in_oro,_primi_anni_Settanta.jpg",
+    licenseName: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+    author: "EMore98",
+    attribution:
+      "File:Rolex Daytona ref. 6265 in oro, primi anni Settanta.jpg by EMore98 (CC BY-SA 4.0)",
+  },
+  tourbillon: {
+    url: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Audemars_Piguet_ref._25831_con_datario%2C_riserva_di_carica_e_tourbillon%2C_risalente_al_1997.jpg",
+    sourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_ref._25831_con_datario,_riserva_di_carica_e_tourbillon,_risalente_al_1997.jpg",
+    licenseName: "CC BY-SA 4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
+    author: "EMore98",
+    attribution:
+      "File:Audemars Piguet ref. 25831 con datario, riserva di carica e tourbillon, risalente al 1997.jpg by EMore98 (CC BY-SA 4.0)",
+  },
 };
 const MOVEMENT_TAGS = new Set(["quartz", "automatic", "manual", "tourbillon"]);
 const SYNTHETIC_ENTRY_IDS = new Set([
@@ -1802,12 +1855,9 @@ const CALIBER_BY_ENTRY_ID: Partial<Record<string, string>> = {
   "fp-journe-chronometre-bleu": "F.P. Journe Caliber 1304",
   "breguet-classique-tourbillon-3357": "Breguet Caliber 558",
   "patek-philippe-grand-complications-5303r": "Patek Philippe Caliber R TO 27 PS",
-  "vacheron-constantin-traditionnelle-tourbillon-6000t":
-    "Vacheron Constantin Caliber 2160",
-  "audemars-piguet-royal-oak-selfwinding-flying-tourbillon-26730st":
-    "Audemars Piguet Caliber 2950",
-  "jaeger-lecoultre-master-grande-tradition-tourbillon-cylindrique":
-    "Jaeger-LeCoultre Caliber 978",
+  "vacheron-constantin-traditionnelle-tourbillon-6000t": "Vacheron Constantin Caliber 2160",
+  "audemars-piguet-royal-oak-selfwinding-flying-tourbillon-26730st": "Audemars Piguet Caliber 2950",
+  "jaeger-lecoultre-master-grande-tradition-tourbillon-cylindrique": "Jaeger-LeCoultre Caliber 978",
   "a-lange-sohne-tourbograph-perpetual-honeygold": "A. Lange & Sohne Caliber L133.1",
   "girard-perregaux-la-esmeralda-tourbillon-99274": "Girard-Perregaux Caliber GP09600",
   "blancpain-villeret-tourbillon-volant-66260-3633-55b": "Blancpain Caliber 25C",
@@ -1949,12 +1999,33 @@ function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
 
 const CATALOG_ENTRIES_ALL = [...CATALOG_ENTRIES_BASE, ...MOVEMENT_EXPANSION_ENTRIES];
 
+function isCatalogPlaceholderImage(path: string): boolean {
+  return PLACEHOLDER_CATALOG_IMAGE_PATTERN.test(path);
+}
+
 export const CATALOG_ENTRIES: CatalogEntry[] = CATALOG_ENTRIES_ALL.filter(
   (entry) => !SYNTHETIC_ENTRY_IDS.has(entry.id),
-).map((entry) => ({
-  ...entry,
-  ...buildMovementDetails(entry),
-}));
+).map((entry) => {
+  const movementDetails = buildMovementDetails(entry);
+  const usesPlaceholderImage = isCatalogPlaceholderImage(entry.image.url);
+  const resolvedImage = usesPlaceholderImage
+    ? PLACEHOLDER_TIER_REPRESENTATIVE_IMAGES[movementDetails.movementType]
+    : entry.image;
+  const hasPlaceholderMovementSource = isCatalogPlaceholderImage(movementDetails.movementSourceUrl);
+
+  return {
+    ...entry,
+    image: resolvedImage,
+    ...movementDetails,
+    ...(hasPlaceholderMovementSource
+      ? {
+          movementSourceType: "secondary" as const,
+          movementSourceUrl: resolvedImage.sourceUrl,
+          movementSourceLabel: PLACEHOLDER_SOURCE_LABEL,
+        }
+      : {}),
+  };
+});
 
 export function getCatalogEntryTags(entry: CatalogEntry): string[] {
   const normalized = entry.tags.map((tag) => tag.toLowerCase()).filter((tag) => tag.length > 0);

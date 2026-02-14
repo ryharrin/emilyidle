@@ -18,7 +18,6 @@ import {
   getTherapistXpRequiredForNextLevel,
   getTherapistSalaryExpirationAlert,
   performTherapistSession,
-  startCareerWithKickoffSession,
 } from "../../../game/state";
 import type { GameState } from "../../../game/state";
 import { CareerProgressCard } from "../../components/CareerProgressCard";
@@ -71,16 +70,8 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
   const sessionPolicy = getTherapistSessionPolicy(state, nowMs);
   const costLabel = getTherapistSessionCostLabel(state, nowMs);
   const canPerform = canPerformTherapistSession(state, nowMs);
-  const canBootstrapKickoffSession = career.careerStartId === null && career.freeSessionAvailable;
-  const runSessionDisabled = canBootstrapKickoffSession
-    ? false
-    : !sessionPolicy.supportsSessions || !canPerform;
-  const runSessionAction = () =>
-    onPurchase(
-      canBootstrapKickoffSession
-        ? startCareerWithKickoffSession(state, nowMs)
-        : performTherapistSession(state, nowMs),
-    );
+  const runSessionDisabled = !sessionPolicy.supportsSessions || !canPerform;
+  const runSessionAction = () => onPurchase(performTherapistSession(state, nowMs));
   const cooldownSeconds = Math.max(0, Math.ceil(sessionPolicy.cooldownRemainingMs / 1000));
   const trackUnlocked = career.level >= TRACK_CHOICE_UNLOCK_LEVEL;
   const activeTrack = CAREER_TRACKS.find((track) => track.id === career.activeTrackId) ?? null;
@@ -213,23 +204,6 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     setDeepDetailsOpen(true);
     setActiveView("stages");
   }, []);
-  const interactionRunsTotal = state.interactionRunsTotal;
-  const interactionPerfectRuns = state.interactionPerfectRuns;
-  const interactionPerfectStreak = state.interactionPerfectStreak;
-  const interactionBestPerfectStreak = state.interactionBestPerfectStreak;
-  const interactionPrecisionPercent =
-    interactionRunsTotal > 0
-      ? Math.round((interactionPerfectRuns / interactionRunsTotal) * 100)
-      : 0;
-  const interactionOutcomeSummary =
-    interactionPerfectStreak > 0
-      ? `${interactionPerfectStreak} perfect run${
-          interactionPerfectStreak === 1 ? "" : "s"
-        } in a row.`
-      : interactionRunsTotal > 0
-        ? "No active perfect streak."
-        : "No outcomes logged yet.";
-
   const choiceQueueCard = (
     <article className="card career-choice-queue" data-testid="career-choice-queue">
       <header className="career-economy-summary-header">
@@ -333,31 +307,6 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
     mobileRailAction.label !== "Open progression choices";
   const secondaryMissionContent = (
     <div className="card-stack career-stack career-stack-secondary">
-      <article className="card interaction-feed-card" data-testid="career-interaction-feed">
-        <header className="interaction-feed-card__header">
-          <div>
-            <p className="eyebrow">Interaction outcomes</p>
-            <h4>Career feed</h4>
-          </div>
-          <p className="interaction-feed-card__status">{interactionOutcomeSummary}</p>
-        </header>
-        <dl className="interaction-feed-card__grid">
-          <div>
-            <dt>Perfect runs</dt>
-            <dd>
-              {interactionPerfectRuns.toLocaleString()} / {interactionRunsTotal.toLocaleString()}
-            </dd>
-          </div>
-          <div>
-            <dt>Precision</dt>
-            <dd>{interactionPrecisionPercent}%</dd>
-          </div>
-          <div>
-            <dt>Best streak</dt>
-            <dd>{interactionBestPerfectStreak.toLocaleString()}</dd>
-          </div>
-        </dl>
-      </article>
       <article className="card career-economy-summary" data-testid="career-economy-summary">
         <header className="career-economy-summary-header">
           <div>

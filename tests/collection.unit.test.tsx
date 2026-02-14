@@ -21,17 +21,9 @@ describe("collection depth insights", () => {
     cleanup();
   });
 
-  it("renders movement segments with help copy", () => {
-    const summary = screen.getByTestId("collection-tier-summary");
-    expect(summary).toBeInTheDocument();
-    const segments = within(summary).getAllByTestId(/collection-segment-/);
-    expect(segments.length).toBeGreaterThanOrEqual(3);
-    const tierLabels = ["Quartz", "Automatic", "Manual"];
-    tierLabels.forEach((label) => {
-      expect(within(summary).getByRole("heading", { name: label })).toBeVisible();
-    });
-    const helpButton = within(summary).getByTestId("explain-tier-badges");
-    expect(helpButton).toBeVisible();
+  it("does not render the tier badges summary panel", () => {
+    expect(screen.queryByTestId("collection-tier-summary")).toBeNull();
+    expect(screen.queryByTestId("explain-tier-badges")).toBeNull();
   });
 
   it("renders set bonus progress and analytics panels", () => {

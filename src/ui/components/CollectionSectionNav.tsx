@@ -10,6 +10,8 @@ export type CollectionSectionNavLink = {
 type CollectionSectionNavProps = {
   sections: CollectionSectionNavLink[];
   onCoachmarkDismiss?: (coachmarkId: string) => void;
+  activeSectionId?: string;
+  onSectionSelect?: (sectionId: string) => void;
 };
 
 const NAV_OFFSET_FALLBACK = 120;
@@ -55,13 +57,20 @@ const prefersReducedMotion = () => {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 };
 
-export function CollectionSectionNav({ sections, onCoachmarkDismiss }: CollectionSectionNavProps) {
-  const [activeId, setActiveId] = useState(sections[0]?.id ?? "");
+export function CollectionSectionNav({
+  sections,
+  onCoachmarkDismiss,
+  activeSectionId,
+  onSectionSelect,
+}: CollectionSectionNavProps) {
+  const [internalActiveId, setInternalActiveId] = useState(sections[0]?.id ?? "");
   const [hasOverflowStart, setHasOverflowStart] = useState(false);
   const [hasOverflowEnd, setHasOverflowEnd] = useState(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const skipActiveUpdateRef = useRef(false);
   const activeUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isControlled = typeof onSectionSelect === "function";
+  const activeId = isControlled ? (activeSectionId ?? internalActiveId) : internalActiveId;
 
   const updateOverflowState = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -81,8 +90,23 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
   }, []);
 
   useEffect(() => {
-    setActiveId(sections[0]?.id ?? "");
+    setInternalActiveId((currentId) => {
+      if (currentId && sections.some((section) => section.id === currentId)) {
+        return currentId;
+      }
+      return sections[0]?.id ?? "";
+    });
   }, [sections]);
+
+  useEffect(() => {
+    if (!isControlled || !activeSectionId) {
+      return;
+    }
+    if (!sections.some((section) => section.id === activeSectionId)) {
+      return;
+    }
+    setInternalActiveId(activeSectionId);
+  }, [activeSectionId, isControlled, sections]);
 
   useEffect(() => {
     updateOverflowState();
@@ -135,7 +159,7 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
   }, [activeId]);
 
   useEffect(() => {
-    if (sections.length === 0 || typeof window === "undefined") {
+    if (isControlled || sections.length === 0 || typeof window === "undefined") {
       return undefined;
     }
 
@@ -168,7 +192,7 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
         candidates.filter((entry) => entry.top <= offset + 24).sort((a, b) => b.top - a.top)[0] ??
         candidates[0];
 
-      setActiveId(nearTop.id);
+      setInternalActiveId(nearTop.id);
     };
 
     const handleScroll = () => {
@@ -191,36 +215,44 @@ export function CollectionSectionNav({ sections, onCoachmarkDismiss }: Collectio
         activeUpdateTimerRef.current = null;
       }
     };
-  }, [sections]);
+  }, [isControlled, sections]);
 
-  const handleJump = useCallback((event: MouseEvent<HTMLButtonElement>, sectionId: string) => {
-    event.preventDefault();
-    if (typeof window === "undefined") {
-      return;
-    }
-    const targetTop = getTargetTop(sectionId);
-    if (targetTop === null) {
-      return;
-    }
-    const offset = readNavOffset() + SCROLL_BUFFER;
-    const destination = Math.max(targetTop - offset, 0);
-    const behavior = prefersReducedMotion() ? "auto" : "smooth";
-    const scrollEl = getScrollElement();
-    if (scrollEl) {
-      scrollEl.scrollTo({ top: destination, behavior });
-    } else {
-      window.scrollTo({ top: destination, behavior });
-    }
-    setActiveId(sectionId);
-    skipActiveUpdateRef.current = true;
-    if (activeUpdateTimerRef.current) {
-      clearTimeout(activeUpdateTimerRef.current);
-    }
-    activeUpdateTimerRef.current = setTimeout(() => {
-      skipActiveUpdateRef.current = false;
-      activeUpdateTimerRef.current = null;
-    }, 400);
-  }, []);
+  const handleJump = useCallback(
+    (event: MouseEvent<HTMLButtonElement>, sectionId: string) => {
+      event.preventDefault();
+      if (isControlled) {
+        setInternalActiveId(sectionId);
+        onSectionSelect?.(sectionId);
+        return;
+      }
+      if (typeof window === "undefined") {
+        return;
+      }
+      const targetTop = getTargetTop(sectionId);
+      if (targetTop === null) {
+        return;
+      }
+      const offset = readNavOffset() + SCROLL_BUFFER;
+      const destination = Math.max(targetTop - offset, 0);
+      const behavior = prefersReducedMotion() ? "auto" : "smooth";
+      const scrollEl = getScrollElement();
+      if (scrollEl) {
+        scrollEl.scrollTo({ top: destination, behavior });
+      } else {
+        window.scrollTo({ top: destination, behavior });
+      }
+      setInternalActiveId(sectionId);
+      skipActiveUpdateRef.current = true;
+      if (activeUpdateTimerRef.current) {
+        clearTimeout(activeUpdateTimerRef.current);
+      }
+      activeUpdateTimerRef.current = setTimeout(() => {
+        skipActiveUpdateRef.current = false;
+        activeUpdateTimerRef.current = null;
+      }, 400);
+    },
+    [isControlled, onSectionSelect],
+  );
 
   if (sections.length === 0) {
     return null;

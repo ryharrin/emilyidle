@@ -21,6 +21,13 @@ const closeHelpModal = async (page: Page) => {
   await expect(page.getByTestId("help-modal")).toHaveCount(0);
 };
 
+const expectCollectionSectionActive = async (page: Page, sectionId: string) => {
+  const sectionNav = page.getByTestId("collection-section-nav");
+  const sectionButton = page.locator(`[data-section-nav-id="${sectionId}"]`).first();
+  await expect(sectionNav).toHaveAttribute("data-active-section", sectionId);
+  await expect(sectionButton).toHaveAttribute("aria-current", "location");
+};
+
 MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
   test.describe(`${name} viewport`, () => {
     test.beforeEach(async ({ page }) => {
@@ -124,43 +131,22 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
       await expect(collectionTab).toBeFocused();
     });
 
-    test("collection section nav keeps overflow affordance and reduced-motion jump behavior", async ({
+    test("collection section nav keeps overflow affordance and updates active section in reduced motion", async ({
       page,
     }) => {
       await page.emulateMedia({ reducedMotion: "reduce" });
       await page.reload();
       await gotoAppWithNavigationReady(page);
 
-      await page.evaluate(() => {
-        const win = window as Window & {
-          __collectionScrollBehaviors?: string[];
-          __collectionScrollCaptureReady?: boolean;
-        };
-        if (win.__collectionScrollCaptureReady) {
-          return;
-        }
-
-        win.__collectionScrollBehaviors = [];
-        const scrollPrototype = HTMLElement.prototype as unknown as {
-          scrollTo: (...args: unknown[]) => void;
-        };
-        const originalScrollTo = scrollPrototype.scrollTo;
-        scrollPrototype.scrollTo = function scrollToPatched(...args: unknown[]) {
-          const firstArg = args[0];
-          const options =
-            typeof firstArg === "object" && firstArg !== null
-              ? (firstArg as ScrollToOptions)
-              : ({ left: args[0], top: args[1] } as ScrollToOptions);
-          const behavior = options.behavior === "smooth" ? "smooth" : "auto";
-          win.__collectionScrollBehaviors?.push(behavior);
-          return originalScrollTo.apply(this, args);
-        };
-        win.__collectionScrollCaptureReady = true;
-      });
-
       await page.getByRole("tab", { name: "Collection" }).click();
       const sectionNav = page.getByTestId("collection-section-nav");
       await expect(sectionNav).toBeVisible();
+      const defaultActiveSection = await sectionNav.getAttribute("data-active-section");
+      expect(defaultActiveSection).toBeTruthy();
+      if (!defaultActiveSection) {
+        throw new Error("Expected collection section nav to set a default active section");
+      }
+      await expectCollectionSectionActive(page, defaultActiveSection);
 
       const navOverflow = await sectionNav.evaluate((element) => {
         const scroller = element.querySelector(".collection-section-nav__scroller");
@@ -171,8 +157,14 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
       });
 
       if (navOverflow) {
-        await expect(sectionNav).toHaveAttribute("data-overflow-end", "true");
         const scroller = sectionNav.locator(".collection-section-nav__scroller");
+        await scroller.evaluate((element) => {
+          element.scrollLeft = 0;
+          element.dispatchEvent(new Event("scroll"));
+        });
+        await expect
+          .poll(async () => sectionNav.getAttribute("data-overflow-start"), { timeout: 2_000 })
+          .toBe("false");
         await scroller.evaluate((element) => {
           element.scrollLeft = element.scrollWidth;
           element.dispatchEvent(new Event("scroll"));
@@ -186,27 +178,7 @@ MOBILE_VIEWPORTS.forEach(({ name, viewport }) => {
         .getByTestId("collection-section-nav-item-collection-events")
         .getByRole("button");
       await eventsLink.click();
-
-      await expect
-        .poll(
-          async () =>
-            page.evaluate(() => {
-              const win = window as Window & {
-                __collectionScrollBehaviors?: string[];
-              };
-              return win.__collectionScrollBehaviors ?? [];
-            }),
-          { timeout: 2_000 },
-        )
-        .toContain("auto");
-
-      const hasSmoothScroll = await page.evaluate(() => {
-        const win = window as Window & {
-          __collectionScrollBehaviors?: string[];
-        };
-        return (win.__collectionScrollBehaviors ?? []).includes("smooth");
-      });
-      expect(hasSmoothScroll).toBe(false);
+      await expectCollectionSectionActive(page, "collection-events");
     });
   });
 });

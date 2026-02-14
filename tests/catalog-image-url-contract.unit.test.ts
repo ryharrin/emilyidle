@@ -46,4 +46,11 @@ describe("catalog image URL mapping contract", () => {
       }
     }
   });
+
+  it("does not use placeholder assets as primary catalog card media", () => {
+    for (const entry of CATALOG_ENTRIES) {
+      expect(entry.image.url.includes("/catalog/placeholders/")).toBe(false);
+      expect(getCatalogImageUrl(entry).includes("/catalog/placeholders/")).toBe(false);
+    }
+  });
 });

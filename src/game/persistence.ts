@@ -4,6 +4,7 @@ import { createStateFromSave } from "./state";
 
 const SAVE_KEY = "emily-idle:save";
 const LEGACY_SAVE_KEY = "watch-idle:save";
+const SAVE_CLEAR_EPOCH_KEY = "emily-idle:save-clear-epoch";
 const CURRENT_SAVE_VERSION = 4 as const;
 type LegacySaveVersion = 1 | 2 | 3;
 
@@ -11,6 +12,7 @@ type SaveV4 = {
   version: typeof CURRENT_SAVE_VERSION;
   savedAt: string;
   lastSimulatedAtMs: number;
+  generation: number;
   state: GameState;
 };
 
@@ -60,16 +62,26 @@ function getSafeLastSimulatedAtMs(lastSimulatedAtMs: unknown, savedAtIso: string
   return normalizeTimestampMs(Date.parse(savedAtIso));
 }
 
+function getSafeGeneration(generation: unknown): number {
+  if (!isFiniteNumber(generation)) {
+    return 0;
+  }
+
+  return normalizeTimestampMs(generation);
+}
+
 function buildCanonicalSave(
   state: GameState,
   savedAtIso: string,
   lastSimulatedAtMs?: unknown,
+  generation?: unknown,
 ): SaveV4 {
   const safeSavedAtIso = getSafeSavedAtIso(savedAtIso);
   return {
     version: CURRENT_SAVE_VERSION,
     savedAt: safeSavedAtIso,
     lastSimulatedAtMs: getSafeLastSimulatedAtMs(lastSimulatedAtMs, safeSavedAtIso),
+    generation: getSafeGeneration(generation),
     state,
   };
 }
@@ -371,7 +383,12 @@ function sanitizeState(value: unknown): GameState | null {
 }
 
 export function encodeSaveString(state: GameState, savedAt: Date = new Date()): string {
-  const save = buildCanonicalSave(state, savedAt.toISOString(), savedAt.getTime());
+  const save = buildCanonicalSave(
+    state,
+    savedAt.toISOString(),
+    savedAt.getTime(),
+    getSaveClearEpoch(),
+  );
 
   return JSON.stringify(save);
 }
@@ -410,7 +427,7 @@ function decodeSavePayload(raw: string): SaveParseResult {
   }
 
   const migratedFromVersion = version === CURRENT_SAVE_VERSION ? undefined : (version as 1 | 2 | 3);
-  const save = buildCanonicalSave(state, savedAt, record.lastSimulatedAtMs);
+  const save = buildCanonicalSave(state, savedAt, record.lastSimulatedAtMs, record.generation);
 
   return {
     ok: true,
@@ -425,13 +442,9 @@ export function decodeSaveString(raw: string): SaveDecodeResult {
 
 export function loadSaveFromLocalStorage(): SaveLoadResult {
   let raw: string | null;
-  let source: "current" | "legacy" | null = null;
 
   try {
     raw = localStorage.getItem(SAVE_KEY);
-    if (raw !== null) {
-      source = "current";
-    }
   } catch (error) {
     return {
       ok: false,
@@ -442,9 +455,6 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
   if (raw === null) {
     try {
       raw = localStorage.getItem(LEGACY_SAVE_KEY);
-      if (raw !== null) {
-        source = "legacy";
-      }
     } catch (error) {
       return {
         ok: false,
@@ -462,6 +472,22 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
     return { ok: false, error: decoded.error };
   }
 
+  const currentClearEpoch = getSaveClearEpoch();
+  if (decoded.save.generation < currentClearEpoch) {
+    const clearResult = clearLocalStorageSave();
+    if (!clearResult.ok) {
+      return {
+        ok: false,
+        error: `Stale save generation ${decoded.save.generation} for clear epoch ${currentClearEpoch}. ${clearResult.error}`,
+      };
+    }
+
+    return {
+      ok: false,
+      error: `Stale save generation ${decoded.save.generation} for clear epoch ${currentClearEpoch}`,
+    };
+  }
+
   const nowMs = normalizeTimestampMs(Date.now());
   const elapsedSinceLastSimulationMs = Math.max(0, nowMs - decoded.save.lastSimulatedAtMs);
   const stateWithoutOfflineProgress = pauseOfflineTimerProgress(
@@ -470,24 +496,22 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
   );
   const hasOfflineTimerAdjustment = stateWithoutOfflineProgress !== decoded.save.state;
   const loadedSave = hasOfflineTimerAdjustment
-    ? buildCanonicalSave(stateWithoutOfflineProgress, new Date(nowMs).toISOString(), nowMs)
-    : decoded.save;
+    ? buildCanonicalSave(
+        stateWithoutOfflineProgress,
+        new Date(nowMs).toISOString(),
+        nowMs,
+        currentClearEpoch,
+      )
+    : buildCanonicalSave(
+        decoded.save.state,
+        decoded.save.savedAt,
+        decoded.save.lastSimulatedAtMs,
+        currentClearEpoch,
+      );
 
   if (raw !== null) {
     try {
-      const shouldRewrite =
-        source === "legacy" ||
-        decoded.migratedFromVersion !== undefined ||
-        hasOfflineTimerAdjustment;
-      const canonicalSave = hasOfflineTimerAdjustment
-        ? loadedSave
-        : buildCanonicalSave(
-            decoded.save.state,
-            decoded.save.savedAt,
-            decoded.save.lastSimulatedAtMs,
-          );
-      const canonicalRaw = shouldRewrite ? JSON.stringify(canonicalSave) : raw;
-      localStorage.setItem(SAVE_KEY, canonicalRaw);
+      localStorage.setItem(SAVE_KEY, JSON.stringify(loadedSave));
       localStorage.removeItem(LEGACY_SAVE_KEY);
     } catch (error) {
       return {
@@ -530,6 +554,42 @@ export function clearLocalStorageSave(): SavePersistResult {
     return {
       ok: false,
       error: `Could not clear localStorage: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+}
+
+export function getSaveClearEpoch(): number {
+  try {
+    const raw = localStorage.getItem(SAVE_CLEAR_EPOCH_KEY);
+    if (raw === null) {
+      return 0;
+    }
+
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed)) {
+      return 0;
+    }
+
+    return normalizeTimestampMs(parsed);
+  } catch {
+    return 0;
+  }
+}
+
+export function bumpSaveClearEpoch(now: Date = new Date()): SavePersistResult {
+  const currentEpoch = getSaveClearEpoch();
+  const nowMs = normalizeTimestampMs(now.getTime());
+  const nextFromCurrent =
+    currentEpoch >= Number.MAX_SAFE_INTEGER ? Number.MAX_SAFE_INTEGER : currentEpoch + 1;
+  const nextEpoch = Math.max(nowMs, nextFromCurrent);
+
+  try {
+    localStorage.setItem(SAVE_CLEAR_EPOCH_KEY, String(nextEpoch));
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: `Could not write localStorage: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
 }

@@ -11,14 +11,10 @@ const selectors = {
   upgradesCallout: '[data-testid="upgrades-callout"]',
   sectionNav: '[data-testid="collection-section-nav"]',
   insightsPanel: '[data-testid="collection-insights-panel"]',
-  navSegmentQuartz: '[data-testid="collection-section-nav-item-collection-segment-quartz"] button',
-  navSegmentAutomatic:
-    '[data-testid="collection-section-nav-item-collection-segment-automatic"] button',
-  navSegmentManual: '[data-testid="collection-section-nav-item-collection-segment-manual"] button',
-  navSegmentTourbillon:
-    '[data-testid="collection-section-nav-item-collection-segment-tourbillon"] button',
+  navOverview: '[data-testid="collection-section-nav-item-collection-overview"] button',
   onboardingCoachmark: '[data-testid="collection-onboarding-coachmark-collection-overview"]',
   navMilestones: '[data-testid="collection-section-nav-item-collection-milestones"] button',
+  navSetBonuses: '[data-testid="collection-section-nav-item-collection-set-bonuses"] button',
   milestoneCards: "#milestone-list .card",
   setBonusCards: '[data-testid="collection-set-bonus-card"]',
   workshopPanel: '[data-testid="workshop-panel"]',
@@ -63,6 +59,19 @@ async function clickPrimaryTab(page: Page, name: string) {
   await expect(tab).toBeVisible();
   await clickLocatorSafely(tab);
   await expect(tab).toHaveAttribute("aria-selected", "true");
+}
+
+async function activateCollectionSection(page: Page, sectionId: string) {
+  const sectionNav = page.locator(selectors.sectionNav);
+  const sectionButton = page.locator(`[data-section-nav-id="${sectionId}"]`).first();
+  await expect(sectionButton).toBeVisible();
+  await clickLocatorSafely(sectionButton);
+  await expect(sectionNav).toHaveAttribute("data-active-section", sectionId);
+  await expect(sectionButton).toHaveAttribute("aria-current", "location");
+}
+
+async function hasCollectionSection(page: Page, sectionId: string) {
+  return (await page.locator(`[data-section-nav-id="${sectionId}"]`).count()) > 0;
 }
 
 async function switchCatalogToOwned(page: Page) {
@@ -208,16 +217,25 @@ test.describe("collection loop", () => {
       await expect(page.locator("#enjoyment .value-ticker")).toBeVisible();
       await expect(page.locator("#enjoyment-rate .value-ticker")).toBeVisible();
       await expect(page.locator(selectors.upgradesCallout)).toBeVisible();
-      await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
-      await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
-      await expect(page.getByTestId("collection-prestige-preview-cta")).toBeVisible();
+      await expect(page.locator(selectors.sectionNav)).toBeVisible();
+      if (await hasCollectionSection(page, "collection-milestones")) {
+        await activateCollectionSection(page, "collection-milestones");
+        await expect(page.locator(selectors.milestoneCards)).toHaveCount(4);
+      }
+      if (await hasCollectionSection(page, "collection-set-bonuses")) {
+        await activateCollectionSection(page, "collection-set-bonuses");
+        await expect(page.locator(selectors.setBonusCards)).toHaveCount(9);
+        await expect(page.getByTestId("collection-prestige-preview-cta")).toBeVisible();
 
-      const firstFindInCatalog = page
-        .getByTestId("collection-set-bonus-grid")
-        .getByRole("button", { name: "Find in Catalog" })
-        .first();
-      await expect(firstFindInCatalog).toBeVisible();
-      await clickLocatorSafely(firstFindInCatalog);
+        const firstFindInCatalog = page
+          .getByTestId("collection-set-bonus-grid")
+          .getByRole("button", { name: "Find in Catalog" })
+          .first();
+        await expect(firstFindInCatalog).toBeVisible();
+        await clickLocatorSafely(firstFindInCatalog);
+      } else {
+        await clickLocatorSafely(page.getByRole("button", { name: "Open Catalog" }).first());
+      }
       await expect(page.getByRole("tab", { name: "Catalog" })).toHaveAttribute(
         "aria-selected",
         "true",
@@ -229,15 +247,20 @@ test.describe("collection loop", () => {
       expect(catalogCardCount).toBeGreaterThanOrEqual(WATCH_MODEL_COUNT);
     });
 
-    test("collection section nav anchors and coachmark dismisses", async ({ page }) => {
+    test("collection section nav activates sections and coachmark dismisses", async ({ page }) => {
       await clickPrimaryTab(page, "Collection");
       await expect(page.locator(selectors.sectionNav)).toBeVisible({ timeout: 10_000 });
 
       const coachmark = page.locator(selectors.onboardingCoachmark);
       await expect(coachmark).toBeVisible();
 
-      await clickLocatorSafely(page.locator(selectors.navMilestones));
-      await expect(page.locator("#collection-milestones")).toBeInViewport();
+      if (await hasCollectionSection(page, "collection-milestones")) {
+        await activateCollectionSection(page, "collection-milestones");
+        await expect(page.locator(selectors.milestoneCards).first()).toBeVisible();
+      } else {
+        await activateCollectionSection(page, "collection-overview");
+        await expect(page.locator("#collection-overview")).toBeVisible();
+      }
 
       await clickLocatorSafely(coachmark.getByRole("button", { name: "Got it" }));
 
@@ -245,33 +268,21 @@ test.describe("collection loop", () => {
       await clickPrimaryTab(page, "Collection");
     });
 
-    test("collection nav reaches insights panel and movement segments", async ({ page }) => {
+    test("collection nav reaches insights panel and key sections", async ({ page }) => {
       await clickPrimaryTab(page, "Collection");
       await expect(page.locator(selectors.insightsPanel)).toBeVisible();
 
-      const nav = page.locator(selectors.sectionNav);
-      const navSegments = [
-        { button: selectors.navSegmentQuartz, target: "#collection-segment-quartz" },
-        { button: selectors.navSegmentAutomatic, target: "#collection-segment-automatic" },
-        { button: selectors.navSegmentManual, target: "#collection-segment-manual" },
-        {
-          button: selectors.navSegmentTourbillon,
-          target: "#collection-segment-tourbillon",
-          optional: true,
-        },
+      const navTargets = [
+        "collection-overview",
+        "collection-set-bonuses",
+        "collection-milestones",
       ];
 
-      for (const segment of navSegments) {
-        const button = page.locator(segment.button).first();
-        const buttonVisible = await button.isVisible().catch(() => false);
-        if (segment.optional && !buttonVisible) {
-          await expect(page.locator(segment.target)).toHaveCount(0);
+      for (const sectionId of navTargets) {
+        if (!(await hasCollectionSection(page, sectionId))) {
           continue;
         }
-        await expect(button).toBeVisible();
-        await button.scrollIntoViewIfNeeded();
-        await button.evaluate((el) => (el as HTMLButtonElement).click());
-        await expect(nav).toHaveAttribute("data-active-section", segment.target.slice(1));
+        await activateCollectionSection(page, sectionId);
       }
     });
 

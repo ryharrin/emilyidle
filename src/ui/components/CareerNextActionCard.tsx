@@ -1,6 +1,6 @@
 import React from "react";
 
-import { getCareerNextActionCue, startCareerWithKickoffSession } from "../../game/state";
+import { getCareerNextActionCue, enterPhdProgram } from "../../game/state";
 import type { GameState } from "../../game/state";
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
@@ -75,7 +75,7 @@ export function CareerNextActionCard({
                 ctaId: "enter-program",
                 nowMs,
               });
-              onPurchase(startCareerWithKickoffSession(state, nowMs));
+              onPurchase(enterPhdProgram(state, nowMs));
             }}
           >
             Enter program

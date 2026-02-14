@@ -39,6 +39,7 @@ describe("localStorage key string contracts", () => {
 
     expect(persistenceText).toContain("emily-idle:save");
     expect(persistenceText).toContain("watch-idle:save");
+    expect(persistenceText).toContain("emily-idle:save-clear-epoch");
     expect(appText).toContain("emily-idle:settings");
     expect(appText).toContain("emily-idle:audio");
     expect(appText).toContain("emily-idle:navigation");

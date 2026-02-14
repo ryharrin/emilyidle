@@ -110,4 +110,122 @@ test.describe("settings clear save", () => {
     expect(stored.state.workshopPrestigeCount).toBe(0);
     expect(stored.state.therapistCareer?.careerStartId ?? null).toBe(null);
   });
+
+  test("stale tab cannot resurrect cleared save on unload", async ({ page }) => {
+    await seedStorage(page, {
+      oncePerSessionKey: "settings-clear-save-seeded",
+      clearLocalStorage: true,
+      save: {
+        state: {
+          currencyCents: 999_999,
+          workshopPrestigeCount: 7,
+          therapistCareer: { careerStartId: "phd-program" },
+        } satisfies SeededState,
+      },
+      navigation: {
+        lastTabId: "save",
+      },
+    });
+
+    await gotoAppWithNavigationReady(page);
+
+    const staleTab = await page.context().newPage();
+    await gotoAppWithNavigationReady(staleTab);
+
+    await page.getByRole("tab", { name: "Settings" }).click();
+    await page
+      .getByTestId("settings-clear-save")
+      .evaluate((button: HTMLButtonElement) => button.click());
+    await page
+      .getByTestId("settings-clear-save-confirm")
+      .evaluate((button: HTMLButtonElement) => button.click());
+
+    await expect(page.getByTestId("career-next-action")).toBeVisible();
+    await page.waitForFunction(() => {
+      const raw = window.localStorage.getItem("emily-idle:save");
+      if (!raw) {
+        return false;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        return parsed?.state?.workshopPrestigeCount === 0;
+      } catch {
+        return false;
+      }
+    });
+
+    await page.close();
+
+    const reopenedTab = await staleTab.context().newPage();
+    await gotoAppWithNavigationReady(reopenedTab);
+    await expect(reopenedTab.getByTestId("career-next-action")).toBeVisible();
+    await expect(reopenedTab.getByTestId("career-next-action-start")).toBeVisible();
+
+    const reopenedStored = await reopenedTab.evaluate(() => {
+      const raw = window.localStorage.getItem("emily-idle:save");
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    expect(reopenedStored).not.toBeNull();
+    expect(reopenedStored.state.workshopPrestigeCount).toBe(0);
+    expect(reopenedStored.state.therapistCareer?.careerStartId ?? null).toBe(null);
+    expect(reopenedStored.state.currencyCents).not.toBe(999_999);
+
+    await staleTab.waitForTimeout(250);
+    await staleTab.evaluate(() => {
+      window.dispatchEvent(new Event("pagehide"));
+    });
+
+    const stored = await reopenedTab.evaluate(() => {
+      const raw = window.localStorage.getItem("emily-idle:save");
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    expect(stored).not.toBeNull();
+    expect(stored.state.workshopPrestigeCount).toBe(0);
+    expect(stored.state.therapistCareer?.careerStartId ?? null).toBe(null);
+    expect(stored.state.currencyCents).not.toBe(999_999);
+
+    const savedAtBeforeFreshPersist = Date.parse(stored.savedAt);
+
+    await reopenedTab.getByTestId("career-next-action-start").click();
+    await reopenedTab.evaluate(() => {
+      window.dispatchEvent(new Event("pagehide"));
+    });
+
+    await reopenedTab.waitForFunction((minSavedAtMs) => {
+      const raw = window.localStorage.getItem("emily-idle:save");
+      if (!raw) {
+        return false;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        const savedAtMs = Date.parse(parsed?.savedAt ?? "");
+        return (
+          Number.isFinite(savedAtMs) &&
+          savedAtMs >= minSavedAtMs &&
+          parsed?.state?.workshopPrestigeCount === 0 &&
+          typeof parsed?.state?.therapistCareer?.careerStartId === "string"
+        );
+      } catch {
+        return false;
+      }
+    }, savedAtBeforeFreshPersist);
+
+    const afterFreshPersist = await reopenedTab.evaluate(() => {
+      const raw = window.localStorage.getItem("emily-idle:save");
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    expect(afterFreshPersist).not.toBeNull();
+    expect(afterFreshPersist.state.workshopPrestigeCount).toBe(0);
+    expect(afterFreshPersist.state.currencyCents).not.toBe(999_999);
+    expect(afterFreshPersist.state.therapistCareer?.careerStartId ?? null).not.toBe(null);
+    expect(Date.parse(afterFreshPersist.savedAt)).toBeGreaterThanOrEqual(savedAtBeforeFreshPersist);
+
+    await staleTab.close();
+    await reopenedTab.close();
+  });
 });

@@ -1,22 +1,29 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import {
   decodeSaveString,
   encodeSaveString,
   loadSaveFromLocalStorage,
+  persistSaveToLocalStorage,
 } from "../src/game/persistence";
 import { type MilestoneId, createInitialState } from "../src/game/state";
 
 describe("persistence compatibility", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it("encodeSaveString produces a v4 payload with required fields", () => {
     const state = createInitialState();
     const savedAt = new Date(0);
+    localStorage.setItem("emily-idle:save-clear-epoch", "7");
 
     const raw = encodeSaveString(state, savedAt);
     const parsed = JSON.parse(raw) as Record<string, unknown>;
 
     expect(parsed.version).toBe(4);
     expect(parsed.savedAt).toBe(savedAt.toISOString());
+    expect(parsed.generation).toBe(7);
     expect(parsed.state).toBeTruthy();
     expect(typeof parsed.state).toBe("object");
   });
@@ -131,5 +138,98 @@ describe("persistence compatibility", () => {
     expect(loaded.save.state.items.automatic).toBe(1);
     expect(loaded.save.state.upgrades["polishing-tools"]).toBe(1);
     expect(loaded.save.state.unlockedMilestones).toContain("collector-shelf");
+  });
+
+  it("loadSaveFromLocalStorage rejects stale generations and clears save keys", () => {
+    localStorage.setItem("emily-idle:save-clear-epoch", "5");
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 4,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: 0,
+        generation: 4,
+        state: { currencyCents: 100 },
+      }),
+    );
+
+    const loaded = loadSaveFromLocalStorage();
+
+    expect(loaded.ok).toBe(false);
+    if (loaded.ok) {
+      return;
+    }
+
+    expect(loaded.error).toContain("Stale save generation");
+    expect(localStorage.getItem("emily-idle:save")).toBeNull();
+    expect(localStorage.getItem("watch-idle:save")).toBeNull();
+  });
+
+  it("loadSaveFromLocalStorage accepts missing generation when clear epoch is 0", () => {
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 4,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: 0,
+        state: { currencyCents: 250 },
+      }),
+    );
+
+    const loaded = loadSaveFromLocalStorage();
+
+    expect(loaded.ok).toBe(true);
+    if (!loaded.ok) {
+      return;
+    }
+
+    expect(loaded.save.generation).toBe(0);
+    const canonicalRaw = localStorage.getItem("emily-idle:save");
+    expect(canonicalRaw).toBeTruthy();
+    if (canonicalRaw) {
+      const canonical = JSON.parse(canonicalRaw) as Record<string, unknown>;
+      expect(canonical.generation).toBe(0);
+    }
+  });
+
+  it("loadSaveFromLocalStorage rejects missing generation when clear epoch is greater than 0", () => {
+    localStorage.setItem("emily-idle:save-clear-epoch", "9");
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 4,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs: 0,
+        state: { currencyCents: 333 },
+      }),
+    );
+
+    const loaded = loadSaveFromLocalStorage();
+
+    expect(loaded.ok).toBe(false);
+    if (loaded.ok) {
+      return;
+    }
+
+    expect(loaded.error).toContain("Stale save generation");
+    expect(localStorage.getItem("emily-idle:save")).toBeNull();
+    expect(localStorage.getItem("watch-idle:save")).toBeNull();
+  });
+
+  it("persistSaveToLocalStorage writes generation metadata from clear epoch", () => {
+    localStorage.setItem("emily-idle:save-clear-epoch", "42");
+
+    const result = persistSaveToLocalStorage(createInitialState(), new Date(0));
+
+    expect(result).toEqual({ ok: true });
+    const raw = localStorage.getItem("emily-idle:save");
+    expect(raw).toBeTruthy();
+    if (!raw) {
+      return;
+    }
+
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    expect(parsed.version).toBe(4);
+    expect(parsed.generation).toBe(42);
   });
 });
