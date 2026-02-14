@@ -489,6 +489,11 @@ export default function App() {
     () => settings.coachmarksDismissed,
   );
   const shortcutsHintDismissed = coachmarksDismissed["keyboard-shortcuts"] ?? false;
+  const primaryNavRef = useRef<HTMLElement | null>(null);
+  const [tabRailHasOverflow, setTabRailHasOverflow] = useState(false);
+  const [tabRailCanScrollBackward, setTabRailCanScrollBackward] = useState(false);
+  const [tabRailCanScrollForward, setTabRailCanScrollForward] = useState(false);
+  const [toastSafeTopPx, setToastSafeTopPx] = useState(96);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const toastTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const pushToast = useCallback((toast: ToastMessage) => {
@@ -648,6 +653,42 @@ export default function App() {
     }
 
     console.info(`[ux] ${eventName}`, detail);
+  }, []);
+
+  const getTabRailScrollNode = useCallback(
+    () => primaryNavRef.current?.querySelector<HTMLDivElement>(".page-tab-rail__scroll") ?? null,
+    [],
+  );
+
+  const updateTabRailOverflowState = useCallback(() => {
+    const scrollNode = getTabRailScrollNode();
+    if (!scrollNode) {
+      setTabRailHasOverflow(false);
+      setTabRailCanScrollBackward(false);
+      setTabRailCanScrollForward(false);
+      return;
+    }
+
+    const edgeTolerance = 2;
+    const maxScrollLeft = Math.max(0, scrollNode.scrollWidth - scrollNode.clientWidth);
+    const hasOverflow = maxScrollLeft > edgeTolerance;
+    const canScrollBackward = hasOverflow && scrollNode.scrollLeft > edgeTolerance;
+    const canScrollForward = hasOverflow && scrollNode.scrollLeft < maxScrollLeft - edgeTolerance;
+
+    setTabRailHasOverflow(hasOverflow);
+    setTabRailCanScrollBackward(canScrollBackward);
+    setTabRailCanScrollForward(canScrollForward);
+  }, [getTabRailScrollNode]);
+
+  const updateToastSafeTopOffset = useCallback(() => {
+    const navNode = primaryNavRef.current;
+    if (!navNode) {
+      setToastSafeTopPx(96);
+      return;
+    }
+
+    const nextTop = Math.max(96, Math.ceil(navNode.getBoundingClientRect().bottom + 12));
+    setToastSafeTopPx((current) => (Math.abs(current - nextTop) <= 1 ? current : nextTop));
   }, []);
 
   useEffect(() => {
@@ -1481,6 +1522,50 @@ export default function App() {
     [settings.hiddenTabs, tabVisibility],
   );
   const hiddenTabCount = actionableHiddenTabIds.length;
+  useLayoutEffect(() => {
+    const navNode = primaryNavRef.current;
+    const scrollNode = getTabRailScrollNode();
+
+    updateTabRailOverflowState();
+    updateToastSafeTopOffset();
+
+    if (!navNode || !scrollNode) {
+      return;
+    }
+
+    const handleLayoutChange = () => {
+      updateTabRailOverflowState();
+      updateToastSafeTopOffset();
+    };
+
+    scrollNode.addEventListener("scroll", handleLayoutChange, { passive: true });
+    window.addEventListener("resize", handleLayoutChange);
+    window.addEventListener("scroll", handleLayoutChange, { passive: true });
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        handleLayoutChange();
+      });
+      resizeObserver.observe(navNode);
+      resizeObserver.observe(scrollNode);
+    }
+
+    return () => {
+      scrollNode.removeEventListener("scroll", handleLayoutChange);
+      window.removeEventListener("resize", handleLayoutChange);
+      window.removeEventListener("scroll", handleLayoutChange);
+      resizeObserver?.disconnect();
+    };
+  }, [
+    getTabRailScrollNode,
+    hiddenTabCount,
+    shortcutsHintDismissed,
+    updateTabRailOverflowState,
+    updateToastSafeTopOffset,
+    visibleTabs,
+  ]);
+
   const restoreAllHiddenTabs = useCallback(() => {
     if (actionableHiddenTabIds.length === 0) {
       return;
@@ -2086,6 +2171,32 @@ export default function App() {
     ],
   );
 
+  const handleTabRailScroll = useCallback(
+    (direction: -1 | 1) => {
+      const scrollNode = getTabRailScrollNode();
+      if (!scrollNode) {
+        return;
+      }
+
+      const distance = Math.max(120, Math.floor(scrollNode.clientWidth * 0.72)) * direction;
+      const prefersReducedMotion =
+        typeof window !== "undefined" &&
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (typeof scrollNode.scrollBy === "function") {
+        scrollNode.scrollBy({
+          left: distance,
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+        });
+        return;
+      }
+
+      scrollNode.scrollLeft += distance;
+    },
+    [getTabRailScrollNode],
+  );
+
   const handleOpenHiddenTabRecovery = useCallback(() => {
     emitUxEvent("settings.hidden-tabs-recovery", {
       hiddenTabCount,
@@ -2102,7 +2213,7 @@ export default function App() {
               <p className="eyebrow">Collection loop</p>
               <h1>Emily Idle</h1>
               <p className="muted">Build your collection, unlock new lines, and stack bonuses.</p>
-              <nav className="page-nav" aria-label="Primary navigation">
+              <nav className="page-nav" aria-label="Primary navigation" ref={primaryNavRef}>
                 <div className="page-tab-rail__wrapper">
                   <PageTabRail
                     tabs={visibleTabs}
@@ -2126,6 +2237,33 @@ export default function App() {
                     Hidden tabs: {hiddenTabCount}
                   </button>
                 ) : null}
+                {tabRailHasOverflow ? (
+                  <>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="tab-overflow-prev"
+                      aria-label="Reveal previous tabs"
+                      onClick={() => handleTabRailScroll(-1)}
+                      disabled={!tabRailCanScrollBackward}
+                    >
+                      Prev tabs
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      data-testid="tab-overflow-next"
+                      aria-label="Reveal more tabs"
+                      onClick={() => handleTabRailScroll(1)}
+                      disabled={!tabRailCanScrollForward}
+                    >
+                      Next tabs
+                    </button>
+                    <span className="muted" data-testid="tab-overflow-hint">
+                      Swipe or use Prev/Next to reveal more tabs.
+                    </span>
+                  </>
+                ) : null}
                 <button
                   type="button"
                   className="help-open-button"
@@ -2148,7 +2286,11 @@ export default function App() {
               </nav>
               {!shortcutsHintDismissed ? (
                 <div className="shortcut-hint-inline" data-testid="shortcut-hint-inline">
-                  <p className="muted">Keyboard: `1-8` switches tabs. `?` opens shortcuts.</p>
+                  <p className="muted">
+                    {tabRailHasOverflow
+                      ? "Keyboard: 1-8 switches visible tabs. Swipe or use Prev/Next for more."
+                      : "Keyboard: 1-8 switches tabs. Use ? for shortcuts."}
+                  </p>
                   <button
                     type="button"
                     className="secondary"
@@ -2487,7 +2629,7 @@ export default function App() {
             />
           )}
         </main>
-        <ToastStack toasts={toasts} onDismiss={handleDismissToast} />
+        <ToastStack toasts={toasts} onDismiss={handleDismissToast} safeTopPx={toastSafeTopPx} />
         {shortcutModalOpen ? (
           <div className="shortcut-dialog-backdrop" role="presentation">
             <section

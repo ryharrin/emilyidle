@@ -187,11 +187,6 @@ export function StatsHeader({
                   testId="value-ticker-enjoyment-rate"
                 />
                 <span className="stats-header__rate-badge">/sec</span>
-                {eventMultiplier && eventMultiplier > 1 && (
-                  <span className="stats-header__event-badge">
-                    +{Math.round((eventMultiplier - 1) * 100)}% event
-                  </span>
-                )}
               </dd>
             </div>
             <div>
