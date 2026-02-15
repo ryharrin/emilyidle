@@ -48,12 +48,12 @@ test("selector contract anchors remain reachable", async ({ page }) => {
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   await openCatalogFilters(page);
+  await page.getByRole("combobox", { name: "Quick preset" }).selectOption("All references");
   await expect(page.getByTestId("catalog-grid")).toBeVisible();
   await expect(page.getByTestId("catalog-card").first()).toBeVisible();
   await expect(page.getByTestId("catalog-shop")).toHaveCount(1);
   await expect(page.getByTestId("catalog-filters")).toBeVisible();
   await expect(page.getByTestId("catalog-search")).toBeVisible();
-  await page.getByRole("combobox", { name: "Quick preset" }).selectOption("All references");
 
   await page.getByTestId("catalog-search").fill("126713GRNR");
   await expect(page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`)).toBeVisible();

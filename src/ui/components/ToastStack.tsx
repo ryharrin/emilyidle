@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export type ToastMessage = {
   id: string;
   title: string;
@@ -8,6 +10,7 @@ export type ToastMessage = {
 type ToastStackProps = {
   toasts: ToastMessage[];
   onDismiss: (toastId: string) => void;
+  safeTopPx?: number;
 };
 
 type ToastTone = "neutral" | "info" | "success" | "warning" | "critical";
@@ -29,7 +32,7 @@ function resolveToastTone(toast: ToastMessage): ToastTone {
   return "neutral";
 }
 
-export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
+export function ToastStack({ toasts, onDismiss, safeTopPx }: ToastStackProps) {
   if (toasts.length === 0) {
     return null;
   }
@@ -37,6 +40,10 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
   const [visibleToast] = toasts;
   const queueDepth = toasts.length;
   const toastTone = resolveToastTone(visibleToast);
+  const toastStyle =
+    typeof safeTopPx === "number"
+      ? ({ "--toast-safe-top": `${Math.max(0, Math.round(safeTopPx))}px` } as CSSProperties)
+      : undefined;
 
   return (
     <div
@@ -47,6 +54,7 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
       role="status"
       aria-live="polite"
       aria-atomic="true"
+      style={toastStyle}
     >
       <article
         key={visibleToast.id}

@@ -98,5 +98,8 @@ export function applyTherapistSessionMultipliers(
 
 export function getTherapistXpRequiredForNextLevel(level: number): number {
   const clampedLevel = Math.max(1, Math.floor(level));
-  return Math.max(20, Math.floor(80 * 1.25 ** (clampedLevel - 1)));
+  const baseRequirement = 80 * 1.25 ** (clampedLevel - 1);
+  const earlyLevelDiscount =
+    clampedLevel <= 5 ? Math.min(1, 0.78 + (clampedLevel - 1) * 0.05) : 1;
+  return Math.max(20, Math.floor(baseRequirement * earlyLevelDiscount));
 }

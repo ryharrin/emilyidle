@@ -118,7 +118,7 @@ export function getTherapistNearTermUnlockImpact(state: GameState): TherapistNea
   if (nextUnlock?.kind === "choice") {
     return {
       kind: "choice",
-      title: "Choice ready",
+      title: "Choice available now",
       detail: `${nextUnlock.label}. Spend points to lock in your next multiplier package.`,
       levelsRemaining: 0,
       xpToNextLevel,

@@ -1,6 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const MOBILE_VIEWPORTS = [{ name: "webkit-mobile-iphone15", device: "iPhone 15" as const }];
+const webServerPort = Number.parseInt(process.env.PLAYWRIGHT_WEB_SERVER_PORT ?? "5177", 10);
+const reuseExistingServer = (process.env.PLAYWRIGHT_REUSE_EXISTING_SERVER ?? "true") === "true";
+const baseUrl = `http://127.0.0.1:${webServerPort}`;
 
 const mobileProjects = MOBILE_VIEWPORTS.map(({ name, device }) => ({
   name,
@@ -26,13 +29,13 @@ export default defineConfig({
     ...mobileProjects,
   ],
   use: {
-    baseURL: "http://localhost:5177",
+    baseURL: baseUrl,
     headless: true,
   },
   webServer: {
-    command: "pnpm run dev -- --host 127.0.0.1 --port 5177",
-    url: "http://localhost:5177",
-    reuseExistingServer: true,
+    command: `pnpm exec vite --host 127.0.0.1 --port ${webServerPort} --strictPort`,
+    url: baseUrl,
+    reuseExistingServer,
     timeout: 120_000,
   },
 });

@@ -72,7 +72,7 @@ export {
   spendCareerNode,
 } from "./therapistCareer";
 
-const THERAPIST_SESSION_XP_GAIN = 8;
+const THERAPIST_SESSION_XP_GAIN = 10;
 export const WATCH_MODEL_PURCHASE_UNDO_WINDOW_MS = 10_000;
 
 export function setWornWatchId(state: GameState, modelId: string | null): GameState {
