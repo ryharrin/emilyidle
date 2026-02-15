@@ -448,7 +448,7 @@ const buildDetailDescription = (entry: CatalogEntry): string => {
     readString(detailsRecord?.fullDescription) ??
     readString(detailsRecord?.description) ??
     readString(entryRecord.fullDescription) ??
-    entry.description
+    sanitizeDisplayText(entry.description)
   );
 };
 
@@ -574,6 +574,7 @@ export function CatalogDetailsContent({
   const features = buildFeatureList(entry);
   const specs = buildSpecRows(entry, tags);
   const pricingRows = normalizePricingRows(entry);
+  const collectorNotes = readStringArray(entry.facts);
 
   return (
     <div className="catalog-details-body">
@@ -642,12 +643,12 @@ export function CatalogDetailsContent({
           </li>
         </ul>
       </div>
-      {showFacts && entry.facts && entry.facts.length > 0 && (
+      {showFacts && collectorNotes.length > 0 && (
         <div className="catalog-facts">
           <p className="catalog-facts-title">Collector notes</p>
           <ul data-testid="catalog-facts">
-            {entry.facts.map((fact) => (
-              <li key={fact}>{fact}</li>
+            {collectorNotes.map((fact) => (
+              <li key={`${entry.id}-fact-${fact}`}>{fact}</li>
             ))}
           </ul>
         </div>
