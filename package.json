@@ -13,6 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",
+    "test:e2e:workspace": "PLAYWRIGHT_WEB_SERVER_PORT=4177 PLAYWRIGHT_REUSE_EXISTING_SERVER=false playwright test",
+    "test:e2e:workspace:catalog-readiness": "PLAYWRIGHT_WEB_SERVER_PORT=4177 PLAYWRIGHT_REUSE_EXISTING_SERVER=false playwright test tests/selectors-contract.spec.ts tests/catalog-buy-buttons.spec.ts --project=chromium",
     "test:e2e:stable-projects": "playwright test --project=chromium --project=webkit-mobile-iphone15",
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:iphone": "playwright test --project=webkit-mobile-iphone15",
