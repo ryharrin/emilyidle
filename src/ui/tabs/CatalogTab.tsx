@@ -937,10 +937,9 @@ export function CatalogPurchasePanel({
     const showDismantleAction = atelierUnlocked && hasCraftingParts;
     const powerReserveDetail = getPowerReserveDetail(state, tierId);
     const showInlineSecondaryActions = !isCompactDensity;
-    const showDetailsButton = isCompactDensity || isMobileViewport;
     const showExpertCardDetails = !isCompactDensity && isExpertViewMode;
     const showExpertSecondaryActions = showInlineSecondaryActions && isExpertViewMode;
-    const showSecondaryActions = showInlineSecondaryActions || showDetailsButton;
+    const showSecondaryActions = showInlineSecondaryActions;
     const decisionInfo = buildCatalogDecisionInfo({
       tierId,
       movement: tierItem.movement,
@@ -1081,6 +1080,19 @@ export function CatalogPurchasePanel({
                     : []
                 }
               />
+              <button
+                type="button"
+                className="catalog-card-details-button catalog-secondary-action"
+                data-testid={`catalog-details-button-${entry.id}`}
+                aria-haspopup="dialog"
+                aria-controls="catalog-details-sheet"
+                aria-expanded={isDetailsOpen}
+                onClick={(event) =>
+                  openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
+                }
+              >
+                Details
+              </button>
             </div>
           </div>
           {gateEtaLabel && <p className="muted catalog-gate-eta">{gateEtaLabel}</p>}
@@ -1091,7 +1103,9 @@ export function CatalogPurchasePanel({
           >
             <summary>Advanced economics</summary>
             <div className="catalog-economics-disclosure__body">
-              <p className="catalog-duplicate">Next duplicate multiplier x{duplicateMultiplier.toFixed(2)}</p>
+              <p className="catalog-duplicate">
+                Next duplicate multiplier x{duplicateMultiplier.toFixed(2)}
+              </p>
               {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
                 <p className="muted">
                   Dismantle yield: {craftingPartsPerWatch[tierId] ?? 0} parts per watch
@@ -1145,21 +1159,6 @@ export function CatalogPurchasePanel({
                     </button>
                   )}
                 </>
-              )}
-              {showDetailsButton && (
-                <button
-                  type="button"
-                  className="catalog-card-details-button catalog-secondary-action"
-                  data-testid={`catalog-details-button-${entry.id}`}
-                  aria-haspopup="dialog"
-                  aria-controls="catalog-details-sheet"
-                  aria-expanded={isDetailsOpen}
-                  onClick={(event) =>
-                    openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
-                  }
-                >
-                  More
-                </button>
               )}
               {showExpertSecondaryActions &&
                 canShowInteract &&
