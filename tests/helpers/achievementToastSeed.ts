@@ -1,4 +1,5 @@
 import {
+  createStateFromSave,
   createInitialState,
   getCatalogModelPurchaseReachability,
   getWatchModels,
@@ -18,6 +19,19 @@ export type AchievementToastSeed = {
   state: GameState;
   starterModelId: string;
 };
+
+function assertSeedContract(state: GameState, starterModelId: string) {
+  const reachability = getCatalogModelPurchaseReachability(state, starterModelId);
+  const contractMatches =
+    reachability.discovered === ACHIEVEMENT_TOAST_SEED_CONTRACT.discovered &&
+    reachability.ownedCount === ACHIEVEMENT_TOAST_SEED_CONTRACT.ownedCount &&
+    reachability.gate.ok === ACHIEVEMENT_TOAST_SEED_CONTRACT.gateOpen &&
+    reachability.gate.ok === ACHIEVEMENT_TOAST_SEED_CONTRACT.affordable &&
+    reachability.buyActionReachable;
+  if (!contractMatches) {
+    throw new Error("Achievement-toast seed preconditions are out of sync with contract");
+  }
+}
 
 export function buildAchievementToastSeed(): AchievementToastSeed {
   const base = createInitialState();
@@ -40,20 +54,16 @@ export function buildAchievementToastSeed(): AchievementToastSeed {
       ...base.watchModels,
       [starterModel.id]: 11,
     },
+    therapistCareer: {
+      ...base.therapistCareer,
+      careerStartId: "phd-program",
+    },
     discoveredCatalogEntries: [starterModel.id],
     achievementUnlocks: [],
   };
 
-  const reachability = getCatalogModelPurchaseReachability(state, starterModel.id);
-  const contractMatches =
-    reachability.discovered === ACHIEVEMENT_TOAST_SEED_CONTRACT.discovered &&
-    reachability.ownedCount === ACHIEVEMENT_TOAST_SEED_CONTRACT.ownedCount &&
-    reachability.gate.ok === ACHIEVEMENT_TOAST_SEED_CONTRACT.gateOpen &&
-    reachability.gate.ok === ACHIEVEMENT_TOAST_SEED_CONTRACT.affordable &&
-    reachability.buyActionReachable;
-  if (!contractMatches) {
-    throw new Error("Achievement-toast seed preconditions are out of sync with contract");
-  }
+  assertSeedContract(state, starterModel.id);
+  assertSeedContract(createStateFromSave(state), starterModel.id);
 
   return { state, starterModelId: starterModel.id };
 }

@@ -37,7 +37,7 @@ async function buyStarterWatch(starterModelId: string) {
 
   await user.click(screen.getByRole("tab", { name: /^Owned/ }));
   const currencyBeforePurchase = screen.getByTestId("value-ticker-currency").textContent;
-  await user.click(screen.getByTestId(`catalog-buy-${starterModelId}`));
+  await user.click(await screen.findByTestId(`catalog-buy-${starterModelId}`));
   await waitFor(() => {
     expect(screen.getByTestId("value-ticker-currency").textContent).not.toBe(
       currencyBeforePurchase,
