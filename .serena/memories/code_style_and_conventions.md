@@ -1,0 +1,21 @@
+# Style and conventions
+- Language/tooling: TypeScript (`strict: true`), ESM (`"type": "module"`).
+- Formatting: Prettier (`.prettierrc.json`) with semicolons, double quotes, printWidth 100, trailing commas all.
+- Linting: ESLint.
+- Typing:
+  - Avoid `any`; prefer `unknown` and narrow with guards.
+  - Use `import type` for type-only imports.
+- Naming:
+  - Types: PascalCase.
+  - values/functions: camelCase.
+  - constants: UPPER_SNAKE_CASE.
+  - time values suffixed `_MS`; money values use `*Cents`/`*_CENTS`.
+- Architecture:
+  - UI should prefer domain APIs re-exported from `src/game/state.ts`.
+  - Keep selectors/actions pure (no browser APIs/Date.now inside).
+  - Preserve stable `id`/`data-testid` used by tests.
+- Error handling:
+  - Prefer explicit parse/validation with discriminated unions.
+  - Avoid empty catch blocks.
+- Modularity:
+  - Prefer extraction over inflating large files (e.g., `src/App.tsx`).
