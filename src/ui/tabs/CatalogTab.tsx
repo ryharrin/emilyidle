@@ -369,8 +369,7 @@ export function CatalogPurchasePanel({
 
   const [filtersOpen, setFiltersOpen] = React.useState<boolean>(() => isTestEnvironment());
   const [catalogFavoritesOnly, setCatalogFavoritesOnly] = React.useState(false);
-  const [catalogQuickPreset, setCatalogQuickPreset] =
-    React.useState<CatalogQuickPreset>("affordable");
+  const [catalogQuickPreset, setCatalogQuickPreset] = React.useState<CatalogQuickPreset>("all");
   const favoriteIdsSignature = React.useMemo(
     () => (state.favoriteWatchIds ?? []).join(","),
     [state.favoriteWatchIds],
