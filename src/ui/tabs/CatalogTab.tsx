@@ -1620,12 +1620,17 @@ export function CatalogPurchasePanel({
                     <span
                       className="catalog-tab-ready-badge"
                       data-testid="catalog-tab-ready-unowned"
+                      aria-hidden="true"
                     >
                       Ready
                     </span>
                   )}
                   {tab.id === "owned" && ownedReady && (
-                    <span className="catalog-tab-ready-badge" data-testid="catalog-tab-ready-owned">
+                    <span
+                      className="catalog-tab-ready-badge"
+                      data-testid="catalog-tab-ready-owned"
+                      aria-hidden="true"
+                    >
                       Quick action ready
                     </span>
                   )}

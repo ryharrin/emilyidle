@@ -409,12 +409,11 @@ export function CollectionTab({
       : interactionRunsTotal > 0
         ? "No active perfect streak."
         : "No outcomes logged yet.";
-  const showOverviewTab = activeCollectionSectionId === "collection-overview";
+  const showOverviewTab = true;
   const showSetBonusesTab = activeCollectionSectionId === "collection-set-bonuses";
   const showMilestonesTab =
     showMilestonesSection && activeCollectionSectionId === "collection-milestones";
-  const showAchievementsTab =
-    showAchievementsSection && activeCollectionSectionId === "collection-achievements";
+  const showAchievementsTab = showAchievementsSection;
   const showEventsTab = showEventsSection && activeCollectionSectionId === "collection-events";
   const showCraftingTab =
     showCraftingSection && activeCollectionSectionId === "collection-crafting";
@@ -1141,12 +1140,48 @@ export function CollectionTab({
                     )}
                   </>
                 )}
+                {!showOverviewTab && (
+                  <section
+                    id="collection-catalog-callout"
+                    className="panel catalog-panel collection-section"
+                    data-testid="catalog-shop-callout"
+                  >
+                    <header className="panel-header">
+                      <div>
+                        <p className="eyebrow">Catalog</p>
+                        <h3>Shop in Catalog</h3>
+                        <p className="muted">
+                          Purchases happen in Catalog. Collection focuses on owned-watch management,
+                          bonuses, and progression.
+                        </p>
+                        <p className="muted" data-testid="collection-catalog-linkage">
+                          {ownedReferenceCount} owned reference
+                          {ownedReferenceCount === 1 ? "" : "s"} · {discoveredReferenceCount}{" "}
+                          discovered
+                        </p>
+                      </div>
+                      <div className="card-actions">
+                        <button type="button" onClick={() => onNavigate("catalog", "catalog-shop")}>
+                          Open Catalog
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary"
+                          disabled={!hasOwnedReferences}
+                          onClick={() => onNavigate("catalog", "catalog-owned")}
+                        >
+                          Open Owned
+                        </button>
+                      </div>
+                    </header>
+                  </section>
+                )}
               </>
             )}
           </div>
 
           <aside className="side-panel">
-            {showOverviewTab && activeCoachmarks.length > 0 && (
+            {activeCoachmarks.length > 0 && (
               <>
                 {isCompactLayout ? (
                   <details
