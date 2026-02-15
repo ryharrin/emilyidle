@@ -33,9 +33,10 @@ describe("career-first economy", () => {
     expect(started.enjoymentCents).toBe(fresh.enjoymentCents);
   });
 
-  it("starts at zero cash and stays there before career start", () => {
+  it("starts with starter cash and keeps it unchanged before career start", () => {
     let state = createInitialState();
-    expect(state.currencyCents).toBe(0);
+    const starterCashCents = state.currencyCents;
+    expect(starterCashCents).toBeGreaterThan(0);
     expect(state.therapistCareer.careerStartId).toBeNull();
     expect(getTotalCashRateCentsPerSec(state, 0)).toBe(0);
 
@@ -45,7 +46,7 @@ describe("career-first economy", () => {
       nowMs += 1_000;
     }
 
-    expect(state.currencyCents).toBe(0);
+    expect(state.currencyCents).toBe(starterCashCents);
   });
 
   it("keeps cash rate tied to career only, even with watches and events", () => {

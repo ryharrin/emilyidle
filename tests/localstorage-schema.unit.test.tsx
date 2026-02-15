@@ -33,7 +33,7 @@ describe("localStorage schema compatibility", () => {
     });
   });
 
-  it("boots with persisted navigation payloads (legacy alias)", async () => {
+  it("boots with persisted navigation payloads and falls back to default tab", async () => {
     localStorage.setItem(
       "emily-idle:save",
       JSON.stringify({
@@ -43,13 +43,13 @@ describe("localStorage schema compatibility", () => {
         state: createInitialState(),
       }),
     );
-    localStorage.setItem("emily-idle:navigation", JSON.stringify({ lastTabId: "vault" }));
+    localStorage.setItem("emily-idle:navigation", JSON.stringify({ lastTabId: "collection" }));
 
     render(<App />);
 
-    const collectionTab = await screen.findByRole("tab", { name: "Collection" });
+    const careerTab = await screen.findByRole("tab", { name: "Career" });
     await waitFor(() => {
-      expect(collectionTab.getAttribute("aria-selected")).toBe("true");
+      expect(careerTab.getAttribute("aria-selected")).toBe("true");
     });
   });
 });

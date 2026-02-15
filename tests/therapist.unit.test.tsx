@@ -360,7 +360,7 @@ describe("therapist persistence", () => {
     expect(decoded.save.state.therapistCareer.lastSessionAtMs).toBe(0);
   });
 
-  it("forces cash to zero when the saved career has not started", () => {
+  it("preserves saved cash when the saved career has not started", () => {
     const baseState = createInitialState();
     const raw = JSON.stringify({
       version: 4,
@@ -381,7 +381,7 @@ describe("therapist persistence", () => {
       return;
     }
 
-    expect(decoded.save.state.currencyCents).toBe(0);
+    expect(decoded.save.state.currencyCents).toBe(25_000);
     expect(decoded.save.state.therapistCareer.careerStartId).toBeNull();
   });
 });
