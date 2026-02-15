@@ -605,6 +605,7 @@ strong {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-width: 0;
 }
 
 .collection-mobile-accordion {
@@ -1479,6 +1480,9 @@ button:not(:disabled):active {
   gap: 16px;
   margin-bottom: 24px;
   padding: 20px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   border-radius: 18px;
   border-color: #2b3240;
   background:
@@ -8459,6 +8463,10 @@ button[data-testid^="catalog-buy-"]:disabled {
   border-radius: 18px;
   background: var(--settings-section-bg);
   padding: 16px 16px 20px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-inline-size: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -8938,6 +8946,27 @@ button[data-testid^="catalog-buy-"]:disabled {
     grid-template-columns: 1fr;
   }
 
+  .collection-main {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .collection-section-nav {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .collection-insights.collection-insights-panel-cluster,
+  .collection-insights-panel-cluster .collection-insights__set-bonuses,
+  .collection-insights-panel-cluster .collection-insights__right,
+  .collection-insights-panel-cluster .collection-insights__module-card,
+  .side-panel {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
   .collection-insights.collection-insights-panel-cluster {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -9021,6 +9050,11 @@ button[data-testid^="catalog-buy-"]:disabled {
 }
 
 @media (max-width: 640px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
   .panel-header {
     flex-direction: column;
     align-items: flex-start;
