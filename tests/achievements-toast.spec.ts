@@ -10,6 +10,15 @@ import { clickLocatorSafely } from "./helpers/interactions";
 async function seedPage(page: import("@playwright/test").Page, achievementsEnabled: boolean) {
   // Canonical buy-button preconditions are centralized in tests/helpers/achievementToastSeed.ts.
   const { state } = buildAchievementToastSeed();
+  // Runtime save hydration zeros cash when careerStartId is null.
+  // Pinning a concrete start preserves canonical buy-action reachability in e2e.
+  const runtimeSeededState = {
+    ...state,
+    therapistCareer: {
+      ...state.therapistCareer,
+      careerStartId: state.therapistCareer.careerStartId ?? "phd-program",
+    },
+  };
   const settings = buildAchievementToastSettings(achievementsEnabled);
   await page.addInitScript(
     ({ seededState, settings }) => {
@@ -24,7 +33,7 @@ async function seedPage(page: import("@playwright/test").Page, achievementsEnabl
       );
       window.localStorage.setItem("emily-idle:settings", JSON.stringify(settings));
     },
-    { seededState: state, settings },
+    { seededState: runtimeSeededState, settings },
   );
 }
 
