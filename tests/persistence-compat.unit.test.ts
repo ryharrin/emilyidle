@@ -159,6 +159,10 @@ describe("persistence compatibility", () => {
     if (loaded.ok) {
       return;
     }
+    expect("error" in loaded).toBe(true);
+    if (!("error" in loaded)) {
+      return;
+    }
 
     expect(loaded.error).toContain("Stale save generation");
     expect(localStorage.getItem("emily-idle:save")).toBeNull();
@@ -208,6 +212,10 @@ describe("persistence compatibility", () => {
 
     expect(loaded.ok).toBe(false);
     if (loaded.ok) {
+      return;
+    }
+    expect("error" in loaded).toBe(true);
+    if (!("error" in loaded)) {
       return;
     }
 

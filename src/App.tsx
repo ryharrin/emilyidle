@@ -1920,8 +1920,6 @@ export default function App() {
     [state.maisonHeritage, state.maisonReputation, canPrestigeMaison],
   );
 
-  const collectionTierProgress = useMemo(() => getCatalogTierProgress(state), [state]);
-
   const showSetBonusesSection = true;
 
   const showCraftingSection = useMemo(
