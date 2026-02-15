@@ -1,40 +1,18 @@
 import { expect, test, type Locator } from "@playwright/test";
 
-import { createInitialState, getWatchModels, type GameState } from "../src/game/state";
+import {
+  buildAchievementToastSeed,
+  buildAchievementToastSettings,
+} from "./helpers/achievementToastSeed";
 import { openCatalogFilters } from "./helpers/catalogFilters";
 import { clickLocatorSafely } from "./helpers/interactions";
 
-function buildSeededState(): { state: GameState; starterModelId: string } {
-  const base = createInitialState();
-  const starterModel = getWatchModels().find((model) => model.tierId === "quartz");
-  if (!starterModel) {
-    throw new Error("Missing quartz model");
-  }
-
-  return {
-    starterModelId: starterModel.id,
-    state: {
-      ...base,
-      currencyCents: Math.max(base.currencyCents, 500_000),
-      enjoymentCents: Math.max(base.enjoymentCents, 50_000),
-      unlockedMilestones: ["collector-shelf", "showcase"],
-      items: {
-        ...base.items,
-        quartz: 11,
-      },
-      watchModels: {
-        [starterModel.id]: 11,
-      },
-      discoveredCatalogEntries: [starterModel.id],
-      achievementUnlocks: [],
-    },
-  };
-}
-
 async function seedPage(page: import("@playwright/test").Page, achievementsEnabled: boolean) {
-  const { state } = buildSeededState();
+  // Canonical buy-button preconditions are centralized in tests/helpers/achievementToastSeed.ts.
+  const { state } = buildAchievementToastSeed();
+  const settings = buildAchievementToastSettings(achievementsEnabled);
   await page.addInitScript(
-    ({ seededState, achievementsEnabled }) => {
+    ({ seededState, settings }) => {
       window.localStorage.setItem(
         "emily-idle:save",
         JSON.stringify({
@@ -44,24 +22,9 @@ async function seedPage(page: import("@playwright/test").Page, achievementsEnabl
           state: seededState,
         }),
       );
-      window.localStorage.setItem(
-        "emily-idle:settings",
-        JSON.stringify({
-          themeMode: "system",
-          hideCompletedAchievements: false,
-          hiddenTabs: [],
-          coachmarksDismissed: {},
-          confirmNostalgiaUnlocks: true,
-          notificationPreferences: {
-            sessionsReady: true,
-            prestigeReady: true,
-            achievements: achievementsEnabled,
-            events: true,
-          },
-        }),
-      );
+      window.localStorage.setItem("emily-idle:settings", JSON.stringify(settings));
     },
-    { seededState: state, achievementsEnabled },
+    { seededState: state, settings },
   );
 }
 
@@ -114,7 +77,7 @@ async function buyStarterWatch(
 
 test.describe("achievement toasts", () => {
   test("shows unlock toast when achievement notifications are enabled", async ({ page }) => {
-    const { starterModelId } = buildSeededState();
+    const { starterModelId } = buildAchievementToastSeed();
     await seedPage(page, true);
 
     await page.goto("/");
@@ -132,7 +95,7 @@ test.describe("achievement toasts", () => {
   test("does not show unlock toast when achievement notifications are disabled", async ({
     page,
   }) => {
-    const { starterModelId } = buildSeededState();
+    const { starterModelId } = buildAchievementToastSeed();
     await seedPage(page, false);
 
     await page.goto("/");

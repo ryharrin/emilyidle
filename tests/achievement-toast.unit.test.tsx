@@ -3,35 +3,15 @@ import { cleanup, render, screen, within, waitFor } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 
 import App from "../src/App";
-import { createInitialState, getWatchModels } from "../src/game/state";
-
-function buildSeededState() {
-  const base = createInitialState();
-  const starterModel = getWatchModels().find((model) => model.tierId === "quartz");
-  if (!starterModel) {
-    throw new Error("Missing quartz model");
-  }
-
-  return {
-    ...base,
-    currencyCents: Math.max(base.currencyCents, 500_000),
-    enjoymentCents: Math.max(base.enjoymentCents, 50_000),
-    unlockedMilestones: ["collector-shelf", "showcase"],
-    items: {
-      ...base.items,
-      quartz: 11,
-    },
-    watchModels: {
-      [starterModel.id]: 11,
-    },
-    discoveredCatalogEntries: [starterModel.id],
-    achievementUnlocks: [],
-  };
-}
+import {
+  buildAchievementToastSeed,
+  buildAchievementToastSettings,
+} from "./helpers/achievementToastSeed";
 
 function seedLocalStorage(options?: { achievementsEnabled?: boolean }) {
   const achievementsEnabled = options?.achievementsEnabled ?? true;
-  const state = buildSeededState();
+  // Canonical buy-button preconditions are centralized in tests/helpers/achievementToastSeed.ts.
+  const { state, starterModelId } = buildAchievementToastSeed();
   localStorage.setItem(
     "emily-idle:save",
     JSON.stringify({
@@ -44,26 +24,10 @@ function seedLocalStorage(options?: { achievementsEnabled?: boolean }) {
 
   localStorage.setItem(
     "emily-idle:settings",
-    JSON.stringify({
-      themeMode: "system",
-      hideCompletedAchievements: false,
-      hiddenTabs: [],
-      coachmarksDismissed: {},
-      confirmNostalgiaUnlocks: true,
-      notificationPreferences: {
-        sessionsReady: true,
-        prestigeReady: true,
-        achievements: achievementsEnabled,
-        events: true,
-      },
-    }),
+    JSON.stringify(buildAchievementToastSettings(achievementsEnabled)),
   );
 
-  const starterModel = getWatchModels().find((model) => model.tierId === "quartz");
-  if (!starterModel) {
-    throw new Error("Missing quartz model");
-  }
-  return starterModel.id;
+  return starterModelId;
 }
 
 async function buyStarterWatch(starterModelId: string) {
