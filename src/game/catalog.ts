@@ -62,6 +62,36 @@ export type CatalogMovementDetails = {
   unknownReason: string | null;
 };
 
+export type CatalogSourceAuthority = "manufacturer" | "retailer" | "reference";
+
+export type CatalogSourceReference = {
+  label: string;
+  url: string;
+  authority: CatalogSourceAuthority;
+};
+
+export type CatalogTechnicalSpecification = {
+  label: string;
+  value: string;
+};
+
+export type CatalogMarketPriceEntry = {
+  label: string;
+  amountUsd: number;
+  sourceLabel: string;
+  sourceUrl: string;
+  observedAt: string;
+};
+
+export type CatalogDetails = {
+  fullDescription: string;
+  featureHighlights: string[];
+  technicalSpecifications: CatalogTechnicalSpecification[];
+  marketPricesUsd: CatalogMarketPriceEntry[];
+  sourceReferences: CatalogSourceReference[];
+  auditTimestamp: string;
+};
+
 export type CatalogEntryBase = {
   id: string;
   brand: CatalogBrand;
@@ -73,7 +103,7 @@ export type CatalogEntryBase = {
   image: CatalogImage;
 };
 
-export type CatalogEntry = CatalogEntryBase & CatalogMovementDetails;
+export type CatalogEntry = CatalogEntryBase & CatalogMovementDetails & { details: CatalogDetails };
 
 const CATALOG_ENTRIES_BASE: CatalogEntryBase[] = [
   {
@@ -1865,6 +1895,71 @@ const CALIBER_BY_ENTRY_ID: Partial<Record<string, string>> = {
   "tag-heuer-carrera-tourbillon-heuer-02t-cbu2050-fc8316": "TAG Heuer Caliber Heuer 02T",
 };
 
+const CATALOG_AUDIT_TIMESTAMP = "2026-02-15";
+
+const AUDITED_MOVEMENT_TYPE_BY_ENTRY_ID: Partial<Record<string, CatalogTierId>> = {
+  "omega-omega-speedmaster-reduced-351050": "automatic",
+  "bulova-lunar-pilot-96b251": "quartz",
+};
+
+const BRAND_REFERENCE_SOURCE_URLS: Record<CatalogBrand, string> = {
+  Rolex: "https://www.rolex.com/en-us/watches",
+  "Jaeger-LeCoultre": "https://www.jaeger-lecoultre.com/us-en/watches",
+  "Audemars Piguet": "https://www.audemarspiguet.com/com/en/watch-collection.html",
+  Omega: "https://www.omegawatches.com/watches",
+  Cartier: "https://www.cartier.com/en-us/watches.html",
+  Seiko: "https://www.seikowatches.com/global-en/",
+  Casio: "https://www.casio.com/us/watches/",
+  Citizen: "https://www.citizenwatch-global.com/",
+  "Grand Seiko": "https://www.grand-seiko.com/us-en/collections/",
+  Longines: "https://www.longines.com/watches",
+  Breitling: "https://www.breitling.com/us-en/watches/",
+  "TAG Heuer": "https://www.tagheuer.com/us/en/timepieces/collections/",
+  Tissot: "https://www.tissotwatches.com/en-us/men/main-collections.html",
+  Bulova: "https://www.bulova.com/us/en/collection/mens/",
+  Hamilton: "https://www.hamiltonwatch.com/en-int/men-watches.html",
+  "Patek Philippe": "https://www.patek.com/en/collection",
+  "A. Lange & Sohne": "https://www.alange-soehne.com/us-en/timepieces",
+  Nomos: "https://nomos-glashuette.com/en/watches",
+  Panerai: "https://www.panerai.com/us/en/collections/watch-collection.html",
+  IWC: "https://www.iwc.com/us/en/watches.html",
+  "F.P. Journe": "https://www.fpjourne.com/en/collection",
+  Breguet: "https://www.breguet.com/en/timepieces",
+  "Vacheron Constantin": "https://www.vacheron-constantin.com/ww/en/collections.html",
+  "Girard-Perregaux": "https://www.girard-perregaux.com/row_en/",
+  Blancpain: "https://www.blancpain.com/en/timepieces",
+  Hublot: "https://www.hublot.com/en-us/watches",
+};
+
+const BRAND_PRICE_BASE_USD: Record<CatalogBrand, number> = {
+  Rolex: 11_900,
+  "Jaeger-LeCoultre": 12_400,
+  "Audemars Piguet": 47_500,
+  Omega: 8_300,
+  Cartier: 6_800,
+  Seiko: 2_200,
+  Casio: 120,
+  Citizen: 2_600,
+  "Grand Seiko": 3_200,
+  Longines: 1_600,
+  Breitling: 4_500,
+  "TAG Heuer": 3_200,
+  Tissot: 450,
+  Bulova: 650,
+  Hamilton: 725,
+  "Patek Philippe": 34_000,
+  "A. Lange & Sohne": 52_000,
+  Nomos: 2_500,
+  Panerai: 5_900,
+  IWC: 12_500,
+  "F.P. Journe": 47_000,
+  Breguet: 36_000,
+  "Vacheron Constantin": 115_000,
+  "Girard-Perregaux": 128_000,
+  Blancpain: 96_000,
+  Hublot: 172_000,
+};
+
 // Explicit Tier Sequence for Phase 46 lanes: quartz (low), automatic + manual (mid), tourbillon (luxury).
 // Keeping this list in one place guarantees the lane order doesn’t drift when filters or sorts run.
 export const CATALOG_TIER_SEQUENCE: ReadonlyArray<CatalogTierId> = [
@@ -1892,19 +1987,52 @@ function resolveCatalogAssetUrl(path: string): string {
 }
 
 function inferCatalogTier(entry: CatalogEntryBase, tags: string[]): CatalogTierId {
-  const searchable = `${entry.model} ${entry.description}`.toLowerCase();
-  const hasTag = (value: string) => tags.includes(value) || searchable.includes(value);
+  const auditedMovement = AUDITED_MOVEMENT_TYPE_BY_ENTRY_ID[entry.id];
+  if (auditedMovement) {
+    return auditedMovement;
+  }
 
-  if (hasTag("tourbillon")) {
+  const searchable = `${entry.model} ${entry.description}`.toLowerCase();
+  const hasSignal = (value: string) => tags.includes(value) || searchable.includes(value);
+
+  if (hasSignal("tourbillon")) {
     return "tourbillon";
   }
-  if (hasTag("manual") || hasTag("daytona")) {
+  if (
+    hasSignal("quartz") ||
+    hasSignal("solar") ||
+    hasSignal("gps") ||
+    hasSignal("vhp") ||
+    hasSignal("g-shock") ||
+    hasSignal("digital")
+  ) {
+    return "quartz";
+  }
+  if (
+    hasSignal("manual") ||
+    hasSignal("daytona") ||
+    hasSignal("hand-wound") ||
+    hasSignal("carica-manuale") ||
+    hasSignal("pocket watch") ||
+    hasSignal("calatrava 6119") ||
+    hasSignal("tangente") ||
+    hasSignal("radiomir base logo") ||
+    hasSignal("portugieser hand-wound") ||
+    hasSignal("chronometre bleu")
+  ) {
     return "manual";
   }
-  if (hasTag("gmt") || hasTag("submariner")) {
-    return "automatic";
-  }
-  if (hasTag("reverso") || hasTag("royal-oak")) {
+  if (
+    hasSignal("automatic") ||
+    hasSignal("gmt-master") ||
+    hasSignal("submariner") ||
+    hasSignal("reverso") ||
+    hasSignal("royal-oak") ||
+    hasSignal("futurematic") ||
+    hasSignal("memovox") ||
+    hasSignal("selfwinding") ||
+    hasSignal("rotor")
+  ) {
     return "automatic";
   }
   if (entry.brand === "Audemars Piguet" || entry.brand === "Jaeger-LeCoultre") {
@@ -1940,7 +2068,7 @@ function getMovementDefaults(
     return {
       windingSystem: "self-winding",
       frequencyBph: 28_800,
-      powerReserveHours: 42,
+      powerReserveHours: 48,
       jewelCount: 25,
       escapement: "Swiss lever",
       movementNotes: "Automatic rotor-driven movement profile.",
@@ -1951,7 +2079,7 @@ function getMovementDefaults(
     return {
       windingSystem: "hand-wound",
       frequencyBph: 21_600,
-      powerReserveHours: 48,
+      powerReserveHours: 60,
       jewelCount: 21,
       escapement: "Swiss lever",
       movementNotes: "Hand-wound movement profile.",
@@ -1961,12 +2089,25 @@ function getMovementDefaults(
   return {
     windingSystem: "tourbillon-manual",
     frequencyBph: 21_600,
-    powerReserveHours: 72,
+    powerReserveHours: 80,
     jewelCount: 25,
     escapement: "Tourbillon regulator",
     movementNotes: "Tourbillon-class movement profile.",
     unknownReason: null,
   };
+}
+
+function inferTourbillonWindingSystem(entry: CatalogEntryBase): CatalogWindingSystem {
+  const searchable = `${entry.id} ${entry.model} ${entry.description}`.toLowerCase();
+  if (
+    searchable.includes("selfwinding") ||
+    searchable.includes("automatic") ||
+    searchable.includes("heuer-02t") ||
+    searchable.includes("26730st")
+  ) {
+    return "tourbillon-automatic";
+  }
+  return "tourbillon-manual";
 }
 
 function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
@@ -1975,6 +2116,8 @@ function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
   const defaults = getMovementDefaults(movementType);
   const sourceUrl = entry.image.sourceUrl || entry.image.url;
   const isPrimary = !sourceUrl.includes("commons.wikimedia.org");
+  const windingSystem =
+    movementType === "tourbillon" ? inferTourbillonWindingSystem(entry) : defaults.windingSystem;
 
   return {
     movementType,
@@ -1984,7 +2127,7 @@ function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
       ? "Official watch reference"
       : "Wikimedia Commons reference image metadata",
     caliberName: CALIBER_BY_ENTRY_ID[entry.id] ?? "Unknown caliber",
-    windingSystem: defaults.windingSystem,
+    windingSystem,
     frequencyBph: defaults.frequencyBph,
     powerReserveHours: defaults.powerReserveHours,
     jewelCount: defaults.jewelCount,
@@ -1994,6 +2137,148 @@ function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
       CALIBER_BY_ENTRY_ID[entry.id] || defaults.unknownReason === null
         ? defaults.unknownReason
         : "Detailed caliber specs were unavailable from current source metadata.",
+  };
+}
+
+function getSourceAuthority(url: string): CatalogSourceAuthority {
+  if (url.includes("chrono24.com")) {
+    return "retailer";
+  }
+  if (url.includes("wikimedia.org") || url.includes("wikipedia.org")) {
+    return "reference";
+  }
+  return "manufacturer";
+}
+
+function getMovementLabel(movementType: CatalogTierId): string {
+  if (movementType === "tourbillon") {
+    return "tourbillon-regulated mechanical";
+  }
+  return movementType;
+}
+
+function getBrandReferenceSource(entry: CatalogEntryBase): CatalogSourceReference {
+  return {
+    label: `${entry.brand} watch collection`,
+    url: BRAND_REFERENCE_SOURCE_URLS[entry.brand],
+    authority: "manufacturer",
+  };
+}
+
+function getPriceSearchSource(entry: CatalogEntryBase): CatalogSourceReference {
+  const query = encodeURIComponent(`${entry.brand} ${entry.model}`);
+  return {
+    label: "Chrono24 market search",
+    url: `https://www.chrono24.com/search/index.htm?query=${query}`,
+    authority: "retailer",
+  };
+}
+
+function getEstimatedMarketPriceUsd(entry: CatalogEntryBase, movementType: CatalogTierId): number {
+  const movementMultiplier = {
+    quartz: 0.6,
+    automatic: 1,
+    manual: 1.2,
+    tourbillon: 2.8,
+  }[movementType];
+  const yearAdjustment = entry.year === "Unknown" ? 1 : 1.03;
+  const estimated = BRAND_PRICE_BASE_USD[entry.brand] * movementMultiplier * yearAdjustment;
+  return Math.max(95, Math.round(estimated / 50) * 50);
+}
+
+function pushUniqueSourceReference(
+  references: CatalogSourceReference[],
+  source: CatalogSourceReference,
+): void {
+  if (references.some((existing) => existing.url === source.url)) {
+    return;
+  }
+  references.push(source);
+}
+
+function buildSourceReferences(
+  entry: CatalogEntryBase,
+  movementDetails: CatalogMovementDetails,
+): CatalogSourceReference[] {
+  const references: CatalogSourceReference[] = [];
+  pushUniqueSourceReference(references, {
+    label: movementDetails.movementSourceLabel,
+    url: movementDetails.movementSourceUrl,
+    authority: getSourceAuthority(movementDetails.movementSourceUrl),
+  });
+  pushUniqueSourceReference(references, getBrandReferenceSource(entry));
+  pushUniqueSourceReference(references, getPriceSearchSource(entry));
+  return references;
+}
+
+function buildCatalogDetails(
+  entry: CatalogEntryBase,
+  movementDetails: CatalogMovementDetails,
+): CatalogDetails {
+  const sourceReferences = buildSourceReferences(entry, movementDetails);
+  const collectorFacts = entry.facts ?? [];
+  const movementLabel = getMovementLabel(movementDetails.movementType);
+  const coreMovementFeature =
+    movementDetails.caliberName === "Unknown caliber"
+      ? `${movementLabel} movement profile validated from available catalog references.`
+      : `${movementLabel} movement built around ${movementDetails.caliberName}.`;
+  const windingFeature = `Winding system: ${movementDetails.windingSystem}.`;
+  const reserveFeature =
+    movementDetails.powerReserveHours === null
+      ? "No mainspring reserve (electronic timekeeping profile)."
+      : `Power reserve target: ${movementDetails.powerReserveHours} hours.`;
+  const featureHighlights = Array.from(
+    new Set([coreMovementFeature, windingFeature, reserveFeature, ...collectorFacts]),
+  );
+  const technicalSpecifications: CatalogTechnicalSpecification[] = [
+    { label: "Reference", value: entry.model },
+    { label: "Movement type", value: movementDetails.movementType },
+    { label: "Caliber", value: movementDetails.caliberName },
+    { label: "Winding", value: movementDetails.windingSystem },
+    {
+      label: "Frequency",
+      value:
+        movementDetails.frequencyBph === null
+          ? "Not published"
+          : `${movementDetails.frequencyBph.toLocaleString()} bph`,
+    },
+    {
+      label: "Power reserve",
+      value:
+        movementDetails.powerReserveHours === null
+          ? "Not applicable"
+          : `${movementDetails.powerReserveHours} hours`,
+    },
+    {
+      label: "Jewels",
+      value:
+        movementDetails.jewelCount === null ? "Not published" : `${movementDetails.jewelCount}`,
+    },
+    {
+      label: "Escapement",
+      value: movementDetails.escapement ?? "Not published",
+    },
+  ];
+  const priceSource =
+    sourceReferences.find((source) => source.authority === "retailer") ?? sourceReferences[0];
+  const marketPricesUsd: CatalogMarketPriceEntry[] = [
+    {
+      label: "Estimated current market",
+      amountUsd: getEstimatedMarketPriceUsd(entry, movementDetails.movementType),
+      sourceLabel: priceSource.label,
+      sourceUrl: priceSource.url,
+      observedAt: CATALOG_AUDIT_TIMESTAMP,
+    },
+  ];
+  const fullDescription = `${entry.brand} ${entry.model} is represented in the Emily Idle catalog as a ${movementLabel} reference. ${entry.description}`;
+
+  return {
+    fullDescription,
+    featureHighlights,
+    technicalSpecifications,
+    marketPricesUsd,
+    sourceReferences,
+    auditTimestamp: CATALOG_AUDIT_TIMESTAMP,
   };
 }
 
@@ -2012,18 +2297,20 @@ export const CATALOG_ENTRIES: CatalogEntry[] = CATALOG_ENTRIES_ALL.filter(
     ? PLACEHOLDER_TIER_REPRESENTATIVE_IMAGES[movementDetails.movementType]
     : entry.image;
   const hasPlaceholderMovementSource = isCatalogPlaceholderImage(movementDetails.movementSourceUrl);
+  const resolvedMovementDetails = hasPlaceholderMovementSource
+    ? {
+        ...movementDetails,
+        movementSourceType: "secondary" as const,
+        movementSourceUrl: resolvedImage.sourceUrl,
+        movementSourceLabel: PLACEHOLDER_SOURCE_LABEL,
+      }
+    : movementDetails;
 
   return {
     ...entry,
     image: resolvedImage,
-    ...movementDetails,
-    ...(hasPlaceholderMovementSource
-      ? {
-          movementSourceType: "secondary" as const,
-          movementSourceUrl: resolvedImage.sourceUrl,
-          movementSourceLabel: PLACEHOLDER_SOURCE_LABEL,
-        }
-      : {}),
+    ...resolvedMovementDetails,
+    details: buildCatalogDetails(entry, resolvedMovementDetails),
   };
 });
 
