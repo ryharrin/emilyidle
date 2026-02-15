@@ -22,7 +22,7 @@ type UseGameRuntimeArgs = {
   step: (state: GameState, dtMs: number, nowMs?: number) => GameState;
   loadSave: () => SaveLoadResult;
   clearSave: () => SavePersistResult;
-  persistSave: (state: GameState) => SavePersistResult;
+  persistSave: (state: GameState, lastSimulatedAtMs?: number) => SavePersistResult;
   devSettings: {
     enabled: boolean;
     speedMultiplier: number;
@@ -46,6 +46,14 @@ const resolveStateUpdate = (update: SetStateAction<GameState>, current: GameStat
   return update;
 };
 
+const isDocumentVisible = (): boolean => {
+  if (typeof document === "undefined") {
+    return true;
+  }
+
+  return document.visibilityState !== "hidden";
+};
+
 export const useGameRuntime = ({
   initialState,
   step,
@@ -62,6 +70,8 @@ export const useGameRuntime = ({
   const accumulatorMsRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const stateRef = useRef(state);
+  const simulationNowMsRef = useRef(normalizeTimestampMs(Date.now()));
+  const runtimeActiveRef = useRef(isDocumentVisible());
 
   const setState = useCallback((update: SetStateAction<GameState>) => {
     if (typeof update !== "function") {
@@ -88,7 +98,7 @@ export const useGameRuntime = ({
 
   const persistNow = useCallback(
     (reason: string, snapshot: GameState = stateRef.current) => {
-      const result = persistSave(snapshot);
+      const result = persistSave(snapshot, simulationNowMsRef.current);
 
       if (!result.ok) {
         console.warn(`Autosave failed (${reason}). ${result.error}`);
@@ -106,11 +116,14 @@ export const useGameRuntime = ({
   useEffect(() => {
     const loadResult = loadSave();
     if (loadResult.ok) {
+      simulationNowMsRef.current = normalizeTimestampMs(loadResult.save.lastSimulatedAtMs);
       setState(loadResult.save.state);
       resetSimulationClock();
       console.info(`Loaded save v${loadResult.save.version} from ${loadResult.save.savedAt}`);
       return;
     }
+
+    simulationNowMsRef.current = normalizeTimestampMs(Date.now());
 
     if ("empty" in loadResult) {
       console.info("No save found; starting new game.");
@@ -130,7 +143,11 @@ export const useGameRuntime = ({
     }
 
     const onVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
+      const visible = document.visibilityState !== "hidden";
+      runtimeActiveRef.current = visible;
+      resetSimulationClock();
+
+      if (!visible) {
         if (saveDirtyRef.current) {
           persistNow("visibilitychange:hidden");
         }
@@ -139,19 +156,28 @@ export const useGameRuntime = ({
     };
 
     const onPageHide = () => {
+      runtimeActiveRef.current = false;
+      resetSimulationClock();
       if (saveDirtyRef.current) {
         persistNow("pagehide");
       }
     };
 
+    const onPageShow = () => {
+      runtimeActiveRef.current = isDocumentVisible();
+      resetSimulationClock();
+    };
+
     document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onPageShow);
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("pageshow", onPageShow);
     };
-  }, [persistNow]);
+  }, [persistNow, resetSimulationClock]);
 
   useEffect(() => {
     if (isTestEnvironment()) {
@@ -160,6 +186,13 @@ export const useGameRuntime = ({
 
     const frame = (frameTimeMs: number) => {
       let stepped = false;
+
+      if (!runtimeActiveRef.current) {
+        lastFrameAtMsRef.current = null;
+        accumulatorMsRef.current = 0;
+        rafRef.current = requestAnimationFrame(frame);
+        return;
+      }
 
       if (lastFrameAtMsRef.current !== null) {
         const rawElapsedMs = frameTimeMs - lastFrameAtMsRef.current;
@@ -181,8 +214,9 @@ export const useGameRuntime = ({
         while (accumulatorMsRef.current >= SIM_TICK_MS) {
           stepped = true;
           accumulatorMsRef.current -= SIM_TICK_MS;
+          simulationNowMsRef.current = normalizeTimestampMs(simulationNowMsRef.current + SIM_TICK_MS);
 
-          nextState = step(nextState, SIM_TICK_MS);
+          nextState = step(nextState, SIM_TICK_MS, simulationNowMsRef.current);
         }
 
         setState(nextState);

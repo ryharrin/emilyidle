@@ -382,11 +382,15 @@ function sanitizeState(value: unknown): GameState | null {
   return createStateFromSave(persisted);
 }
 
-export function encodeSaveString(state: GameState, savedAt: Date = new Date()): string {
+export function encodeSaveString(
+  state: GameState,
+  savedAt: Date = new Date(),
+  lastSimulatedAtMs: number = savedAt.getTime(),
+): string {
   const save = buildCanonicalSave(
     state,
     savedAt.toISOString(),
-    savedAt.getTime(),
+    lastSimulatedAtMs,
     getSaveClearEpoch(),
   );
 
@@ -530,8 +534,9 @@ export function loadSaveFromLocalStorage(): SaveLoadResult {
 export function persistSaveToLocalStorage(
   state: GameState,
   savedAt: Date = new Date(),
+  lastSimulatedAtMs: number = savedAt.getTime(),
 ): SavePersistResult {
-  const encoded = encodeSaveString(state, savedAt);
+  const encoded = encodeSaveString(state, savedAt, lastSimulatedAtMs);
 
   try {
     localStorage.setItem(SAVE_KEY, encoded);

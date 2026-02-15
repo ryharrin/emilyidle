@@ -1,0 +1,17 @@
+# watch-idle project overview
+- Purpose: Emily Idle (`watch-idle`) is a Vite + React + TypeScript idle/incremental game.
+- Platform/runtime: browser app built with Vite.
+- Primary code location: `src/`.
+- Tests location: `tests/`.
+- Snapshot/vendor note: `vite/` contains a vendored Vite monorepo snapshot for reference and should generally not be edited.
+- Persistence contracts: localStorage keys include `emily-idle:save` (current) and `watch-idle:save` (legacy), plus settings/navigation/help/audio related keys.
+- Important simulation/runtime concepts:
+  - Main loop in `src/game/runtime/useGameRuntime.ts`.
+  - Pure sim step in `src/game/sim.ts` (`SIM_TICK_MS = 100`).
+  - Persistence in `src/game/persistence.ts` (save version 3 with legacy acceptance).
+- Domain conventions:
+  - Currency values are cents.
+  - Rates are cents/sec.
+  - Selectors/actions should stay pure; pass time as args.
+  - State transitions often preserve reference when no-op.
+- System: Darwin (macOS).

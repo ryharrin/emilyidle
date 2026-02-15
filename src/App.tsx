@@ -525,7 +525,7 @@ export default function App() {
   }, []);
 
   const persistSaveWithSessionEpochGuard = useCallback(
-    (nextState: GameState): SavePersistResult => {
+    (nextState: GameState, lastSimulatedAtMs?: number): SavePersistResult => {
       const currentEpoch = getSaveClearEpoch();
       if (currentEpoch !== sessionSaveClearEpoch) {
         return {
@@ -534,7 +534,7 @@ export default function App() {
         };
       }
 
-      return persistSaveToLocalStorage(nextState);
+      return persistSaveToLocalStorage(nextState, new Date(), lastSimulatedAtMs);
     },
     [sessionSaveClearEpoch],
   );
