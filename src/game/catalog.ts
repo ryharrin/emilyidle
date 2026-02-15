@@ -1897,9 +1897,510 @@ const CALIBER_BY_ENTRY_ID: Partial<Record<string, string>> = {
 
 const CATALOG_AUDIT_TIMESTAMP = "2026-02-15";
 
-const AUDITED_MOVEMENT_TYPE_BY_ENTRY_ID: Partial<Record<string, CatalogTierId>> = {
-  "omega-omega-speedmaster-reduced-351050": "automatic",
-  "bulova-lunar-pilot-96b251": "quartz",
+type CatalogMovementAudit = {
+  movementType: CatalogTierId;
+  movementSourceLabel: string;
+  movementSourceUrl: string;
+};
+
+const AUDITED_MOVEMENT_BY_ENTRY_ID: Readonly<Record<string, CatalogMovementAudit>> = {
+  "rolex-calibrorolex": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Calibrorolex.jpg",
+  },
+  "rolex-quadrante-tropical-di-rolex-gmt-master-ref-1675-long-e": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Quadrante_tropical_di_Rolex_GMT-Master_ref._1675_Long_E.jpg",
+  },
+  "rolex-rolex-gmt-master-ii-ref-126713grnr": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_GMT-Master_II_ref._126713GRNR.jpg",
+  },
+  "rolex-rolex-gmt-master-ref-16700": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex_GMT-Master_ref._16700.jpg",
+  },
+  "rolex-rolex-daytona-ref-6265-in-oro-primi-anni-settanta": {
+    movementType: "manual",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Daytona_ref._6265_in_oro,_primi_anni_Settanta.jpg",
+  },
+  "rolex-the-real-thing-22119277278": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:The_Real_Thing_(22119277278).jpg",
+  },
+  "rolex-rolex-oyster-perpetual-ref-277200-con-quadrante-color-lavanda": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Oyster_Perpetual_ref._277200_con_quadrante_color_lavanda.jpg",
+  },
+  "rolex-rolex-oyster-perpetual-con-quadrante-celebration": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Oyster_Perpetual_con_quadrante_Celebration.jpg",
+  },
+  "rolex-particolare-di-un-exclamation-point-dial-su-un-rolex-gmt-master-ref-1675-la-ghiera-sbiadita-detta-anche-faded-o-ghost":
+    {
+      movementType: "automatic",
+      movementSourceLabel: "Wikimedia Commons reference image metadata",
+      movementSourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Particolare_di_un_Exclamation_point_dial_su_un_Rolex_GMT-Master_ref._1675._La_ghiera_sbiadita_%C3%A8_detta_anche_faded_o_ghost..jpg",
+    },
+  "rolex-macro-photography-of-a-rolex-watch": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Macro_photography_of_a_Rolex_watch.jpg",
+  },
+  "rolex-rolex-oyster-perpetual-ref-116000-con-quadrante-explorer": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Oyster_Perpetual_ref._116000_con_quadrante_Explorer.jpg",
+  },
+  "rolex-rolex-gmt-master-ii-ref-16710t": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_GMT_Master_II_ref._16710T.jpg",
+  },
+  "rolex-rolex-pocket-watch-in-box": {
+    movementType: "manual",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex_pocket_watch_in_box.jpg",
+  },
+  "rolex-rolex-datejust-ref-16220-tapestry-dial": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Datejust_ref._16220_tapestry_dial.jpg",
+  },
+  "rolex-rolex-watches-helsinki2": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex-watches-Helsinki2.jpg",
+  },
+  "rolex-montre-laroche-posay-water-resistant-rolex-submariner": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Montre_Laroche-Posay_Water_resistant_;_Rolex_submariner.jpg",
+  },
+  "rolex-rolex-day-date-lacquered-stella-dial": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Day-Date_Lacquered_Stella_Dial.jpg",
+  },
+  "rolex-watch-la-roche-posay": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Watch_La_Roche-Posay.jpg",
+  },
+  "rolex-rolex-datejust-ref-16013-seconda-met-anni-70-primi-80": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_Datejust_ref._16013,_seconda_met%C3%A0_anni_%2770-primi_%2780.jpg",
+  },
+  "rolex-rolex-women-watch": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex.women_watch.jpg",
+  },
+  "rolex-ultimate-in-rose-gold-wristwatches-rcwatches": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Ultimate_in_Rose_Gold_Wristwatches_RCWATCHES.jpg",
+  },
+  "rolex-rolex-perrelet-perrolex": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex%2BPerrelet_%3D_Perrolex.jpg",
+  },
+  "rolex-rolex-watch-ladies-datejust-1987": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Rolex_watch_ladies_Datejust_1987.jpg",
+  },
+  "rolex-milgaussnew": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Milgaussnew.jpg",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-reverso-2011": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_Reverso_2011.jpg",
+  },
+  "jaeger-lecoultre-balance-of-a-wristwatch-jaeger-lecoultre-master-eight-days-perpetual-squelette":
+    {
+      movementType: "automatic",
+      movementSourceLabel: "Wikimedia Commons reference image metadata",
+      movementSourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Balance_of_a_wristwatch_Jaeger-LeCoultre_Master_Eight_Days_Perpetual_Squelette.png",
+    },
+  "jaeger-lecoultre-jaeger-lecoultre-memovox-model-e855-with-calibre-k825-2": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_Memovox_model_E855_with_calibre_K825_(2).JPG",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-reverso": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre-Reverso.jpg",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-mastereightdaysperpetualsquelette-cropped-twice": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_MasterEightDaysPerpetualSquelette_(cropped_twice).png",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-img-0991": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Jaeger-Lecoultre_img_0991.jpg",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-e502-futurematic": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_E502_Futurematic.JPG",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-memovox-model-e855-with-calibre-k825": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_Memovox_model_E855_with_calibre_K825.JPG",
+  },
+  "jaeger-lecoultre-detailed-view-on-balance-and-rotor-of-jaeger-lecoultre-watch": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Detailed_view_on_balance_and_rotor_of_Jaeger-LeCoultre_watch.jpg",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-men-s-dress-watch-ca-1950s": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_men%27s_dress_watch_ca._1950s.jpg",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-mastereightdaysperpetualsquelette-cropped": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_MasterEightDaysPerpetualSquelette_cropped.png",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-caliber-k916-with-eu-version-rotor": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_caliber_K916_with_EU_version_rotor.jpg",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-reverso-anni-2000": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_Reverso,_anni_2000.jpg",
+  },
+  "jaeger-lecoultre-jaeger-lecoultre-mastereightdaysperpetualsquelette": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Jaeger-LeCoultre_MasterEightDaysPerpetualSquelette.jpg",
+  },
+  "audemars-piguet-quanti-me": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Quanti%C3%A8me.jpg",
+  },
+  "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997":
+    {
+      movementType: "tourbillon",
+      movementSourceLabel: "Wikimedia Commons reference image metadata",
+      movementSourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_ref._25831_con_datario,_riserva_di_carica_e_tourbillon,_risalente_al_1997.jpg",
+    },
+  "audemars-piguet-audemars-piguet-dress-watch-in-oro-carica-manuale-fine-anni-70": {
+    movementType: "manual",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_dress_watch_in_oro_carica_manuale,_fine_anni_%2770.jpg",
+  },
+  "audemars-piguet-audemars-piguet-royal-oak-ref-15202": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_Royal_Oak_ref._15202.jpg",
+  },
+  "audemars-piguet-audemars-piguet-royal-oak-cronograph-con-calibro-modulare-ref-25721-primi-anni-novanta":
+    {
+      movementType: "automatic",
+      movementSourceLabel: "Wikimedia Commons reference image metadata",
+      movementSourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_Royal_Oak_Cronograph_con_calibro_modulare,_ref._25721._Primi_anni_Novanta.jpg",
+    },
+  "audemars-piguet-audemars-piguet-royal-oak-in-oro-con-calendario-perpetuo-met-anni-novanta": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_Royal_Oak_in_oro_con_calendario_perpetuo,_met%C3%A0_anni_Novanta.jpg",
+  },
+  "audemars-piguet-audemars-2385": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Audemars_2385.jpg",
+  },
+  "audemars-piguet-royal-oak-automatic": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Royal_Oak_Automatic_.png",
+  },
+  "audemars-piguet-calibro-audemars-piguet-7121-con-massa-oscillante-personalizzata-con-il-numero-50-per-celebrare-i-cinquant-anni-dalla-nascita-del-royal-oak-risalente-al-2022":
+    {
+      movementType: "automatic",
+      movementSourceLabel: "Wikimedia Commons reference image metadata",
+      movementSourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Calibro_Audemars_Piguet_7121_con_massa_oscillante_personalizzata_con_il_numero_50,_per_celebrare_i_cinquant%27anni_dalla_nascita_del_Royal_Oak._Risalente_al_2022.jpg",
+    },
+  "audemars-piguet-audemars-2385-royal-oak-resized": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_2385_Royal_Oak_resized.jpg",
+  },
+  "audemars-piguet-ultimate-in-rose-gold-wristwatches-rcwatches": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Ultimate_in_Rose_Gold_Wristwatches_RCWATCHES.jpg",
+  },
+  "audemars-piguet-audemars-piguet-code-11-59-manual-ref-26393": {
+    movementType: "manual",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_CODE_11.59_Chronograph_ref._26393.jpg",
+  },
+  "audemars-piguet-audemars-piguet-royal-oak-offshore-diver": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_Royal_Oak_Offshore_Diver.jpg",
+  },
+  "audemars-piguet-audemars-piguet-royal-oak-in-oro-e-tantalio-fine-anni-80-primi-90": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_Royal_Oak_in_oro_e_tantalio,_fine_anni_%2780-primi_%2790.jpg",
+  },
+  "audemars-piguet-audemars-piguet-royal-oak-tradition-d-excellence-4-ref-25969-risalente-al-2004":
+    {
+      movementType: "automatic",
+      movementSourceLabel: "Wikimedia Commons reference image metadata",
+      movementSourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Audemars_Piguet_Royal_Oak_Tradition_d%27Excellence_4,_ref._25969,_risalente_al_2004.jpg",
+    },
+  "omega-omega-seamaster-de-ville-1970": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Omega_Seamaster_De_Ville_1970.jpg",
+  },
+  "omega-omega-seamaster-120m-1998": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Omega_seamaster_120m_1998.jpg",
+  },
+  "omega-omega-speedmaster-reduced-351050": {
+    movementType: "automatic",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl:
+      "https://commons.wikimedia.org/wiki/File:Omega_speedmaster_reduced_351050.jpg",
+  },
+  "cartier-cartier-tank": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Cartier_Tank.jpg",
+  },
+  "cartier-cartier-tank-must-2021": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Cartier_Tank_Must,_2021.jpg",
+  },
+  "cartier-cartier-santos-1988": {
+    movementType: "quartz",
+    movementSourceLabel: "Wikimedia Commons reference image metadata",
+    movementSourceUrl: "https://commons.wikimedia.org/wiki/File:Cartier_Santos_1988.jpg",
+  },
+  "seiko-astron-gps-solar-ssj003": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.seikowatches.com/global-en/products/astron/ssj003",
+  },
+  "casio-g-shock-dw-5600e": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.casio.com/us/watches/gshock/product.DW-5600E-1V/",
+  },
+  "citizen-the-citizen-aq4020-54y": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.citizenwatch-global.com/the-citizen/lineup/5sec/AQ4020-54Y/index.html",
+  },
+  "grand-seiko-sbgx261": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.grand-seiko.com/us-en/collections/sbgx261g",
+  },
+  "longines-conquest-vhp-l37164966": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.longines.com/p/watch-conquest-v-h-p-l3-716-4-96-6",
+  },
+  "breitling-aerospace-evo-e7936310": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.breitling.com/us-en/watches/professional/aerospace-evo/",
+  },
+  "tag-heuer-aquaracer-way111a": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-aquaracer/41-mm-quartz/WAY111A.BA0928.html",
+  },
+  "tissot-prx-quartz-t1374101104100": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.tissotwatches.com/en-us/t1374101104100.html",
+  },
+  "bulova-lunar-pilot-96b251": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.bulova.com/us/en/product/96B251.html",
+  },
+  "hamilton-jazzmaster-quartz-h32451131": {
+    movementType: "quartz",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.hamiltonwatch.com/en-int/h32451131-jazzmaster-gent-quartz.html",
+  },
+  "omega-speedmaster-moonwatch-professional-31030425001001": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.omegawatches.com/watch-omega-speedmaster-moonwatch-professional-co-axial-master-chronometer-chronograph-42-mm-31030425001001",
+  },
+  "patek-philippe-calatrava-6119g": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.patek.com/en/collection/calatrava/6119G-001",
+  },
+  "a-lange-sohne-lange-1-191-039": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.alange-soehne.com/us-en/timepieces/lange-1/lange-1",
+  },
+  "nomos-tangente-38-165": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://nomos-glashuette.com/en/tangente/tangente-38-165",
+  },
+  "panerai-radiomir-base-logo-pam00753": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.panerai.com/us/en/collections/watch-collection/radiomir/pam00753-radiomir-base-logo---45mm.html",
+  },
+  "iwc-portugieser-hand-wound-eight-days-iw510203": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.iwc.com/us/en/watch-collections/portugieser/iw510203-portugieser-hand-wound-eight-days.html",
+  },
+  "jaeger-lecoultre-reverso-tribute-monoface-q3978480": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.jaeger-lecoultre.com/us-en/watches/reverso/reverso-tribute",
+  },
+  "breguet-tradition-7027br-g9-9v6": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.breguet.com/en/timepieces/tradition/7027",
+  },
+  "fp-journe-chronometre-bleu": {
+    movementType: "manual",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.fpjourne.com/en/collection/classique-collection/chronometre-bleu",
+  },
+  "breguet-classique-tourbillon-3357": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.breguet.com/en/timepieces/classique/3357",
+  },
+  "patek-philippe-grand-complications-5303r": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.patek.com/en/collection/grand-complications/5303R-001",
+  },
+  "vacheron-constantin-traditionnelle-tourbillon-6000t": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.vacheron-constantin.com/ww/en/collections/traditionnelle/6000t-000r-b346.html",
+  },
+  "audemars-piguet-royal-oak-selfwinding-flying-tourbillon-26730st": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.audemarspiguet.com/com/en/watch-collection/royal-oak/26730ST.OO.1320ST.01.html",
+  },
+  "jaeger-lecoultre-master-grande-tradition-tourbillon-cylindrique": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.jaeger-lecoultre.com/us-en/watches/master-grande-tradition/master-grande-tradition-tourbillon-cylindrique",
+  },
+  "a-lange-sohne-tourbograph-perpetual-honeygold": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.alange-soehne.com/us-en/timepieces/tourbograph-perpetual-honeygold",
+  },
+  "girard-perregaux-la-esmeralda-tourbillon-99274": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.girard-perregaux.com/row_en/99274-52-000-ba6a.html",
+  },
+  "blancpain-villeret-tourbillon-volant-66260-3633-55b": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.blancpain.com/en/villeret/tourbillon-volant-heures-sautantes-66260-3633-55b",
+  },
+  "hublot-mp-09-tourbillon-bi-axis-910-nx-0001-rx": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl: "https://www.hublot.com/en-us/watches/mp/mp-09-tourbillon-bi-axis",
+  },
+  "tag-heuer-carrera-tourbillon-heuer-02t-cbu2050-fc8316": {
+    movementType: "tourbillon",
+    movementSourceLabel: "Official watch reference",
+    movementSourceUrl:
+      "https://www.tagheuer.com/us/en/timepieces/collections/tag-heuer-carrera/45-mm-calibre-heuer02t-automatic/CBU2050.FC8316.html",
+  },
 };
 
 const BRAND_REFERENCE_SOURCE_URLS: Record<CatalogBrand, string> = {
@@ -1986,59 +2487,12 @@ function resolveCatalogAssetUrl(path: string): string {
   return `${LOCAL_CATALOG_ROOT}${normalizedPath}`;
 }
 
-function inferCatalogTier(entry: CatalogEntryBase, tags: string[]): CatalogTierId {
-  const auditedMovement = AUDITED_MOVEMENT_TYPE_BY_ENTRY_ID[entry.id];
-  if (auditedMovement) {
-    return auditedMovement;
+function getAuditedMovement(entryId: string): CatalogMovementAudit {
+  const movementAudit = AUDITED_MOVEMENT_BY_ENTRY_ID[entryId];
+  if (!movementAudit) {
+    throw new Error(`Missing audited movement mapping for catalog entry: ${entryId}`);
   }
-
-  const searchable = `${entry.model} ${entry.description}`.toLowerCase();
-  const hasSignal = (value: string) => tags.includes(value) || searchable.includes(value);
-
-  if (hasSignal("tourbillon")) {
-    return "tourbillon";
-  }
-  if (
-    hasSignal("quartz") ||
-    hasSignal("solar") ||
-    hasSignal("gps") ||
-    hasSignal("vhp") ||
-    hasSignal("g-shock") ||
-    hasSignal("digital")
-  ) {
-    return "quartz";
-  }
-  if (
-    hasSignal("manual") ||
-    hasSignal("daytona") ||
-    hasSignal("hand-wound") ||
-    hasSignal("carica-manuale") ||
-    hasSignal("pocket watch") ||
-    hasSignal("calatrava 6119") ||
-    hasSignal("tangente") ||
-    hasSignal("radiomir base logo") ||
-    hasSignal("portugieser hand-wound") ||
-    hasSignal("chronometre bleu")
-  ) {
-    return "manual";
-  }
-  if (
-    hasSignal("automatic") ||
-    hasSignal("gmt-master") ||
-    hasSignal("submariner") ||
-    hasSignal("reverso") ||
-    hasSignal("royal-oak") ||
-    hasSignal("futurematic") ||
-    hasSignal("memovox") ||
-    hasSignal("selfwinding") ||
-    hasSignal("rotor")
-  ) {
-    return "automatic";
-  }
-  if (entry.brand === "Audemars Piguet" || entry.brand === "Jaeger-LeCoultre") {
-    return "automatic";
-  }
-  return "quartz";
+  return movementAudit;
 }
 
 function getMovementDefaults(
@@ -2111,21 +2565,18 @@ function inferTourbillonWindingSystem(entry: CatalogEntryBase): CatalogWindingSy
 }
 
 function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
-  const normalizedTags = entry.tags.map((tag) => tag.toLowerCase());
-  const movementType = inferCatalogTier(entry, normalizedTags);
+  const movementAudit = getAuditedMovement(entry.id);
+  const movementType = movementAudit.movementType;
   const defaults = getMovementDefaults(movementType);
-  const sourceUrl = entry.image.sourceUrl || entry.image.url;
-  const isPrimary = !sourceUrl.includes("commons.wikimedia.org");
+  const sourceAuthority = getSourceAuthority(movementAudit.movementSourceUrl);
   const windingSystem =
     movementType === "tourbillon" ? inferTourbillonWindingSystem(entry) : defaults.windingSystem;
 
   return {
     movementType,
-    movementSourceType: isPrimary ? "primary" : "secondary",
-    movementSourceUrl: sourceUrl,
-    movementSourceLabel: isPrimary
-      ? "Official watch reference"
-      : "Wikimedia Commons reference image metadata",
+    movementSourceType: sourceAuthority === "manufacturer" ? "primary" : "secondary",
+    movementSourceUrl: movementAudit.movementSourceUrl,
+    movementSourceLabel: movementAudit.movementSourceLabel,
     caliberName: CALIBER_BY_ENTRY_ID[entry.id] ?? "Unknown caliber",
     windingSystem,
     frequencyBph: defaults.frequencyBph,
@@ -2283,14 +2734,21 @@ function buildCatalogDetails(
 }
 
 const CATALOG_ENTRIES_ALL = [...CATALOG_ENTRIES_BASE, ...MOVEMENT_EXPANSION_ENTRIES];
+const CATALOG_ENTRIES_AUDITED = CATALOG_ENTRIES_ALL.filter(
+  (entry) => !SYNTHETIC_ENTRY_IDS.has(entry.id),
+);
+
+for (const entry of CATALOG_ENTRIES_AUDITED) {
+  if (!AUDITED_MOVEMENT_BY_ENTRY_ID[entry.id]) {
+    throw new Error(`Missing audited movement source citation for catalog entry: ${entry.id}`);
+  }
+}
 
 function isCatalogPlaceholderImage(path: string): boolean {
   return PLACEHOLDER_CATALOG_IMAGE_PATTERN.test(path);
 }
 
-export const CATALOG_ENTRIES: CatalogEntry[] = CATALOG_ENTRIES_ALL.filter(
-  (entry) => !SYNTHETIC_ENTRY_IDS.has(entry.id),
-).map((entry) => {
+export const CATALOG_ENTRIES: CatalogEntry[] = CATALOG_ENTRIES_AUDITED.map((entry) => {
   const movementDetails = buildMovementDetails(entry);
   const usesPlaceholderImage = isCatalogPlaceholderImage(entry.image.url);
   const resolvedImage = usesPlaceholderImage
