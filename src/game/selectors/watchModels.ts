@@ -83,6 +83,71 @@ export function getWatchModelPurchaseGate(
   return gate;
 }
 
+function isCatalogTierUnlocked(state: GameState, tierId: WatchItemId): boolean {
+  if (state.catalogTierUnlocks.includes(tierId)) {
+    return true;
+  }
+
+  const item = requireWatchItem(tierId);
+  if (!item.unlockMilestoneId) {
+    return true;
+  }
+
+  return (
+    state.unlockedMilestones.includes(item.unlockMilestoneId) ||
+    state.nostalgiaUnlockedItems.includes(tierId)
+  );
+}
+
+/**
+ * Canonical contract for catalog purchase reachability.
+ * A buy action is reachable only when a model is discovered and the purchase gate is currently
+ * open. Tier-unlock status is exposed as metadata for callers that need lock/explainer detail.
+ */
+export type CatalogModelPurchaseReachability = {
+  discovered: boolean;
+  ownedCount: number;
+  tierUnlocked: boolean;
+  gate: WatchModelPurchaseGate;
+  buyActionReachable: boolean;
+};
+
+export function getCatalogModelPurchaseReachability(
+  state: GameState,
+  modelId: string,
+): CatalogModelPurchaseReachability {
+  const tierId = getWatchModelTierId(modelId);
+  const discovered = state.discoveredCatalogEntries.includes(modelId);
+  const ownedCount = getWatchModelOwnedCount(state, modelId);
+  const tierUnlocked = isCatalogTierUnlocked(state, tierId);
+  const gate = getWatchModelPurchaseGate(state, modelId);
+  const buyActionReachable = discovered && gate.ok;
+
+  return {
+    discovered,
+    ownedCount,
+    tierUnlocked,
+    gate,
+    buyActionReachable,
+  };
+}
+
+export function canReachCatalogBuyAction(state: GameState, modelId: string): boolean {
+  return getCatalogModelPurchaseReachability(state, modelId).buyActionReachable;
+}
+
+export function canReachCatalogUnownedBuyAction(state: GameState, modelId: string): boolean {
+  const reachability = getCatalogModelPurchaseReachability(state, modelId);
+  return reachability.ownedCount === 0 && reachability.buyActionReachable;
+}
+
+export function hasCatalogReadyUnownedModel(state: GameState): boolean {
+  return WATCH_MODELS.some((model) => {
+    const reachability = getCatalogModelPurchaseReachability(state, model.id);
+    return reachability.discovered && reachability.ownedCount === 0;
+  });
+}
+
 export function getNextDuplicateRewardMultiplier(state: GameState, modelId: string): number {
   const owned = getWatchModelOwnedCount(state, modelId);
   return getDuplicateRewardMultiplierForNextPurchase(owned);
