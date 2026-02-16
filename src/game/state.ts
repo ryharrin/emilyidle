@@ -51,6 +51,16 @@ export { NOSTALGIA_UNLOCK_ORDER } from "./data/items";
 export type { WatchModelDefinition } from "./data/watchModels";
 export { WATCH_MODELS, getWatchModels } from "./data/watchModels";
 
+export type {
+  CatalogEntry,
+  CatalogImage,
+  CatalogMovementDetails,
+  CatalogPassportField,
+  CatalogPassportFieldProvenance,
+  CatalogPassportMetadata,
+} from "./catalog";
+export { CATALOG_ENTRIES, getCatalogPassportMetadata } from "./catalog";
+
 export * from "./selectors/duplicates";
 
 export * from "./selectors";
