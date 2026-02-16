@@ -157,7 +157,7 @@ test("therapist sessions apply cash/enjoyment deltas and expose cooldown state",
     return;
   }
 
-  expect(afterSession.version).toBe(3);
+  expect(afterSession.version).toBe(beforeSession.version);
   expect(afterSession.currencyCents).toBeGreaterThan(beforeSession.currencyCents);
   expect(afterSession.enjoymentCents).toBeLessThan(beforeSession.enjoymentCents);
   expect(afterSession.xp).toBeGreaterThan(beforeSession.xp);
