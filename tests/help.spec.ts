@@ -94,10 +94,11 @@ test.describe("help entry point", () => {
   test("help still opens after using collection section nav", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("tab", { name: "Collection" }).click();
-    await page
+    const eventsSectionButton = page
       .getByTestId("collection-section-nav-item-collection-events")
-      .getByRole("button")
-      .click({ force: true });
+      .getByRole("button");
+    await eventsSectionButton.scrollIntoViewIfNeeded();
+    await eventsSectionButton.click();
 
     await page.getByTestId("help-open").click();
     await expect(page.getByTestId("help-modal")).toBeVisible();
@@ -114,6 +115,10 @@ test.describe("help entry point", () => {
     await expect(missionPrimary).toHaveAttribute("open", "");
     await expect(page.getByTestId("mission-guidance-lane-note")).toBeVisible();
     await expect(missionPrimary.getByTestId("mission-action-primary")).toBeVisible();
+    await expect(page.getByTestId("mission-next-lane")).toBeVisible();
+    await expect(page.getByTestId("mission-later-lane")).toBeVisible();
+    await expect(page.getByTestId("mission-action-next")).toBeVisible();
+    await expect(page.getByTestId("mission-action-later")).toBeVisible();
 
     await page.locator("#career-tab").click();
     await expect(page.getByTestId("career-panel")).toBeVisible();
@@ -139,6 +144,19 @@ test.describe("help entry point", () => {
     await page.getByTestId("tab-visibility-career").check();
     await expect(page.getByTestId("hidden-tabs-recovery")).toHaveCount(0);
     await expect(page.locator("#career-tab")).toBeVisible();
+  });
+
+  test("mission lane action falls back when destination tab is hidden", async ({ page }) => {
+    await page.goto("/");
+
+    await page.locator("#save-tab").click();
+    await expect(page.getByTestId("settings-visibility")).toBeVisible();
+    await page.getByTestId("tab-visibility-catalog").uncheck();
+    await expect(page.locator("#catalog-tab")).toHaveCount(0);
+
+    await page.getByTestId("mission-action-next").click();
+    await expect(page.locator("#collection-tab")).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tabpanel", { name: /Collection/i })).toBeVisible();
   });
 });
 

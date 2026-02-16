@@ -31,11 +31,12 @@ type UseGameRuntimeArgs = {
 };
 
 type UseGameRuntimeResult = {
+  nowMs: number;
   state: GameState;
   setState: Dispatch<SetStateAction<GameState>>;
   persistNow: (reason: string, snapshot?: GameState) => SavePersistResult;
   markSaveDirty: () => void;
-  resetSimulationClock: () => void;
+  resetSimulationClock: (nowMs?: number) => void;
 };
 
 const resolveStateUpdate = (update: SetStateAction<GameState>, current: GameState): GameState => {
@@ -63,6 +64,7 @@ export const useGameRuntime = ({
   devSettings,
   onPersistError,
 }: UseGameRuntimeArgs): UseGameRuntimeResult => {
+  const [nowMs, setNowMs] = useState(() => normalizeTimestampMs(Date.now()));
   const [state, setStateBase] = useState<GameState>(() => initialState());
   const saveDirtyRef = useRef(false);
   const lastSavedAtMsRef = useRef(0);
@@ -71,7 +73,14 @@ export const useGameRuntime = ({
   const rafRef = useRef<number | null>(null);
   const stateRef = useRef(state);
   const simulationNowMsRef = useRef(normalizeTimestampMs(Date.now()));
+  const runtimeNowMsRef = useRef(nowMs);
   const runtimeActiveRef = useRef(isDocumentVisible());
+
+  const setRuntimeNowMs = useCallback((nextNowMs: number) => {
+    const normalizedNowMs = normalizeTimestampMs(nextNowMs);
+    runtimeNowMsRef.current = normalizedNowMs;
+    setNowMs((currentNowMs) => (currentNowMs === normalizedNowMs ? currentNowMs : normalizedNowMs));
+  }, []);
 
   const setState = useCallback((update: SetStateAction<GameState>) => {
     if (typeof update !== "function") {
@@ -91,10 +100,16 @@ export const useGameRuntime = ({
     saveDirtyRef.current = true;
   }, []);
 
-  const resetSimulationClock = useCallback(() => {
-    lastFrameAtMsRef.current = null;
-    accumulatorMsRef.current = 0;
-  }, []);
+  const resetSimulationClock = useCallback(
+    (nextNowMs?: number) => {
+      lastFrameAtMsRef.current = null;
+      accumulatorMsRef.current = 0;
+      if (typeof nextNowMs === "number") {
+        setRuntimeNowMs(nextNowMs);
+      }
+    },
+    [setRuntimeNowMs],
+  );
 
   const persistNow = useCallback(
     (reason: string, snapshot: GameState = stateRef.current) => {
@@ -117,13 +132,15 @@ export const useGameRuntime = ({
     const loadResult = loadSave();
     if (loadResult.ok) {
       simulationNowMsRef.current = normalizeTimestampMs(loadResult.save.lastSimulatedAtMs);
+      setRuntimeNowMs(simulationNowMsRef.current);
       setState(loadResult.save.state);
-      resetSimulationClock();
+      resetSimulationClock(loadResult.save.lastSimulatedAtMs);
       console.info(`Loaded save v${loadResult.save.version} from ${loadResult.save.savedAt}`);
       return;
     }
 
     simulationNowMsRef.current = normalizeTimestampMs(Date.now());
+    setRuntimeNowMs(simulationNowMsRef.current);
 
     if ("empty" in loadResult) {
       console.info("No save found; starting new game.");
@@ -135,7 +152,7 @@ export const useGameRuntime = ({
     if (!clearResult.ok) {
       console.warn(`Failed to clear invalid save. ${clearResult.error}`);
     }
-  }, [clearSave, loadSave, resetSimulationClock, setState]);
+  }, [clearSave, loadSave, resetSimulationClock, setRuntimeNowMs, setState]);
 
   useEffect(() => {
     if (typeof document === "undefined" || typeof window === "undefined") {
@@ -211,14 +228,17 @@ export const useGameRuntime = ({
 
       if (accumulatorMsRef.current >= SIM_TICK_MS) {
         let nextState = stateRef.current;
+        let nextNowMs = runtimeNowMsRef.current;
         while (accumulatorMsRef.current >= SIM_TICK_MS) {
           stepped = true;
           accumulatorMsRef.current -= SIM_TICK_MS;
-          simulationNowMsRef.current = normalizeTimestampMs(simulationNowMsRef.current + SIM_TICK_MS);
+          nextNowMs += SIM_TICK_MS;
+          simulationNowMsRef.current = normalizeTimestampMs(nextNowMs);
 
           nextState = step(nextState, SIM_TICK_MS, simulationNowMsRef.current);
         }
 
+        setRuntimeNowMs(simulationNowMsRef.current);
         setState(nextState);
       }
 
@@ -240,13 +260,14 @@ export const useGameRuntime = ({
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [devSettings.enabled, devSettings.speedMultiplier, persistNow, setState, step]);
+  }, [devSettings.enabled, devSettings.speedMultiplier, persistNow, setRuntimeNowMs, setState, step]);
 
   return {
+    nowMs,
     state,
     setState,
     persistNow,
     markSaveDirty,
     resetSimulationClock,
   };
-};
+};;

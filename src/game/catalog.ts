@@ -62,6 +62,28 @@ export type CatalogMovementDetails = {
   unknownReason: string | null;
 };
 
+export type CatalogPassportFieldProvenance = "primary" | "secondary" | "inferred" | "unknown";
+
+export type CatalogPassportField = {
+  value: string;
+  provenance: CatalogPassportFieldProvenance;
+  sourceLabel: string;
+  sourceUrl: string | null;
+};
+
+export type CatalogPassportMetadata = {
+  headline: string;
+  referenceFamily: CatalogPassportField;
+  productionEra: CatalogPassportField;
+  caseMaterial: CatalogPassportField;
+  caseDiameterMm: CatalogPassportField;
+  waterResistance: CatalogPassportField;
+  complications: CatalogPassportField;
+  movementOrigin: CatalogPassportField;
+  provenance: ReadonlyArray<CatalogPassportField>;
+  sourceSummary: string;
+};
+
 export type CatalogEntryBase = {
   id: string;
   brand: CatalogBrand;
@@ -73,7 +95,10 @@ export type CatalogEntryBase = {
   image: CatalogImage;
 };
 
-export type CatalogEntry = CatalogEntryBase & CatalogMovementDetails;
+export type CatalogEntry = CatalogEntryBase &
+  CatalogMovementDetails & {
+    passport: CatalogPassportMetadata;
+  };
 
 const CATALOG_ENTRIES_BASE: CatalogEntryBase[] = [
   {
@@ -1969,6 +1994,294 @@ function getMovementDefaults(
   };
 }
 
+type CatalogPassportSeed = {
+  headline?: string;
+  referenceFamily?: CatalogPassportField;
+  productionEra?: CatalogPassportField;
+  caseMaterial?: CatalogPassportField;
+  caseDiameterMm?: CatalogPassportField;
+  waterResistance?: CatalogPassportField;
+  complications?: CatalogPassportField;
+  movementOrigin?: CatalogPassportField;
+};
+
+const KNOWN_CASE_MATERIALS: ReadonlyArray<{ token: string; label: string }> = [
+  { token: "steel", label: "Stainless steel" },
+  { token: "gold", label: "Gold" },
+  { token: "honeygold", label: "Honeygold" },
+  { token: "bronze", label: "Bronze" },
+  { token: "titanium", label: "Titanium" },
+  { token: "ceramic", label: "Ceramic" },
+  { token: "platinum", label: "Platinum" },
+];
+
+const MOVEMENT_ORIGIN_BY_BRAND: Partial<Record<CatalogBrand, string>> = {
+  Rolex: "Swiss",
+  Omega: "Swiss",
+  Cartier: "Swiss",
+  Longines: "Swiss",
+  Breitling: "Swiss",
+  "TAG Heuer": "Swiss",
+  Tissot: "Swiss",
+  Hamilton: "Swiss",
+  "Patek Philippe": "Swiss",
+  Panerai: "Swiss",
+  IWC: "Swiss",
+  "F.P. Journe": "Swiss",
+  Breguet: "Swiss",
+  "Vacheron Constantin": "Swiss",
+  "Girard-Perregaux": "Swiss",
+  Blancpain: "Swiss",
+  Hublot: "Swiss",
+  Citizen: "Japanese",
+  Casio: "Japanese",
+  Seiko: "Japanese",
+  "Grand Seiko": "Japanese",
+  Nomos: "German",
+  "A. Lange & Sohne": "German",
+};
+
+const PASSPORT_SEED_BY_ENTRY_ID: Record<string, CatalogPassportSeed> = {
+  "rolex-rolex-gmt-master-ii-ref-126713grnr": {
+    headline: "Dual-time travel icon with modern two-tone execution.",
+    referenceFamily: {
+      value: "GMT-Master II",
+      provenance: "secondary",
+      sourceLabel: "Wikimedia Commons reference title",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex_GMT-Master_II_ref._126713GRNR.jpg",
+    },
+    productionEra: {
+      value: "Contemporary",
+      provenance: "secondary",
+      sourceLabel: "Wikimedia Commons reference title",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex_GMT-Master_II_ref._126713GRNR.jpg",
+    },
+    caseMaterial: {
+      value: "Gold and stainless steel",
+      provenance: "inferred",
+      sourceLabel: "Reference naming + collection context",
+      sourceUrl: null,
+    },
+    waterResistance: {
+      value: "100m class (model family baseline)",
+      provenance: "inferred",
+      sourceLabel: "GMT-Master II product family baseline",
+      sourceUrl: null,
+    },
+    complications: {
+      value: "GMT / second time zone",
+      provenance: "secondary",
+      sourceLabel: "Wikimedia Commons reference title",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Rolex_GMT-Master_II_ref._126713GRNR.jpg",
+    },
+  },
+  "omega-speedmaster-moonwatch-professional-31030425001001": {
+    headline: "Manual-wind chronograph lineage associated with lunar-era tool watches.",
+    referenceFamily: {
+      value: "Speedmaster Moonwatch Professional",
+      provenance: "secondary",
+      sourceLabel: "Wikimedia Commons reference title",
+      sourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Omega_Speedmaster_Moonwatch_Professional_310.30.42.50.01.001.jpg",
+    },
+    productionEra: {
+      value: "Modern heritage reissue",
+      provenance: "inferred",
+      sourceLabel: "Reference naming + model lineage",
+      sourceUrl: null,
+    },
+    caseMaterial: {
+      value: "Stainless steel",
+      provenance: "inferred",
+      sourceLabel: "Reference family baseline specification",
+      sourceUrl: null,
+    },
+    caseDiameterMm: {
+      value: "42mm class",
+      provenance: "inferred",
+      sourceLabel: "Moonwatch product family baseline",
+      sourceUrl: null,
+    },
+    complications: {
+      value: "Chronograph",
+      provenance: "inferred",
+      sourceLabel: "Speedmaster family context",
+      sourceUrl: null,
+    },
+  },
+  "seiko-astron-gps-solar-ssj003": {
+    headline: "Solar-powered GPS quartz platform focused on travel-time convenience.",
+    referenceFamily: {
+      value: "Astron GPS Solar",
+      provenance: "secondary",
+      sourceLabel: "Wikimedia Commons reference title",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Seiko_Astron_GPS_Solar_SSJ003.jpg",
+    },
+    productionEra: {
+      value: "Contemporary",
+      provenance: "inferred",
+      sourceLabel: "Product family context",
+      sourceUrl: null,
+    },
+    movementOrigin: {
+      value: "Japanese",
+      provenance: "inferred",
+      sourceLabel: "Brand manufacturing origin",
+      sourceUrl: null,
+    },
+    complications: {
+      value: "GPS synchronization / world-time",
+      provenance: "inferred",
+      sourceLabel: "Astron GPS product family context",
+      sourceUrl: null,
+    },
+  },
+  "breguet-classique-tourbillon-3357": {
+    headline: "High-horology dress reference centered on a visible tourbillon regulator.",
+    referenceFamily: {
+      value: "Classique Tourbillon",
+      provenance: "secondary",
+      sourceLabel: "Wikimedia Commons reference title",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Breguet_Classique_Tourbillon_3357.jpg",
+    },
+    productionEra: {
+      value: "Modern haute horlogerie",
+      provenance: "inferred",
+      sourceLabel: "Reference family context",
+      sourceUrl: null,
+    },
+    caseMaterial: {
+      value: "Precious metal case",
+      provenance: "inferred",
+      sourceLabel: "Reference family baseline specification",
+      sourceUrl: null,
+    },
+    complications: {
+      value: "Tourbillon",
+      provenance: "secondary",
+      sourceLabel: "Wikimedia Commons reference title",
+      sourceUrl: "https://commons.wikimedia.org/wiki/File:Breguet_Classique_Tourbillon_3357.jpg",
+    },
+  },
+};
+
+function buildUnknownPassportField(label: string): CatalogPassportField {
+  return {
+    value: label,
+    provenance: "unknown",
+    sourceLabel: "No reliable in-repo source metadata",
+    sourceUrl: null,
+  };
+}
+
+function inferCaseMaterial(entry: CatalogEntryBase): CatalogPassportField {
+  const searchable = `${entry.model} ${entry.description}`.toLowerCase();
+  const knownMaterial = KNOWN_CASE_MATERIALS.find((candidate) =>
+    searchable.includes(candidate.token),
+  );
+  if (!knownMaterial) {
+    return buildUnknownPassportField("Unknown case material");
+  }
+  return {
+    value: knownMaterial.label,
+    provenance: "inferred",
+    sourceLabel: "Model and description keywords",
+    sourceUrl: entry.image.sourceUrl || null,
+  };
+}
+
+function inferMovementOrigin(entry: CatalogEntryBase): CatalogPassportField {
+  const origin = MOVEMENT_ORIGIN_BY_BRAND[entry.brand];
+  if (!origin) {
+    return buildUnknownPassportField("Unknown movement origin");
+  }
+  return {
+    value: origin,
+    provenance: "inferred",
+    sourceLabel: "Brand manufacturing origin",
+    sourceUrl: null,
+  };
+}
+
+function inferComplicationProfile(entry: CatalogEntryBase): CatalogPassportField {
+  const normalized = entry.tags.map((tag) => tag.toLowerCase());
+  if (normalized.includes("gmt")) {
+    return {
+      value: "GMT / second time zone",
+      provenance: "inferred",
+      sourceLabel: "Catalog tags",
+      sourceUrl: null,
+    };
+  }
+  if (normalized.includes("daytona") || normalized.includes("chronograph")) {
+    return {
+      value: "Chronograph",
+      provenance: "inferred",
+      sourceLabel: "Catalog tags",
+      sourceUrl: null,
+    };
+  }
+  if (normalized.includes("tourbillon")) {
+    return {
+      value: "Tourbillon",
+      provenance: "inferred",
+      sourceLabel: "Catalog tags",
+      sourceUrl: null,
+    };
+  }
+  return buildUnknownPassportField("Unknown complications");
+}
+
+function buildPassportProvenance(...fields: CatalogPassportField[]): ReadonlyArray<CatalogPassportField> {
+  const seen = new Set<string>();
+  return fields.filter((field) => {
+    const key = `${field.sourceLabel}|${field.sourceUrl ?? ""}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+function buildCatalogPassportMetadata(entry: CatalogEntryBase): CatalogPassportMetadata {
+  const seed = PASSPORT_SEED_BY_ENTRY_ID[entry.id] ?? {};
+  const headline =
+    seed.headline ??
+    `${entry.brand} ${entry.model} real-world dossier assembled from in-repo metadata and inferred references.`;
+  const referenceFamily =
+    seed.referenceFamily ?? buildUnknownPassportField("Unknown reference family");
+  const productionEra = seed.productionEra ?? buildUnknownPassportField("Unknown era");
+  const caseMaterial = seed.caseMaterial ?? inferCaseMaterial(entry);
+  const caseDiameterMm = seed.caseDiameterMm ?? buildUnknownPassportField("Unknown case diameter");
+  const waterResistance =
+    seed.waterResistance ?? buildUnknownPassportField("Unknown water resistance");
+  const complications = seed.complications ?? inferComplicationProfile(entry);
+  const movementOrigin = seed.movementOrigin ?? inferMovementOrigin(entry);
+  const provenance = buildPassportProvenance(
+    referenceFamily,
+    productionEra,
+    caseMaterial,
+    caseDiameterMm,
+    waterResistance,
+    complications,
+    movementOrigin,
+  );
+
+  return {
+    headline,
+    referenceFamily,
+    productionEra,
+    caseMaterial,
+    caseDiameterMm,
+    waterResistance,
+    complications,
+    movementOrigin,
+    provenance,
+    sourceSummary: provenance.map((entry) => entry.sourceLabel).join("; "),
+  };
+}
+
 function buildMovementDetails(entry: CatalogEntryBase): CatalogMovementDetails {
   const normalizedTags = entry.tags.map((tag) => tag.toLowerCase());
   const movementType = inferCatalogTier(entry, normalizedTags);
@@ -2007,6 +2320,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = CATALOG_ENTRIES_ALL.filter(
   (entry) => !SYNTHETIC_ENTRY_IDS.has(entry.id),
 ).map((entry) => {
   const movementDetails = buildMovementDetails(entry);
+  const passport = buildCatalogPassportMetadata(entry);
   const usesPlaceholderImage = isCatalogPlaceholderImage(entry.image.url);
   const resolvedImage = usesPlaceholderImage
     ? PLACEHOLDER_TIER_REPRESENTATIVE_IMAGES[movementDetails.movementType]
@@ -2017,6 +2331,7 @@ export const CATALOG_ENTRIES: CatalogEntry[] = CATALOG_ENTRIES_ALL.filter(
     ...entry,
     image: resolvedImage,
     ...movementDetails,
+    passport,
     ...(hasPlaceholderMovementSource
       ? {
           movementSourceType: "secondary" as const,
@@ -2048,6 +2363,26 @@ export function getCatalogImageUrl(entry: CatalogEntry): string {
 export function getCatalogFallbackImageUrl(entry: CatalogEntry): string {
   const fallbackFile = TIER_PLACEHOLDER_FILES[entry.movementType];
   return resolveCatalogAssetUrl(`catalog/placeholders/${fallbackFile}`);
+}
+
+export function getCatalogPassportMetadata(entryId: string): CatalogPassportMetadata {
+  const entry = CATALOG_ENTRIES.find((candidate) => candidate.id === entryId);
+  if (!entry) {
+    const fallback = buildUnknownPassportField("Unknown reference family");
+    return {
+      headline: "Passport unavailable for this entry.",
+      referenceFamily: fallback,
+      productionEra: buildUnknownPassportField("Unknown era"),
+      caseMaterial: buildUnknownPassportField("Unknown case material"),
+      caseDiameterMm: buildUnknownPassportField("Unknown case diameter"),
+      waterResistance: buildUnknownPassportField("Unknown water resistance"),
+      complications: buildUnknownPassportField("Unknown complications"),
+      movementOrigin: buildUnknownPassportField("Unknown movement origin"),
+      provenance: [fallback],
+      sourceSummary: "No catalog entry found for supplied id.",
+    };
+  }
+  return entry.passport;
 }
 
 export function getWatchModelTierBadge(

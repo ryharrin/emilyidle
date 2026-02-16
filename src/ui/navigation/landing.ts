@@ -30,6 +30,10 @@ const TAB_IDS: TabId[] = [
 const isTabId = (value: string): value is TabId => TAB_IDS.includes(value as TabId);
 
 export function resolveTabAlias(value: string): TabId | null {
+  if (value === "vault") {
+    return "collection";
+  }
+
   if (value === "catalog") {
     return "catalog";
   }
@@ -44,8 +48,14 @@ export function resolveLandingTab(args: {
   isVisible: (tabId: TabId) => boolean;
 }): { tabId: TabId; source: TabActivationSource } {
   void args.search;
-  void args.hasSave;
-  void args.navigationState;
+
+  if (
+    args.hasSave &&
+    args.navigationState?.lastTabId === "collection" &&
+    args.isVisible("collection")
+  ) {
+    return { tabId: "collection", source: "system" };
+  }
 
   if (args.isVisible("career")) {
     return { tabId: "career", source: "system" };

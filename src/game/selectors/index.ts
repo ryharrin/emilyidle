@@ -1289,6 +1289,21 @@ export type PrimaryLoopAction = {
   forecast: EconomyForecastStrip;
 };
 
+export type GuideLane = "now" | "next" | "later";
+
+export type GuideLaneAction = LoopActionCard & { lane: GuideLane };
+
+export type GuideLanes = {
+  urgency: LoopUrgency;
+  urgencyReason: string;
+  primary: GuideLaneAction;
+  now: GuideLaneAction;
+  next: GuideLaneAction;
+  later: GuideLaneAction;
+  checklist: FirstRunChecklist;
+  forecast: EconomyForecastStrip;
+};
+
 export function getFirstRunChecklist(state: GameState): FirstRunChecklist {
   const items: FirstRunChecklistItem[] = [
     {
@@ -1328,7 +1343,11 @@ export function getFirstRunChecklist(state: GameState): FirstRunChecklist {
   };
 }
 
-function getAverageActiveEventMultiplier(state: GameState, nowMs: number, horizonMs: number): number {
+function getAverageActiveEventMultiplier(
+  state: GameState,
+  nowMs: number,
+  horizonMs: number,
+): number {
   const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
   const clampedHorizonMs = Number.isFinite(horizonMs) ? Math.max(0, Math.floor(horizonMs)) : 0;
   if (clampedHorizonMs <= 0) {
@@ -1387,14 +1406,22 @@ export function getEconomyForecastStrip(state: GameState, nowMs: number): Econom
   const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
   const baseCashRateCentsPerSec = getEffectiveCashRateCentsPerSec(state, clampedNowMs, 1);
   const baseEnjoymentRateCentsPerSec = getEnjoymentRateCentsPerSec(state);
-  const pointsConfig: ReadonlyArray<{ id: EconomyForecastPoint["id"]; label: EconomyForecastPoint["label"]; horizonMs: number }> = [
+  const pointsConfig: ReadonlyArray<{
+    id: EconomyForecastPoint["id"];
+    label: EconomyForecastPoint["label"];
+    horizonMs: number;
+  }> = [
     { id: "plus-1m", label: "+1m", horizonMs: 60_000 },
     { id: "plus-5m", label: "+5m", horizonMs: 5 * 60_000 },
     { id: "plus-10m", label: "+10m", horizonMs: 10 * 60_000 },
   ];
 
   const points: EconomyForecastPoint[] = pointsConfig.map((config) => {
-    const averageEventMultiplier = getAverageActiveEventMultiplier(state, clampedNowMs, config.horizonMs);
+    const averageEventMultiplier = getAverageActiveEventMultiplier(
+      state,
+      clampedNowMs,
+      config.horizonMs,
+    );
     const projectedCashDeltaCents = Math.max(
       0,
       Math.floor((baseCashRateCentsPerSec * averageEventMultiplier * config.horizonMs) / 1000),
@@ -1520,7 +1547,8 @@ export function getPrimaryLoopAction(state: GameState, nowMs: number): PrimaryLo
   if (canWorkshopPrestige(state)) {
     return {
       urgency: "high",
-      urgencyReason: "Atelier prestige is ready, enabling blueprint progression and compounding boosts.",
+      urgencyReason:
+        "Atelier prestige is ready, enabling blueprint progression and compounding boosts.",
       primary: {
         id: "prepare-atelier-prestige",
         label: "Prepare Atelier prestige",
@@ -1594,6 +1622,119 @@ export function getPrimaryLoopAction(state: GameState, nowMs: number): PrimaryLo
     },
     checklist,
     forecast,
+  };
+}
+
+function withGuideLane(action: LoopActionCard, lane: GuideLane): GuideLaneAction {
+  return {
+    ...action,
+    lane,
+  };
+}
+
+function hasAffordableUnlockedWatch(state: GameState): boolean {
+  return WATCH_ITEMS.some(
+    (item) => isItemUnlocked(state, item.id) && canBuyItem(state, item.id, 1),
+  );
+}
+
+export function getGuideLanes(state: GameState, nowMs: number): GuideLanes {
+  const clampedNowMs = Number.isFinite(nowMs) ? Math.max(0, Math.floor(nowMs)) : 0;
+  const loopAction = getPrimaryLoopAction(state, clampedNowMs);
+  const now = withGuideLane(loopAction.primary, "now");
+  const careerStarted = state.therapistCareer.careerStartId !== null;
+  const sessionReady = canPerformTherapistSession(state, clampedNowMs);
+  const prestigeReady =
+    canNostalgiaPrestige(state) || canMaisonPrestige(state) || canWorkshopPrestige(state);
+  const affordableWatchReady = hasAffordableUnlockedWatch(state);
+
+  let next: LoopActionCard = loopAction.secondary;
+  let later: LoopActionCard = {
+    id: "review-live-diagnostics-later",
+    label: "Review live diagnostics",
+    detail: "Use rates and event timing to choose your next compounding spend.",
+    actionLabel: "Open Stats",
+    whyNow: "Diagnostics are a safe fallback when no immediate gate is available.",
+    target: { tabId: "stats" },
+  };
+
+  if (!careerStarted) {
+    next = {
+      id: "build-first-watch-buffer",
+      label: "Build toward your first collection purchase",
+      detail: "Use baseline income to afford your first watch and start enjoyment growth.",
+      actionLabel: "Open Catalog",
+      whyNow: "Your first purchase unlocks stronger compounding loops.",
+      target: { tabId: "catalog", scrollTargetId: "catalog-shop" },
+    };
+    later = loopAction.secondary;
+  } else if (prestigeReady) {
+    next = loopAction.secondary;
+    later = affordableWatchReady
+      ? {
+          id: "position-post-reset-ramp",
+          label: "Plan your post-reset ramp",
+          detail: "Queue high-impact watch purchases to accelerate the next loop.",
+          actionLabel: "Open Catalog",
+          whyNow: "A reset is strongest when your restart route is already planned.",
+          target: { tabId: "catalog", scrollTargetId: "catalog-shop" },
+        }
+      : later;
+  } else if (sessionReady) {
+    next = loopAction.secondary;
+    later = {
+      id: "queue-upgrade-follow-up",
+      label: "Queue your upgrade follow-up",
+      detail: "After session cash lands, route it into high-value upgrades.",
+      actionLabel: "Open Upgrades",
+      whyNow: "Converting session cash quickly keeps momentum high.",
+      target: { tabId: "upgrades", scrollTargetId: "collection-upgrades" },
+    };
+  } else if (affordableWatchReady) {
+    next = {
+      id: "buy-affordable-watch",
+      label: "Buy your next affordable watch",
+      detail: "Incremental ownership growth improves baseline enjoyment and income.",
+      actionLabel: "Open Catalog",
+      whyNow: "Affordable purchases are the most reliable compounding move right now.",
+      target: { tabId: "catalog", scrollTargetId: "catalog-shop" },
+    };
+    later = loopAction.secondary;
+  } else {
+    next = {
+      id: "stabilize-income-cycle",
+      label: "Stabilize your income cycle",
+      detail: "Wait for cooldowns or rates, then re-enter with the highest-value action.",
+      actionLabel: "Open Career",
+      whyNow: "No immediate spend is available, so prepare the next actionable window.",
+      target: { tabId: "career" },
+    };
+    later = loopAction.secondary;
+  }
+
+  if (next.id === now.id) {
+    next = later;
+  }
+  if (later.id === now.id || later.id === next.id) {
+    later = {
+      id: "review-live-diagnostics-fallback",
+      label: "Review live diagnostics",
+      detail: "Check rates, cooldowns, and event windows before your next commitment.",
+      actionLabel: "Open Stats",
+      whyNow: "This fallback stays useful when other recommendations overlap.",
+      target: { tabId: "stats" },
+    };
+  }
+
+  return {
+    urgency: loopAction.urgency,
+    urgencyReason: loopAction.urgencyReason,
+    primary: now,
+    now,
+    next: withGuideLane(next, "next"),
+    later: withGuideLane(later, "later"),
+    checklist: loopAction.checklist,
+    forecast: loopAction.forecast,
   };
 }
 
