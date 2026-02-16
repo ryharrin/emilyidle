@@ -53,7 +53,7 @@ type CatalogDetailsContentProps = {
   tags: string[];
   showFacts: boolean;
   decisionInfo: CatalogDecisionInfo;
-  viewMode: "novice" | "expert";
+  viewMode?: "novice" | "expert";
 };
 
 const toRecord = (value: unknown): UnknownRecord | null => {
@@ -570,7 +570,7 @@ export function CatalogDetailsContent({
   tags,
   showFacts,
   decisionInfo,
-  viewMode,
+  viewMode = "novice",
 }: CatalogDetailsContentProps) {
   const description = buildDetailDescription(entry);
   const features = buildFeatureList(entry);
@@ -722,7 +722,7 @@ export function CatalogDetailsContent({
           </li>
         </ul>
       </div>
-      {showFacts && collectorNotes.length > 0 && (
+      {showFacts && collectorNotes.length > 0 ? (
         <div className="catalog-facts">
           <p className="catalog-facts-title">Collector notes</p>
           <ul data-testid="catalog-facts">
