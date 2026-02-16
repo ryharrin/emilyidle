@@ -90,10 +90,18 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
     "blocked by enjoyment requirements",
   );
   await page.getByTestId("catalog-quick-preset").selectOption("all");
+  const catalogGrid = page.getByTestId("catalog-grid");
+  const initialCatalogDensity = await catalogGrid.getAttribute("data-density");
+  if (initialCatalogDensity !== "compact" && initialCatalogDensity !== "expanded") {
+    throw new Error(`Unexpected catalog density: ${initialCatalogDensity}`);
+  }
   await page.getByTestId("catalog-density-toggle").click();
-  await expect(page.getByTestId("catalog-grid")).toHaveAttribute("data-density", "compact");
+  await expect(catalogGrid).toHaveAttribute(
+    "data-density",
+    initialCatalogDensity === "compact" ? "expanded" : "compact",
+  );
   await page.getByTestId("catalog-density-toggle").click();
-  await expect(page.getByTestId("catalog-grid")).toHaveAttribute("data-density", "expanded");
+  await expect(catalogGrid).toHaveAttribute("data-density", initialCatalogDensity);
   await expect(page.getByTestId("catalog-undo-countdown")).toContainText(
     "No purchase to undo yet. Buy a watch to start a 10s window.",
   );
@@ -111,10 +119,16 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
   expect(await maisonDisclosure.evaluate((element) => (element as HTMLDetailsElement).open)).toBe(
     false,
   );
-  await expect(page.getByTestId("locked-upgrade-hint-assembly-jigs")).toBeVisible();
-  await expect(page.getByText(/Blocked: need .* more cash \(ETA /)).toBeVisible();
-  await page.getByTestId("upgrades-density-toggle").click();
-  await expect(page.getByTestId("upgrades-cash-list")).toHaveAttribute("data-density", "compact");
+  const lockedUpgradeHint = page.getByTestId("locked-upgrade-hint-assembly-jigs");
+  await expect(lockedUpgradeHint).toBeVisible();
+  await expect(
+    lockedUpgradeHint.getByRole("heading", { name: "Unlock requirement" }),
+  ).toBeVisible();
+  await expect(lockedUpgradeHint).toContainText(/Own \d+ total items/);
+  await expect(lockedUpgradeHint).toContainText(/\d+ \/ \d+ - \d+%/);
+  await expect(
+    page.locator("#upgrade-card-assembly-jigs").getByRole("button", { name: /^Upgrade \(/ }),
+  ).toBeDisabled();
 });
 
 test("catalog empty state CTA stays in catalog", async ({ page }) => {
