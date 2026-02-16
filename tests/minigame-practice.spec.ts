@@ -1,10 +1,6 @@
-import { expect, test } from "@playwright/test";
-import {
-  openCatalogTab,
-  resolveCatalogInteractCandidates,
-  switchCatalogToOwned,
-} from "./helpers/catalogFilters";
-import { clickLocatorSafely, findFirstVisible } from "./helpers/interactions";
+import { expect, test, type Page } from "@playwright/test";
+import { openCatalogTab, switchCatalogToOwned } from "./helpers/catalogFilters";
+import { clickLocatorSafely } from "./helpers/interactions";
 
 import { CATALOG_ENTRIES } from "../src/game/catalog";
 import type { GameState } from "../src/game/state";
@@ -46,6 +42,66 @@ const buildSeededState = (): GameState => {
   };
 };
 
+async function ensureCompactCatalogDensity(page: Page) {
+  const detailsButtons = page.locator('button[data-testid^="catalog-details-button-"]');
+  if ((await detailsButtons.first().isVisible().catch(() => false)) === true) {
+    return;
+  }
+
+  await clickLocatorSafely(page.getByTestId("catalog-density-toggle"));
+  await expect(detailsButtons.first()).toBeVisible();
+}
+
+async function openWindingModalFromCatalog(page: Page) {
+  const windingModal = page.getByTestId("winding-modal");
+  if (await windingModal.isVisible().catch(() => false)) {
+    return;
+  }
+
+  await ensureCompactCatalogDensity(page);
+  const detailsButtons = page.locator('button[data-testid^="catalog-details-button-"]');
+  const detailsCount = await detailsButtons.count();
+  for (let index = 0; index < detailsCount; index += 1) {
+    const detailsButton = detailsButtons.nth(index);
+    if (!(await detailsButton.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    await clickLocatorSafely(detailsButton);
+    const detailsDialog = page.locator(".catalog-card-details-sheet");
+    if (!(await detailsDialog.isVisible().catch(() => false))) {
+      continue;
+    }
+
+    const windingTrigger = detailsDialog
+      .locator(
+        'button[data-testid="vault-interact-manual"]:not([disabled]), button[data-testid="vault-interact-tourbillon"]:not([disabled])',
+      )
+      .first();
+    if (await windingTrigger.isVisible().catch(() => false)) {
+      await clickLocatorSafely(windingTrigger);
+      if (!(await windingModal.isVisible().catch(() => false))) {
+        await windingTrigger
+          .evaluate((element) => {
+            (element as HTMLButtonElement).click();
+          })
+          .catch(() => {});
+      }
+      await expect(windingModal).toBeVisible({ timeout: 10_000 });
+      return;
+    }
+
+    const closeDetails = page.getByTestId("catalog-details-sheet-close");
+    if (await closeDetails.isVisible().catch(() => false)) {
+      await clickLocatorSafely(closeDetails);
+    } else {
+      await page.keyboard.press("Escape").catch(() => {});
+    }
+  }
+
+  throw new Error("Expected a manual or tourbillon winding trigger from catalog details.");
+}
+
 test("practice runs stay reward-free and keep streak state unchanged", async ({ page }) => {
   const seededState = buildSeededState();
   await page.addInitScript(
@@ -66,18 +122,7 @@ test("practice runs stay reward-free and keep streak state unchanged", async ({ 
   await page.goto("/");
   await openCatalogTab(page);
   await switchCatalogToOwned(page);
-
-  const manualCandidates = await resolveCatalogInteractCandidates(
-    page,
-    '[data-testid^="vault-interact-manual"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
-  );
-  const manualButton = await findFirstVisible(manualCandidates);
-  expect(manualButton).not.toBeNull();
-  if (manualButton === null) {
-    throw new Error("Expected a visible manual interaction button");
-  }
-
-  await clickLocatorSafely(manualButton);
+  await openWindingModalFromCatalog(page);
   await expect(page.getByTestId("winding-modal")).toBeVisible();
   await page.getByTestId("winding-practice-toggle").check();
 
@@ -99,17 +144,7 @@ test("practice runs stay reward-free and keep streak state unchanged", async ({ 
   await page.getByTestId("winding-close").click();
   await expect(page.getByTestId("winding-modal")).toHaveCount(0);
 
-  const manualCandidatesAfterRun = await resolveCatalogInteractCandidates(
-    page,
-    '[data-testid^="vault-interact-manual"]:not([disabled]), [data-testid^="vault-interact-tourbillon"]:not([disabled])',
-  );
-  const manualButtonAfterRun = await findFirstVisible(manualCandidatesAfterRun);
-  expect(manualButtonAfterRun).not.toBeNull();
-  if (manualButtonAfterRun === null) {
-    throw new Error("Expected manual interaction button after practice run");
-  }
-
-  await clickLocatorSafely(manualButtonAfterRun);
+  await openWindingModalFromCatalog(page);
   await expect(page.getByTestId("winding-streak-label")).toContainText(/Perfect streak: 0/i);
   await page.getByTestId("winding-close").click();
 });
