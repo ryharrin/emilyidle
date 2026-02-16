@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - "**"
 
 permissions:
   contents: read
@@ -15,7 +15,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run unit tests
+        run: pnpm run test:unit
+
+  e2e-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,22 +48,45 @@ jobs:
         run: pnpm install
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
-      - name: Run unit tests
-        run: pnpm run test:unit
-      - name: Run e2e tests
+      - name: Run e2e tests (main)
+        if: github.ref == 'refs/heads/main'
         run: pnpm run test:e2e
+      - name: Run e2e tests (branches, skip audit)
+        if: github.ref != 'refs/heads/main'
+        run: pnpm run test:e2e -- --grep-invert "audit"
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
       - name: Build
         run: pnpm run build
       - name: Configure Pages
+        if: github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - unit-tests
+      - e2e-tests
+      - build
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
