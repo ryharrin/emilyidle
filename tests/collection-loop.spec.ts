@@ -67,6 +67,20 @@ async function activateCollectionSection(page: Page, sectionId: string) {
   await clickLocatorSafely(sectionButton);
   await expect(sectionNav).toHaveAttribute("data-active-section", sectionId);
   await expect(sectionButton).toHaveAttribute("aria-current", "location");
+
+  // Mobile collection sections render as collapsed accordions and need an explicit expand.
+  const sectionDetails = page.locator(`details#${sectionId}`).first();
+  if ((await sectionDetails.count()) > 0) {
+    const isOpen = await sectionDetails
+      .evaluate((node) => (node as HTMLDetailsElement).open)
+      .catch(() => false);
+    if (!isOpen) {
+      const sectionToggle = sectionDetails.locator("summary").first();
+      await expect(sectionToggle).toBeVisible();
+      await clickLocatorSafely(sectionToggle);
+      await expect(sectionDetails).toHaveJSProperty("open", true);
+    }
+  }
 }
 
 async function hasCollectionSection(page: Page, sectionId: string) {
