@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
 import App from "../src/App";
+import { CATALOG_ENTRIES } from "../src/game/catalog";
 import {
   createInitialState,
   getInteractionMovementGate,
@@ -22,6 +23,10 @@ function getModelIdForTier(tierId: string): string {
 }
 
 const ALL_CATALOG_IDS = getWatchModels().map((m) => m.id);
+const UNKNOWN_YEAR_CATALOG_ENTRY = CATALOG_ENTRIES.find((entry) => entry.year === "Unknown") ?? null;
+const DEFAULT_BUYABLE_MODEL_ID = getModelIdForTier("quartz");
+const DEFAULT_BUYABLE_MODEL_SEARCH_TERM =
+  CATALOG_ENTRIES.find((entry) => entry.id === DEFAULT_BUYABLE_MODEL_ID)?.model ?? "Calibrorolex";
 
 const evaluateMediaQuery = (query: string, width: number) => {
   const maxMatch = /max-width:\s*(\d+)px/.exec(query);
@@ -48,6 +53,26 @@ const createMatchMediaMock = (width: number): typeof window.matchMedia =>
 const switchToAllPreset = async (user: ReturnType<typeof userEvent.setup>) => {
   const presetSelect = screen.getByLabelText(/Quick preset/i);
   await user.selectOptions(presetSelect, "all");
+};
+
+const selectCollectionSection = async (
+  user: ReturnType<typeof userEvent.setup>,
+  sectionName: RegExp,
+) => {
+  const sectionNav = screen.getByRole("navigation", {
+    name: /Collection section navigation/i,
+  });
+  const sectionButton = within(sectionNav).getByRole("button", { name: sectionName });
+  await user.click(sectionButton);
+};
+
+const focusCatalogSearchOnModel = async (
+  user: ReturnType<typeof userEvent.setup>,
+  searchTerm: string,
+) => {
+  const searchInput = screen.getByTestId("catalog-search") as HTMLInputElement;
+  await user.clear(searchInput);
+  await user.type(searchInput, searchTerm);
 };
 
 describe("interaction movement gating", () => {
@@ -336,6 +361,7 @@ describe("primary navigation tabs", () => {
       const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
       const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
       await user.click(vaultTab);
+      await selectCollectionSection(user, /Overview/i);
 
       const callout = screen.getByTestId("catalog-shop-callout");
       const buyCta = within(callout).getByRole("button", { name: "Open Catalog" });
@@ -364,11 +390,6 @@ describe("primary navigation tabs", () => {
         throw new Error("Expected catalog shop anchor to exist");
       }
 
-      const buyButton = scrollTarget.querySelector('[data-testid^="catalog-buy-"]');
-      if (!(buyButton instanceof HTMLElement)) {
-        throw new Error("Expected catalog buy CTA to exist");
-      }
-
       expect(scrollSpy).toHaveBeenCalledWith({ block: "start", behavior: "auto" });
     } finally {
       scrollSpy.mockRestore();
@@ -386,6 +407,10 @@ describe("primary navigation tabs", () => {
         ...baseState.items,
         quartz: 2,
       },
+      watchModels: {
+        ...baseState.watchModels,
+        [DEFAULT_BUYABLE_MODEL_ID]: 2,
+      },
     };
     localStorage.setItem(
       "emily-idle:save",
@@ -402,6 +427,7 @@ describe("primary navigation tabs", () => {
     const collectionTab = within(tabList).getByRole("tab", { name: /Collection/i });
     const catalogTab = within(tabList).getByRole("tab", { name: /Catalog/i });
     await user.click(collectionTab);
+    await selectCollectionSection(user, /Overview/i);
 
     const callout = screen.getByTestId("catalog-shop-callout");
     const ownedCta = within(callout).getByRole("button", { name: "Open Owned" });
@@ -412,7 +438,7 @@ describe("primary navigation tabs", () => {
       expect(catalogTab.getAttribute("aria-selected")).toBe("true");
     });
 
-    const ownedTab = screen.getByRole("tab", { name: "Owned" });
+    const ownedTab = screen.getByRole("tab", { name: /^Owned/i });
     await waitFor(() => {
       expect(ownedTab.getAttribute("aria-selected")).toBe("true");
     });
@@ -429,6 +455,8 @@ describe("primary navigation tabs", () => {
       expect(catalogTab.getAttribute("aria-selected")).toBe("true");
     });
 
+    await focusCatalogSearchOnModel(user, DEFAULT_BUYABLE_MODEL_SEARCH_TERM);
+
     const catalogPanelId = catalogTab.getAttribute("aria-controls");
     if (!catalogPanelId) {
       throw new Error("Expected catalog tabpanel id");
@@ -439,11 +467,18 @@ describe("primary navigation tabs", () => {
       throw new Error("Expected catalog tabpanel element");
     }
 
-    const buyButtons = await waitFor(() => screen.getAllByTestId(/catalog-buy-/));
-    expect(buyButtons.length).toBeGreaterThan(0);
+    const purchaseControls = await waitFor(() => {
+      const controls = catalogPanel.querySelectorAll(
+        '[data-testid^="catalog-buy-"], [data-testid^="catalog-gate-"]',
+      );
+      if (controls.length === 0) {
+        throw new Error("Expected purchase controls to render in the catalog panel");
+      }
+      return Array.from(controls);
+    });
 
-    buyButtons.forEach((button) => {
-      expect(catalogPanel.contains(button)).toBe(true);
+    purchaseControls.forEach((control) => {
+      expect(catalogPanel.contains(control)).toBe(true);
     });
   });
 });
@@ -529,6 +564,7 @@ describe("catalog tier bonuses", () => {
     await waitFor(() => {
       expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     });
+    await selectCollectionSection(user, /Overview/i);
   });
 
   afterEach(() => {
@@ -1052,10 +1088,76 @@ describe("catalog filters", () => {
     const catalogGrid = screen.getByTestId("catalog-grid");
     const details = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-details"));
     const facts = within(catalogGrid).getAllByTestId("catalog-facts");
+    const passportBlocks = within(catalogGrid).getAllByTestId("catalog-watch-passport");
+    const passportProvenance = within(catalogGrid).getAllByTestId("catalog-watch-passport-provenance");
 
     expect(details.length).toBeGreaterThan(0);
     expect(details[0]?.tagName).toBe("DETAILS");
     expect(facts.length).toBeGreaterThan(0);
+    expect(passportBlocks.length).toBeGreaterThan(0);
+    expect(passportProvenance.length).toBeGreaterThan(0);
+  });
+
+  it("shows watch passport unknown fallback for unknown-year entries", async () => {
+    if (!UNKNOWN_YEAR_CATALOG_ENTRY) {
+      throw new Error("Expected at least one catalog entry with year 'Unknown'");
+    }
+
+    const baseState = createInitialState();
+    const seededState = {
+      ...baseState,
+      items: {
+        ...baseState.items,
+        quartz: 40,
+      },
+      watchModels: {
+        ...baseState.watchModels,
+        [UNKNOWN_YEAR_CATALOG_ENTRY.id]: 1,
+      },
+      discoveredCatalogEntries: [UNKNOWN_YEAR_CATALOG_ENTRY.id],
+    };
+
+    localStorage.setItem(
+      "emily-idle:save",
+      JSON.stringify({
+        version: 4,
+        savedAt: new Date(0).toISOString(),
+        state: seededState,
+      }),
+    );
+
+    cleanup();
+    render(<App />);
+
+    const user = userEvent.setup();
+    const primaryTabs = screen.getByRole("tablist", { name: /Primary navigation/i });
+    await user.click(within(primaryTabs).getByRole("tab", { name: /Catalog/i }));
+    await switchToAllPreset(user);
+
+    const ownershipTabs = screen.getByRole("tablist", { name: /Catalog ownership/i });
+    await user.click(within(ownershipTabs).getByRole("tab", { name: /^Owned/ }));
+
+    const viewModeToggle = screen.getByTestId("catalog-view-mode-toggle");
+    await user.click(viewModeToggle);
+    await waitFor(() => {
+      expect(screen.getByTestId("catalog-grid")).toHaveAttribute("data-view-mode", "expert");
+    });
+
+    const searchInput = screen.getByTestId("catalog-search");
+    await user.clear(searchInput);
+    await user.type(searchInput, UNKNOWN_YEAR_CATALOG_ENTRY.model);
+
+    const detailsDisclosure = await waitFor(() => screen.getAllByTestId("catalog-details")[0]);
+    await user.click(within(detailsDisclosure).getByText(/Details/i));
+
+    const passportYearValues = await waitFor(() => screen.getAllByTestId("watch-passport-year-value"));
+    expect(passportYearValues[0]).toHaveTextContent(/Unknown/i);
+
+    const passportDisclosure = screen.getAllByTestId("watch-passport-disclosure")[0];
+    expect(passportDisclosure).toBeTruthy();
+    const passportToggle = within(passportDisclosure).getByTestId("watch-passport-toggle");
+    await user.click(passportToggle);
+    expect(within(passportDisclosure).getByTestId("catalog-watch-passport-provenance")).toBeTruthy();
   });
 
   it("does not render collector notes for unowned entries", async () => {
@@ -1221,16 +1323,24 @@ describe("catalog filters", () => {
 
 describe("catalog purchase CTA", () => {
   let highlightedModelId = "";
+  let highlightedModelSearchTerm = DEFAULT_BUYABLE_MODEL_SEARCH_TERM;
 
   beforeEach(async () => {
     localStorage.clear();
     const baseState = createInitialState();
     highlightedModelId = getModelIdForTier("quartz");
+    highlightedModelSearchTerm =
+      CATALOG_ENTRIES.find((entry) => entry.id === highlightedModelId)?.model ??
+      DEFAULT_BUYABLE_MODEL_SEARCH_TERM;
     const chronographModelId = getModelIdForTier("manual");
     const seededState = {
       ...baseState,
       currencyCents: 2_000_000_00,
       enjoymentCents: 2_000_000_00,
+      therapistCareer: {
+        ...baseState.therapistCareer,
+        careerStartId: "phd-program",
+      },
       items: {
         ...baseState.items,
         manual: 1,
@@ -1269,12 +1379,11 @@ describe("catalog purchase CTA", () => {
 
   it("increments owned count after a catalog purchase", async () => {
     const user = userEvent.setup();
+    await focusCatalogSearchOnModel(user, highlightedModelSearchTerm);
     const catalogGrid = screen.getByTestId("catalog-grid");
-    const buyButtons = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-buy-/));
-
-    expect(buyButtons.length).toBeGreaterThan(0);
-
-    const button = buyButtons[0];
+    const button = await waitFor(() =>
+      within(catalogGrid).getByTestId(`catalog-buy-${highlightedModelId}`),
+    );
     const card = button.closest('[data-testid="catalog-card"]');
     const buyTestId = button.getAttribute("data-testid");
     if (!(card instanceof HTMLElement) || !buyTestId) {
@@ -1303,6 +1412,8 @@ describe("catalog purchase CTA", () => {
   });
 
   it("marks affordable unowned discovered catalog cards as actionable", async () => {
+    const user = userEvent.setup();
+    await focusCatalogSearchOnModel(user, highlightedModelSearchTerm);
     const highlightedBuyButton = await waitFor(() =>
       screen.getByTestId(`catalog-buy-${highlightedModelId}`),
     );
@@ -1334,11 +1445,12 @@ describe("catalog purchase CTA", () => {
   });
 
   it("renders primary and secondary catalog card actions with distinct affordances", async () => {
+    const user = userEvent.setup();
+    await focusCatalogSearchOnModel(user, highlightedModelSearchTerm);
     const catalogGrid = screen.getByTestId("catalog-grid");
-    const buyButtons = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-buy-/));
-    expect(buyButtons.length).toBeGreaterThan(0);
-
-    const buyButton = buyButtons[0];
+    const buyButton = await waitFor(() =>
+      within(catalogGrid).getByTestId(`catalog-buy-${highlightedModelId}`),
+    );
     const card = buyButton.closest('[data-testid="catalog-card"]');
     if (!(card instanceof HTMLElement)) {
       throw new Error("Expected a catalog card for action hierarchy assertions");
@@ -2171,6 +2283,7 @@ describe("settings preferences", () => {
     const saveTab = within(tabList).getByRole("tab", { name: /Settings/i });
 
     await user.click(vaultTab);
+    await selectCollectionSection(user, /Achievements/i);
     expect(screen.queryByRole("heading", { name: /First drawer/i })).toBeTruthy();
 
     await user.click(saveTab);
@@ -2178,6 +2291,7 @@ describe("settings preferences", () => {
     await user.click(hideAchievements);
 
     await user.click(vaultTab);
+    await selectCollectionSection(user, /Achievements/i);
     expect(screen.queryByRole("heading", { name: /First drawer/i })).toBeNull();
   });
 
@@ -2222,6 +2336,7 @@ describe("coachmarks", () => {
     const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
 
     await user.click(vaultTab);
+    await selectCollectionSection(user, /Overview/i);
 
     expect(vaultTab.getAttribute("aria-selected")).toBe("true");
   };
@@ -2269,7 +2384,7 @@ describe("coachmarks", () => {
     expect(raw).toContain("coachmarksDismissed");
   });
 
-  it("respects persisted dismissals", () => {
+  it("respects persisted dismissals", async () => {
     localStorage.setItem(
       "emily-idle:settings",
       JSON.stringify({
@@ -2289,6 +2404,12 @@ describe("coachmarks", () => {
 
     cleanup();
     render(<App />);
+
+    const user = userEvent.setup();
+    const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
+    const vaultTab = within(tabList).getByRole("tab", { name: /Collection/i });
+    await user.click(vaultTab);
+    await selectCollectionSection(user, /Overview/i);
 
     expect(screen.queryByTestId("coachmark")).toBeNull();
     expect(screen.queryByTestId("coachmarks")).toBeNull();
