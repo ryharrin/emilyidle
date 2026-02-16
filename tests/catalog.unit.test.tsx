@@ -613,6 +613,7 @@ describe("set bonuses", () => {
     await waitFor(() => {
       expect(vaultTab.getAttribute("aria-selected")).toBe("true");
     });
+    await selectCollectionSection(user, /Set bonuses/i);
   });
 
   afterEach(() => {
