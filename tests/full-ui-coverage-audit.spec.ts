@@ -1089,8 +1089,7 @@ async function rebuildProjectManifest(projectDir: string): Promise<void> {
 
 test.describe("full UI coverage audit", () => {
   test.setTimeout(1_500_000);
-  test.beforeEach((fixtures, testInfo) => {
-    void fixtures;
+  test.beforeEach(({}, testInfo) => {
     test.skip(
       isWebkitMobileProject(testInfo.project.name),
       "Full UI coverage audit runs in Chromium only to avoid long-tail mobile stalls.",
