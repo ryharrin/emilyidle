@@ -400,7 +400,7 @@ test.describe("collection loop", () => {
       if (!raw || !parsed) {
         throw new Error("Expected autosave payload after initial load");
       }
-      expect(parsed.version).toBe(3);
+      expect(parsed.version).toBe(4);
       expect(typeof parsed.state.currencyCents).toBe("number");
 
       await page.evaluate(() => {
@@ -415,6 +415,19 @@ test.describe("collection loop", () => {
       });
 
       await page.reload();
+
+      await clickPrimaryTab(page, "Career");
+      const careerPanel = page.getByRole("tabpanel", { name: "Career" });
+      const startCareerButton = careerPanel.getByTestId("career-next-action-start");
+      if ((await startCareerButton.count()) > 0) {
+        await startCareerButton.click();
+      }
+
+      const runSessionButton = careerPanel.getByTestId("career-action");
+      await expect(runSessionButton).toBeVisible();
+      if (await runSessionButton.isEnabled()) {
+        await runSessionButton.click();
+      }
 
       await clickPrimaryTab(page, "Catalog");
       await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
