@@ -19,8 +19,6 @@
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:iphone": "playwright test --project=webkit-mobile-iphone15",
     "test:e2e:webkit-mobile": "playwright test --project=webkit-mobile-iphone15",
-    "test:e2e:audit:webkit:separate": "bash scripts/run-webkit-audit-separated.sh",
-    "test:e2e:audit:webkit:critical:separate": "bash scripts/run-webkit-audit-separated.sh --critical",
     "test:ci:stable": "pnpm test:unit && pnpm test:e2e:stable-projects && pnpm typecheck"
   },
   "dependencies": {
