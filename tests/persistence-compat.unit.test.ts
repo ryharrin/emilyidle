@@ -163,6 +163,9 @@ describe("persistence compatibility", () => {
     if (!("error" in loaded)) {
       return;
     }
+    if ("empty" in loaded) {
+      throw new Error("Expected stale save generation error, got empty save result");
+    }
 
     expect(loaded.error).toContain("Stale save generation");
     expect(localStorage.getItem("emily-idle:save")).toBeNull();
@@ -217,6 +220,9 @@ describe("persistence compatibility", () => {
     expect("error" in loaded).toBe(true);
     if (!("error" in loaded)) {
       return;
+    }
+    if ("empty" in loaded) {
+      throw new Error("Expected stale save generation error, got empty save result");
     }
 
     expect(loaded.error).toContain("Stale save generation");

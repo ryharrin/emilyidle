@@ -730,6 +730,7 @@ export function CatalogPurchasePanel({
       tags={tags}
       showFacts={showFacts}
       decisionInfo={decisionInfo}
+      viewMode={catalogViewMode}
     />
   );
 

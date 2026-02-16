@@ -217,7 +217,7 @@ function computeRubric(snapshot: Snapshot | null, visitedTabs: string[]): Record
 }
 
 async function writePassReport(testInfo: TestInfo, result: PassResult) {
-  const outDir = path.join("test-results", "qa-playthrough", nowStamp());
+  const outDir = testInfo.outputPath("qa-playthrough", nowStamp());
   await mkdir(outDir, { recursive: true });
   const findingsBody =
     result.findings.length === 0

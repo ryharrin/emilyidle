@@ -15,6 +15,7 @@ import {
   buyMaisonLine,
   canBuyMaisonLine,
   getAchievementUnlockProgressDetail,
+  getCatalogPassportMetadata,
   getEventStatusLabel,
   getMilestoneRequirementLabel,
   getWatchModelOwnedCount,
@@ -372,6 +373,7 @@ export function CollectionTab({
   );
 
   const equippedContribution = getEquippedWatchContribution(state, nowMs, currentEventMultiplier);
+  const wornPassport = wornModel ? getCatalogPassportMetadata(wornModel.id) : null;
   const totalOwnedWatches = watchModels.reduce(
     (count, model) => count + getWatchModelOwnedCount(state, model.id),
     0,
@@ -417,6 +419,80 @@ export function CollectionTab({
   const showEventsTab = showEventsSection && activeCollectionSectionId === "collection-events";
   const showCraftingTab =
     showCraftingSection && activeCollectionSectionId === "collection-crafting";
+
+  const renderWornWatchPassport = () => (
+    <section className="panel collection-watch-passport" data-testid="collection-watch-passport">
+      <header className="panel-header">
+        <div>
+          <p className="eyebrow">Watch passport</p>
+          <h3>Real-world specs and provenance</h3>
+        </div>
+      </header>
+      {wornPassport ? (
+        <>
+          <p className="muted">{wornPassport.headline}</p>
+          <ul className="catalog-specs">
+            <li>
+              <span className="catalog-spec-label">Reference</span>
+              <span className="catalog-spec-value">{wornPassport.referenceFamily.value}</span>
+            </li>
+            <li>
+              <span className="catalog-spec-label">Complications</span>
+              <span className="catalog-spec-value">{wornPassport.complications.value}</span>
+            </li>
+            <li>
+              <span className="catalog-spec-label">Movement origin</span>
+              <span className="catalog-spec-value">{wornPassport.movementOrigin.value}</span>
+            </li>
+          </ul>
+          <details className="catalog-passport-details" data-testid="collection-watch-passport-details">
+            <summary data-testid="collection-watch-passport-toggle">
+              Show full passport details and provenance
+            </summary>
+            <div className="catalog-passport-details__content">
+              <ul className="catalog-specs">
+                <li>
+                  <span className="catalog-spec-label">Production era</span>
+                  <span className="catalog-spec-value">{wornPassport.productionEra.value}</span>
+                </li>
+                <li>
+                  <span className="catalog-spec-label">Case material</span>
+                  <span className="catalog-spec-value">{wornPassport.caseMaterial.value}</span>
+                </li>
+                <li>
+                  <span className="catalog-spec-label">Case diameter</span>
+                  <span className="catalog-spec-value">{wornPassport.caseDiameterMm.value}</span>
+                </li>
+                <li>
+                  <span className="catalog-spec-label">Water resistance</span>
+                  <span className="catalog-spec-value">{wornPassport.waterResistance.value}</span>
+                </li>
+              </ul>
+              <div className="catalog-facts" data-testid="collection-watch-passport-provenance">
+                <p className="catalog-facts-title">Source provenance</p>
+                <ul>
+                  {wornPassport.provenance.map((source, index) => (
+                    <li key={`collection-watch-passport-source-${index}`}>
+                      {source.sourceUrl ? (
+                        <a href={source.sourceUrl} target="_blank" rel="noreferrer">
+                          {source.sourceLabel}
+                        </a>
+                      ) : (
+                        source.sourceLabel
+                      )}
+                      {` · ${source.provenance}`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </details>
+        </>
+      ) : (
+        <p className="muted">Equip a watch to view its passport and provenance.</p>
+      )}
+    </section>
+  );
 
   return (
     <section
@@ -1023,6 +1099,7 @@ export function CollectionTab({
                               </p>
                             </section>
                           </div>
+                          {renderWornWatchPassport()}
                           <section
                             className="panel per-watch-contribution"
                             data-testid="per-watch-contribution"
@@ -1096,6 +1173,7 @@ export function CollectionTab({
                             </p>
                           </section>
                         </div>
+                        {renderWornWatchPassport()}
                         <section
                           className="panel per-watch-contribution"
                           data-testid="per-watch-contribution"

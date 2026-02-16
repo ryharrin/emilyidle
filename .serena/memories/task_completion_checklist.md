@@ -1,0 +1,15 @@
+# Task completion checklist
+- Run relevant tests for changed scope.
+  - Prefer targeted unit/e2e tests first, then broader suites when needed.
+- Run `pnpm typecheck` when TS changes may affect typing.
+- Run lint/format checks where appropriate:
+  - `pnpm format:check`
+  - `pnpm lint`
+- Verify persistence contract changes by updating/validating guardrail tests:
+  - `tests/localstorage-keys.unit.test.ts`
+  - `tests/localstorage-schema.unit.test.tsx`
+  - Playwright seed payloads in affected e2e specs.
+- Keep test selectors (`id`, `data-testid`) stable unless intentionally updated with tests.
+- Avoid editing generated directories (`dist/`, `target/`, `test-results/`, `tmp/`).
+- Avoid editing vendored snapshot under `vite/` unless explicitly intended.
+- Summarize residual risks or unrun checks when reporting completion.

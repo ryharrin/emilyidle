@@ -13,13 +13,22 @@ function getClassicModelId(): string {
 }
 
 describe("purchase gates", () => {
-  it("allows a quartz purchase on a fresh save", () => {
+  it("blocks quartz purchases on a fresh save until cash is earned", () => {
     const baseState = createInitialState();
-    const canBuyAny = getWatchModels().some(
-      (model) => getWatchModelPurchaseGate(baseState, model.id).ok,
-    );
+    const quartzModel = getWatchModels().find((model) => model.tierId === "quartz");
+    if (!quartzModel) {
+      throw new Error("Expected at least one quartz watch model");
+    }
 
-    expect(canBuyAny).toBe(true);
+    const gate = getWatchModelPurchaseGate(baseState, quartzModel.id);
+
+    expect(gate.ok).toBe(false);
+    if (gate.ok) {
+      throw new Error("Expected quartz purchase gate to be blocked on a fresh save");
+    }
+
+    expect(gate.blocksBy).toBe("cash");
+    expect(gate.cashDeficitCents).toBeGreaterThan(0);
   });
 
   it("blocks by enjoyment when enjoyment is below the requirement", () => {

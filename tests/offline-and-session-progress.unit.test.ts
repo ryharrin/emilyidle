@@ -66,6 +66,7 @@ describe("offline and session-only progression guards", () => {
 
     expect(loaded.save.state.currencyCents).toBe(seededState.currencyCents);
     expect(loaded.save.state.enjoymentCents).toBe(seededState.enjoymentCents);
+    expect(loaded.save.lastSimulatedAtMs).toBe(nowMs);
     expect(loaded.save.state.therapistCareer.level).toBe(seededState.therapistCareer.level);
     expect(loaded.save.state.therapistCareer.xp).toBe(seededState.therapistCareer.xp);
     expect(loaded.save.state.therapistCareer.salaryActiveUntilMs).toBe(20_000 + elapsedMs);
@@ -74,6 +75,29 @@ describe("offline and session-only progression guards", () => {
     expect(loaded.save.state.interactionNextAvailableAtMsByItem.quartz).toBe(12_000 + elapsedMs);
     expect(loaded.save.state.eventStates["auction-weekend"]?.activeUntilMs).toBe(26_000 + elapsedMs);
     expect(loaded.save.state.eventStates["auction-weekend"]?.nextAvailableAtMs).toBe(31_000 + elapsedMs);
+
+    const secondNowMs = 70_000;
+    vi.spyOn(Date, "now").mockReturnValue(secondNowMs);
+
+    const secondLoad = loadSaveFromLocalStorage();
+    expect(secondLoad.ok).toBe(true);
+    if (!secondLoad.ok) {
+      return;
+    }
+
+    const secondElapsedMs = secondNowMs - nowMs;
+    expect(secondLoad.save.lastSimulatedAtMs).toBe(secondNowMs);
+    expect(secondLoad.save.state.currencyCents).toBe(seededState.currencyCents);
+    expect(secondLoad.save.state.enjoymentCents).toBe(seededState.enjoymentCents);
+    expect(secondLoad.save.state.interactionNextAvailableAtMsByItem.quartz).toBe(
+      12_000 + elapsedMs + secondElapsedMs,
+    );
+    expect(secondLoad.save.state.eventStates["auction-weekend"]?.activeUntilMs).toBe(
+      26_000 + elapsedMs + secondElapsedMs,
+    );
+    expect(secondLoad.save.state.eventStates["auction-weekend"]?.nextAvailableAtMs).toBe(
+      31_000 + elapsedMs + secondElapsedMs,
+    );
   });
 
   it("only changes career XP/level when sessions run, not from sim ticks", () => {

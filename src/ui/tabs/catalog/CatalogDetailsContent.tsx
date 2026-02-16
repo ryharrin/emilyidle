@@ -53,6 +53,7 @@ type CatalogDetailsContentProps = {
   tags: string[];
   showFacts: boolean;
   decisionInfo: CatalogDecisionInfo;
+  viewMode: "novice" | "expert";
 };
 
 const toRecord = (value: unknown): UnknownRecord | null => {
@@ -569,12 +570,38 @@ export function CatalogDetailsContent({
   tags,
   showFacts,
   decisionInfo,
+  viewMode,
 }: CatalogDetailsContentProps) {
   const description = buildDetailDescription(entry);
   const features = buildFeatureList(entry);
   const specs = buildSpecRows(entry, tags);
   const pricingRows = normalizePricingRows(entry);
   const collectorNotes = readStringArray(entry.facts);
+  const passport = entry.passport;
+  const expertMode = viewMode === "expert";
+  const passportFallback = "Unknown";
+  const getPassportValue = (value: string | number | undefined): string => {
+    if (typeof value === "number") {
+      return Number.isFinite(value) ? String(value) : passportFallback;
+    }
+    if (typeof value !== "string") {
+      return passportFallback;
+    }
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : passportFallback;
+  };
+  const passportHighlights = [
+    { label: "Reference", value: getPassportValue(passport.referenceFamily.value) },
+    { label: "Complications", value: getPassportValue(passport.complications.value) },
+    { label: "Movement origin", value: getPassportValue(passport.movementOrigin.value) },
+    { label: "Archive year", value: getPassportValue(entry.year) },
+  ];
+  const passportSpecs = [
+    { label: "Production era", value: getPassportValue(passport.productionEra.value) },
+    { label: "Case material", value: getPassportValue(passport.caseMaterial.value) },
+    { label: "Case diameter", value: getPassportValue(passport.caseDiameterMm.value) },
+    { label: "Water resistance", value: getPassportValue(passport.waterResistance.value) },
+  ];
 
   return (
     <div className="catalog-details-body">
@@ -623,6 +650,58 @@ export function CatalogDetailsContent({
           <p className="muted">USD pricing metadata is unavailable for this reference.</p>
         )}
       </section>
+      <section className="catalog-facts catalog-watch-passport" data-testid="catalog-watch-passport">
+        <p className="catalog-facts-title">Watch passport</p>
+        <p className="muted">{getPassportValue(passport.headline)}</p>
+        <ul className="catalog-specs">
+          {passportHighlights.map((field) => (
+            <li key={`${entry.id}-passport-highlight-${field.label}`}>
+              <span className="catalog-spec-label">{field.label}</span>
+              <span
+                className="catalog-spec-value"
+                data-testid={field.label === "Archive year" ? "watch-passport-year-value" : undefined}
+              >
+                {field.value}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div data-testid="watch-passport-disclosure">
+          <details
+            className="catalog-passport-details"
+            data-testid="catalog-watch-passport-details"
+            open={expertMode}
+          >
+            <summary data-testid="watch-passport-toggle">
+              {expertMode ? "Expert passport detail" : "Show full passport details and provenance"}
+            </summary>
+            <div className="catalog-passport-details__content">
+              <ul className="catalog-specs">
+                {passportSpecs.map((field) => (
+                  <li key={`${entry.id}-passport-spec-${field.label}`}>
+                    <span className="catalog-spec-label">{field.label}</span>
+                    <span className="catalog-spec-value">{field.value}</span>
+                  </li>
+                ))}
+              </ul>
+              <div
+                className="catalog-facts catalog-watch-passport-provenance"
+                data-testid="catalog-watch-passport-provenance"
+              >
+                <p className="catalog-facts-title">Source provenance</p>
+                <ul>
+                  {passport.provenance.map((source, index) => (
+                    <li key={`${entry.id}-passport-provenance-${index}`}>
+                      {getPassportValue(source.sourceLabel)}
+                      {` · ${getPassportValue(source.provenance)}`}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
       <div
         className="catalog-facts catalog-decision-summary"
         data-testid="catalog-decision-summary"
@@ -652,7 +731,7 @@ export function CatalogDetailsContent({
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -240,9 +240,7 @@ strong {
 }
 
 .mission-rail {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
+  display: block;
   margin-bottom: 24px;
 }
 
@@ -265,8 +263,91 @@ strong {
   margin: 0 0 12px;
 }
 
+.mission-rail__lanes {
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mission-rail__timeline {
+  display: grid;
+  gap: 12px;
+}
+
+.mission-rail__lane {
+  border: 1px solid rgba(85, 95, 112, 0.48);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(18, 22, 30, 0.56);
+}
+
+.mission-rail__lane h3,
+.mission-rail__lane h4 {
+  margin: 0 0 8px;
+}
+
+.mission-rail__lane--now {
+  border-color: rgba(226, 201, 154, 0.5);
+  background: rgba(30, 36, 48, 0.68);
+}
+
+.mission-rail__reason {
+  margin: 0;
+  color: #c5ccd7;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.mission-rail__checklist {
+  margin-top: 12px;
+  border-top: 1px solid rgba(85, 95, 112, 0.4);
+  padding-top: 10px;
+}
+
+.mission-rail__checklist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.mission-rail__checklist li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.84rem;
+}
+
+.mission-rail__checklist li[data-complete="true"] {
+  color: #dbe4d4;
+}
+
+.mission-rail__checklist li[data-complete="false"] {
+  color: #c9d0dc;
+}
+
 .mission-rail__card--secondary {
+  display: grid;
+  gap: 12px;
   background: linear-gradient(180deg, rgba(20, 23, 30, 0.96), rgba(15, 17, 21, 0.94));
+}
+
+.mission-rail__lane {
+  display: grid;
+  gap: 8px;
+}
+
+.mission-rail__secondary-action {
+  justify-self: start;
+  min-height: 32px;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+}
+
+.mission-rail__lane + .mission-rail__lane {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
 }
 
 [data-theme="light"] .mission-rail__card {
@@ -306,10 +387,6 @@ strong {
 }
 
 @media (max-width: 900px) {
-  .mission-rail {
-    grid-template-columns: 1fr;
-  }
-
   .mission-rail__mobile-cta {
     display: flex;
     position: fixed;
@@ -324,6 +401,10 @@ strong {
     align-items: center;
     justify-content: space-between;
     z-index: 50;
+  }
+
+  .mission-rail__lane + .mission-rail__lane {
+    border-top-color: rgba(255, 255, 255, 0.14);
   }
 
   .mission-rail__mobile-cta-copy {
@@ -347,7 +428,15 @@ strong {
   }
 
   .mission-rail {
-    padding-bottom: 80px;
+    padding-bottom: 84px;
+  }
+
+  .mission-rail__lane {
+    padding: 10px;
+  }
+
+  .mission-rail__reason {
+    font-size: 0.8rem;
   }
 }
 
@@ -355,9 +444,27 @@ strong {
   box-shadow: 0 0 12px rgba(180, 60, 50, 0.2);
 }
 
+[data-theme="light"] .mission-rail__lane + .mission-rail__lane {
+  border-top-color: rgba(90, 76, 61, 0.2);
+}
+
 [data-theme="light"] .mission-rail__mobile-cta {
   background: #f4f0e9;
   border-top-color: #d7cfc5;
+}
+
+[data-theme="light"] .mission-rail__lane {
+  border-color: rgba(170, 130, 86, 0.35);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+[data-theme="light"] .mission-rail__lane--now {
+  border-color: rgba(170, 130, 86, 0.55);
+  background: rgba(252, 247, 239, 0.9);
+}
+
+[data-theme="light"] .mission-rail__reason {
+  color: #5c5348;
 }
 
 @media (max-width: 640px) {
@@ -4988,6 +5095,79 @@ button[data-testid^="vault-interact-"] {
   gap: 6px;
 }
 
+.catalog-watch-passport {
+  gap: 10px;
+}
+
+.catalog-passport-details {
+  border-top: 1px solid rgba(232, 198, 147, 0.18);
+  padding-top: 8px;
+}
+
+.catalog-passport-details summary {
+  cursor: pointer;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d7c6a6;
+}
+
+.catalog-passport-details__content {
+  margin-top: 8px;
+  display: grid;
+  gap: 10px;
+}
+
+.catalog-passport {
+  border-top: 1px solid rgba(232, 198, 147, 0.18);
+  padding-top: 8px;
+}
+
+.catalog-passport summary {
+  cursor: pointer;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #e1c99a;
+}
+
+.catalog-passport__body {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.catalog-passport__lede {
+  margin: 0;
+  color: #c7cdd6;
+  font-size: 0.84rem;
+}
+
+.catalog-passport__advanced {
+  border: 1px solid rgba(232, 198, 147, 0.22);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(12, 14, 18, 0.55);
+}
+
+.catalog-passport__advanced summary {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.catalog-passport__specs {
+  margin-top: 8px;
+}
+
+.catalog-passport__specs li[data-unknown="true"] .catalog-spec-value {
+  color: #d8b8a2;
+}
+
+.catalog-passport__fallback {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
 .catalog-owned-details {
   border-top: 1px solid rgba(232, 198, 147, 0.2);
   padding-top: 10px;
@@ -5045,12 +5225,41 @@ button[data-testid^="vault-interact-"] {
   border-color: rgba(170, 130, 86, 0.25);
 }
 
+[data-theme="light"] .catalog-passport-details {
+  border-color: rgba(170, 130, 86, 0.25);
+}
+
+[data-theme="light"] .catalog-passport-details summary {
+  color: #8b5e2b;
+}
+
 [data-theme="light"] .catalog-facts-title {
   color: #8b5e2b;
 }
 
 [data-theme="light"] .catalog-facts ul {
   color: #5b5348;
+}
+
+[data-theme="light"] .catalog-passport {
+  border-color: rgba(170, 130, 86, 0.25);
+}
+
+[data-theme="light"] .catalog-passport summary {
+  color: #8b5e2b;
+}
+
+[data-theme="light"] .catalog-passport__lede {
+  color: #62584c;
+}
+
+[data-theme="light"] .catalog-passport__advanced {
+  border-color: rgba(170, 130, 86, 0.25);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="light"] .catalog-passport__specs li[data-unknown="true"] .catalog-spec-value {
+  color: #9a5d37;
 }
 
 .catalog-media {

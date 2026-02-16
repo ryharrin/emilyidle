@@ -94,7 +94,7 @@ import {
   getNostalgiaUnlockIds,
   getNostalgiaPrestigeGain,
   getNostalgiaPrestigeThresholdCents,
-  getPrimaryLoopAction,
+  getGuideLanes,
   getCollectionValueCents,
   getWatchModelOwnedCount,
   getWatchModelPriceCents,
@@ -111,7 +111,7 @@ import {
   isWorkshopRevealReady,
 } from "./game/state";
 import { getCatalogEntryTags } from "./game/catalog";
-import type { GameState, InteractionMiniGameMode, WatchItemId } from "./game/state";
+import type { GameState, GuideLaneAction, InteractionMiniGameMode, WatchItemId } from "./game/state";
 import { step } from "./game/sim";
 
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
@@ -525,7 +525,7 @@ export default function App() {
   }, []);
 
   const persistSaveWithSessionEpochGuard = useCallback(
-    (nextState: GameState): SavePersistResult => {
+    (nextState: GameState, lastSimulatedAtMs?: number): SavePersistResult => {
       const currentEpoch = getSaveClearEpoch();
       if (currentEpoch !== sessionSaveClearEpoch) {
         return {
@@ -534,12 +534,12 @@ export default function App() {
         };
       }
 
-      return persistSaveToLocalStorage(nextState);
+      return persistSaveToLocalStorage(nextState, new Date(), lastSimulatedAtMs);
     },
     [sessionSaveClearEpoch],
   );
 
-  const { state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
+  const { nowMs, state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
     initialState: createInitialState,
     step,
     loadSave: loadSaveFromLocalStorage,
@@ -916,7 +916,6 @@ export default function App() {
 
   const handlePurchase = (nextState: GameState, meta?: PurchaseMeta) => {
     if (nextState !== state) {
-      const nowMs = Date.now();
       const prestigeEvent = detectPrestigeEvent(state, nextState, nowMs, meta?.prestigeTier);
       if (prestigeEvent) {
         setPrestigeOnboarding(prestigeEvent);
@@ -1067,7 +1066,7 @@ export default function App() {
     }
 
     setState(decoded.save.state);
-    resetSimulationClock();
+    resetSimulationClock(decoded.save.lastSimulatedAtMs);
     markSaveDirty();
     persistNow("import", decoded.save.state);
     const migrationLabel =
@@ -1129,7 +1128,6 @@ export default function App() {
   };
 
   const stats = useMemo(() => {
-    const nowMs = Date.now();
     const eventMultiplier = getEventIncomeMultiplier(state, nowMs);
     const cashRate = getEffectiveCashRateCentsPerSec(state, nowMs, eventMultiplier);
     const enjoymentRate = getEnjoymentRateCentsPerSec(state) * eventMultiplier;
@@ -1142,7 +1140,7 @@ export default function App() {
       sentimentalValue: getCollectionValueCents(state),
       softcap: formatSoftcapEfficiency(getSoftcapEfficiency(state)),
     };
-  }, [state]);
+  }, [nowMs, state]);
 
   const watchItems = useMemo(() => getWatchItems(), []);
   const watchModelDefaults = useMemo(() => {
@@ -1233,7 +1231,6 @@ export default function App() {
       carriesWhat: ["Nostalgia unlocks", "Permanent bonuses"],
     },
   };
-  const nowMs = Date.now();
   const currentEventMultiplier = useMemo(
     () => getEventIncomeMultiplier(state, nowMs),
     [state, nowMs],
@@ -1610,7 +1607,7 @@ export default function App() {
     });
   }, [actionableHiddenTabIds.length, emitUxEvent, persistSettings, settings]);
 
-  const primaryLoopAction = useMemo(() => getPrimaryLoopAction(state, nowMs), [nowMs, state]);
+  const guideLanes = useMemo(() => getGuideLanes(state, nowMs), [nowMs, state]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -1627,9 +1624,13 @@ export default function App() {
         coordinateSystem: "UI state snapshot (no world coordinates); values are current frame.",
         tab: activeTab,
         mission: {
-          urgency: primaryLoopAction.urgency,
-          primary: primaryLoopAction.primary.label,
-          secondary: primaryLoopAction.secondary.label,
+          urgency: guideLanes.urgency,
+          // Keep legacy keys for tooling compatibility while exposing lane-based guidance.
+          primary: guideLanes.now.label,
+          secondary: guideLanes.next.label,
+          now: guideLanes.now.label,
+          next: guideLanes.next.label,
+          later: guideLanes.later.label,
         },
         currencies: {
           cashCents: state.currencyCents,
@@ -1654,7 +1655,7 @@ export default function App() {
           bestPerfectStreak: state.interactionBestPerfectStreak,
         },
         readiness: tabReadiness,
-        checklist: primaryLoopAction.checklist,
+        checklist: guideLanes.checklist,
       });
 
     runtimeWindow.advanceTime = (ms: number) => {
@@ -1664,6 +1665,7 @@ export default function App() {
       }
 
       const chunkMs = 100;
+      let advancedNowMs = nowMs;
       setState((currentState) => {
         let nextState = currentState;
         let elapsedMs = 0;
@@ -1676,10 +1678,11 @@ export default function App() {
           elapsedMs += dtMs;
         }
 
+        advancedNowMs = currentNowMs;
         return nextState;
       });
       markSaveDirty();
-      resetSimulationClock();
+      resetSimulationClock(advancedNowMs);
     };
 
     return () => {
@@ -1689,9 +1692,9 @@ export default function App() {
   }, [
     activeTab,
     currentEventMultiplier,
+    guideLanes,
     markSaveDirty,
     nowMs,
-    primaryLoopAction,
     resetSimulationClock,
     setState,
     state,
@@ -2177,7 +2180,7 @@ export default function App() {
   );
 
   const runMissionAction = useCallback(
-    (action: typeof primaryLoopAction.primary | typeof primaryLoopAction.secondary) => {
+    (action: GuideLaneAction) => {
       emitUxEvent("mission.action", {
         label: action.label,
         tabId: action.target.tabId,
@@ -2189,13 +2192,7 @@ export default function App() {
         : "collection";
       navigateTo(destinationTab, action.target.scrollTargetId);
     },
-    [
-      combinedTabVisibility,
-      emitUxEvent,
-      navigateTo,
-      primaryLoopAction.primary,
-      primaryLoopAction.secondary,
-    ],
+    [combinedTabVisibility, emitUxEvent, navigateTo],
   );
 
   const handleTabRailScroll = useCallback(
@@ -2340,17 +2337,33 @@ export default function App() {
           {activeEventsForBanner.length > 0 && <EventBanner activeEvents={activeEventsForBanner} />}
 
           <MissionRail
-            urgency={primaryLoopAction.urgency}
-            urgencyReason={primaryLoopAction.urgencyReason}
-            primary={{
-              label: primaryLoopAction.primary.label,
-              detail: primaryLoopAction.primary.detail,
-              actionLabel: primaryLoopAction.primary.actionLabel,
-              whyNow: primaryLoopAction.primary.whyNow,
-              onAction: () => runMissionAction(primaryLoopAction.primary),
+            urgency={guideLanes.urgency}
+            urgencyReason={guideLanes.urgencyReason}
+            now={{
+              label: guideLanes.now.label,
+              detail: guideLanes.now.detail,
+              actionLabel: guideLanes.now.actionLabel,
+              whyNow: guideLanes.now.whyNow,
+              onAction: () => runMissionAction(guideLanes.now),
               testId: "mission-action-primary",
             }}
-            checklist={primaryLoopAction.checklist}
+            next={{
+              label: guideLanes.next.label,
+              detail: guideLanes.next.detail,
+              actionLabel: guideLanes.next.actionLabel,
+              whyNow: guideLanes.next.whyNow,
+              onAction: () => runMissionAction(guideLanes.next),
+              testId: "mission-action-next",
+            }}
+            later={{
+              label: guideLanes.later.label,
+              detail: guideLanes.later.detail,
+              actionLabel: guideLanes.later.actionLabel,
+              whyNow: guideLanes.later.whyNow,
+              onAction: () => runMissionAction(guideLanes.later),
+              testId: "mission-action-later",
+            }}
+            checklist={guideLanes.checklist}
           />
 
           <NextActionChips
@@ -2545,7 +2558,7 @@ export default function App() {
                 return;
               }
               handlePurchase(
-                applyWindingReward(state, activeInteraction.itemId, Date.now(), outcome.tier, {
+                applyWindingReward(state, activeInteraction.itemId, nowMs, outcome.tier, {
                   mode: interactionModes.winding,
                 }),
               );
@@ -2580,7 +2593,7 @@ export default function App() {
                 return;
               }
               handlePurchase(
-                applyAutomaticReward(state, activeInteraction.itemId, Date.now(), outcome.tier, {
+                applyAutomaticReward(state, activeInteraction.itemId, nowMs, outcome.tier, {
                   mode: interactionModes.automatic,
                 }),
               );
@@ -2612,7 +2625,7 @@ export default function App() {
                 return;
               }
               handlePurchase(
-                applyQuartzReward(state, activeInteraction.itemId, Date.now(), outcome.tier, {
+                applyQuartzReward(state, activeInteraction.itemId, nowMs, outcome.tier, {
                   mode: interactionModes.quartz,
                 }),
               );

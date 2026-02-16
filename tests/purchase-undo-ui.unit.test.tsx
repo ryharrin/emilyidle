@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import App from "../src/App";
@@ -15,6 +15,11 @@ function seedSaveForStarterPurchase() {
   const state = {
     ...base,
     currencyCents: Math.max(base.currencyCents, 500_000),
+    enjoymentCents: Math.max(base.enjoymentCents, 50_000),
+    therapistCareer: {
+      ...base.therapistCareer,
+      careerStartId: "phd-program",
+    },
     unlockedMilestones: ["collector-shelf", "showcase"],
     items: {
       ...base.items,
@@ -29,14 +34,12 @@ function seedSaveForStarterPurchase() {
   localStorage.setItem(
     "emily-idle:save",
     JSON.stringify({
-      version: 2,
+      version: 4,
       savedAt: new Date(0).toISOString(),
       lastSimulatedAtMs: Date.now(),
       state,
     }),
   );
-
-  return starterModel.id;
 }
 
 describe("catalog purchase undo UI", () => {
@@ -50,19 +53,22 @@ describe("catalog purchase undo UI", () => {
   });
 
   it("enables undo after a purchase and clears it once used", async () => {
-    const starterModelId = seedSaveForStarterPurchase();
+    seedSaveForStarterPurchase();
     render(<App />);
 
     const user = userEvent.setup();
     const tabList = screen.getByRole("tablist", { name: /Primary navigation/i });
     await user.click(within(tabList).getByRole("tab", { name: /Catalog/i }));
 
-    await user.click(screen.getByRole("tab", { name: /^Owned/ }));
+    const ownershipTabs = screen.getByRole("tablist", { name: /Catalog ownership/i });
+    await user.click(within(ownershipTabs).getByRole("tab", { name: /^Owned/ }));
 
     const undoButton = screen.getByTestId("catalog-undo-purchase") as HTMLButtonElement;
     expect(undoButton.disabled).toBe(true);
 
-    await user.click(screen.getByTestId(`catalog-buy-${starterModelId}`));
+    const catalogGrid = await screen.findByTestId("catalog-grid");
+    const buyButtons = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-buy-/));
+    await user.click(buyButtons[0]);
 
     expect(undoButton.disabled).toBe(false);
     expect(screen.getByTestId("catalog-undo-countdown").textContent).toMatch(/Available/i);
