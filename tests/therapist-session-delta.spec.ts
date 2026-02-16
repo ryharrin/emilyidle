@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { seedStorage } from "./helpers/storageSeed";
 
 type SessionSnapshot = {
   version: number;
@@ -94,18 +95,13 @@ test("therapist sessions apply cash/enjoyment deltas and expose cooldown state",
     },
   };
 
-  await page.addInitScript((state: typeof seededState) => {
-    window.localStorage.clear();
-    window.localStorage.setItem(
-      "emily-idle:save",
-      JSON.stringify({
-        version: 3,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs: Date.now(),
-        state,
-      }),
-    );
-  }, seededState);
+  await seedStorage(page, {
+    clearLocalStorage: true,
+    save: {
+      state: seededState,
+      version: 4,
+    },
+  });
 
   await page.goto("/");
   await waitForPersistedSnapshot(page);
@@ -157,7 +153,7 @@ test("therapist sessions apply cash/enjoyment deltas and expose cooldown state",
     return;
   }
 
-  expect(afterSession.version).toBe(beforeSession.version);
+  expect(afterSession.version).toBe(4);
   expect(afterSession.currencyCents).toBeGreaterThan(beforeSession.currencyCents);
   expect(afterSession.enjoymentCents).toBeLessThan(beforeSession.enjoymentCents);
   expect(afterSession.xp).toBeGreaterThan(beforeSession.xp);

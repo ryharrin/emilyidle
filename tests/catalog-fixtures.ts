@@ -17,7 +17,7 @@ export const BASE_CATALOG_SEEDED_STATE = {
   nostalgiaLastGain: 0,
   nostalgiaLastPrestigedAtMs: 0,
   therapistCareer: {
-    careerStartId: null,
+    careerStartId: "phd-program",
     salaryActiveUntilMs: 0,
     level: 0,
     xp: 0,

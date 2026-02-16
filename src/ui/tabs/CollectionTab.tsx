@@ -101,7 +101,7 @@ const COLLECTION_SECTION_NAV_LINKS: CollectionSectionNavLink[] = [
 ];
 
 const MOBILE_COLLECTION_QUERY = "(max-width: 900px)";
-const DEFAULT_COLLECTION_SECTION_ID = "collection-set-bonuses";
+const DEFAULT_COLLECTION_SECTION_ID = "collection-overview";
 
 const resolveCollectionSectionSelection = (
   sections: CollectionSectionNavLink[],

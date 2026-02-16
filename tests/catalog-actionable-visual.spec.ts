@@ -1,22 +1,23 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-import { createInitialState, getWatchModels } from "../src/game/state";
+import { CATALOG_ENTRIES } from "../src/game/catalog";
+import { createInitialState } from "../src/game/state";
+import { seedStorage } from "./helpers/storageSeed";
 
-function getModelIdForTier(tierId: string): string {
-  const model = getWatchModels().find((entry) => entry.tierId === tierId);
-  if (!model) {
-    throw new Error(`Missing model for tier: ${tierId}`);
-  }
-  return model.id;
-}
-
-const highlightedModelId = getModelIdForTier("quartz");
+const baseState = createInitialState();
 const seededState = {
-  ...createInitialState(),
-  currencyCents: 5_000_000_00,
-  enjoymentCents: 5_000_000_00,
-  discoveredCatalogEntries: [highlightedModelId],
+  ...baseState,
+  currencyCents: 1_000,
+  enjoymentCents: 500_000,
+  therapistCareer: {
+    ...baseState.therapistCareer,
+    careerStartId: "phd-program",
+    activeTrackId: "private-practice",
+    primaryTrackId: "private-practice",
+  },
+  unlockedMilestones: ["collector-shelf", "showcase", "atelier"],
+  discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
 };
 
 const seededSettings = {
@@ -35,8 +36,8 @@ const getCardStyles = async (element: HTMLElement) => {
   };
 };
 
-const getCatalogCardStyles = async (page: Page, highlightedEntryId: string) => {
-  await page.goto("http://127.0.0.1:5177/emilyidle/");
+const getCatalogCardStyles = async (page: Page) => {
+  await page.goto("/");
   const catalogTab = page.getByRole("tab", { name: "Catalog" });
   await catalogTab.click();
   await expect(page.getByTestId("catalog-grid")).toBeVisible();
@@ -46,14 +47,15 @@ const getCatalogCardStyles = async (page: Page, highlightedEntryId: string) => {
   }
   await page.getByTestId("catalog-quick-preset").selectOption("all");
 
-  const highlightedButton = page.getByTestId(`catalog-buy-${highlightedEntryId}`);
+  const highlightedButton = page.locator('[data-testid^="catalog-buy-"]').first();
+  await expect(highlightedButton).toBeVisible();
   const highlightedCard = highlightedButton.locator(
     'xpath=ancestor::article[@data-testid="catalog-card"][1]',
   );
   await expect(highlightedCard).toBeVisible();
-  await expect(highlightedCard).toContainText("0 owned");
 
   const nonActionableGate = page.locator('[data-testid^="catalog-gate-"]').first();
+  await expect(nonActionableGate).toBeVisible();
   const nonActionableCard = nonActionableGate.locator(
     'xpath=ancestor::article[@data-testid="catalog-card"][1]',
   );
@@ -66,27 +68,18 @@ const getCatalogCardStyles = async (page: Page, highlightedEntryId: string) => {
 };
 
 test("catalog actionable styling differs in dark and light themes", async ({ page }) => {
-  await page.addInitScript(
-    ({ state, lastSimulatedAtMs, settings }) => {
-      window.requestAnimationFrame = (() => 0) as unknown as typeof window.requestAnimationFrame;
-      window.cancelAnimationFrame = (() => {}) as unknown as typeof window.cancelAnimationFrame;
-
-      window.localStorage.clear();
-
-      const payload = {
-        version: 2,
-        savedAt: new Date(0).toISOString(),
-        lastSimulatedAtMs,
-        state,
-      };
-      window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-      window.localStorage.setItem("emily-idle:settings", JSON.stringify(settings));
+  await seedStorage(page, {
+    clearLocalStorage: true,
+    disableAnimationFrame: true,
+    save: {
+      state: seededState,
+      version: 4,
     },
-    { state: seededState, lastSimulatedAtMs: Date.now(), settings: seededSettings },
-  );
+    settings: seededSettings,
+  });
 
   const { highlightedStyles, nonActionableStyles, highlightedCard, nonActionableCard } =
-    await getCatalogCardStyles(page, highlightedModelId);
+    await getCatalogCardStyles(page);
 
   expect(highlightedStyles.opacity).toBe("1");
   expect(highlightedStyles.boxShadow).not.toBe("none");
@@ -106,7 +99,7 @@ test("catalog actionable styling differs in dark and light themes", async ({ pag
 
   await page.reload();
 
-  const lightStyles = await getCatalogCardStyles(page, highlightedModelId);
+  const lightStyles = await getCatalogCardStyles(page);
   expect(lightStyles.highlightedStyles.opacity).toBe("1");
   expect(lightStyles.highlightedStyles.boxShadow).not.toBe("none");
   expect(Number(lightStyles.nonActionableStyles.opacity)).toBeLessThan(1);

@@ -19,6 +19,13 @@ const openPrimaryTab = async (page: Page, name: string) => {
   return panel;
 };
 
+const openCollectionOverview = async (page: Page) => {
+  const sectionButton = page.locator('[data-section-nav-id="collection-overview"]').first();
+  if (await sectionButton.isVisible().catch(() => false)) {
+    await clickLocatorSafely(sectionButton);
+  }
+};
+
 test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
   test("1) Fresh-save career start clarity", async ({ page }) => {
     await clearStorage(page);
@@ -35,7 +42,8 @@ test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
 
     // Confirm cash/sec starts at 0 before starting career
     const cashRate = page.locator("#income");
-    await expect(cashRate).toHaveText("$0.00/s");
+    await expect(cashRate).toContainText("$0.00/s");
+    await expect(cashRate).toContainText("/sec");
 
     // Find the start career CTA ("Enter program" button)
     const startButton = page.getByTestId("career-next-action-start");
@@ -129,6 +137,7 @@ test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
 
     // Navigate to Vault/Collection tab
     const vaultPanel = await openPrimaryTab(page, "Collection");
+    await openCollectionOverview(page);
     await expect(page.getByTestId("collection-setup")).toBeVisible();
 
     // Screenshot: Vault tab

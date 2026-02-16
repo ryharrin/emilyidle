@@ -29,6 +29,10 @@ const buildSeededState = (): GameState => {
     ...base,
     currencyCents: Math.max(base.currencyCents, 1_000_000),
     enjoymentCents: Math.max(base.enjoymentCents, 200_000),
+    therapistCareer: {
+      ...base.therapistCareer,
+      careerStartId: base.therapistCareer.careerStartId ?? "phd-program",
+    },
     unlockedMilestones: Array.from(
       new Set([...base.unlockedMilestones, "collector-shelf", "showcase", "atelier"]),
     ),

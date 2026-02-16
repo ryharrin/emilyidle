@@ -44,6 +44,10 @@ test.describe("ux clarity regressions", () => {
       ...BASE_CATALOG_SEEDED_STATE,
       currencyCents: 1_000_000_000_000,
       enjoymentCents: 1_000_000_000_000,
+      therapistCareer: {
+        ...BASE_CATALOG_SEEDED_STATE.therapistCareer,
+        careerStartId: "phd-program",
+      },
       interactionNextAvailableAtMsByItem: {
         quartz: 0,
         automatic: 0,
@@ -174,7 +178,7 @@ test.describe("ux clarity regressions", () => {
 
     const catalogPanel = page.getByRole("tabpanel", { name: "Catalog" });
     await expect(catalogPanel.getByRole("heading", { name: "Catalog" })).toBeVisible();
-    await expect(catalogPanel).toContainText("Buy watches directly");
+    await expect(catalogPanel).toContainText("Buy watches and track discovered references.");
 
     await clickLocatorSafely(catalogPanel.getByTestId("explain-catalog-shop"));
     await expect(page.getByTestId("help-modal")).toBeVisible();

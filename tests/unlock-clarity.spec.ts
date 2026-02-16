@@ -58,6 +58,18 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
   const callout = page.getByTestId("catalog-shop-callout");
   await expect(callout).toBeVisible();
   await expect(callout.getByRole("button", { name: "Open Catalog" })).toBeVisible();
+
+  const setBonusesSectionButton = page
+    .locator('[data-testid="collection-section-nav-item-collection-set-bonuses"] button')
+    .first();
+  if ((await setBonusesSectionButton.count()) > 0) {
+    await setBonusesSectionButton.click();
+    await expect(page.getByTestId("collection-section-nav")).toHaveAttribute(
+      "data-active-section",
+      "collection-set-bonuses",
+    );
+  }
+
   await expect(
     page
       .getByTestId("collection-set-bonus-grid")

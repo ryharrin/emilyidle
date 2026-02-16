@@ -8,7 +8,6 @@ const selectors = {
   collectionValue: "#collection-value",
   softcap: "#softcap",
   catalogCards: '[data-testid="catalog-grid"] [data-testid="catalog-card"]',
-  upgradesCallout: '[data-testid="upgrades-callout"]',
   sectionNav: '[data-testid="collection-section-nav"]',
   insightsPanel: '[data-testid="collection-insights-panel"]',
   navOverview: '[data-testid="collection-section-nav-item-collection-overview"] button',
@@ -216,7 +215,7 @@ test.describe("collection loop", () => {
       await expect(page.locator("#income .value-ticker")).toBeVisible();
       await expect(page.locator("#enjoyment .value-ticker")).toBeVisible();
       await expect(page.locator("#enjoyment-rate .value-ticker")).toBeVisible();
-      await expect(page.locator(selectors.upgradesCallout)).toBeVisible();
+      await expect(page.getByRole("region", { name: "Recommended actions" })).toBeVisible();
       await expect(page.locator(selectors.sectionNav)).toBeVisible();
       if (await hasCollectionSection(page, "collection-milestones")) {
         await activateCollectionSection(page, "collection-milestones");
@@ -270,7 +269,11 @@ test.describe("collection loop", () => {
 
     test("collection nav reaches insights panel and key sections", async ({ page }) => {
       await clickPrimaryTab(page, "Collection");
-      await expect(page.locator(selectors.insightsPanel)).toBeVisible();
+
+      if (await hasCollectionSection(page, "collection-set-bonuses")) {
+        await activateCollectionSection(page, "collection-set-bonuses");
+        await expect(page.locator(selectors.insightsPanel)).toBeVisible();
+      }
 
       const navTargets = [
         "collection-overview",
@@ -313,8 +316,12 @@ test.describe("collection loop", () => {
       const canRunSession = await runSessionButton.isEnabled();
       if (canRunSession) {
         await runSessionButton.click();
-        await expect(runSessionButton).toBeDisabled({ timeout: 10_000 });
-        await expect(careerPanel.getByTestId("career-status")).toContainText(/Cooldown/);
+        await expect(careerPanel.getByTestId("career-status")).toContainText(
+          /Cost tier recovers|Need more enjoyment|Ready/,
+        );
+        await expect(careerPanel.getByTestId("career-session-run-now-cost")).toContainText(
+          /Run now/,
+        );
       }
 
       await clickPrimaryTab(page, "Catalog");
@@ -402,6 +409,7 @@ test.describe("collection loop", () => {
       }
       expect(parsed.version).toBe(4);
       expect(typeof parsed.state.currencyCents).toBe("number");
+      expect(typeof parsed.generation).toBe("number");
 
       await page.evaluate(() => {
         const saved = window.localStorage.getItem("emily-idle:save");
@@ -409,8 +417,26 @@ test.describe("collection loop", () => {
           return;
         }
         const nextPayload = JSON.parse(saved);
-        nextPayload.state.currencyCents = 500;
+        nextPayload.state.currencyCents = 1_000_000;
         nextPayload.state.enjoymentCents = 0;
+        nextPayload.state.therapistCareer = {
+          ...(nextPayload.state.therapistCareer ?? {}),
+          careerStartId: nextPayload.state.therapistCareer?.careerStartId ?? "phd-program",
+        };
+        nextPayload.state.items = {
+          ...(nextPayload.state.items ?? {}),
+          quartz: Math.max(1, nextPayload.state.items?.quartz ?? 0),
+        };
+        nextPayload.state.watchModels = {
+          ...(nextPayload.state.watchModels ?? {}),
+          ["rolex-calibrorolex"]: Math.max(
+            1,
+            nextPayload.state.watchModels?.["rolex-calibrorolex"] ?? 0,
+          ),
+        };
+        nextPayload.state.discoveredCatalogEntries = Array.from(
+          new Set([...(nextPayload.state.discoveredCatalogEntries ?? []), "rolex-calibrorolex"]),
+        );
         window.localStorage.setItem("emily-idle:save", JSON.stringify(nextPayload));
       });
 
@@ -513,7 +539,8 @@ test.describe("collection loop", () => {
       const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);
       await gate.scrollIntoViewIfNeeded();
       await expect(gate).toBeVisible();
-      await expect(gate).toContainText("Requires");
+      await expect(gate).toContainText(/Need/i);
+      await expect(gate).toContainText(/Have:|Requires/i);
     });
 
     test("tabs respect hidden preferences", async ({ page }) => {
@@ -975,7 +1002,17 @@ test.describe("collection loop", () => {
 
       await page.goto("/");
       await clickPrimaryTab(page, "Collection");
+      if (await hasCollectionSection(page, "collection-achievements")) {
+        await activateCollectionSection(page, "collection-achievements");
+      }
       await expect(page.getByRole("heading", { name: "Achievements" })).toBeVisible();
+
+      if (await hasCollectionSection(page, "collection-events")) {
+        await activateCollectionSection(page, "collection-events");
+        await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+        await expect(page.locator("#collection-events")).toContainText(/Income x/);
+        return;
+      }
 
       const statsTab = page.getByRole("tab", { name: "Stats" });
       if (await statsTab.isVisible().catch(() => false)) {

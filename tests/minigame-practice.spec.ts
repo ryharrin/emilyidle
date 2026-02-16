@@ -10,12 +10,21 @@ import { CATALOG_ENTRIES } from "../src/game/catalog";
 import type { GameState } from "../src/game/state";
 import { createInitialState } from "../src/game/state";
 
+const QUARTZ_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "quartz")?.id;
+const AUTOMATIC_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "automatic")?.id;
+const MANUAL_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "manual")?.id;
+const TOURBILLON_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "tourbillon")?.id;
+
 const buildSeededState = (): GameState => {
   const base = createInitialState();
   return {
     ...base,
     currencyCents: Math.max(base.currencyCents, 1_000_000),
     enjoymentCents: Math.max(base.enjoymentCents, 200_000),
+    therapistCareer: {
+      ...base.therapistCareer,
+      careerStartId: base.therapistCareer.careerStartId ?? "phd-program",
+    },
     unlockedMilestones: Array.from(
       new Set([...base.unlockedMilestones, "collector-shelf", "showcase", "atelier"]),
     ),
@@ -25,6 +34,13 @@ const buildSeededState = (): GameState => {
       automatic: Math.max(base.items.automatic ?? 0, 2),
       manual: Math.max(base.items.manual ?? 0, 2),
       tourbillon: Math.max(base.items.tourbillon ?? 0, 1),
+    },
+    watchModels: {
+      ...base.watchModels,
+      ...(QUARTZ_MODEL_ID ? { [QUARTZ_MODEL_ID]: 2 } : {}),
+      ...(AUTOMATIC_MODEL_ID ? { [AUTOMATIC_MODEL_ID]: 2 } : {}),
+      ...(MANUAL_MODEL_ID ? { [MANUAL_MODEL_ID]: 2 } : {}),
+      ...(TOURBILLON_MODEL_ID ? { [TOURBILLON_MODEL_ID]: 1 } : {}),
     },
     discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
   };

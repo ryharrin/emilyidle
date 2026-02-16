@@ -4,32 +4,52 @@ import {
   openCatalogTab,
   switchCatalogToOwned,
 } from "./helpers/catalogFilters";
+import { createInitialState } from "../src/game/state";
+
+const QUARTZ_MODEL_ID = "rolex-calibrorolex";
 
 type SeedArgs = {
   lastSimulatedAtMs: number;
 };
 
 async function seedQuartzSave(page: Page, args: SeedArgs) {
-  await page.addInitScript(({ lastSimulatedAtMs }: SeedArgs) => {
+  const base = createInitialState();
+  const state = {
+    ...base,
+    currencyCents: Math.max(base.currencyCents, 5_000),
+    enjoymentCents: Math.max(base.enjoymentCents, 500),
+    therapistCareer: {
+      ...base.therapistCareer,
+      careerStartId: base.therapistCareer.careerStartId ?? "phd-program",
+    },
+    items: {
+      ...base.items,
+      quartz: Math.max(base.items.quartz ?? 0, 1),
+    },
+    watchModels: {
+      ...base.watchModels,
+      [QUARTZ_MODEL_ID]: Math.max(base.watchModels[QUARTZ_MODEL_ID] ?? 0, 1),
+    },
+    discoveredCatalogEntries: Array.from(
+      new Set([...(base.discoveredCatalogEntries ?? []), QUARTZ_MODEL_ID]),
+    ),
+    interactionNextAvailableAtMsByItem: {
+      ...base.interactionNextAvailableAtMsByItem,
+      quartz: 0,
+    },
+  };
+
+  await page.addInitScript(({ seedState, lastSimulatedAtMs }: { seedState: unknown } & SeedArgs) => {
     (window as unknown as { __EMILY_IDLE_TEST_MODE__?: boolean }).__EMILY_IDLE_TEST_MODE__ = true;
-
-    const state = {
-      currencyCents: 0,
-      enjoymentCents: 0,
-      items: { quartz: 1 },
-      eventStates: {
-        "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
-      },
-    };
-
     const payload = {
-      version: 2,
+      version: 4,
       savedAt: new Date(0).toISOString(),
       lastSimulatedAtMs,
-      state,
+      generation: 0,
+      state: seedState,
     };
     window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-  }, args);
+  }, { ...args, seedState: state });
 }
 
 async function openQuartzModal(page: Page) {
