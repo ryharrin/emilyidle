@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/playwright:v1.49.1-jammy
+
+ENV CI=true \
+    COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+    PNPM_HOME=/pnpm \
+    PNPM_STORE_DIR=/pnpm/store
+
+ENV PATH="${PNPM_HOME}:${PATH}"
+
+WORKDIR /workspace
+
+RUN corepack enable \
+    && corepack prepare pnpm@9.15.0 --activate \
+    && pnpm config set store-dir "${PNPM_STORE_DIR}"
+
+COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm fetch --frozen-lockfile

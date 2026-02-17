@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -17,21 +18,25 @@ jobs:
   unit-and-typecheck:
     name: Unit + Typecheck
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ryharrin/emilyidle-ci:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Restore pnpm store cache
+        uses: actions/cache@v4
         with:
-          node-version: 22
-          cache: pnpm
+          path: /pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Run unit tests
         run: pnpm run test:unit
@@ -42,6 +47,11 @@ jobs:
   e2e:
     name: E2E ${{ matrix.project }} shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ryharrin/emilyidle-ci:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -59,20 +69,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Restore pnpm store cache
+        uses: actions/cache@v4
         with:
-          node-version: 22
-          cache: pnpm
+          path: /pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Run e2e shard
         run: PLAYWRIGHT_E2E_PROFILE=stable pnpm exec playwright test --project="${{ matrix.project }}" --shard="${{ matrix.shard }}" --grep-invert @manual
