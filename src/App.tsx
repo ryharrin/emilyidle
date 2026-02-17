@@ -107,6 +107,7 @@ import {
   getEventCalendar,
   isEventActive,
   isItemUnlocked,
+  isCatalogTierUnlocked,
   isMaisonRevealReady,
   isWorkshopRevealReady,
 } from "./game/state";
@@ -1761,7 +1762,7 @@ export default function App() {
       }
       // For "unowned" and "all" tabs, hide watches where the tier is locked
       const tierId = getWatchModelTierId(entry.id);
-      return isItemUnlocked(state, tierId);
+      return isCatalogTierUnlocked(state, tierId);
     });
 
     const filteredByFilters = filteredByOwnership.filter((entry) => {
