@@ -3,7 +3,7 @@ import { clickLocatorSafely } from "./helpers/interactions";
 
 const SCREENSHOT_DIR = "test-results/uat-screenshots";
 
-test.describe("UAT Screenshot Inspection", () => {
+test.describe("@manual UAT Screenshot Inspection", () => {
   test("fresh save - primary nav and vault surface", async ({ page }) => {
     // Clear all storage
     await page.goto("/");

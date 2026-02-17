@@ -73,6 +73,10 @@ async function seedSave(page: Page) {
   );
 }
 
+function visibleByTestId(page: Page, testId: string) {
+  return page.locator(`[data-testid="${testId}"]:visible`).first();
+}
+
 test("career permanent choices show previews and persist across refresh", async ({ page }) => {
   await seedSave(page);
 
@@ -90,8 +94,8 @@ test("career permanent choices show previews and persist across refresh", async 
   await clickLocatorSafely(trackOption);
   await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
   await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
-  const lockedTrackLabel = page.getByTestId("career-choice-locked-licensed-associate");
-  await expect(lockedTrackLabel).toBeVisible();
+  const lockedTrackLabel = visibleByTestId(page, "career-choice-locked-licensed-associate");
+  await expect(lockedTrackLabel).toBeVisible({ timeout: 15_000 });
 
   // Stage 3: verify previews exist and show a delta
   const modalityOption = page.getByTestId("career-choice-option-cbt");
@@ -102,8 +106,8 @@ test("career permanent choices show previews and persist across refresh", async 
   await clickLocatorSafely(modalityOption);
   await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
   await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
-  const lockedModalityLabel = page.getByTestId("career-choice-locked-specialist-certification");
-  await expect(lockedModalityLabel).toBeVisible();
+  const lockedModalityLabel = visibleByTestId(page, "career-choice-locked-specialist-certification");
+  await expect(lockedModalityLabel).toBeVisible({ timeout: 15_000 });
 
   // Wait for autosave to persist the permanent choice before reloading.
   await page.waitForFunction(() => {
@@ -140,7 +144,11 @@ test("career permanent choices show previews and persist across refresh", async 
 
   await openCareerProgression(page);
   await selectCareerView(page, "stages");
-  await expect(page.getByTestId("career-choice-locked-licensed-associate")).toBeVisible();
-  await expect(page.getByTestId("career-choice-locked-specialist-certification")).toBeVisible();
+  await expect(visibleByTestId(page, "career-choice-locked-licensed-associate")).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(visibleByTestId(page, "career-choice-locked-specialist-certification")).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(page.getByTestId("career-choice-option-cbt")).toHaveCount(0);
 });

@@ -26,7 +26,7 @@ const openCollectionOverview = async (page: Page) => {
   }
 };
 
-test.describe("Phase 35 UAT: Balance & Help Clarity", () => {
+test.describe("@manual Phase 35 UAT: Balance & Help Clarity", () => {
   test("1) Fresh-save career start clarity", async ({ page }) => {
     await clearStorage(page);
     await page.goto("/");

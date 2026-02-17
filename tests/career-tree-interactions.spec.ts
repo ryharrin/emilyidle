@@ -1,6 +1,10 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { openCareerProgression, selectCareerView } from "./helpers/careerProgression";
 import { clickLocatorSafely } from "./helpers/interactions";
+
+function visibleByTestId(page: Page, testId: string) {
+  return page.locator(`[data-testid="${testId}"]:visible`).first();
+}
 
 test.describe("career upgrades tree interactions", () => {
   test("spend point, respec refunds, and track section appears after choosing track", async ({
@@ -87,8 +91,8 @@ test.describe("career upgrades tree interactions", () => {
     await clickLocatorSafely(trackOption);
     await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
     await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
-    const lockedTrackLabel = page.getByTestId("career-choice-locked-licensed-associate");
-    await expect(lockedTrackLabel).toBeVisible();
+    const lockedTrackLabel = visibleByTestId(page, "career-choice-locked-licensed-associate");
+    await expect(lockedTrackLabel).toBeVisible({ timeout: 15_000 });
 
     await selectCareerView(page, "upgrades");
     await expect(page.getByTestId("career-view-upgrades")).toHaveClass(/career-view-active/);

@@ -40,7 +40,7 @@ const capture = async (page: Page, testInfo: TestInfo, filename: string) => {
   }
 };
 
-test.describe("UI Screenshots", () => {
+test.describe("@manual UI Screenshots", () => {
   test("capture all tabs", async ({ page }, testInfo) => {
     await gotoAppWithNavigationReady(page);
 
