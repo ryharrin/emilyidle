@@ -72,7 +72,7 @@ test("nostalgia prestige flow", async ({ page }) => {
       "wind-up": { activeUntilMs: 0, nextAvailableAtMs: 0 },
     },
     discoveredCatalogEntries: [],
-    catalogTierUnlocks: [],
+    catalogTierUnlocks: ["quartz", "automatic"],
     craftingParts: 5,
     craftedBoosts: {
       "polished-tools": 1,

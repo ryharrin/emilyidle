@@ -28,6 +28,7 @@ test.describe("help entry point", () => {
       items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
+      catalogTierUnlocks: ["quartz", "automatic", "manual", "tourbillon"],
       workshopBlueprints: 0,
       workshopPrestigeCount: 0,
       workshopUpgrades: {
@@ -53,7 +54,6 @@ test.describe("help entry point", () => {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
-      catalogTierUnlocks: [],
     };
 
     await seedStorage(page, {
@@ -199,7 +199,7 @@ test.describe("icon cues", () => {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
-      catalogTierUnlocks: [],
+      catalogTierUnlocks: ["quartz"],
     };
 
     await seedStorage(page, {
@@ -222,6 +222,7 @@ test.describe("icon cues", () => {
       items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 6 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
       unlockedMilestones: [],
+      catalogTierUnlocks: ["quartz", "automatic", "manual", "tourbillon"],
       workshopBlueprints: 0,
       workshopPrestigeCount: 0,
       workshopUpgrades: {
@@ -247,7 +248,6 @@ test.describe("icon cues", () => {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
       discoveredCatalogEntries: [],
-      catalogTierUnlocks: [],
     };
 
     await seedStorage(page, {

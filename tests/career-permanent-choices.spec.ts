@@ -8,6 +8,7 @@ const seededState = {
   items: { quartz: 15, automatic: 5, manual: 1, tourbillon: 0 },
   upgrades: { "polishing-tools": 1, "assembly-jigs": 0, "guild-contracts": 0 },
   unlockedMilestones: ["showcase", "first-drawer"],
+  catalogTierUnlocks: ["quartz", "automatic", "manual"],
   workshopBlueprints: 0,
   workshopPrestigeCount: 0,
   workshopUpgrades: {
@@ -33,7 +34,6 @@ const seededState = {
     "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
   },
   discoveredCatalogEntries: [],
-  catalogTierUnlocks: [],
   therapistCareer: {
     level: 60,
     xp: 0,
