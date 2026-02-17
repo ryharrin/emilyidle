@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 import { openCatalogFilters } from "./helpers/catalogFilters";
 
-const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+const QUARTZ_MODEL_ID = "rolex-calibrorolex";
 
 test.describe("catalog disabled explanations", () => {
   test("shows explainer for gated catalog entries", async ({ page }) => {
@@ -11,7 +11,7 @@ test.describe("catalog disabled explanations", () => {
       enjoymentCents: 0,
       items: { quartz: 5, automatic: 0, manual: 0, tourbillon: 0 },
       upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
-      unlockedMilestones: ["collector-shelf", "showcase"],
+      unlockedMilestones: [],
       workshopBlueprints: 0,
       workshopPrestigeCount: 0,
       workshopUpgrades: {
@@ -36,7 +36,6 @@ test.describe("catalog disabled explanations", () => {
       eventStates: {
         "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
       },
-      discoveredCatalogEntries: [],
       catalogTierUnlocks: [],
     };
 
@@ -57,21 +56,21 @@ test.describe("catalog disabled explanations", () => {
     await page.getByRole("tab", { name: "Catalog" }).click();
     await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
     await openCatalogFilters(page);
-    await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("126713GRNR");
+    await page.getByTestId("catalog-filters").getByTestId("catalog-search").fill("Calibrorolex");
 
-    const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);
+    const gate = page.getByTestId(`catalog-gate-${QUARTZ_MODEL_ID}`);
     await gate.scrollIntoViewIfNeeded();
     await expect(gate).toBeVisible();
-    await expect(page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`)).toHaveCount(0);
-    await expect(page.getByTestId(`catalog-lock-${CLASSIC_MODEL_ID}`)).toBeVisible();
+    await expect(page.getByTestId(`catalog-buy-${QUARTZ_MODEL_ID}`)).toHaveCount(0);
+    await expect(page.getByTestId(`catalog-lock-${QUARTZ_MODEL_ID}`)).toBeVisible();
 
-    await page.getByTestId(`catalog-why-${CLASSIC_MODEL_ID}`).click();
-    const explainer = page.getByTestId(`catalog-explain-${CLASSIC_MODEL_ID}`);
+    await page.getByTestId(`catalog-why-${QUARTZ_MODEL_ID}`).click();
+    const explainer = page.getByTestId(`catalog-explain-${QUARTZ_MODEL_ID}`);
     await expect(explainer).toBeVisible();
     await expect(
-      explainer.getByTestId(`catalog-reason-${CLASSIC_MODEL_ID}-undiscovered`),
+      explainer.getByTestId(`catalog-reason-${QUARTZ_MODEL_ID}-undiscovered`),
     ).toBeVisible();
-    await expect(explainer.getByTestId(`catalog-reason-${CLASSIC_MODEL_ID}-funds`)).toBeVisible();
+    await expect(explainer.getByTestId(`catalog-reason-${QUARTZ_MODEL_ID}-funds`)).toBeVisible();
     await expect(explainer).toContainText(/Funds|Enjoyment/);
     await expect(explainer).toContainText(/Next:/);
   });

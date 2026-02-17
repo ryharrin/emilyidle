@@ -81,7 +81,6 @@ export const BASE_CATALOG_SEEDED_STATE = {
     "emily-birthday": { activeUntilMs: 0, nextAvailableAtMs: 0 },
     wind: { activeUntilMs: 0, nextAvailableAtMs: 0 },
   },
-  discoveredCatalogEntries: NEW_WATCH_IDS,
   catalogTierUnlocks: ["quartz", "automatic", "manual", "tourbillon"],
   craftingParts: 0,
   craftedBoosts: {

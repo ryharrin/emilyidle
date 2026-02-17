@@ -4,7 +4,7 @@ import { openCatalogFilters } from "./helpers/catalogFilters";
 import { clickLocatorSafely } from "./helpers/interactions";
 import { seedStorage } from "./helpers/storageSeed";
 
-const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
+const QUARTZ_MODEL_ID = "rolex-calibrorolex";
 
 test("selector contract anchors remain reachable", async ({ page }) => {
   const seededState = createInitialState();
@@ -56,11 +56,11 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.getByTestId("catalog-search")).toBeVisible();
 
   await page.getByTestId("catalog-search").fill("126713GRNR");
-  await expect(page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`)).toBeVisible();
-  await expect(page.getByTestId(`catalog-lock-${CLASSIC_MODEL_ID}`)).toBeVisible();
-  await expect(page.getByTestId(`catalog-why-${CLASSIC_MODEL_ID}`)).toBeVisible();
-  await clickLocatorSafely(page.getByTestId(`catalog-why-${CLASSIC_MODEL_ID}`));
-  await expect(page.getByTestId(`catalog-explain-${CLASSIC_MODEL_ID}`)).toBeVisible();
+  await expect(page.getByTestId(`catalog-gate-${QUARTZ_MODEL_ID}`)).toBeVisible();
+  await expect(page.getByTestId(`catalog-lock-${QUARTZ_MODEL_ID}`)).toBeVisible();
+  await expect(page.getByTestId(`catalog-why-${QUARTZ_MODEL_ID}`)).toBeVisible();
+  await clickLocatorSafely(page.getByTestId(`catalog-why-${QUARTZ_MODEL_ID}`));
+  await expect(page.getByTestId(`catalog-explain-${QUARTZ_MODEL_ID}`)).toBeVisible();
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Settings" }));
   await expect(page.getByTestId("settings-clear-save")).toBeVisible();
@@ -114,7 +114,7 @@ test("discovered unowned entries expose catalog buy buttons in collection shop",
   };
   seededState.watchModels = {
     ...seededState.watchModels,
-    [CLASSIC_MODEL_ID]: 0,
+    [QUARTZ_MODEL_ID]: 0,
   };
 
   await seedStorage(page, {
@@ -140,5 +140,5 @@ test("discovered unowned entries expose catalog buy buttons in collection shop",
 
   await expect(page.getByTestId("catalog-results-count")).toBeVisible();
   await page.getByTestId("catalog-search").fill("126713GRNR");
-  await expect(page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`)).toBeVisible();
+  await expect(page.getByTestId(`catalog-buy-${QUARTZ_MODEL_ID}`)).toBeVisible();
 });
