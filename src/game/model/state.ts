@@ -1,4 +1,3 @@
-import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "../catalog";
 import { CAREER_NODES, CAREER_TRACKS } from "../data/career";
 import { WATCH_MODELS } from "../data/watchModels";
 import { MILESTONES } from "../data/milestones";
@@ -14,7 +13,6 @@ import type {
   CareerExpansionFocusId,
   CareerModalityId,
   CareerOperatingStyleId,
-  CatalogEntryId,
   CatalogTierBonusDefinition,
   CatalogTierId,
   CraftedBoostId,

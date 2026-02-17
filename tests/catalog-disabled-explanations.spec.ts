@@ -62,14 +62,12 @@ test.describe("catalog disabled explanations", () => {
     await gate.scrollIntoViewIfNeeded();
     await expect(gate).toBeVisible();
     await expect(page.getByTestId(`catalog-buy-${QUARTZ_MODEL_ID}`)).toHaveCount(0);
-    await expect(page.getByTestId(`catalog-lock-${QUARTZ_MODEL_ID}`)).toBeVisible();
+    // Quartz tier is always unlocked (no milestone requirement), so no lock icon
 
     await page.getByTestId(`catalog-why-${QUARTZ_MODEL_ID}`).click();
     const explainer = page.getByTestId(`catalog-explain-${QUARTZ_MODEL_ID}`);
     await expect(explainer).toBeVisible();
-    await expect(
-      explainer.getByTestId(`catalog-reason-${QUARTZ_MODEL_ID}-undiscovered`),
-    ).toBeVisible();
+    // Discovery system removed - no "undiscovered" reason
     await expect(explainer.getByTestId(`catalog-reason-${QUARTZ_MODEL_ID}-funds`)).toBeVisible();
     await expect(explainer).toContainText(/Funds|Enjoyment/);
     await expect(explainer).toContainText(/Next:/);

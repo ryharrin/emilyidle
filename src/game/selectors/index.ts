@@ -1,4 +1,4 @@
-import { CATALOG_ENTRIES, getCatalogEntryTags, type CatalogEntry } from "../catalog";
+import { CATALOG_ENTRIES, type CatalogEntry } from "../catalog";
 import { MILESTONES } from "../data/milestones";
 import {
   NOSTALGIA_UNLOCK_COSTS,
@@ -25,7 +25,6 @@ import {
 import type {
   AchievementDefinition,
   AchievementId,
-  CatalogEntryId,
   CatalogTierBonusDefinition,
   CatalogTierId,
   CraftedBoostId,

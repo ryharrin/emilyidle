@@ -35,7 +35,6 @@ import {
   canCraftBoost,
   canPerformTherapistSession,
   canRefundNostalgiaUnlock,
-  getCatalogEntries,
   getCraftingPartsPerWatch,
   getCraftingRecipes,
   getItemCount,

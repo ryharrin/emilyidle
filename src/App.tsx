@@ -1883,8 +1883,6 @@ export default function App() {
     state,
   ]);
 
-  const discoveredCatalogEntries = useMemo(() => catalogEntries, [catalogEntries]);
-
   const autoBuyUnlocked = useMemo(() => getAutoBuyEnabled(state), [state]);
   const autoBuyEnabled = autoBuyUnlocked && autoBuyToggle;
   const maisonLines = useMemo(() => getMaisonLines(), []);

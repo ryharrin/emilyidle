@@ -55,9 +55,10 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.getByTestId("catalog-filters")).toBeVisible();
   await expect(page.getByTestId("catalog-search")).toBeVisible();
 
-  await page.getByTestId("catalog-search").fill("126713GRNR");
+  // Search for the quartz watch
+  await page.getByTestId("catalog-search").fill("Calibrorolex");
   await expect(page.getByTestId(`catalog-gate-${QUARTZ_MODEL_ID}`)).toBeVisible();
-  await expect(page.getByTestId(`catalog-lock-${QUARTZ_MODEL_ID}`)).toBeVisible();
+  // Quartz tier is always unlocked, so no lock icon
   await expect(page.getByTestId(`catalog-why-${QUARTZ_MODEL_ID}`)).toBeVisible();
   await clickLocatorSafely(page.getByTestId(`catalog-why-${QUARTZ_MODEL_ID}`));
   await expect(page.getByTestId(`catalog-explain-${QUARTZ_MODEL_ID}`)).toBeVisible();
@@ -77,29 +78,9 @@ test("selector contract anchors remain reachable", async ({ page }) => {
   await expect(page.getByTestId("settings-clear-save-cancel")).toBeVisible();
 });
 
-test("catalog readiness badge requires discovered unowned references", async ({ page }) => {
-  const seededState = createInitialState();
-  seededState.currencyCents = 5_000_000_00;
-  seededState.enjoymentCents = 5_000_000_00;
-  seededState.catalogTierUnlocks = ["quartz", "automatic", "manual", "tourbillon"];
+// Discovery system removed - catalog readiness no longer depends on discoveries
 
-  await seedStorage(page, {
-    clearLocalStorage: true,
-    save: {
-      state: seededState,
-    },
-    settings: {
-      hiddenTabs: [],
-    },
-  });
-
-  await page.goto("/");
-  await expect(page.getByTestId("tab-ready-catalog")).toHaveCount(0);
-});
-
-test("discovered unowned entries expose catalog buy buttons in collection shop", async ({
-  page,
-}) => {
+test("unowned entries expose catalog buy buttons in collection shop", async ({ page }) => {
   const seededState = createInitialState();
   seededState.currencyCents = 5_000_000_00;
   seededState.enjoymentCents = 5_000_000_00;
@@ -139,6 +120,7 @@ test("discovered unowned entries expose catalog buy buttons in collection shop",
   await clickLocatorSafely(openCatalog);
 
   await expect(page.getByTestId("catalog-results-count")).toBeVisible();
-  await page.getByTestId("catalog-search").fill("126713GRNR");
+  // Search for the quartz watch
+  await page.getByTestId("catalog-search").fill("Calibrorolex");
   await expect(page.getByTestId(`catalog-buy-${QUARTZ_MODEL_ID}`)).toBeVisible();
 });

@@ -1,4 +1,3 @@
-import { CATALOG_ENTRIES } from "../src/game/catalog";
 import type { GameState } from "../src/game/state";
 import { createInitialState } from "../src/game/state";
 import { expect, test } from "@playwright/test";
