@@ -2,8 +2,7 @@ import type { GameState, WatchItemId } from "./state";
 import {
   applyAchievementUnlocks,
   applyEventState,
-  discoverCatalogEntries,
-  getCatalogEntryIdsForItems,
+  updateCatalogTierUnlocks,
   getCollectionValueCents,
   getEffectiveCashRateCentsPerSec,
   getEnjoymentRateCentsPerSec,
@@ -86,6 +85,6 @@ export function step(state: GameState, dtMs: number, nowMs?: number): GameState 
     nostalgiaEnjoymentEarnedCents: withEvents.nostalgiaEnjoymentEarnedCents + earnedEnjoyment,
   };
 
-  const withDiscovery = discoverCatalogEntries(withIncome, getCatalogEntryIdsForItems(withIncome));
-  return applyAchievementUnlocks(withDiscovery);
+  const withTierUnlocks = updateCatalogTierUnlocks(withIncome);
+  return applyAchievementUnlocks(withTierUnlocks);
 }

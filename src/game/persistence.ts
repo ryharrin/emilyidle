@@ -111,7 +111,10 @@ function pauseOfflineTimerProgress(state: GameState, elapsedMs: number): GameSta
       therapistCareer.salaryActiveUntilMs,
       normalizedElapsedMs,
     ),
-    nextAvailableAtMs: shiftFutureTimestampMs(therapistCareer.nextAvailableAtMs, normalizedElapsedMs),
+    nextAvailableAtMs: shiftFutureTimestampMs(
+      therapistCareer.nextAvailableAtMs,
+      normalizedElapsedMs,
+    ),
     lastSessionAtMs: shiftFutureTimestampMs(therapistCareer.lastSessionAtMs, normalizedElapsedMs),
   };
   const therapistChanged =
@@ -136,7 +139,10 @@ function pauseOfflineTimerProgress(state: GameState, elapsedMs: number): GameSta
   let eventChanged = false;
   const nextEventStates: GameState["eventStates"] = {} as GameState["eventStates"];
   for (const [eventId, eventState] of Object.entries(state.eventStates)) {
-    const shiftedActiveUntilMs = shiftFutureTimestampMs(eventState.activeUntilMs, normalizedElapsedMs);
+    const shiftedActiveUntilMs = shiftFutureTimestampMs(
+      eventState.activeUntilMs,
+      normalizedElapsedMs,
+    );
     const shiftedNextAvailableAtMs = shiftFutureTimestampMs(
       eventState.nextAvailableAtMs,
       normalizedElapsedMs,
@@ -158,7 +164,10 @@ function pauseOfflineTimerProgress(state: GameState, elapsedMs: number): GameSta
   const nextLastPurchase = state.lastPurchase
     ? {
         ...state.lastPurchase,
-        purchasedAtMs: shiftFutureTimestampMs(state.lastPurchase.purchasedAtMs, normalizedElapsedMs),
+        purchasedAtMs: shiftFutureTimestampMs(
+          state.lastPurchase.purchasedAtMs,
+          normalizedElapsedMs,
+        ),
       }
     : null;
   const lastPurchaseChanged = nextLastPurchase?.purchasedAtMs !== state.lastPurchase?.purchasedAtMs;
@@ -257,11 +266,6 @@ function sanitizeState(value: unknown): GameState | null {
             { activeUntilMs: number; nextAvailableAtMs: number }
           >)
         : {},
-    discoveredCatalogEntries: Array.isArray(record.discoveredCatalogEntries)
-      ? record.discoveredCatalogEntries.filter(
-          (entry): entry is string => typeof entry === "string",
-        )
-      : [],
     catalogTierUnlocks: Array.isArray(record.catalogTierUnlocks)
       ? record.catalogTierUnlocks.filter((entry): entry is string => typeof entry === "string")
       : [],

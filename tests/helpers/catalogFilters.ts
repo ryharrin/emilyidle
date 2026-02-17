@@ -215,9 +215,11 @@ export async function openCatalogInteractionModal(
       return true;
     }
 
-    await candidate.evaluate((element) => {
-      (element as HTMLButtonElement).click();
-    }).catch(() => {});
+    await candidate
+      .evaluate((element) => {
+        (element as HTMLButtonElement).click();
+      })
+      .catch(() => {});
     if (await waitForModalVisible()) {
       return true;
     }

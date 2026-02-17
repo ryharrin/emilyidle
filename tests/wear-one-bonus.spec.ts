@@ -59,9 +59,9 @@ async function ensureCollectionEquipmentSectionOpen(page: Page) {
     return;
   }
 
-  const isOpen = await equipmentDetails.first().evaluate(
-    (node) => (node as HTMLDetailsElement).open,
-  );
+  const isOpen = await equipmentDetails
+    .first()
+    .evaluate((node) => (node as HTMLDetailsElement).open);
   if (isOpen) {
     return;
   }
@@ -89,8 +89,9 @@ test("wear one watch, switch, clear, and verify Stats + help", async ({ page }) 
       [thirdSeedId]: 5,
     },
     items: { ...base.items, quartz: 12, automatic: 4, manual: 4, tourbillon: 1 },
-    unlockedMilestones: Array.from(new Set([...base.unlockedMilestones, "collector-shelf", "showcase"])),
-    discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
+    unlockedMilestones: Array.from(
+      new Set([...base.unlockedMilestones, "collector-shelf", "showcase"]),
+    ),
     achievementUnlocks: Array.from(new Set([...base.achievementUnlocks, "first-drawer"])),
   };
 

@@ -123,8 +123,7 @@ export function getPrestigeOnboardingContent(event: PrestigeEvent): {
         "Collection cash/enjoyment and watch ownership",
         "Atelier Blueprints and Workshop run progress",
       ],
-      recoveryHint:
-        "Rebuild Collection first, then return to Atelier for your next Maison cycle.",
+      recoveryHint: "Rebuild Collection first, then return to Atelier for your next Maison cycle.",
       recommended: {
         label: "Return to Collection and rebuild enjoyment for the next legacy",
         tabId: "collection",

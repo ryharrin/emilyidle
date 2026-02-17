@@ -288,9 +288,9 @@ export function NostalgiaTab({
                 <h4>Projected Nostalgia reset</h4>
                 <p className="muted">Reset now to gain +{nostalgiaPrestigeGain} Nostalgia.</p>
                 <p>Current balance: {state.nostalgiaPoints.toLocaleString()} Nostalgia</p>
-                  <p className="muted">
-                    Keep buying or upgrading to shorten recovery ETA: {nostalgiaRecoveryEtaLabel}.
-                  </p>
+                <p className="muted">
+                  Keep buying or upgrading to shorten recovery ETA: {nostalgiaRecoveryEtaLabel}.
+                </p>
                 <p className="muted">
                   Current run resets; owned watches, catalog discovery, achievements, and Nostalgia
                   unlock purchases carry forward.
@@ -495,8 +495,8 @@ export function NostalgiaTab({
                   <div className="nostalgia-modal-card">
                     <h3>Confirm Nostalgia reset</h3>
                     <p className="muted">
-                      Review reset checklist (Current run, Next run keeps, Delta) before
-                      confirming the reset.
+                      Review reset checklist (Current run, Next run keeps, Delta) before confirming
+                      the reset.
                     </p>
                     <PrestigeResetMatrix
                       testId="nostalgia-reset-matrix-modal"

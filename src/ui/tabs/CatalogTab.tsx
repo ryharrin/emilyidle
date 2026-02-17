@@ -108,8 +108,6 @@ type CatalogTabProps = {
   onCatalogViewModeChange: (next: "novice" | "expert") => void;
   catalogBrands: ReadonlyArray<string>;
   filteredCatalogEntries: ReadonlyArray<CatalogEntry>;
-  discoveredCatalogEntries: ReadonlyArray<CatalogEntry>;
-  discoveredCatalogIds: ReadonlyArray<string>;
   catalogEntries: ReadonlyArray<CatalogEntry>;
   hasOwnedCatalogTiers: boolean;
   onPurchase: (nextState: GameState, meta?: PurchaseMeta) => void;
@@ -258,8 +256,6 @@ export function CatalogPurchasePanel({
   onCatalogViewModeChange,
   catalogBrands,
   filteredCatalogEntries,
-  discoveredCatalogEntries,
-  discoveredCatalogIds,
   catalogEntries,
   hasOwnedCatalogTiers,
   onPurchase,
@@ -865,7 +861,7 @@ export function CatalogPurchasePanel({
   };
 
   const renderCatalogCard = (entry: CatalogEntry, showFacts: boolean) => {
-    const discovered = discoveredCatalogIds.includes(entry.id);
+    const discovered = true;
     const tags = getCatalogEntryTags(entry);
     const tierBadge = getTierBadgeDefinition(entry.id);
     const tierId = getWatchModelTierId(entry.id);
@@ -1092,7 +1088,9 @@ export function CatalogPurchasePanel({
           >
             <summary>Advanced economics</summary>
             <div className="catalog-economics-disclosure__body">
-              <p className="catalog-duplicate">Next duplicate multiplier x{duplicateMultiplier.toFixed(2)}</p>
+              <p className="catalog-duplicate">
+                Next duplicate multiplier x{duplicateMultiplier.toFixed(2)}
+              </p>
               {(craftingPartsPerWatch[tierId] ?? 0) > 0 && (
                 <p className="muted">
                   Dismantle yield: {craftingPartsPerWatch[tierId] ?? 0} parts per watch
@@ -1336,7 +1334,7 @@ export function CatalogPurchasePanel({
         </div>
         <div className="catalog-header-actions">
           <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-            {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
+            {stableCatalogEntries.length} results
           </div>
           <div className="catalog-undo-action">
             <button
@@ -1727,8 +1725,6 @@ export function CatalogTabLegacy({
   onCatalogTabChange,
   catalogBrands,
   filteredCatalogEntries,
-  discoveredCatalogEntries,
-  discoveredCatalogIds,
   catalogEntries,
   hasOwnedCatalogTiers,
   onPurchase,
@@ -1894,7 +1890,7 @@ export function CatalogTabLegacy({
             </div>
             <div className="catalog-header-actions">
               <div className="results-count" aria-live="polite" data-testid="catalog-results-count">
-                {stableCatalogEntries.length} results · {discoveredCatalogEntries.length} discovered
+                {stableCatalogEntries.length} results
               </div>
               <div className="catalog-help" data-testid="catalog-help">
                 <ExplainButton
@@ -2039,7 +2035,7 @@ export function CatalogTabLegacy({
             {catalogTab === "unowned" && (
               <div className="catalog-grid" data-testid="catalog-grid">
                 {stableCatalogEntries.map((entry) => {
-                  const discovered = discoveredCatalogIds.includes(entry.id);
+                  const discovered = true;
                   const tags = getCatalogEntryTags(entry);
                   const tierBadge = getWatchModelTierBadge(entry.id);
                   const ownedCount = getWatchModelOwnedCount(state, entry.id);
@@ -2186,7 +2182,7 @@ export function CatalogTabLegacy({
                 ) : (
                   <div className="catalog-grid" data-testid="catalog-grid">
                     {stableCatalogEntries.map((entry) => {
-                      const discovered = discoveredCatalogIds.includes(entry.id);
+                      const discovered = true;
                       const tags = getCatalogEntryTags(entry);
                       const tierBadge = getWatchModelTierBadge(entry.id);
                       const ownedCount = getWatchModelOwnedCount(state, entry.id);

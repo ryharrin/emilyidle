@@ -106,7 +106,10 @@ test("career permanent choices show previews and persist across refresh", async 
   await clickLocatorSafely(modalityOption);
   await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
   await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
-  const lockedModalityLabel = visibleByTestId(page, "career-choice-locked-specialist-certification");
+  const lockedModalityLabel = visibleByTestId(
+    page,
+    "career-choice-locked-specialist-certification",
+  );
   await expect(lockedModalityLabel).toBeVisible({ timeout: 15_000 });
 
   // Wait for autosave to persist the permanent choice before reloading.

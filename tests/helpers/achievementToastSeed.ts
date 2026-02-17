@@ -9,7 +9,6 @@ import {
 // Canonical achievement-toast preconditions for catalog buy-button reachability.
 // The ownedCount value is intentional because these tests execute the purchase from the "Owned" view.
 export const ACHIEVEMENT_TOAST_SEED_CONTRACT = {
-  discovered: true,
   ownedCount: 11,
   gateOpen: true,
   affordable: true,
@@ -23,7 +22,6 @@ export type AchievementToastSeed = {
 function assertSeedContract(state: GameState, starterModelId: string) {
   const reachability = getCatalogModelPurchaseReachability(state, starterModelId);
   const contractMatches =
-    reachability.discovered === ACHIEVEMENT_TOAST_SEED_CONTRACT.discovered &&
     reachability.ownedCount === ACHIEVEMENT_TOAST_SEED_CONTRACT.ownedCount &&
     reachability.gate.ok === ACHIEVEMENT_TOAST_SEED_CONTRACT.gateOpen &&
     reachability.gate.ok === ACHIEVEMENT_TOAST_SEED_CONTRACT.affordable &&
@@ -58,7 +56,6 @@ export function buildAchievementToastSeed(): AchievementToastSeed {
       ...base.therapistCareer,
       careerStartId: "phd-program",
     },
-    discoveredCatalogEntries: [starterModel.id],
     achievementUnlocks: [],
   };
 

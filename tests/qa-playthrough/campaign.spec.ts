@@ -182,7 +182,10 @@ async function exerciseSaveImportError(page: Page, findings: Finding[]) {
   await clickLocatorSafely(importBtn);
   await page.waitForTimeout(200);
 
-  const statusText = await page.locator("#save-status").textContent().catch(() => "");
+  const statusText = await page
+    .locator("#save-status")
+    .textContent()
+    .catch(() => "");
   if (!statusText || !/error|invalid|failed/i.test(statusText)) {
     findings.push({
       severity: "S2",
@@ -224,8 +227,7 @@ async function writePassReport(testInfo: TestInfo, result: PassResult) {
       ? "- None"
       : result.findings
           .map(
-            (f, idx) =>
-              `${idx + 1}. [${f.severity}] ${f.category} - ${f.title}\n   - ${f.detail}`,
+            (f, idx) => `${idx + 1}. [${f.severity}] ${f.category} - ${f.title}\n   - ${f.detail}`,
           )
           .join("\n");
 

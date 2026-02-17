@@ -72,11 +72,7 @@ export function PrestigeOnboardingModal({
           >
             {content.recommended.label}
           </button>
-          <button
-            type="button"
-            className="secondary action-priority-secondary"
-            onClick={onClose}
-          >
+          <button type="button" className="secondary action-priority-secondary" onClick={onClose}>
             Keep current tab
           </button>
         </div>

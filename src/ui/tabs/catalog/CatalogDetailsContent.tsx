@@ -158,7 +158,10 @@ export function CatalogDetailsContent({
           </li>
         ))}
       </ul>
-      <section className="catalog-facts catalog-watch-passport" data-testid="catalog-watch-passport">
+      <section
+        className="catalog-facts catalog-watch-passport"
+        data-testid="catalog-watch-passport"
+      >
         <p className="catalog-facts-title">Watch passport</p>
         <p className="muted">{getPassportValue(passport.headline)}</p>
         <ul className="catalog-specs">
@@ -167,7 +170,9 @@ export function CatalogDetailsContent({
               <span className="catalog-spec-label">{field.label}</span>
               <span
                 className="catalog-spec-value"
-                data-testid={field.label === "Archive year" ? "watch-passport-year-value" : undefined}
+                data-testid={
+                  field.label === "Archive year" ? "watch-passport-year-value" : undefined
+                }
               >
                 {field.value}
               </span>
@@ -216,7 +221,10 @@ export function CatalogDetailsContent({
           </details>
         </div>
       </section>
-      <div className="catalog-facts catalog-decision-summary" data-testid="catalog-decision-summary">
+      <div
+        className="catalog-facts catalog-decision-summary"
+        data-testid="catalog-decision-summary"
+      >
         <p className="catalog-facts-title">Decision signals</p>
         <ul className="catalog-specs">
           <li data-testid="catalog-decision-movement">

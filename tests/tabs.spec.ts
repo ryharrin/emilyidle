@@ -36,7 +36,6 @@ test("tabs respect hidden preferences", async ({ page }) => {
     eventStates: {
       "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
     },
-    discoveredCatalogEntries: [],
     catalogTierUnlocks: [],
   };
 
@@ -67,7 +66,6 @@ test("tabs surface readiness badges and honor numeric shortcuts", async ({ page 
   seededState.items.quartz = 2;
   seededState.currencyCents = 5_000_000_00;
   seededState.enjoymentCents = 5_000_000_00;
-  seededState.discoveredCatalogEntries = [CLASSIC_MODEL_ID];
   seededState.catalogTierUnlocks = ["quartz", "automatic", "manual", "tourbillon"];
   seededState.watchModels = {
     ...seededState.watchModels,

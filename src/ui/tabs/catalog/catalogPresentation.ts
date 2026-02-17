@@ -53,7 +53,12 @@ export const CATALOG_VIRTUALIZER_ESTIMATED_CARD_HEIGHT = 420;
 export const CATALOG_VIRTUALIZER_OVERSCAN = 6;
 export const CATALOG_MOBILE_MEDIA_QUERY = "(max-width: 720px)";
 
-export const CATALOG_SORT_ORDER: readonly CatalogSortOption[] = ["default", "brand", "year", "tier"];
+export const CATALOG_SORT_ORDER: readonly CatalogSortOption[] = [
+  "default",
+  "brand",
+  "year",
+  "tier",
+];
 
 export const CATALOG_SORT_LABELS: Record<CatalogSortOption, string> = {
   default: "Default",

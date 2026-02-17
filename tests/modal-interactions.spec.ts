@@ -25,7 +25,6 @@ const buildSeededState = (): GameState => {
       manual: Math.max(base.items.manual ?? 0, 2),
       tourbillon: Math.max(base.items.tourbillon ?? 0, 1),
     },
-    discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
   };
 };
 

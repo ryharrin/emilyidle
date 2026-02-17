@@ -40,7 +40,6 @@ export {
   createStateFromSave,
   getCatalogTierProgress,
   getCollectionValueCents,
-  getDiscoveredCatalogEntries,
   getNostalgiaUnlockIds,
   getTotalItemCount,
   updateCatalogTierUnlocks,

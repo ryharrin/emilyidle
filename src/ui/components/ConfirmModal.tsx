@@ -63,10 +63,7 @@ export function ConfirmModal({
         <div className="card-actions modal-panel-actions confirm-modal-actions">
           <button
             type="button"
-            className={[
-              "action-priority-primary confirm-modal-confirm",
-              confirmClassName,
-            ]
+            className={["action-priority-primary confirm-modal-confirm", confirmClassName]
               .filter(Boolean)
               .join(" ")}
             data-testid={confirmTestId}

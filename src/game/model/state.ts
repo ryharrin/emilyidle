@@ -322,15 +322,6 @@ export const CRAFTED_BOOSTS: ReadonlyArray<{
   },
 ];
 
-export function getDiscoveredCatalogEntries(state: GameState): CatalogEntry[] {
-  if (state.discoveredCatalogEntries.length === 0) {
-    return [];
-  }
-
-  const discovered = new Set(state.discoveredCatalogEntries);
-  return CATALOG_ENTRIES.filter((entry) => discovered.has(entry.id));
-}
-
 export function getCatalogTierProgress(state: GameState): Record<CatalogTierId, number> {
   const progress: Record<CatalogTierId, number> = {
     quartz: 0,
@@ -339,12 +330,11 @@ export function getCatalogTierProgress(state: GameState): Record<CatalogTierId, 
     tourbillon: 0,
   };
 
-  for (const entry of getDiscoveredCatalogEntries(state)) {
-    const tags = getCatalogEntryTags(entry);
-    for (const tier of CATALOG_TIER_BONUSES) {
-      if (tags.includes(tier.id)) {
-        progress[tier.id] += 1;
-      }
+  // Count owned watches per tier
+  for (const model of WATCH_MODELS) {
+    const ownedCount = state.watchModels[model.id] ?? 0;
+    if (ownedCount > 0) {
+      progress[model.tierId] += 1;
     }
   }
 
@@ -472,7 +462,6 @@ export function createInitialState(): GameState {
     maisonLines: createMaisonLineStates(),
     achievementUnlocks: [],
     eventStates: createEventStates(),
-    discoveredCatalogEntries: [],
     catalogTierUnlocks: [],
     craftingParts: 0,
     craftedBoosts: {
@@ -825,11 +814,6 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
         ACHIEVEMENTS.some((achievement) => achievement.id === entry),
       )
     : [];
-  const discoveredCatalogEntries = Array.isArray(saved.discoveredCatalogEntries)
-    ? saved.discoveredCatalogEntries.filter((entry): entry is CatalogEntryId =>
-        CATALOG_ENTRIES.some((catalogEntry) => catalogEntry.id === entry),
-      )
-    : [];
   const catalogTierUnlocks = Array.isArray(saved.catalogTierUnlocks)
     ? saved.catalogTierUnlocks.filter((entry): entry is CatalogTierId =>
         CATALOG_TIER_BONUSES.some((bonus) => bonus.id === entry),
@@ -899,7 +883,6 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
     maisonLines,
     achievementUnlocks,
     eventStates,
-    discoveredCatalogEntries,
     catalogTierUnlocks,
     craftingParts,
     craftedBoosts,
@@ -925,7 +908,11 @@ function isMilestoneMet(state: GameState, milestone: MilestoneDefinition): boole
     return getCollectionValueCents(state) >= requirement.thresholdCents;
   }
 
-  return state.discoveredCatalogEntries.length >= requirement.threshold;
+  // For catalogDiscovery milestone: count unique owned watch models
+  const ownedModelCount = Object.values(state.watchModels).filter(
+    (count) => typeof count === "number" && count > 0,
+  ).length;
+  return ownedModelCount >= requirement.threshold;
 }
 
 export function createItemCounts(): Record<WatchItemId, number> {

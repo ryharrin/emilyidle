@@ -260,7 +260,14 @@ export const useGameRuntime = ({
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [devSettings.enabled, devSettings.speedMultiplier, persistNow, setRuntimeNowMs, setState, step]);
+  }, [
+    devSettings.enabled,
+    devSettings.speedMultiplier,
+    persistNow,
+    setRuntimeNowMs,
+    setState,
+    step,
+  ]);
 
   return {
     nowMs,
@@ -270,4 +277,4 @@ export const useGameRuntime = ({
     markSaveDirty,
     resetSimulationClock,
   };
-};;
+};

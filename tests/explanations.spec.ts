@@ -203,7 +203,9 @@ test("career progression card surfaces the now-action feedback strip", async ({ 
   await expect(page.getByTestId("mission-lane-groups")).toBeVisible();
   await expect(page.getByTestId("mission-next-lane")).toBeVisible();
   await expect(page.getByTestId("mission-later-lane")).toBeVisible();
-  await expect(page.locator('[data-testid="mission-action-primary"]:visible').first()).toBeVisible();
+  await expect(
+    page.locator('[data-testid="mission-action-primary"]:visible').first(),
+  ).toBeVisible();
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Career" }));
 

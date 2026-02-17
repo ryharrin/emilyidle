@@ -430,7 +430,9 @@ export function WorkshopTab({
                               </button>
                             </div>
                             {owned ? (
-                              <p className="muted">Installed: this Atelier upgrade is already active.</p>
+                              <p className="muted">
+                                Installed: this Atelier upgrade is already active.
+                              </p>
                             ) : !canAfford ? (
                               <p className="muted">
                                 Blocked: need {blueprintDeficit.toLocaleString()} more Blueprints.

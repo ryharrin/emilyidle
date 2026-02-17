@@ -62,10 +62,12 @@ describe("runtime no-progress invariant", () => {
     frameQueue = [];
     setVisibilityState("visible");
     vi.spyOn(Date, "now").mockReturnValue(0);
-    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback: FrameRequestCallback) => {
-      frameQueue.push(callback);
-      return frameQueue.length;
-    });
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation(
+      (callback: FrameRequestCallback) => {
+        frameQueue.push(callback);
+        return frameQueue.length;
+      },
+    );
     vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
   });
 
@@ -141,7 +143,9 @@ describe("runtime no-progress invariant", () => {
     expect(step).toHaveBeenCalledTimes(1);
     expect(latestState.currencyCents).toBe(stateAfterVisibleTick.currencyCents);
     expect(latestState.enjoymentCents).toBe(stateAfterVisibleTick.enjoymentCents);
-    expect(latestState.interactionNextAvailableAtMsByItem.quartz).toBe(stateAfterVisibleTick.cooldownMs);
+    expect(latestState.interactionNextAvailableAtMsByItem.quartz).toBe(
+      stateAfterVisibleTick.cooldownMs,
+    );
     expect(latestState.eventStates["auction-weekend"]?.activeUntilMs).toBe(
       stateAfterVisibleTick.eventActiveUntilMs,
     );

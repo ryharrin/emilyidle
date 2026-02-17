@@ -18,9 +18,9 @@ const getTelemetryBackend = () =>
   (window as Window & { [TELEMETRY_BACKEND_KEY]?: TelemetryBackend })[TELEMETRY_BACKEND_KEY];
 
 const setTelemetryBackend = (backend: TelemetryBackend | undefined) => {
-  (window as Window & { [TELEMETRY_BACKEND_KEY]?: TelemetryBackend })[TELEMETRY_BACKEND_KEY] = backend;
+  (window as Window & { [TELEMETRY_BACKEND_KEY]?: TelemetryBackend })[TELEMETRY_BACKEND_KEY] =
+    backend;
 };
-
 
 describe("telemetry instrumentation", () => {
   beforeEach(() => {

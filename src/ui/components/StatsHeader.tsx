@@ -211,7 +211,10 @@ export function StatsHeader({
           >
             <summary className="stats-header__group-summary" data-testid="stats-system-toggle">
               <span className="eyebrow disclosure-summary-label">System</span>
-              <span className="stats-header__toggle-icon disclosure-summary-meta" aria-hidden="true">
+              <span
+                className="stats-header__toggle-icon disclosure-summary-meta"
+                aria-hidden="true"
+              >
                 ▼
               </span>
             </summary>

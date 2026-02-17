@@ -53,7 +53,6 @@ const buildSeededState = (): GameState => {
       [TOURBILLON_MODEL_ID]: 1,
       ...(AUTOMATIC_MODEL_ID ? { [AUTOMATIC_MODEL_ID]: 2 } : {}),
     },
-    discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
   };
 };
 
@@ -282,9 +281,14 @@ const defineTouchTargetTests = (
         ".power-reserve-hint-button",
         catalogPanel,
       );
-      const reserveHintTargets = await expectVisibleTouchTargets(reserveHintButtons, "reserve hint", 2, {
-        requireAtLeastOne: false,
-      });
+      const reserveHintTargets = await expectVisibleTouchTargets(
+        reserveHintButtons,
+        "reserve hint",
+        2,
+        {
+          requireAtLeastOne: false,
+        },
+      );
 
       if (reserveHintTargets === 0) {
         const reserveFallbackTargets = await resolveCatalogInteractCandidates(

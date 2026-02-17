@@ -24,7 +24,10 @@ function StageTimeline({
   const currentLabel = CAREER_STAGES[currentIndex]?.label ?? "Career";
 
   return (
-    <div className="card career-stage-timeline-card career-panel-cluster-card" data-testid="career-stages-card">
+    <div
+      className="card career-stage-timeline-card career-panel-cluster-card"
+      data-testid="career-stages-card"
+    >
       <div className="career-track-header">
         <div>
           <h4>Career stages</h4>
@@ -33,7 +36,10 @@ function StageTimeline({
           </p>
         </div>
         <ExplainButton sectionId={HELP_SECTION_IDS.careerStages} label="Explain career stages" />
-        <div className="career-track-level career-stage-current-level" data-testid="career-stage-current">
+        <div
+          className="career-track-level career-stage-current-level"
+          data-testid="career-stage-current"
+        >
           {currentLabel} - Level {level.toLocaleString()}
         </div>
       </div>
@@ -52,7 +58,9 @@ function StageTimeline({
                   <h4>{stage.label}</h4>
                   <p className="muted">{stage.description}</p>
                 </div>
-                <div className="career-track-level career-stage-node-level">Level {stage.unlockLevel}+</div>
+                <div className="career-track-level career-stage-node-level">
+                  Level {stage.unlockLevel}+
+                </div>
               </div>
             </div>
           );

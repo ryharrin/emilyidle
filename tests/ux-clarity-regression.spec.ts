@@ -64,7 +64,9 @@ test.describe("ux clarity regressions", () => {
     await expect(unownedTab).toBeVisible();
     await expect(ownedTab).toBeVisible();
 
-    const ownershipTablist = expertCatalogPanel.locator('[role="tablist"][aria-label="Catalog ownership"]');
+    const ownershipTablist = expertCatalogPanel.locator(
+      '[role="tablist"][aria-label="Catalog ownership"]',
+    );
     await expect(ownershipTablist).toBeVisible();
 
     await expect(expertCatalogPanel.getByTestId("catalog-tab-ready-unowned")).toBeVisible();
@@ -165,7 +167,9 @@ test.describe("ux clarity regressions", () => {
       .toBeGreaterThan(0);
   });
 
-  test("terminology stays aligned across collection callout, catalog header, and help", async ({ page }) => {
+  test("terminology stays aligned across collection callout, catalog header, and help", async ({
+    page,
+  }) => {
     await seedAndOpen(page, BASE_CATALOG_SEEDED_STATE);
 
     await clickLocatorSafely(page.getByRole("tab", { name: "Collection" }));
@@ -174,7 +178,10 @@ test.describe("ux clarity regressions", () => {
     await expect(callout.getByRole("heading", { name: "Shop in Catalog" })).toBeVisible();
 
     await clickLocatorSafely(callout.getByRole("button", { name: "Open Catalog" }));
-    await expect(page.getByRole("tab", { name: "Catalog" })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tab", { name: "Catalog" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
 
     const catalogPanel = page.getByRole("tabpanel", { name: "Catalog" });
     await expect(catalogPanel.getByRole("heading", { name: "Catalog" })).toBeVisible();
@@ -260,7 +267,9 @@ test.describe("ux clarity regressions", () => {
     }
 
     const inertAppRoot = page.locator("#app-shell[inert], #app[inert], #root[inert]");
-    const hiddenAppRoot = page.locator('#app-shell[aria-hidden="true"], #app[aria-hidden="true"], #root[aria-hidden="true"]');
+    const hiddenAppRoot = page.locator(
+      '#app-shell[aria-hidden="true"], #app[aria-hidden="true"], #root[aria-hidden="true"]',
+    );
 
     await expect(inertAppRoot).toHaveCount(1);
     await expect(hiddenAppRoot).toHaveCount(1);
@@ -269,7 +278,9 @@ test.describe("ux clarity regressions", () => {
     await expect(helpModal).toHaveCount(0);
     await expect(page.locator("#app-shell[inert], #app[inert], #root[inert]")).toHaveCount(0);
     await expect(
-      page.locator('#app-shell[aria-hidden="true"], #app[aria-hidden="true"], #root[aria-hidden="true"]'),
+      page.locator(
+        '#app-shell[aria-hidden="true"], #app[aria-hidden="true"], #root[aria-hidden="true"]',
+      ),
     ).toHaveCount(0);
   });
 });

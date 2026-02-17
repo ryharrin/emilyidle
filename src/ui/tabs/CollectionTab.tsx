@@ -237,7 +237,6 @@ export function CollectionTab({
   const ownedWearableModels = watchModels
     .filter((model) => getWatchModelOwnedCount(state, model.id) > 0)
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
-  const { discoveredCatalogEntries } = state;
   const [collectionFavoritesOnly, setCollectionFavoritesOnly] = React.useState(false);
   const [isCompactLayout, setIsCompactLayout] = React.useState(getIsCompactCollectionViewport);
   const [openMobileSectionId, setOpenMobileSectionId] =
@@ -252,7 +251,7 @@ export function CollectionTab({
   );
   const ownedReferenceCount = ownedWearableModels.length;
   const hasOwnedReferences = ownedReferenceCount > 0;
-  const discoveredReferenceCount = discoveredCatalogEntries.length;
+  const discoveredReferenceCount = ownedReferenceCount;
 
   const coachmarksDismissed = settings.coachmarksDismissed;
   const activeCoachmarkSection = React.useMemo(() => {
@@ -446,7 +445,10 @@ export function CollectionTab({
               <span className="catalog-spec-value">{wornPassport.movementOrigin.value}</span>
             </li>
           </ul>
-          <details className="catalog-passport-details" data-testid="collection-watch-passport-details">
+          <details
+            className="catalog-passport-details"
+            data-testid="collection-watch-passport-details"
+          >
             <summary data-testid="collection-watch-passport-toggle">
               Show full passport details and provenance
             </summary>
@@ -594,7 +596,7 @@ export function CollectionTab({
                           </p>
                           <p className="surface-complication-detail">
                             Favorites {favoriteModels.length.toLocaleString()} | Discovered{" "}
-                            {discoveredCatalogEntries.length.toLocaleString()}
+                            {discoveredReferenceCount.toLocaleString()}
                           </p>
                         </article>
                         <article

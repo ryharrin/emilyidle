@@ -82,7 +82,6 @@ test("catalog readiness badge requires discovered unowned references", async ({ 
   seededState.currencyCents = 5_000_000_00;
   seededState.enjoymentCents = 5_000_000_00;
   seededState.catalogTierUnlocks = ["quartz", "automatic", "manual", "tourbillon"];
-  seededState.discoveredCatalogEntries = [];
 
   await seedStorage(page, {
     clearLocalStorage: true,
@@ -113,7 +112,6 @@ test("discovered unowned entries expose catalog buy buttons in collection shop",
     ...seededState.items,
     quartz: 5,
   };
-  seededState.discoveredCatalogEntries = [CLASSIC_MODEL_ID];
   seededState.watchModels = {
     ...seededState.watchModels,
     [CLASSIC_MODEL_ID]: 0,

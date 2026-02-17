@@ -9,7 +9,9 @@ import { createInitialState } from "../src/game/state";
 const QUARTZ_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "quartz")?.id;
 const AUTOMATIC_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "automatic")?.id;
 const MANUAL_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "manual")?.id;
-const TOURBILLON_MODEL_ID = CATALOG_ENTRIES.find((entry) => entry.movementType === "tourbillon")?.id;
+const TOURBILLON_MODEL_ID = CATALOG_ENTRIES.find(
+  (entry) => entry.movementType === "tourbillon",
+)?.id;
 
 const buildSeededState = (): GameState => {
   const base = createInitialState();
@@ -38,13 +40,17 @@ const buildSeededState = (): GameState => {
       ...(MANUAL_MODEL_ID ? { [MANUAL_MODEL_ID]: 2 } : {}),
       ...(TOURBILLON_MODEL_ID ? { [TOURBILLON_MODEL_ID]: 1 } : {}),
     },
-    discoveredCatalogEntries: CATALOG_ENTRIES.map((entry) => entry.id),
   };
 };
 
 async function ensureCompactCatalogDensity(page: Page) {
   const detailsButtons = page.locator('button[data-testid^="catalog-details-button-"]');
-  if ((await detailsButtons.first().isVisible().catch(() => false)) === true) {
+  if (
+    (await detailsButtons
+      .first()
+      .isVisible()
+      .catch(() => false)) === true
+  ) {
     return;
   }
 

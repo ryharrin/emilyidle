@@ -177,7 +177,9 @@ export function CareerUpgradesView({ state, nowMs, onPurchase }: CareerUpgradesV
   const trackLabel = activeTrackId
     ? (CAREER_TRACKS.find((track) => track.id === activeTrackId)?.label ?? "Track upgrades")
     : "Track upgrades";
-  const trackDescriptor = activeTrackId ? "Track specialization active" : "Track specialization pending";
+  const trackDescriptor = activeTrackId
+    ? "Track specialization active"
+    : "Track specialization pending";
 
   const selected = selectedNodeId
     ? (CAREER_NODES.find((node) => node.id === selectedNodeId) ?? null)

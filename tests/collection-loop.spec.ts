@@ -289,11 +289,7 @@ test.describe("collection loop", () => {
         await expect(page.locator(selectors.insightsPanel)).toBeVisible();
       }
 
-      const navTargets = [
-        "collection-overview",
-        "collection-set-bonuses",
-        "collection-milestones",
-      ];
+      const navTargets = ["collection-overview", "collection-set-bonuses", "collection-milestones"];
 
       for (const sectionId of navTargets) {
         if (!(await hasCollectionSection(page, sectionId))) {

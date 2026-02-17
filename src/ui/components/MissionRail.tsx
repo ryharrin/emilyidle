@@ -98,8 +98,11 @@ export function MissionRail({
         </details>
       </article>
 
-      <article className="mission-rail__card mission-rail__card--secondary" data-testid="mission-rail-secondary">
-          <div className="mission-rail__timeline" data-testid="mission-lane-groups">
+      <article
+        className="mission-rail__card mission-rail__card--secondary"
+        data-testid="mission-rail-secondary"
+      >
+        <div className="mission-rail__timeline" data-testid="mission-lane-groups">
           <div className="mission-rail__lane" data-testid="mission-next-lane">
             <p className="eyebrow">Next</p>
             <h4>{next.label}</h4>

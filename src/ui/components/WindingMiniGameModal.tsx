@@ -351,7 +351,10 @@ export function WindingMiniGameModal({
         </header>
 
         <div className="winding-modal-body modal-panel-body" data-outcome-state={outcomeState}>
-          <div className="winding-mode-strip modal-instrument-strip" data-testid="winding-mode-strip">
+          <div
+            className="winding-mode-strip modal-instrument-strip"
+            data-testid="winding-mode-strip"
+          >
             <label className="winding-mode-toggle">
               <input
                 type="checkbox"

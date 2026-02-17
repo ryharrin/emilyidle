@@ -2232,7 +2232,9 @@ function inferComplicationProfile(entry: CatalogEntryBase): CatalogPassportField
   return buildUnknownPassportField("Unknown complications");
 }
 
-function buildPassportProvenance(...fields: CatalogPassportField[]): ReadonlyArray<CatalogPassportField> {
+function buildPassportProvenance(
+  ...fields: CatalogPassportField[]
+): ReadonlyArray<CatalogPassportField> {
   const seen = new Set<string>();
   return fields.filter((field) => {
     const key = `${field.sourceLabel}|${field.sourceUrl ?? ""}`;

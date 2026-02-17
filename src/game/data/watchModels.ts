@@ -1,8 +1,4 @@
-import {
-  CATALOG_ENTRIES,
-  type CatalogBrand,
-  type CatalogEntry,
-} from "../catalog";
+import { CATALOG_ENTRIES, type CatalogBrand, type CatalogEntry } from "../catalog";
 import type { CatalogTierId } from "../model/types";
 import { getTierBadgeByCatalogTier, type TierBadgeDefinition } from "../tierBadges";
 

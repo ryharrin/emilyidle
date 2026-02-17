@@ -16,7 +16,8 @@ type ToastStackProps = {
 type ToastTone = "neutral" | "info" | "success" | "warning" | "critical";
 
 function resolveToastTone(toast: ToastMessage): ToastTone {
-  const haystack = `${toast.id} ${toast.title} ${toast.message} ${toast.detail ?? ""}`.toLowerCase();
+  const haystack =
+    `${toast.id} ${toast.title} ${toast.message} ${toast.detail ?? ""}`.toLowerCase();
   if (/(error|failed|failure|invalid|insufficient)/.test(haystack)) {
     return "critical";
   }
@@ -69,7 +70,10 @@ export function ToastStack({ toasts, onDismiss, safeTopPx }: ToastStackProps) {
           {visibleToast.detail && <p className="toast-stack__detail">{visibleToast.detail}</p>}
         </div>
         {queueDepth > 1 && (
-          <span className="toast-stack__queue" aria-label={`${queueDepth} toast notifications queued`}>
+          <span
+            className="toast-stack__queue"
+            aria-label={`${queueDepth} toast notifications queued`}
+          >
             +{queueDepth - 1}
           </span>
         )}

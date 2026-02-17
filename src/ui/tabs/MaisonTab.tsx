@@ -344,7 +344,9 @@ export function MaisonTab({
                               </button>
                             </div>
                             {owned ? (
-                              <p className="muted">Installed: this Maison upgrade is already active.</p>
+                              <p className="muted">
+                                Installed: this Maison upgrade is already active.
+                              </p>
                             ) : !canAfford ? (
                               <p className="muted">
                                 Blocked: need {resourceDeficit.toLocaleString()} more{" "}

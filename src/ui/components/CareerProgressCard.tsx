@@ -51,7 +51,9 @@ export function CareerProgressCard({ state, nowMs }: CareerProgressCardProps) {
           </p>
         </div>
         <div className="career-track-level" data-testid="career-progress-levels">
-          {levelsRemaining === 0 ? "Ready" : `${levelsRemaining} level${levelsRemaining === 1 ? "" : "s"}`}
+          {levelsRemaining === 0
+            ? "Ready"
+            : `${levelsRemaining} level${levelsRemaining === 1 ? "" : "s"}`}
         </div>
       </div>
       <progress

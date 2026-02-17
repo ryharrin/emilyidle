@@ -1,4 +1,5 @@
 # Style and conventions
+
 - Language/tooling: TypeScript (`strict: true`), ESM (`"type": "module"`).
 - Formatting: Prettier (`.prettierrc.json`) with semicolons, double quotes, printWidth 100, trailing commas all.
 - Linting: ESLint.

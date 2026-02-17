@@ -32,7 +32,9 @@ export function CareerMapCanvas({
   renderNodeBody,
 }: CareerMapCanvasProps) {
   const totalStages = nodes.filter((node) => node.kind === "stage").length;
-  const chosenStages = nodes.filter((node) => node.kind === "stage" && node.status === "chosen").length;
+  const chosenStages = nodes.filter(
+    (node) => node.kind === "stage" && node.status === "chosen",
+  ).length;
   const interactiveNodes = nodes.filter((node) =>
     isNodeInteractive ? isNodeInteractive(node.id) : false,
   ).length;
@@ -246,7 +248,7 @@ export function CareerMapCanvas({
             })}
           </svg>
 
-          {nodes.map((node) => (
+          {nodes.map((node) =>
             (() => {
               const isCompactMetaNode =
                 node.kind === "meta" && (node.id.startsWith("meta-") || node.id.endsWith("-title"));
@@ -288,8 +290,8 @@ export function CareerMapCanvas({
                   {!isCompactMetaNode && renderNodeBody ? renderNodeBody(node.id) : null}
                 </button>
               );
-            })()
-          ))}
+            })(),
+          )}
         </div>
       </div>
     </div>

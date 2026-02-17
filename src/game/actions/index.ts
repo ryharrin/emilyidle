@@ -15,7 +15,6 @@ import {
 } from "../model/state";
 import type {
   AchievementDefinition,
-  CatalogEntryId,
   CraftedBoostId,
   EventId,
   EventState,
@@ -37,7 +36,6 @@ import {
   canPerformTherapistSession,
   canRefundNostalgiaUnlock,
   getCatalogEntries,
-  getCatalogEntryIdsForItems,
   getCraftingPartsPerWatch,
   getCraftingRecipes,
   getItemCount,
@@ -87,34 +85,6 @@ export function setWornWatchId(state: GameState, modelId: string | null): GameSt
     ...state,
     wornWatchId,
   };
-}
-
-export function discoverCatalogEntries(state: GameState, ids: CatalogEntryId[]): GameState {
-  if (ids.length === 0) {
-    return state;
-  }
-
-  const discovered = new Set(state.discoveredCatalogEntries);
-  const catalogEntries = getCatalogEntries();
-  let changed = false;
-
-  for (const id of ids) {
-    if (!discovered.has(id) && catalogEntries.some((entry) => entry.id === id)) {
-      discovered.add(id);
-      changed = true;
-    }
-  }
-
-  if (!changed) {
-    return state;
-  }
-
-  const nextState = {
-    ...state,
-    discoveredCatalogEntries: Array.from(discovered),
-  };
-
-  return updateCatalogTierUnlocks(nextState);
 }
 
 export function dismantleItem(state: GameState, id: WatchItemId, quantity = 1): GameState {
@@ -543,8 +513,8 @@ export function buyItem(state: GameState, id: WatchItemId, quantity = 1): GameSt
     },
   };
 
-  const withDiscovery = discoverCatalogEntries(nextState, getCatalogEntryIdsForItems(nextState));
-  return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
+  const withTierUnlocks = updateCatalogTierUnlocks(nextState);
+  return applyAchievementUnlocks(applyMilestoneUnlocks(withTierUnlocks));
 }
 
 export function buyWatchModel(state: GameState, modelId: string): GameState {
@@ -572,8 +542,8 @@ export function buyWatchModel(state: GameState, modelId: string): GameState {
     },
   };
 
-  const withDiscovery = discoverCatalogEntries(nextState, [modelId]);
-  return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
+  const withTierUnlocks = updateCatalogTierUnlocks(nextState);
+  return applyAchievementUnlocks(applyMilestoneUnlocks(withTierUnlocks));
 }
 
 export function buyWatchModelWithUndo(state: GameState, modelId: string, nowMs: number): GameState {
@@ -710,8 +680,8 @@ export function buyUpgrade(state: GameState, id: UpgradeId): GameState {
     },
   };
 
-  const withDiscovery = discoverCatalogEntries(nextState, getCatalogEntryIdsForItems(nextState));
-  return applyAchievementUnlocks(applyMilestoneUnlocks(withDiscovery));
+  const withTierUnlocks = updateCatalogTierUnlocks(nextState);
+  return applyAchievementUnlocks(applyMilestoneUnlocks(withTierUnlocks));
 }
 
 export function applyAchievementUnlocks(state: GameState): GameState {
@@ -785,7 +755,10 @@ function isAchievementMet(state: GameState, achievement: AchievementDefinition):
   }
 
   if (requirement.type === "catalogDiscovery") {
-    return state.discoveredCatalogEntries.length >= requirement.threshold;
+    const ownedModelCount = Object.values(state.watchModels).filter(
+      (count) => typeof count === "number" && count > 0,
+    ).length;
+    return ownedModelCount >= requirement.threshold;
   }
 
   if (requirement.type === "careerLevel") {

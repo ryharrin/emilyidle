@@ -1,4 +1,5 @@
 # Task completion checklist
+
 - Run relevant tests for changed scope.
   - Prefer targeted unit/e2e tests first, then broader suites when needed.
 - Run `pnpm typecheck` when TS changes may affect typing.

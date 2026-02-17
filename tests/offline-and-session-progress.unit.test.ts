@@ -73,8 +73,12 @@ describe("offline and session-only progression guards", () => {
     expect(loaded.save.state.therapistCareer.nextAvailableAtMs).toBe(15_000 + elapsedMs);
     expect(loaded.save.state.therapistCareer.lastSessionAtMs).toBe(9_000 + elapsedMs);
     expect(loaded.save.state.interactionNextAvailableAtMsByItem.quartz).toBe(12_000 + elapsedMs);
-    expect(loaded.save.state.eventStates["auction-weekend"]?.activeUntilMs).toBe(26_000 + elapsedMs);
-    expect(loaded.save.state.eventStates["auction-weekend"]?.nextAvailableAtMs).toBe(31_000 + elapsedMs);
+    expect(loaded.save.state.eventStates["auction-weekend"]?.activeUntilMs).toBe(
+      26_000 + elapsedMs,
+    );
+    expect(loaded.save.state.eventStates["auction-weekend"]?.nextAvailableAtMs).toBe(
+      31_000 + elapsedMs,
+    );
 
     const secondNowMs = 70_000;
     vi.spyOn(Date, "now").mockReturnValue(secondNowMs);

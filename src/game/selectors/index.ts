@@ -205,10 +205,6 @@ export function getCatalogTierDefinitions(): ReadonlyArray<CatalogTierBonusDefin
   return CATALOG_TIER_BONUSES;
 }
 
-export function getCatalogDiscovery(state: GameState): CatalogEntryId[] {
-  return state.discoveredCatalogEntries;
-}
-
 export function getCatalogTierUnlocks(state: GameState): CatalogTierId[] {
   return state.catalogTierUnlocks;
 }
@@ -259,24 +255,6 @@ export function canCraftBoost(state: GameState, id: CraftedBoostId): boolean {
     return false;
   }
   return state.craftingParts >= recipe.partsCost;
-}
-
-export function getCatalogEntryIdsForItems(state: GameState): CatalogEntryId[] {
-  const ownedItems = WATCH_ITEMS.filter((item) => getItemCount(state, item.id) > 0);
-
-  if (ownedItems.length === 0) {
-    return [];
-  }
-
-  const queryTerms = ownedItems.flatMap((item) => [item.id, item.name]);
-
-  return CATALOG_ENTRIES.filter((entry) => {
-    const entryTags = getCatalogEntryTags(entry);
-    const haystack = `${entry.brand} ${entry.model} ${entry.description} ${entryTags.join(" ")}`
-      .toLowerCase()
-      .trim();
-    return queryTerms.some((term) => haystack.includes(term.toLowerCase()));
-  }).map((entry) => entry.id);
 }
 
 export function applyCraftedBoostIncome(state: GameState): number {
@@ -521,9 +499,16 @@ export function getUnlockVisibilityRatio(state: GameState, milestoneId: Mileston
       : 0;
   }
 
-  return milestone.requirement.threshold > 0
-    ? state.discoveredCatalogEntries.length / milestone.requirement.threshold
-    : 0;
+  if (milestone.requirement.type === "catalogDiscovery") {
+    const ownedModelCount = Object.values(state.watchModels).filter(
+      (count) => typeof count === "number" && count > 0,
+    ).length;
+    return milestone.requirement.threshold > 0
+      ? ownedModelCount / milestone.requirement.threshold
+      : 0;
+  }
+
+  return 0;
 }
 
 export function getAchievementProgressRatio(
@@ -569,9 +554,14 @@ export function getAchievementProgressRatio(
     return requirement.threshold > 0 ? state.nostalgiaResets / requirement.threshold : 0;
   }
 
-  return requirement.threshold > 0
-    ? state.discoveredCatalogEntries.length / requirement.threshold
-    : 0;
+  if (requirement.type === "catalogDiscovery") {
+    const ownedModelCount = Object.values(state.watchModels).filter(
+      (count) => typeof count === "number" && count > 0,
+    ).length;
+    return requirement.threshold > 0 ? ownedModelCount / requirement.threshold : 0;
+  }
+
+  return 0;
 }
 
 export type UnlockProgressDetail = {
@@ -607,7 +597,11 @@ export function getMilestoneUnlockProgressDetail(
       ? getTotalItemCount(state)
       : requirement.type === "collectionValue"
         ? getCollectionValueCents(state)
-        : state.discoveredCatalogEntries.length;
+        : requirement.type === "catalogDiscovery"
+          ? Object.values(state.watchModels).filter(
+              (count) => typeof count === "number" && count > 0,
+            ).length
+          : 0;
 
   const current = clampNumber(rawCurrent, 0, threshold);
   const ratio = threshold > 0 ? clampNumber(rawCurrent / threshold, 0, 1) : 0;
@@ -691,7 +685,11 @@ export function getAchievementUnlockProgressDetail(
                 ? state.interactionBestPerfectStreak
                 : requirement.type === "nostalgiaResets"
                   ? state.nostalgiaResets
-                  : state.discoveredCatalogEntries.length;
+                  : requirement.type === "catalogDiscovery"
+                    ? Object.values(state.watchModels).filter(
+                        (count) => typeof count === "number" && count > 0,
+                      ).length
+                    : 0;
 
   const current = clampNumber(rawCurrent, 0, threshold);
   const ratio = threshold > 0 ? clampNumber(rawCurrent / threshold, 0, 1) : 0;
@@ -1613,12 +1611,12 @@ export function getPrimaryLoopAction(state: GameState, nowMs: number): PrimaryLo
       target: { tabId: "catalog", scrollTargetId: "catalog-shop" },
     },
     secondary: {
-      id: "review-live-diagnostics",
-      label: "Review live diagnostics",
-      detail: "Check rates and event timing to pick the next high-value investment.",
-      actionLabel: "Open Stats",
-      whyNow: "Use current rates and event timing before committing your next spend.",
-      target: { tabId: "stats" },
+      id: "check-milestone-progress",
+      label: "Check milestone progress",
+      detail: "Review upcoming unlocks and plan your next purchases.",
+      actionLabel: "Open Collection",
+      whyNow: "Tracking milestones helps prioritize which watches to unlock next.",
+      target: { tabId: "collection", scrollTargetId: "collection-overview" },
     },
     checklist,
     forecast,
@@ -1650,12 +1648,12 @@ export function getGuideLanes(state: GameState, nowMs: number): GuideLanes {
 
   let next: LoopActionCard = loopAction.secondary;
   let later: LoopActionCard = {
-    id: "review-live-diagnostics-later",
-    label: "Review live diagnostics",
-    detail: "Use rates and event timing to choose your next compounding spend.",
-    actionLabel: "Open Stats",
-    whyNow: "Diagnostics are a safe fallback when no immediate gate is available.",
-    target: { tabId: "stats" },
+    id: "plan-next-milestone",
+    label: "Plan your next milestone",
+    detail: "Check upcoming unlocks and set your next collection goal.",
+    actionLabel: "Open Collection",
+    whyNow: "Planning ahead helps you prioritize which watches to save for.",
+    target: { tabId: "collection", scrollTargetId: "collection-overview" },
   };
 
   if (!careerStarted) {
@@ -1717,12 +1715,12 @@ export function getGuideLanes(state: GameState, nowMs: number): GuideLanes {
   }
   if (later.id === now.id || later.id === next.id) {
     later = {
-      id: "review-live-diagnostics-fallback",
-      label: "Review live diagnostics",
-      detail: "Check rates, cooldowns, and event windows before your next commitment.",
-      actionLabel: "Open Stats",
-      whyNow: "This fallback stays useful when other recommendations overlap.",
-      target: { tabId: "stats" },
+      id: "review-collection-progress",
+      label: "Review collection progress",
+      detail: "Check your watch collection and plan your next acquisition.",
+      actionLabel: "Open Collection",
+      whyNow: "Collection review helps you track ownership and plan growth.",
+      target: { tabId: "collection", scrollTargetId: "collection-overview" },
     };
   }
 

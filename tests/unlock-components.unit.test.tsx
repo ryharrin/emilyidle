@@ -118,8 +118,6 @@ describe("unlock UI components", () => {
           onCatalogViewModeChange={() => undefined}
           catalogBrands={[]}
           filteredCatalogEntries={[]}
-          discoveredCatalogEntries={[]}
-          discoveredCatalogIds={[]}
           catalogEntries={[]}
           hasOwnedCatalogTiers={false}
           onPurchase={onPurchase}
@@ -163,8 +161,6 @@ describe("unlock UI components", () => {
           onCatalogViewModeChange={() => undefined}
           catalogBrands={[]}
           filteredCatalogEntries={[]}
-          discoveredCatalogEntries={[]}
-          discoveredCatalogIds={[]}
           catalogEntries={[]}
           hasOwnedCatalogTiers={false}
           onPurchase={onPurchase}

@@ -33,7 +33,10 @@ export function WatchComparePanel({
   const filledSlots = slots.filter(Boolean).length;
 
   return (
-    <section className="compare-panel panel compare-panel-cluster" data-testid="catalog-compare-panel">
+    <section
+      className="compare-panel panel compare-panel-cluster"
+      data-testid="catalog-compare-panel"
+    >
       <header className="compare-panel-header panel-header">
         <div>
           <p className="eyebrow">Compare watches</p>

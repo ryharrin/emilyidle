@@ -1,4 +1,5 @@
 # watch-idle project overview
+
 - Purpose: Emily Idle (`watch-idle`) is a Vite + React + TypeScript idle/incremental game.
 - Platform/runtime: browser app built with Vite.
 - Primary code location: `src/`.

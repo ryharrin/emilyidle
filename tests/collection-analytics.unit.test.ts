@@ -8,9 +8,7 @@ import {
   getSetBonusProgressRows,
 } from "../src/game/state";
 
-function requireModelIdForTier(
-  tierId: "quartz" | "automatic" | "manual" | "tourbillon",
-): string {
+function requireModelIdForTier(tierId: "quartz" | "automatic" | "manual" | "tourbillon"): string {
   const model = WATCH_MODELS.find((entry) => entry.tierId === tierId);
   if (!model) {
     throw new Error(`Expected watch model for tier: ${tierId}`);

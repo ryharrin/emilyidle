@@ -83,14 +83,14 @@ upcoming_major_milestones:
   - id: v5
     description: "Major version 5.0 release, targeting comprehensive feature set completion and polish."
     criteria:
-      - Many more watches in catalog and collection. 
+      - Many more watches in catalog and collection.
       - Improvements to watch variety, depth, and progression, as well as improved amount and display of watch information.
       - Easier navigation and access to key information across the app, including better tab organization, readiness indicators, and contextual next-step guidance.
       - Reduced clutter and improved usability of key flows like catalog browsing, crafting, and career progression.
 
 upcoming_features: []
 
-upcoming_bug_fixes: 
+upcoming_bug_fixes:
   - id: catalog_image_contract
     description: "Maintain contract checks for catalog image URLs to prevent broken images due to BASE_URL changes."
     status: implemented

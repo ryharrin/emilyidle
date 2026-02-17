@@ -41,10 +41,9 @@ Object.defineProperty(window, "matchMedia", {
   value: (query: string) => createMediaQueryList(query),
 });
 
-type StorageSurface = Pick<
-  Storage,
-  "clear" | "getItem" | "key" | "removeItem" | "setItem"
-> & { length: number };
+type StorageSurface = Pick<Storage, "clear" | "getItem" | "key" | "removeItem" | "setItem"> & {
+  length: number;
+};
 
 const isStorageSurface = (value: unknown): value is StorageSurface => {
   if (!value || typeof value !== "object") {
@@ -104,4 +103,3 @@ beforeEach(() => {
   ensureStorageSurface("localStorage");
   ensureStorageSurface("sessionStorage");
 });
-

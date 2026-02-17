@@ -62,7 +62,6 @@ import {
   getEnjoymentCents,
   getEnjoymentRateCentsPerSec,
   getSoftcapEfficiency,
-  getCatalogDiscovery,
   getCatalogEntries,
   getCatalogTierBonuses,
   getCatalogTierDefinitions,
@@ -98,6 +97,7 @@ import {
   getCollectionValueCents,
   getWatchModelOwnedCount,
   getWatchModelPriceCents,
+  getWatchModelTierId,
   getWorkshopPrestigeGain,
   getWorkshopPrestigeThresholdCents,
   getWorkshopUpgrades,
@@ -111,7 +111,12 @@ import {
   isWorkshopRevealReady,
 } from "./game/state";
 import { getCatalogEntryTags } from "./game/catalog";
-import type { GameState, GuideLaneAction, InteractionMiniGameMode, WatchItemId } from "./game/state";
+import type {
+  GameState,
+  GuideLaneAction,
+  InteractionMiniGameMode,
+  WatchItemId,
+} from "./game/state";
 import { step } from "./game/sim";
 
 const AUDIO_SETTINGS_KEY = "emily-idle:audio";
@@ -539,15 +544,16 @@ export default function App() {
     [sessionSaveClearEpoch],
   );
 
-  const { nowMs, state, setState, persistNow, markSaveDirty, resetSimulationClock } = useGameRuntime({
-    initialState: createInitialState,
-    step,
-    loadSave: loadSaveFromLocalStorage,
-    clearSave: clearLocalStorageSave,
-    persistSave: persistSaveWithSessionEpochGuard,
-    devSettings,
-    onPersistError: handlePersistError,
-  });
+  const { nowMs, state, setState, persistNow, markSaveDirty, resetSimulationClock } =
+    useGameRuntime({
+      initialState: createInitialState,
+      step,
+      loadSave: loadSaveFromLocalStorage,
+      clearSave: clearLocalStorageSave,
+      persistSave: persistSaveWithSessionEpochGuard,
+      devSettings,
+      onPersistError: handlePersistError,
+    });
   const lastNostalgiaToastRef = useRef(state.nostalgiaLastGain);
   const notificationsInitializedRef = useRef(false);
   const previousAchievementUnlocksRef = useRef<Set<string>>(new Set());
@@ -1172,7 +1178,6 @@ export default function App() {
   const workshopUpgrades = useMemo(() => getWorkshopUpgrades(), []);
   const maisonUpgrades = useMemo(() => getMaisonUpgrades(), []);
   const catalogEntries = useMemo(() => getCatalogEntries(), []);
-  const discoveredCatalogIds = useMemo(() => getCatalogDiscovery(state), [state]);
   const workshopPrestigeGain = useMemo(() => getWorkshopPrestigeGain(state), [state]);
   const maisonPrestigeGain = useMemo(() => getMaisonPrestigeGain(state), [state]);
   const nostalgiaPrestigeGain = useMemo(() => getNostalgiaPrestigeGain(state), [state]);
@@ -1745,17 +1750,18 @@ export default function App() {
     archiveCuratorMilestone?.requirement.type === "catalogDiscovery"
       ? archiveCuratorMilestone.requirement.threshold
       : 0;
-  const archiveCuratorProgress = Math.min(discoveredCatalogIds.length, archiveCuratorThreshold);
+  const archiveCuratorProgress = Math.min(0, archiveCuratorThreshold);
   const archiveCuratorUnlocked = state.unlockedMilestones.includes("archive-curator");
 
   const filteredCatalogEntries = useMemo(() => {
     const query = catalogSearch.trim().toLowerCase();
     const filteredByOwnership = catalogEntries.filter((entry) => {
-      if (catalogTab !== "owned") {
-        return true;
+      if (catalogTab === "owned") {
+        return getWatchModelOwnedCount(state, entry.id) > 0;
       }
-
-      return getWatchModelOwnedCount(state, entry.id) > 0;
+      // For "unowned" and "all" tabs, hide watches where the tier is locked
+      const tierId = getWatchModelTierId(entry.id);
+      return isItemUnlocked(state, tierId);
     });
 
     const filteredByFilters = filteredByOwnership.filter((entry) => {
@@ -1877,13 +1883,7 @@ export default function App() {
     state,
   ]);
 
-  const discoveredCatalogEntries = useMemo(() => {
-    if (discoveredCatalogIds.length === 0) {
-      return [];
-    }
-    const discovered = new Set(discoveredCatalogIds);
-    return catalogEntries.filter((entry) => discovered.has(entry.id));
-  }, [catalogEntries, discoveredCatalogIds]);
+  const discoveredCatalogEntries = useMemo(() => catalogEntries, [catalogEntries]);
 
   const autoBuyUnlocked = useMemo(() => getAutoBuyEnabled(state), [state]);
   const autoBuyEnabled = autoBuyUnlocked && autoBuyToggle;
@@ -2433,8 +2433,6 @@ export default function App() {
             onCatalogViewModeChange={setCatalogViewMode}
             catalogBrands={catalogBrands}
             filteredCatalogEntries={filteredCatalogEntries}
-            discoveredCatalogEntries={discoveredCatalogEntries}
-            discoveredCatalogIds={discoveredCatalogIds}
             catalogEntries={catalogEntries}
             hasOwnedCatalogTiers={hasOwnedCatalogTiers}
             onPurchase={handlePurchase}

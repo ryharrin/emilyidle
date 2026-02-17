@@ -332,7 +332,10 @@ export function QuartzMiniGameModal({
         </header>
 
         <div className="quartz-modal-body modal-panel-body" data-outcome-state={outcomeState}>
-          <div className="winding-mode-strip modal-instrument-strip" data-testid="quartz-mode-strip">
+          <div
+            className="winding-mode-strip modal-instrument-strip"
+            data-testid="quartz-mode-strip"
+          >
             <label className="winding-mode-toggle">
               <input
                 type="checkbox"
@@ -346,7 +349,10 @@ export function QuartzMiniGameModal({
               Perfect streak: {currentPerfectStreak}
             </p>
           </div>
-          <div className="quartz-target-time modal-instrument-strip" data-testid="quartz-target-time">
+          <div
+            className="quartz-target-time modal-instrument-strip"
+            data-testid="quartz-target-time"
+          >
             <strong>Set to: {formatTime(targetTime.hour, targetTime.minute)}</strong>
           </div>
           <div

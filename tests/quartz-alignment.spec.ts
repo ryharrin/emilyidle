@@ -30,26 +30,26 @@ async function seedQuartzSave(page: Page, args: SeedArgs) {
       ...base.watchModels,
       [QUARTZ_MODEL_ID]: Math.max(base.watchModels[QUARTZ_MODEL_ID] ?? 0, 1),
     },
-    discoveredCatalogEntries: Array.from(
-      new Set([...(base.discoveredCatalogEntries ?? []), QUARTZ_MODEL_ID]),
-    ),
     interactionNextAvailableAtMsByItem: {
       ...base.interactionNextAvailableAtMsByItem,
       quartz: 0,
     },
   };
 
-  await page.addInitScript(({ seedState, lastSimulatedAtMs }: { seedState: unknown } & SeedArgs) => {
-    (window as unknown as { __EMILY_IDLE_TEST_MODE__?: boolean }).__EMILY_IDLE_TEST_MODE__ = true;
-    const payload = {
-      version: 4,
-      savedAt: new Date(0).toISOString(),
-      lastSimulatedAtMs,
-      generation: 0,
-      state: seedState,
-    };
-    window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
-  }, { ...args, seedState: state });
+  await page.addInitScript(
+    ({ seedState, lastSimulatedAtMs }: { seedState: unknown } & SeedArgs) => {
+      (window as unknown as { __EMILY_IDLE_TEST_MODE__?: boolean }).__EMILY_IDLE_TEST_MODE__ = true;
+      const payload = {
+        version: 4,
+        savedAt: new Date(0).toISOString(),
+        lastSimulatedAtMs,
+        generation: 0,
+        state: seedState,
+      };
+      window.localStorage.setItem("emily-idle:save", JSON.stringify(payload));
+    },
+    { ...args, seedState: state },
+  );
 }
 
 async function openQuartzModal(page: Page) {

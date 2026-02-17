@@ -226,7 +226,11 @@ export function HelpModal({
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
     >
-      <div className="help-modal-card modal-panel-card help-modal-card--overlay" ref={modalRef} tabIndex={-1}>
+      <div
+        className="help-modal-card modal-panel-card help-modal-card--overlay"
+        ref={modalRef}
+        tabIndex={-1}
+      >
         <header className="help-modal-header modal-panel-header">
           <div>
             <p className="eyebrow">Glossary</p>

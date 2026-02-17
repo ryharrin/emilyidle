@@ -244,7 +244,6 @@ export type GameState = {
   maisonLines: Record<MaisonLineId, boolean>;
   achievementUnlocks: AchievementId[];
   eventStates: Record<EventId, EventState>;
-  discoveredCatalogEntries: CatalogEntryId[];
   catalogTierUnlocks: CatalogTierId[];
   craftingParts: number;
   craftedBoosts: Record<CraftedBoostId, number>;
@@ -301,7 +300,6 @@ export type PersistedGameState = {
     string,
     { activeUntilMs: number; nextAvailableAtMs: number; incomeMultiplier?: number }
   >;
-  discoveredCatalogEntries?: string[];
   catalogTierUnlocks?: string[];
   craftingParts?: number;
   craftedBoosts?: Record<string, number>;

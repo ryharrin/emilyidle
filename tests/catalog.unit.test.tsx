@@ -23,7 +23,8 @@ function getModelIdForTier(tierId: string): string {
 }
 
 const ALL_CATALOG_IDS = getWatchModels().map((m) => m.id);
-const UNKNOWN_YEAR_CATALOG_ENTRY = CATALOG_ENTRIES.find((entry) => entry.year === "Unknown") ?? null;
+const UNKNOWN_YEAR_CATALOG_ENTRY =
+  CATALOG_ENTRIES.find((entry) => entry.year === "Unknown") ?? null;
 const DEFAULT_BUYABLE_MODEL_ID = getModelIdForTier("quartz");
 const DEFAULT_BUYABLE_MODEL_SEARCH_TERM =
   CATALOG_ENTRIES.find((entry) => entry.id === DEFAULT_BUYABLE_MODEL_ID)?.model ?? "Calibrorolex";
@@ -927,7 +928,6 @@ describe("catalog filters", () => {
   it("renders the simplified catalog header status line", () => {
     const results = screen.getByTestId("catalog-results-count");
     expect(results.textContent).toMatch(/\d+\s+results/);
-    expect(results.textContent).toMatch(/\d+\s+discovered/);
   });
 
   it("filters catalog by search text", async () => {
@@ -1090,7 +1090,9 @@ describe("catalog filters", () => {
     const details = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-details"));
     const facts = within(catalogGrid).getAllByTestId("catalog-facts");
     const passportBlocks = within(catalogGrid).getAllByTestId("catalog-watch-passport");
-    const passportProvenance = within(catalogGrid).getAllByTestId("catalog-watch-passport-provenance");
+    const passportProvenance = within(catalogGrid).getAllByTestId(
+      "catalog-watch-passport-provenance",
+    );
 
     expect(details.length).toBeGreaterThan(0);
     expect(details[0]?.tagName).toBe("DETAILS");
@@ -1151,14 +1153,18 @@ describe("catalog filters", () => {
     const detailsDisclosure = await waitFor(() => screen.getAllByTestId("catalog-details")[0]);
     await user.click(within(detailsDisclosure).getByText(/Details/i));
 
-    const passportYearValues = await waitFor(() => screen.getAllByTestId("watch-passport-year-value"));
+    const passportYearValues = await waitFor(() =>
+      screen.getAllByTestId("watch-passport-year-value"),
+    );
     expect(passportYearValues[0]).toHaveTextContent(/Unknown/i);
 
     const passportDisclosure = screen.getAllByTestId("watch-passport-disclosure")[0];
     expect(passportDisclosure).toBeTruthy();
     const passportToggle = within(passportDisclosure).getByTestId("watch-passport-toggle");
     await user.click(passportToggle);
-    expect(within(passportDisclosure).getByTestId("catalog-watch-passport-provenance")).toBeTruthy();
+    expect(
+      within(passportDisclosure).getByTestId("catalog-watch-passport-provenance"),
+    ).toBeTruthy();
   });
 
   it("does not render collector notes for unowned entries", async () => {
@@ -1429,20 +1435,19 @@ describe("catalog purchase CTA", () => {
   });
 
   it("does not mark non-actionable catalog cards as actionable", async () => {
+    // With locked tiers hidden, we test that visible cards are actionable
     const user = userEvent.setup();
     await switchToAllPreset(user);
 
     const catalogGrid = screen.getByTestId("catalog-grid");
-    const gates = await waitFor(() => within(catalogGrid).getAllByTestId(/catalog-gate-/));
-    expect(gates.length).toBeGreaterThan(0);
+    // All visible cards should be actionable (unlocked tiers)
+    const cards = await waitFor(() => within(catalogGrid).getAllByTestId("catalog-card"));
+    expect(cards.length).toBeGreaterThan(0);
 
-    const card = gates[0]?.closest('[data-testid="catalog-card"]');
-    if (!(card instanceof HTMLElement)) {
-      throw new Error("Expected a catalog card for the gate state");
+    // All visible cards should be actionable (quartz tier is always unlocked)
+    for (const card of cards) {
+      expect(card.classList.contains("catalog-nonactionable")).toBe(false);
     }
-
-    expect(card.classList.contains("catalog-nonactionable")).toBe(true);
-    expect(card.classList.contains("catalog-actionable")).toBe(false);
   });
 
   it("renders primary and secondary catalog card actions with distinct affordances", async () => {
@@ -1572,8 +1577,8 @@ describe("catalog gating explanations", () => {
       ...baseState,
       currencyCents: 0,
       enjoymentCents: 0,
-      discoveredCatalogEntries: [],
-      unlockedMilestones: ["collector-shelf", "showcase"],
+      // Don't unlock automatic tier - test that locked tiers are hidden
+      unlockedMilestones: [],
     };
 
     localStorage.setItem(
@@ -1600,7 +1605,7 @@ describe("catalog gating explanations", () => {
     cleanup();
   });
 
-  it("renders lock overlay and explainer for gated entries", async () => {
+  it("hides locked tier entries from the catalog", async () => {
     const user = userEvent.setup();
     await switchToAllPreset(user);
 
@@ -1609,18 +1614,11 @@ describe("catalog gating explanations", () => {
 
     await user.type(searchInput, "126713GRNR");
 
+    // Locked tier watches should be hidden entirely
+    expect(screen.queryByTestId(`catalog-card-${classicModelId}`)).toBeNull();
     expect(screen.queryByTestId(`catalog-buy-${classicModelId}`)).toBeNull();
-    expect(screen.getByTestId(`catalog-gate-${classicModelId}`)).toBeTruthy();
-    expect(screen.getByTestId(`catalog-lock-${classicModelId}`)).toBeTruthy();
-
-    const whyButton = screen.getByTestId(`catalog-why-${classicModelId}`);
-    await user.click(whyButton);
-
-    const explainer = screen.getByTestId(`catalog-explain-${classicModelId}`);
-    expect(explainer).toHaveAttribute("open");
-    expect(explainer.textContent).toContain("Enjoyment");
-    expect(explainer.textContent).toContain("Funds");
-    expect(explainer.textContent).toContain("Next:");
+    expect(screen.queryByTestId(`catalog-gate-${classicModelId}`)).toBeNull();
+    expect(screen.queryByTestId(`catalog-lock-${classicModelId}`)).toBeNull();
   });
 });
 

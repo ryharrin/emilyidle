@@ -105,7 +105,6 @@ function isCatalogTierUnlocked(state: GameState, tierId: WatchItemId): boolean {
  * open. Tier-unlock status is exposed as metadata for callers that need lock/explainer detail.
  */
 export type CatalogModelPurchaseReachability = {
-  discovered: boolean;
   ownedCount: number;
   tierUnlocked: boolean;
   gate: WatchModelPurchaseGate;
@@ -117,14 +116,12 @@ export function getCatalogModelPurchaseReachability(
   modelId: string,
 ): CatalogModelPurchaseReachability {
   const tierId = getWatchModelTierId(modelId);
-  const discovered = state.discoveredCatalogEntries.includes(modelId);
   const ownedCount = getWatchModelOwnedCount(state, modelId);
   const tierUnlocked = isCatalogTierUnlocked(state, tierId);
   const gate = getWatchModelPurchaseGate(state, modelId);
-  const buyActionReachable = discovered && gate.ok;
+  const buyActionReachable = tierUnlocked && gate.ok;
 
   return {
-    discovered,
     ownedCount,
     tierUnlocked,
     gate,
@@ -144,7 +141,7 @@ export function canReachCatalogUnownedBuyAction(state: GameState, modelId: strin
 export function hasCatalogReadyUnownedModel(state: GameState): boolean {
   return WATCH_MODELS.some((model) => {
     const reachability = getCatalogModelPurchaseReachability(state, model.id);
-    return reachability.discovered && reachability.ownedCount === 0;
+    return reachability.tierUnlocked && reachability.ownedCount === 0;
   });
 }
 

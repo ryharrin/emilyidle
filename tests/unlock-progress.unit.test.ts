@@ -10,6 +10,7 @@ import {
   getWorkshopPrestigeThresholdCents,
   getMaisonPrestigeThresholdCents,
   getNostalgiaPrestigeThresholdCents,
+  getWatchModels,
 } from "../src/game/state";
 
 describe("unlock progress detail helpers", () => {
@@ -52,9 +53,15 @@ describe("unlock progress detail helpers", () => {
 
   it("computes milestone progress details for catalogDiscovery milestone archive-curator", () => {
     const baseState = createInitialState();
+    const models = getWatchModels();
     const seededState = {
       ...baseState,
-      discoveredCatalogEntries: ["one", "two", "three"],
+      watchModels: {
+        ...baseState.watchModels,
+        [models[0].id]: 1,
+        [models[1].id]: 1,
+        [models[2].id]: 1,
+      },
     };
 
     const detail = getMilestoneUnlockProgressDetail(seededState, "archive-curator");

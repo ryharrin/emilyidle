@@ -37,7 +37,10 @@ export function CareerStageChoiceSummary({ state }: CareerStageChoiceSummaryProp
   }
 
   return (
-    <div className="card career-stage-choice-summary career-panel-cluster-card" data-testid="career-permanent-choices">
+    <div
+      className="card career-stage-choice-summary career-panel-cluster-card"
+      data-testid="career-permanent-choices"
+    >
       <div className="career-track-header career-stage-choice-header">
         <div>
           <h4>Permanent choices</h4>

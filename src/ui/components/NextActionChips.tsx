@@ -18,15 +18,27 @@ type NextActionChipsProps = {
   onSelect: (chip: NextActionChip) => void;
 };
 
-export function NextActionChips({ chips, onDismiss, onSelect }: NextActionChipsProps): JSX.Element | null {
+export function NextActionChips({
+  chips,
+  onDismiss,
+  onSelect,
+}: NextActionChipsProps): JSX.Element | null {
   if (chips.length === 0) {
     return null;
   }
 
   return (
-    <section className="next-action-chip-rail" aria-label="Next action suggestions" data-testid="next-action-chip-rail">
+    <section
+      className="next-action-chip-rail"
+      aria-label="Next action suggestions"
+      data-testid="next-action-chip-rail"
+    >
       {chips.map((chip) => (
-        <article key={chip.id} className="next-action-chip" data-testid={`next-action-chip-${chip.id}`}>
+        <article
+          key={chip.id}
+          className="next-action-chip"
+          data-testid={`next-action-chip-${chip.id}`}
+        >
           <div className="next-action-chip__copy">
             <p className="next-action-chip__title">{chip.title}</p>
             <p className="next-action-chip__detail">{chip.detail}</p>

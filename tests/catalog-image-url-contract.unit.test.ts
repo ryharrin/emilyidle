@@ -27,8 +27,7 @@ describe("catalog image URL mapping contract", () => {
   });
 
   it("resolves image URLs and fallback placeholders through BASE_URL-safe catalog paths", () => {
-    const baseUrl =
-      typeof import.meta.env.BASE_URL === "string" ? import.meta.env.BASE_URL : "/";
+    const baseUrl = typeof import.meta.env.BASE_URL === "string" ? import.meta.env.BASE_URL : "/";
     const catalogRoot = `${baseUrl}catalog/`;
 
     for (const entry of CATALOG_ENTRIES) {

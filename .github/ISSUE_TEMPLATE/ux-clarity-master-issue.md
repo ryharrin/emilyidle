@@ -20,12 +20,12 @@ Use this issue as the single source of truth for UX clarity execution state acro
 
 ## Task + PR Board
 
-| Task ID | Track | Owner | Status | PR | Depends On | Files/Hotspots | Validation Rows | Merge Slot | Notes |
-|---|---|---|---|---|---|---|---|---|---|
-| UXC-001 | App Shell/Nav | @ | Planned/In Progress/In Review/Merged/Blocked | # | UXC-___ | `src/App.tsx` / none | Desktop-Fresh, Mobile-Fresh, Keyboard-Fresh | 3 |  |
-| UXC-002 | Catalog UX/Economy | @ | Planned/In Progress/In Review/Merged/Blocked | # | UXC-___ | `src/ui/tabs/CatalogTab.tsx` / none | Desktop-Seeded, Mobile-Seeded, Keyboard-Seeded | 2 |  |
-| UXC-003 | Mobile UX | @ | Planned/In Progress/In Review/Merged/Blocked | # | UXC-___ | none | Mobile-Fresh, Mobile-Seeded | 4 |  |
-| UXC-004 | Onboarding/Guidance | @ | Planned/In Progress/In Review/Merged/Blocked | # | UXC-___ | none | Desktop-Fresh, Mobile-Fresh | 5 |  |
+| Task ID | Track               | Owner | Status                                       | PR  | Depends On | Files/Hotspots                      | Validation Rows                                | Merge Slot | Notes |
+| ------- | ------------------- | ----- | -------------------------------------------- | --- | ---------- | ----------------------------------- | ---------------------------------------------- | ---------- | ----- |
+| UXC-001 | App Shell/Nav       | @     | Planned/In Progress/In Review/Merged/Blocked | #   | UXC-\_\_\_ | `src/App.tsx` / none                | Desktop-Fresh, Mobile-Fresh, Keyboard-Fresh    | 3          |       |
+| UXC-002 | Catalog UX/Economy  | @     | Planned/In Progress/In Review/Merged/Blocked | #   | UXC-\_\_\_ | `src/ui/tabs/CatalogTab.tsx` / none | Desktop-Seeded, Mobile-Seeded, Keyboard-Seeded | 2          |       |
+| UXC-003 | Mobile UX           | @     | Planned/In Progress/In Review/Merged/Blocked | #   | UXC-\_\_\_ | none                                | Mobile-Fresh, Mobile-Seeded                    | 4          |       |
+| UXC-004 | Onboarding/Guidance | @     | Planned/In Progress/In Review/Merged/Blocked | #   | UXC-\_\_\_ | none                                | Desktop-Fresh, Mobile-Fresh                    | 5          |       |
 
 ## Merge Train Order (for this issue)
 
