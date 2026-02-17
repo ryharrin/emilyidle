@@ -45,18 +45,15 @@ const buildSeededState = (): GameState => {
 };
 
 async function ensureCompactCatalogDensity(page: Page) {
-  const detailsButtons = page.locator('button[data-testid^="catalog-details-button-"]');
-  if (
-    (await detailsButtons
-      .first()
-      .isVisible()
-      .catch(() => false)) === true
-  ) {
+  const densityToggle = page.getByTestId("catalog-density-toggle");
+  const isCompact = (await densityToggle.getAttribute("aria-pressed")) === "true";
+
+  if (isCompact) {
     return;
   }
 
-  await clickLocatorSafely(page.getByTestId("catalog-density-toggle"));
-  await expect(detailsButtons.first()).toBeVisible();
+  await clickLocatorSafely(densityToggle);
+  await expect(densityToggle).toHaveAttribute("aria-pressed", "true");
 }
 
 async function openWindingModalFromCatalog(page: Page) {
