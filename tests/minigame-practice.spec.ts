@@ -26,6 +26,7 @@ const buildSeededState = (): GameState => {
     unlockedMilestones: Array.from(
       new Set([...base.unlockedMilestones, "collector-shelf", "showcase", "atelier"]),
     ),
+    catalogTierUnlocks: ["quartz", "automatic", "manual", "tourbillon"],
     items: {
       ...base.items,
       quartz: Math.max(base.items.quartz ?? 0, 3),
