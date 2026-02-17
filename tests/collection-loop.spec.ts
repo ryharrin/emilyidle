@@ -38,7 +38,7 @@ const STARTER_MODEL_ID = "rolex-calibrorolex";
 const CLASSIC_MODEL_ID = "rolex-rolex-gmt-master-ii-ref-126713grnr";
 const TOURBILLON_MODEL_ID =
   "audemars-piguet-audemars-piguet-ref-25831-con-datario-riserva-di-carica-e-tourbillon-risalente-al-1997";
-const WATCH_MODEL_COUNT = 59;
+const WATCH_MODEL_COUNT = 32; // quartz tier count (unlocked by default)
 const PRIMARY_TAB_IDS_BY_LABEL: Record<string, string> = {
   Career: "career",
   Catalog: "catalog",
