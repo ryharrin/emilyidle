@@ -1507,7 +1507,7 @@ export function getPrimaryLoopAction(state: GameState, nowMs: number): PrimaryLo
         target: { tabId: "nostalgia", scrollTargetId: "nostalgia-preview" },
       },
       secondary: {
-        id: "audit-reset-preferences",
+        id: "review-reset-preferences",
         label: "Audit reset preferences",
         detail: "Confirm unlock prompts and visibility settings before reset.",
         actionLabel: "Open Settings",
