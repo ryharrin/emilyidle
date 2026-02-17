@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Ensure pnpm 9.15.0
-        run: npm install -g pnpm@9.15.0
+        run: npm install -g --force pnpm@9.15.0
 
       - name: Restore pnpm store cache
         uses: actions/cache@v4
@@ -73,7 +73,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Ensure pnpm 9.15.0
-        run: npm install -g pnpm@9.15.0
+        run: npm install -g --force pnpm@9.15.0
 
       - name: Restore pnpm store cache
         uses: actions/cache@v4
