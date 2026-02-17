@@ -304,11 +304,12 @@ test.describe("collection loop", () => {
       await page.getByTestId("catalog-shop").scrollIntoViewIfNeeded();
       await openCatalogFilters(page);
       const catalogFilters = page.getByTestId("catalog-filters");
-      await catalogFilters.getByTestId("catalog-search").fill("126713GRNR");
-      const gate = page.getByTestId(`catalog-gate-${CLASSIC_MODEL_ID}`);
+      // Search for a quartz watch (unlocked tier) but with 0 cash
+      await catalogFilters.getByTestId("catalog-search").fill("Calibrorolex");
+      const gate = page.getByTestId(`catalog-gate-${STARTER_MODEL_ID}`);
       await gate.scrollIntoViewIfNeeded();
       await expect(gate).toBeVisible();
-      await expect(page.getByTestId(`catalog-buy-${CLASSIC_MODEL_ID}`)).toHaveCount(0);
+      await expect(page.getByTestId(`catalog-buy-${STARTER_MODEL_ID}`)).toHaveCount(0);
     });
 
     test("fresh save career session leads into first catalog purchase", async ({ page }) => {
@@ -444,9 +445,6 @@ test.describe("collection loop", () => {
             nextPayload.state.watchModels?.["rolex-calibrorolex"] ?? 0,
           ),
         };
-        nextPayload.state.discoveredCatalogEntries = Array.from(
-          new Set([...(nextPayload.state.discoveredCatalogEntries ?? []), "rolex-calibrorolex"]),
-        );
         window.localStorage.setItem("emily-idle:save", JSON.stringify(nextPayload));
       });
 
@@ -524,7 +522,6 @@ test.describe("collection loop", () => {
         eventStates: {
           "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
-        discoveredCatalogEntries: [],
         catalogTierUnlocks: [],
       };
 
@@ -599,7 +596,6 @@ test.describe("collection loop", () => {
         eventStates: {
           "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
-        discoveredCatalogEntries: [],
         catalogTierUnlocks: [],
       };
 
@@ -687,7 +683,6 @@ test.describe("collection loop", () => {
         eventStates: {
           "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
-        discoveredCatalogEntries: [],
         catalogTierUnlocks: [],
       };
 
@@ -749,7 +744,6 @@ test.describe("collection loop", () => {
           "showcase-week": { activeUntilMs: 0, nextAvailableAtMs: 0 },
           "heritage-gala": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
-        discoveredCatalogEntries: [],
         catalogTierUnlocks: [],
       };
 
@@ -808,7 +802,6 @@ test.describe("collection loop", () => {
         eventStates: {
           "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
-        discoveredCatalogEntries: [],
         catalogTierUnlocks: [],
       };
 
@@ -867,7 +860,6 @@ test.describe("collection loop", () => {
           "showcase-week": { activeUntilMs: 0, nextAvailableAtMs: 0 },
           "heritage-gala": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
-        discoveredCatalogEntries: [],
         catalogTierUnlocks: [],
       };
 
@@ -1107,7 +1099,6 @@ test.describe("collection loop", () => {
         eventStates: {
           "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
         },
-        discoveredCatalogEntries: [],
         catalogTierUnlocks: [],
         craftingParts: 0,
         craftedBoosts: {
