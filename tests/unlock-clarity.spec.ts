@@ -81,6 +81,8 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
   const lockedItemHint = page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`);
   await lockedItemHint.scrollIntoViewIfNeeded();
   await expect(lockedItemHint).toBeVisible();
+  // Wait for catalog to be fully loaded before interacting with filters
+  await page.waitForTimeout(500);
   await page.getByTestId("catalog-quick-preset").selectOption("unlocking-soon");
   await expect(page.getByTestId("catalog-quick-preset-hint")).toContainText(
     "Show locked references near their unlock threshold.",

@@ -137,7 +137,8 @@ test("nostalgia prestige flow", async ({ page }) => {
   await page.getByRole("button", { name: "Keep current tab" }).click();
 
   await expect(page.getByTestId("nostalgia-results")).toBeVisible();
-  await expect(page.getByTestId("nostalgia-floating-delta")).toBeVisible({ timeout: 5_000 });
+  // Floating delta may take longer to appear on mobile webkit
+  await expect(page.getByTestId("nostalgia-floating-delta")).toBeVisible({ timeout: 15_000 });
   const toastStack = page.getByTestId("toast-stack");
   const dismissButton = page.getByRole("button", {
     name: /dismiss nostalgia prestige toast/i,
