@@ -3,7 +3,7 @@ import { openCareerProgression, selectCareerView } from "./helpers/careerProgres
 import { clickLocatorSafely } from "./helpers/interactions";
 
 function visibleByTestId(page: Page, testId: string) {
-  return page.locator(`[data-testid="${testId}"]:visible`).first();
+  return page.getByTestId(testId).first();
 }
 
 test.describe("career upgrades tree interactions", () => {
@@ -91,6 +91,8 @@ test.describe("career upgrades tree interactions", () => {
     await clickLocatorSafely(trackOption);
     await expect(page.getByTestId("career-permanent-choice-confirm")).toBeVisible();
     await clickLocatorSafely(page.getByTestId("career-permanent-choice-confirm"));
+    // Wait for state transition to complete
+    await page.waitForTimeout(500);
     const lockedTrackLabel = visibleByTestId(page, "career-choice-locked-licensed-associate");
     await expect(lockedTrackLabel).toBeVisible({ timeout: 15_000 });
 
