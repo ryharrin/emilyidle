@@ -1151,7 +1151,7 @@ describe("catalog filters", () => {
     await user.type(searchInput, UNKNOWN_YEAR_CATALOG_ENTRY.model);
 
     const detailsDisclosure = await waitFor(() => screen.getAllByTestId("catalog-details")[0]);
-    await user.click(within(detailsDisclosure).getByText(/Details/i));
+    await user.click(within(detailsDisclosure).getByText(/^Details$/i));
 
     const passportYearValues = await waitFor(() =>
       screen.getAllByTestId("watch-passport-year-value"),

@@ -48,7 +48,11 @@ test("selector contract anchors remain reachable", async ({ page }) => {
 
   await clickLocatorSafely(page.getByRole("tab", { name: "Catalog" }));
   await openCatalogFilters(page);
-  await page.getByRole("combobox", { name: "Quick preset" }).selectOption("All references");
+  // Wait for filters to be ready before interacting with combobox
+  await page.waitForTimeout(500);
+  const quickPreset = page.getByRole("combobox", { name: "Quick preset" });
+  await expect(quickPreset).toBeVisible();
+  await quickPreset.selectOption("All references");
   await expect(page.getByTestId("catalog-grid")).toBeVisible();
   await expect(page.getByTestId("catalog-card").first()).toBeVisible();
   await expect(page.getByTestId("catalog-shop")).toHaveCount(1);

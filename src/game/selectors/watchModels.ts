@@ -83,7 +83,7 @@ export function getWatchModelPurchaseGate(
   return gate;
 }
 
-function isCatalogTierUnlocked(state: GameState, tierId: WatchItemId): boolean {
+export function isCatalogTierUnlocked(state: GameState, tierId: WatchItemId): boolean {
   if (state.catalogTierUnlocks.includes(tierId)) {
     return true;
   }

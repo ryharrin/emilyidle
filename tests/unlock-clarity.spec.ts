@@ -10,6 +10,7 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
     items: { quartz: 0, automatic: 0, manual: 0, tourbillon: 0 },
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
+    catalogTierUnlocks: ["quartz", "automatic"],
     workshopBlueprints: 0,
     workshopPrestigeCount: 0,
     workshopUpgrades: {
@@ -35,7 +36,6 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
       "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
     },
     discoveredCatalogEntries: [],
-    catalogTierUnlocks: [],
   };
 
   await page.addInitScript(
@@ -81,6 +81,8 @@ test("collection keeps catalog callouts while hidden systems remain locked", asy
   const lockedItemHint = page.getByTestId(`locked-item-hint-${CLASSIC_MODEL_ID}`);
   await lockedItemHint.scrollIntoViewIfNeeded();
   await expect(lockedItemHint).toBeVisible();
+  // Wait for catalog to be fully loaded before interacting with filters
+  await page.waitForTimeout(500);
   await page.getByTestId("catalog-quick-preset").selectOption("unlocking-soon");
   await expect(page.getByTestId("catalog-quick-preset-hint")).toContainText(
     "Show locked references near their unlock threshold.",
@@ -139,6 +141,7 @@ test("catalog empty state CTA stays in catalog", async ({ page }) => {
     watchModels: {},
     upgrades: { "polishing-tools": 0, "assembly-jigs": 0, "guild-contracts": 0 },
     unlockedMilestones: [],
+    catalogTierUnlocks: ["quartz"],
     workshopBlueprints: 0,
     workshopPrestigeCount: 0,
     workshopUpgrades: {
@@ -164,7 +167,6 @@ test("catalog empty state CTA stays in catalog", async ({ page }) => {
       "auction-weekend": { activeUntilMs: 0, nextAvailableAtMs: 0 },
     },
     discoveredCatalogEntries: [],
-    catalogTierUnlocks: [],
   };
 
   await page.addInitScript(

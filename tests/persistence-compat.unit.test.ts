@@ -159,6 +159,10 @@ describe("persistence compatibility", () => {
     if (loaded.ok) {
       return;
     }
+    expect("error" in loaded).toBe(true);
+    if (!("error" in loaded)) {
+      return;
+    }
     if ("empty" in loaded) {
       throw new Error("Expected stale save generation error, got empty save result");
     }
@@ -211,6 +215,10 @@ describe("persistence compatibility", () => {
 
     expect(loaded.ok).toBe(false);
     if (loaded.ok) {
+      return;
+    }
+    expect("error" in loaded).toBe(true);
+    if (!("error" in loaded)) {
       return;
     }
     if ("empty" in loaded) {

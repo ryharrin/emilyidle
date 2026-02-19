@@ -934,10 +934,9 @@ export function CatalogPurchasePanel({
     const showDismantleAction = atelierUnlocked && hasCraftingParts;
     const powerReserveDetail = getPowerReserveDetail(state, tierId);
     const showInlineSecondaryActions = !isCompactDensity;
-    const showDetailsButton = isCompactDensity || isMobileViewport;
     const showExpertCardDetails = !isCompactDensity && isExpertViewMode;
     const showExpertSecondaryActions = showInlineSecondaryActions && isExpertViewMode;
-    const showSecondaryActions = showInlineSecondaryActions || showDetailsButton;
+    const showSecondaryActions = showInlineSecondaryActions;
     const decisionInfo = buildCatalogDecisionInfo({
       tierId,
       movement: tierItem.movement,
@@ -1078,6 +1077,19 @@ export function CatalogPurchasePanel({
                     : []
                 }
               />
+              <button
+                type="button"
+                className="catalog-card-details-button catalog-secondary-action"
+                data-testid={`catalog-details-button-${entry.id}`}
+                aria-haspopup="dialog"
+                aria-controls="catalog-details-sheet"
+                aria-expanded={isDetailsOpen}
+                onClick={(event) =>
+                  openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
+                }
+              >
+                Details
+              </button>
             </div>
           </div>
           {gateEtaLabel && <p className="muted catalog-gate-eta">{gateEtaLabel}</p>}
@@ -1144,21 +1156,6 @@ export function CatalogPurchasePanel({
                     </button>
                   )}
                 </>
-              )}
-              {showDetailsButton && (
-                <button
-                  type="button"
-                  className="catalog-card-details-button catalog-secondary-action"
-                  data-testid={`catalog-details-button-${entry.id}`}
-                  aria-haspopup="dialog"
-                  aria-controls="catalog-details-sheet"
-                  aria-expanded={isDetailsOpen}
-                  onClick={(event) =>
-                    openDetailsSheet(entry.id, showFacts, event.currentTarget as HTMLButtonElement)
-                  }
-                >
-                  More
-                </button>
               )}
               {showExpertSecondaryActions &&
                 canShowInteract &&
@@ -1620,12 +1617,17 @@ export function CatalogPurchasePanel({
                     <span
                       className="catalog-tab-ready-badge"
                       data-testid="catalog-tab-ready-unowned"
+                      aria-hidden="true"
                     >
                       Ready
                     </span>
                   )}
                   {tab.id === "owned" && ownedReady && (
-                    <span className="catalog-tab-ready-badge" data-testid="catalog-tab-ready-owned">
+                    <span
+                      className="catalog-tab-ready-badge"
+                      data-testid="catalog-tab-ready-owned"
+                      aria-hidden="true"
+                    >
                       Quick action ready
                     </span>
                   )}
@@ -1819,23 +1821,47 @@ export function CatalogTabLegacy({
     () => getEnjoymentRateCentsPerSec(state) * effectiveEventMultiplier,
     [effectiveEventMultiplier, state],
   );
+  const watchItemById = React.useMemo(() => {
+    return new Map(getWatchItems().map((item) => [item.id, item]));
+  }, []);
 
-  const renderCatalogDetails = (entry: CatalogEntry, tags: string[], showFacts: boolean) => {
-    const sourceLabel = entry.image.sourceUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
-    const specs = [
-      { label: "Year", value: entry.year },
-      { label: "Tags", value: tags.join(" · ") },
-      { label: "License", value: entry.image.licenseName },
-      { label: "Author", value: entry.image.author },
-      {
-        label: "Source",
-        value: (
-          <a href={entry.image.sourceUrl} target="_blank" rel="noreferrer">
-            {sourceLabel}
-          </a>
-        ),
-      },
-    ];
+  const renderCatalogDetails = (
+    entry: CatalogEntry,
+    tags: string[],
+    showFacts: boolean,
+    ownedCount: number,
+    gate: ReturnType<typeof getWatchModelPurchaseGate>,
+    duplicateMultiplier: number,
+  ) => {
+    const tierId = getWatchModelTierId(entry.id);
+    const tierItem = watchItemById.get(tierId);
+    const unlockMilestoneId = tierItem?.unlockMilestoneId;
+    const unlockDetail = unlockMilestoneId
+      ? getMilestoneUnlockProgressDetail(state, unlockMilestoneId)
+      : null;
+    const unlockUsesCents = unlockMilestoneId === "showcase";
+    const unlockProgressLabel = unlockDetail
+      ? `${unlockUsesCents ? formatMoneyFromCents(unlockDetail.current) : Math.floor(unlockDetail.current).toLocaleString()} / ${
+          unlockUsesCents
+            ? formatMoneyFromCents(unlockDetail.threshold)
+            : Math.floor(unlockDetail.threshold).toLocaleString()
+        }`
+      : null;
+    const decisionInfo = buildCatalogDecisionInfo({
+      tierId,
+      movement: tierItem?.movement ?? entry.movementType,
+      unlocked: isItemUnlocked(state, tierId),
+      ownedCount,
+      unlockRequirementLabel: unlockDetail?.label ?? null,
+      unlockProgressLabel,
+      gateReady: gate.ok,
+      gateEtaLabel: getGateEtaLabel(
+        gate,
+        effectiveCashRateCentsPerSec,
+        effectiveEnjoymentRateCentsPerSec,
+      ),
+      duplicateMultiplier,
+    });
 
     return (
       <details
@@ -1845,27 +1871,12 @@ export function CatalogTabLegacy({
         data-testid="catalog-details"
       >
         <summary>Details</summary>
-        <div className="catalog-details-body">
-          <p className="catalog-description">{entry.description}</p>
-          <ul className="catalog-specs">
-            {specs.map((spec) => (
-              <li key={`${entry.id}-${spec.label}`}>
-                <span className="catalog-spec-label">{spec.label}</span>
-                <span className="catalog-spec-value">{spec.value}</span>
-              </li>
-            ))}
-          </ul>
-          {showFacts && entry.facts && entry.facts.length > 0 && (
-            <div className="catalog-facts">
-              <p className="catalog-facts-title">Collector notes</p>
-              <ul data-testid="catalog-facts">
-                {entry.facts.map((fact) => (
-                  <li key={fact}>{fact}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        <CatalogDetailsContent
+          entry={entry}
+          tags={tags}
+          showFacts={showFacts}
+          decisionInfo={decisionInfo}
+        />
       </details>
     );
   };
@@ -1885,7 +1896,7 @@ export function CatalogTabLegacy({
               <p className="eyebrow">Archive</p>
               <h2>Catalog</h2>
               <p className="muted">
-                Buy watches in Catalog, then review reference details and licensing sources.
+                Buy watches in Catalog, then review reference details and pricing metadata.
               </p>
             </div>
             <div className="catalog-header-actions">
@@ -2118,7 +2129,14 @@ export function CatalogTabLegacy({
                           </div>
                           <p className="catalog-year">{entry.year}</p>
                         </div>
-                        {renderCatalogDetails(entry, tags, false)}
+                        {renderCatalogDetails(
+                          entry,
+                          tags,
+                          false,
+                          ownedCount,
+                          gate,
+                          duplicateMultiplier,
+                        )}
                         <div className="catalog-action-bar">
                           <div className="catalog-action-meta">
                             <span className="catalog-owned">{ownedCount} owned</span>
@@ -2244,7 +2262,14 @@ export function CatalogTabLegacy({
                               </div>
                               <p className="catalog-year">{entry.year}</p>
                             </div>
-                            {renderCatalogDetails(entry, tags, true)}
+                            {renderCatalogDetails(
+                              entry,
+                              tags,
+                              true,
+                              ownedCount,
+                              gate,
+                              duplicateMultiplier,
+                            )}
                             <div className="catalog-action-bar">
                               <div className="catalog-action-meta">
                                 <span className="catalog-owned">{ownedCount} owned</span>
