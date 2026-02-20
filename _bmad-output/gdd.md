@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9]
 inputDocuments:
   - docs/index.md
   - docs/project-overview.md
@@ -15,7 +15,7 @@ documentCounts:
   brainstorming: 0
   projectDocs: 8
 workflowType: "gdd"
-lastStep: 8
+lastStep: 9
 project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
@@ -858,11 +858,87 @@ Watches (mini-games) → Enjoyment
 
 ### Level Types
 
-{{level_types}}
+**Hub Structure with Sequential Chapters**
+
+**Central Hub: Home Base**
+
+- Emily's personal space that evolves throughout the journey
+- Access to all other areas
+- Visual representation of progress (photos, watch display, decor)
+- Emotional anchor of the experience
+
+**Connected Areas:**
+
+- **Watch Collection** - View, interact with, and manage watch collection
+- **Career Office** - Conduct therapy sessions, advance career
+- **Market** - Purchase new watches and upgrades
+- **Home Life Gallery** - Family photos, kid drawings, personal touches
+
+**Career Stages as Chapters:**
+
+Each career stage represents a chapter in Emily's journey of becoming:
+
+1. **Chapter 1: "First Steps"** (PhD Student)
+   - Theme: Learning, foundation building, uncertainty
+   - Unlocks: Basic quartz watches, first family photo
+   - Visual: Simple apartment, sparse decor
+
+2. **Chapter 2: "Finding Her Voice"** (Externship)
+   - Theme: Supervised practice, building confidence
+   - Unlocks: Manual watches, early career tools
+   - Visual: More professional space
+
+3. **Chapter 3: "Service"** (VA Hospital)
+   - Theme: Giving back, serving community
+   - Unlocks: Automatic watches, **JLC Q1252501 milestone**
+   - Visual: Institutional but meaningful setting
+
+4. **Chapter 4: "Independence"** (Private Practice)
+   - Theme: Standing on her own, entrepreneurship
+   - Unlocks: Tourbillon watches, premium home features
+   - Visual: Beautiful personal office
+
+5. **Chapter 5: "Growth"** (Group Practice)
+   - Theme: Collaboration, mentorship, expansion
+   - Unlocks: Final watch tiers, complete home gallery
+   - Visual: Professional suite, established presence
+
+6. **Chapter 6: "At Last"** (Retirement)
+   - Theme: Completion, freedom, legacy
+   - Unlocks: Final achievements, complete collection
+   - Visual: Beautiful home, museum-quality display
 
 ### Level Progression
 
-{{level_progression}}
+**Sequential Chapter Unlock:**
+
+- Chapters unlock by completing career stage requirements
+- Each chapter must be experienced to progress
+- No skipping - the journey is the gift
+
+**Within-Chapter Progress:**
+
+- Mini-goals: Collect specific watches, reach income targets
+- Milestones: Unlock home life content at 25%, 50%, 75%, 100%
+- Freedom: Player chooses which watches to prioritize within tier
+
+**Visual Progression:**
+
+- Home base transforms to reflect current chapter
+- Photos from each era appear as milestones reached
+- Watch display grows from single piece to full collection
+- Lighting/atmosphere shifts (hustle early, serenity late)
+
+**Pacing:**
+
+- Chapter 1: ~45 minutes (learning, establishing)
+- Chapter 2: ~45 minutes (building skills)
+- Chapter 3: ~60 minutes (major milestone - JLC unlock)
+- Chapter 4: ~60 minutes (accelerating growth)
+- Chapter 5: ~60 minutes (nearing completion)
+- Chapter 6: ~30 minutes (ending, reflection, "At Last")
+
+**Total: 6 hours of continuous becoming**
 
 ---
 
