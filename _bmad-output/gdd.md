@@ -20,10 +20,10 @@ project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
 game_type: "idle-incremental"
-game_name: "Emily Idle"
+game_name: "Emily At Last"
 ---
 
-# Emily Idle - Game Design Document
+# Emily At Last - Game Design Document
 
 **Author:** Ryan
 **Game Type:** Idle/Incremental
@@ -37,7 +37,7 @@ game_name: "Emily Idle"
 
 **Mobile Web Browser (Phone)** - Progressive Web App (PWA) capable
 
-Emily Idle is designed primarily for mobile browser play, allowing players to engage with the game anywhere without requiring an app store download. The Vite + React + TypeScript stack supports responsive design that adapts to various screen sizes while maintaining touch-first interactions.
+Emily At Last is designed primarily for mobile browser play, allowing players to engage with the game anywhere without requiring an app store download. The Vite + React + TypeScript stack supports responsive design that adapts to various screen sizes while maintaining touch-first interactions.
 
 ### Secondary Platform
 
@@ -155,7 +155,7 @@ Designed for "check-in" gameplay that respects busy schedules. The game progress
 
 ### Player Motivations
 
-**What draws this audience to Emily Idle:**
+**What draws this audience to Emily At Last:**
 
 1. **Collection Satisfaction** - Completing the watch catalog, seeing rare pieces acquired
 2. **Progress Visibility** - Clear growth from session to session
@@ -178,11 +178,11 @@ Designed for "check-in" gameplay that respects busy schedules. The game progress
 
 ### Game Name
 
-Emily Idle (working title: watch-idle)
+Emily At Last (working title: emily-at-last)
 
 ### Core Concept
 
-Emily Idle is a browser-based idle/incremental game that combines watch collection mechanics with a therapist career progression system. Players collect watches across four tiers (quartz, automatic, manual, tourbillon), each generating passive income and enjoyment currency. The unique dual-progression system requires players to balance their growing watch collection with an active therapist career, creating engaging gameplay loops that cater to both idle and active play styles.
+Emily At Last is a browser-based idle/incremental game that combines watch collection mechanics with a therapist career progression system. Players collect watches across four tiers (quartz, automatic, manual, tourbillon), each generating passive income and enjoyment currency. The unique dual-progression system requires players to balance their growing watch collection with an active therapist career, creating engaging gameplay loops that cater to both idle and active play styles.
 
 The game features a three-layer prestige system (Workshop, Maison, Nostalgia) that provides long-term progression through permanent bonuses and unlocks. Real-world watch models from the catalog create an authentic collection experience, while mini-game interactions (winding, automatic movement, quartz alignment) add active engagement during play sessions.
 
@@ -242,7 +242,7 @@ This game is designed exclusively for Emily. It is not intended for public relea
 ### Background and Rationale
 
 **Motivation:**  
-Emily Idle was created as a personalized gift for Emily, who collects watches and works as a psychologist. The game weaves together her professional identity (therapy career), her hobby (watch collecting), and her family (partner Ryan, children Freddy, Sam, and Simi) into an interactive experience that celebrates who she is.
+Emily At Last was created as a personalized gift for Emily, who collects watches and works as a psychologist. The game weaves together her professional identity (therapy career), her hobby (watch collecting), and her family (partner Ryan, children Freddy, Sam, and Simi) into an interactive experience that celebrates who she is.
 
 **Timing:**  
 The game represents a significant investment of time and technical skill, demonstrating the depth of care and attention Ryan has for Emily's interests and passions.
@@ -265,7 +265,7 @@ This isn't just a game about idle mechanics - it's a love letter expressed throu
 
 **What it is:** A game built from the ground up around ONE specific person's interests, relationships, and identity.
 
-**Why it's unique:** Most games aim for broad appeal. Emily Idle aims for maximum personal resonance. Every watch, every career milestone, every family reference is chosen specifically for Emily.
+**Why it's unique:** Most games aim for broad appeal. Emily At Last aims for maximum personal resonance. Every watch, every career milestone, every family reference is chosen specifically for Emily.
 
 **Why it matters to Emily:** She will recognize herself in every system. This isn't "a game about watches" - it's "Ryan made a game about MY watch collection."
 
@@ -281,7 +281,7 @@ This isn't just a game about idle mechanics - it's a love letter expressed throu
 
 **What it is:** Seamless blending of watch collecting (hobby) and psychology career (profession) into complementary game systems.
 
-**Why it's unique:** Most games focus on one theme. Emily Idle celebrates both sides of Emily's identity without compromise.
+**Why it's unique:** Most games focus on one theme. Emily At Last celebrates both sides of Emily's identity without compromise.
 
 **Why it matters to Emily:** She doesn't have to choose which part of herself to engage with - the game honors all of who she is.
 
@@ -309,7 +309,7 @@ This isn't just a game about idle mechanics - it's a love letter expressed throu
 
 Not because it's better than other idle games, but because it's not competing. Cookie Clicker, AdVenture Capitalist, and Melvor Idle serve different purposes - they're products for mass consumption.
 
-Emily Idle is a gift. It doesn't need to compete because it serves an audience of one, and that one person will love it not despite its specificity, but because of it.
+Emily At Last is a gift. It doesn't need to compete because it serves an audience of one, and that one person will love it not despite its specificity, but because of it.
 
 The "competition" isn't other games - it's other gifts. And a handmade, personalized game that reflects deep understanding of someone's passions is hard to beat.
 
