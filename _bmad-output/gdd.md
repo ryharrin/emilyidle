@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 inputDocuments:
   - docs/index.md
   - docs/project-overview.md
@@ -15,7 +15,7 @@ documentCounts:
   brainstorming: 0
   projectDocs: 8
 workflowType: "gdd"
-lastStep: 10
+lastStep: 11
 project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
@@ -1048,21 +1048,315 @@ Each career stage represents a chapter in Emily's journey of becoming:
    - Professional office spaces (psychologist identity)
    - Trans pride color nods (identity celebration)
 
+### Art Asset Generation Prompts
+
+**For AI Image Generation Tools (Midjourney, DALL-E, Stable Diffusion)**
+
+#### Home Base Scenes (6 Chapters)
+
+**Chapter 1: "First Steps" (PhD Student)**
+
+```
+A cozy but sparse studio apartment, warm cream walls, soft natural lighting from a window. A small desk with psychology textbooks, a single basic quartz watch on a simple stand. Minimal decor, youthful energy, slightly cluttered with study materials. Warm afternoon light, cozy but modest. Rose gold accent lamp. Photography style: clean, elegant, premium lifestyle photography. Aspect ratio: 9:16 for mobile.
+```
+
+**Chapter 2: "Finding Her Voice" (Externship)**
+
+```
+A slightly upgraded apartment, more professional feel. Bookshelf with psychology references, diploma frame visible but empty (in progress). Small watch collection display (3-5 watches). Cleaner desk, therapy books organized. Warm evening lighting, more settled feel. Plants starting to appear. Cream and rose gold color palette. Photography style: elegant interior design, warm and inviting. 9:16 aspect ratio.
+```
+
+**Chapter 3: "Service" (VA Hospital)**
+
+```
+A modest but meaningful space. VA-related items subtly present. Watch collection growing (8-10 watches including one prominent Jaeger-LeCoultre Master Ultra Thin Moon in 34mm rose gold). Desk more professional. Framed photo of family starting to appear. Warm afternoon light, sense of purpose. Navy and rose gold accents. Photography style: documentary lifestyle, meaningful moments. 9:16 aspect ratio.
+```
+
+**Chapter 4: "Independence" (Private Practice)**
+
+```
+A beautiful home office, independent practice feel. Large watch display case (15-20 watches), including Royal Oaks and Rolexes. Professional therapy setup visible. Multiple family photos on walls. Plants, books, warmth. Golden hour lighting, success and comfort. Cream, rose gold, forest green palette. Photography style: Architectural Digest quality, aspirational. 9:16 aspect ratio.
+```
+
+**Chapter 5: "Growth" (Group Practice)**
+
+```
+An elegant professional suite. Impressive watch collection display (25-30 watches). Established presence, success visible. Gallery wall of family photos at different ages. Sophisticated decor, warmth maintained. Soft evening light, achievement and contentment. Premium materials, tasteful luxury. Photography style: luxury interior, warm sophistication. 9:16 aspect ratio.
+```
+
+**Chapter 6: "At Last" (Retirement)**
+
+```
+A beautiful, complete home. Museum-quality watch display with full collection (30+ watches including grail pieces). Gallery walls of family memories. Comfortable, serene, achieved. Soft morning light, peace and fulfillment. Every element from previous chapters visible, evolved, perfected. Rose gold accents throughout. Photography style: dream home feature, emotional resonance. 9:16 aspect ratio.
+```
+
+#### Watch Assets
+
+**Empty Watch Display Case**
+
+```
+A premium watch display case, cream velvet interior, rose gold accents. Soft museum-quality lighting from above. Empty slots waiting to be filled. Elegant, minimalist, luxurious. Close-up detail shot. Photography style: luxury product photography. 16:9 aspect ratio.
+```
+
+**Royal Oak Style Watch**
+
+```
+A beautiful Audemars Piguet Royal Oak style watch, 34mm, rose gold case and bracelet, white dial, iconic octagonal bezel. Floating against soft cream gradient background. Studio lighting, reflections on polished surfaces. Ultra-detailed, macro photography style. Luxury watch advertisement quality. 1:1 aspect ratio.
+```
+
+**JLC Master Ultra Thin Moon**
+
+```
+Jaeger-LeCoultre Master Ultra Thin Moon, 34mm, rose gold case, silver dial with moon phase complication at 6 o'clock. Elegant, sophisticated, feminine proportions. Floating against soft gradient background. Warm studio lighting, subtle reflections. Luxury watch photography. Macro detail visible. 1:1 aspect ratio.
+```
+
+**Rolex Datejust Style**
+
+```
+Rolex Datejust style watch, 31mm, rose gold and steel, champagne dial with diamond markers. Classic, timeless, elegant. Floating against soft cream background. Studio lighting, premium feel. Luxury watch advertisement. Macro detail. 1:1 aspect ratio.
+```
+
+#### Career Office Scenes
+
+**PhD Student Office**
+
+```
+A university office, modest, textbooks stacked, desk with laptop and papers. Inspirational psychology quotes on wall. Window with campus view. Warm afternoon light. Aspirational but grounded. Single plant. Clean but lived-in. Photography style: academic lifestyle. 16:9 aspect ratio.
+```
+
+**Private Practice Office**
+
+```
+A beautiful therapy office, comfortable couch, warm lighting, plants, bookshelves with psychology references. Welcoming, professional, safe. Emily's diplomas on wall. Soft afternoon light. Cream and warm wood tones. Photography style: architectural interior, calm and inviting. 16:9 aspect ratio.
+```
+
+#### Family Photos
+
+**Ryan and Emily Portrait**
+
+```
+A loving couple portrait, Ryan (early 30s) and Emily (late 20s), casual elegant attire, warm smiles, natural lighting. Outdoor or cozy indoor setting. Genuine affection visible. Warm color palette. Photography style: candid couple photography, lifestyle portrait. Soft focus background. 4:5 aspect ratio.
+```
+
+**Family Photo - All Five**
+
+```
+Family portrait: Ryan, Emily, Freddy (6), Sam (almost 5), Simi (3). Casual, happy, authentic moment. Soft natural lighting. Warm, loving atmosphere. Everyone smiling. Home setting or outdoor. Photography style: family lifestyle photography, genuine emotions. 4:5 or 16:9 aspect ratio.
+```
+
+**Freddy (Age 6)**
+
+```
+Freddy age 6: Bright smile, showing front teeth gap, energetic, holding a toy watch. Natural outdoor light. Joyful. 4:5 aspect ratio.
+```
+
+**Sam (Age 5)**
+
+```
+Sam age 5: Sweet smile, slightly shy, soft features. Gentle lighting. Innocent and kind. 4:5 aspect ratio.
+```
+
+**Simi (Age 3)**
+
+```
+Simi age 3: Adorable toddler, big eyes, playful expression. Soft focus background. Cuteness overload. 4:5 aspect ratio.
+```
+
+#### Kid Drawings (As If Drawn by Kids)
+
+**Freddy's Watch Drawing**
+
+```
+A crayon drawing of a watch on white paper. Age 6 skill level - recognizable watch shape with hands, numbers 1-12 written carefully, maybe "Freddy" signed at bottom. Crayon colors: blue, red, yellow. Some coloring outside lines. Charming, earnest effort. Scanned paper texture. 1:1 aspect ratio.
+```
+
+**Sam's Family Drawing**
+
+```
+A crayon drawing of "My Family" on white paper. Age 5 skill level - five stick figures (mommy biggest, daddy next, three kids), all holding hands. Sun in corner, grass at bottom, house with triangle roof. "I ❤️ Emily" written in wobbly letters. Multiple crayon colors. 1:1 aspect ratio.
+```
+
+**Simi's Art**
+
+```
+A crayon scribble on white paper that Simi insists is "a watch". Age 3 skill level - energetic scribbles in circular-ish pattern, maybe some lines, mostly abstract. "Simi" written by adult helper. Pure toddler energy visible. Multiple colors overlapping. Endearing chaos. 1:1 aspect ratio.
+```
+
+#### UI Mockups
+
+**Main Game Screen**
+
+```
+Mobile game UI mockup, iPhone 17 proportions. Clean, elegant interface. Top: Currency displays (Enjoyment, Cash). Center: Main interaction area showing a watch to interact with. Bottom: Navigation tabs (Home, Collection, Career, Market). Color palette: cream background, rose gold accents, navy text. Typography: elegant serif headers, clean sans-serif body. Minimalist, premium, uncluttered. Flat design with subtle shadows. 9:16 aspect ratio.
+```
+
+**Mini-Game Screen - Winding**
+
+```
+Mobile game screen showing manual watch winding mini-game. Circular watch face with winding crown visible. Hand winding animation frames implied. Timing gauge around edge. "Hold to wind" instruction. Warm cream background, rose gold watch elements. Clean UI, satisfying visual feedback. Premium product feel. 9:16 aspect ratio.
+```
+
+**Home Gallery View**
+
+```
+Mobile screen showing "Home Life Gallery" view. Grid of family photos and kid drawings. Some slots locked with "???" indicating unlockable content. Soft shadows, card-based layout. Warm, personal, emotional. Scrolling interface implied. Cream background, rose gold accents on frames. 9:16 aspect ratio.
+```
+
+**Chapter Completion Screen**
+
+```
+Celebratory screen: "Chapter 3 Complete: Service". Beautiful typography, Jaeger-LeCoultre watch reward displayed prominently. "Next: Independence" teaser. Warm, emotional, satisfying. Confetti or particle effects implied. Rose gold accents. Premium achievement screen feel. 9:16 aspect ratio.
+```
+
+#### App Icon
+
+```
+iOS app icon for "Emily At Last". Features a stylized watch and heart combined. Rose gold and cream color scheme. Premium, elegant, personal. Simple, recognizable, app store ready. 1024x1024 square, will be masked to rounded corners by system. Flat design with subtle depth.
+```
+
+#### Music Generation Prompts
+
+**Chapter 1 Theme - "First Steps"**
+
+```
+Lo-fi hip hop, gentle piano melody, soft rain sounds, 85 BPM, nostalgic but hopeful. Warm Rhodes keyboard, subtle vinyl crackle. Evokes: beginning of a journey, uncertainty, potential. Instrumental, no vocals. Loop-able 3-4 minutes.
+```
+
+**Chapter 6 Theme - "At Last"**
+
+```
+Solo piano, simple and beautiful, 70 BPM, emotional resolution. Warm, satisfying, complete. Like the end of a beautiful film. Bittersweet but ultimately joyful. Clear, pure tones. Finality and peace. Instrumental, no vocals. 3-4 minutes, seamless loop.
+```
+
 ---
 
 ## Technical Specifications
 
 ### Performance Requirements
 
-{{performance_requirements}}
+**Target Device: Emily's iPhone 17**
+
+Since this is a gift for a single recipient, technical requirements are optimized specifically for Emily's device rather than broad compatibility.
+
+**Frame Rate Target:**
+
+- 60fps smooth performance
+- Battery-conscious rendering (requestAnimationFrame)
+- Pause when tab inactive to preserve battery
+
+**Resolution:**
+
+- Optimized for iPhone 17 screen size
+- Responsive design handles minor variations
+- Portrait orientation primary
+- Support for Dynamic Island and safe areas
+
+**Load Times:**
+
+- Initial load: Under 2 seconds on WiFi/5G
+- Progressive loading for watch catalog images
+- Service worker for offline capability and caching
 
 ### Platform-Specific Details
 
-{{platform_details}}
+**Platform: iOS Safari (iPhone 17)**
+
+**Browser Requirements:**
+
+- Safari (latest iOS)
+- WebKit features fully supported
+- No legacy browser concerns
+
+**Technical Stack:**
+
+- **Framework:** Vite + React + TypeScript (existing project)
+- **State Management:** React context or Zustand
+- **Storage:** localStorage for saves, IndexedDB for large data
+- **PWA Features:** Service worker, manifest.json, offline capability
+
+**iOS Safari Considerations:**
+
+- Touch targets: 44x44pt minimum
+- No hover states (touch-only)
+- Haptic feedback via Vibration API
+- Respect safe areas (Dynamic Island, home indicator)
+- Web App capable (add to home screen)
+- Audio requires user interaction (standard web audio)
+
+**Performance Optimization:**
+
+- Lazy loading for watch images
+- WebP format with fallbacks
+- Code splitting for routes
+- CSS animations preferred over JavaScript
 
 ### Asset Requirements
 
-{{asset_requirements}}
+**Art Assets:**
+
+**Watch Images:**
+
+- Source: Existing catalog (100+ real watches)
+- Format: WebP with JPEG fallback
+- Sizes: Optimized for iPhone 17 retina display
+- Thumbnails and detail views
+
+**UI Graphics:**
+
+- Icons: SVG (scalable, crisp on retina)
+- Backgrounds: CSS gradients and simple textures
+- Family content: Photos and drawings (provided by Ryan)
+- Animations: CSS transitions and transforms
+
+**Audio Assets:**
+
+**Music:**
+
+- 6 chapter themes + menu + ending (8-10 tracks)
+- Format: AAC or MP3 (iOS native support)
+- Length: 3-5 minutes each, seamless looping
+- Style: Lo-fi, ambient, elegant
+
+**Sound Effects:**
+
+- 40-50 total sounds (UI, mini-games, unlocks)
+- Format: AAC or WAV
+- Tactile, premium feel (watch mechanism inspired)
+
+**External Assets:**
+
+**Third-Party:**
+
+- Font: Elegant serif + clean sans (Google Fonts or Adobe)
+- Icons: Phosphor or Heroicons
+- Music: Commissioned or licensed lo-fi/ambient
+
+**Custom Content:**
+
+- Family photos (Ryan provides)
+- Children's drawings (Ryan provides)
+- Personal messages (Ryan writes)
+- Watch catalog (already exists in project)
+
+### Technical Constraints
+
+**iOS Safari Limitations:**
+
+- localStorage: ~5MB limit (sufficient for saves)
+- Audio autoplay: Requires user gesture (tap to start)
+- Background processing: Limited when tab inactive
+- Web App storage: Can request persistent storage
+
+**Single-User Optimization:**
+Since this targets only Emily's iPhone 17:
+
+- No Android testing required
+- No legacy iOS support needed
+- Can use latest WebKit features
+- Performance tuning specific to A19 chip capabilities
+
+**Architecture Note:**
+Detailed technical architecture (component structure, state patterns, build config) will be defined in the Architecture workflow following GDD completion.
 
 ---
 
