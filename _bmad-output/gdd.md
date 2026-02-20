@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 inputDocuments:
   - docs/index.md
   - docs/project-overview.md
@@ -15,7 +15,7 @@ documentCounts:
   brainstorming: 0
   projectDocs: 8
 workflowType: "gdd"
-lastStep: 9
+lastStep: 10
 project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
@@ -946,11 +946,107 @@ Each career stage represents a chapter in Emily's journey of becoming:
 
 ### Art Style
 
-{{art_style}}
+**Visual Direction: Clean, Elegant, Premium UI**
+
+**Style Approach:**
+
+- Vector/Flat with warm texture - Clean shapes but not sterile
+- Premium luxury aesthetic - Like a high-end watch app meets cozy game
+- Intimate and personal - Supporting the gift context
+- Mobile-optimized - Readable on small screens, thumb-friendly
+
+**Color Palette:**
+
+- **Primary:** Warm cream/off-white backgrounds (elegant, calm, timeless)
+- **Secondary:** Rose gold, champagne gold (Emily's stated preferences)
+- **Accents:** Deep navy, forest green (classic horology colors)
+- **Highlights:** Soft blues, gentle purples (subtle trans pride nod)
+- **Watch Specific:** Metallic silvers, golds, bronzes for watch renders
+
+**Visual References:**
+
+- **Alto's Adventure** - Clean, elegant, atmospheric minimalism
+- **Monument Valley** - Premium geometric aesthetic, sophisticated
+- **Assemble with Care** - Intimate object interaction, tactile feel
+- **Luxury Watch Apps** - Breguet, Vacheron Constantin interface elegance
+- **Cozy Games** - Stardew Valley warmth, Animal Crossing comfort
+
+**Key Visual Elements:**
+
+- **Watch Renders:** High-quality images from catalog, elegant presentation
+- **Home View:** Isometric or flat perspective, evolves with progression
+- **UI Panels:** Card-based, generous spacing, premium feel
+- **Typography:** Elegant serif for headers, clean sans-serif for body
+- **Animations:** Smooth, satisfying, never jarring (luxury product feel)
 
 ### Audio and Music
 
-{{audio_music}}
+**Music Style: Lo-Fi / Ambient / Jazz-Influenced**
+
+**Musical Direction:**
+
+- Calm, sophisticated, background-appropriate
+- Supports 6-hour play without fatigue
+- Like a cozy coffee shop or elegant lounge atmosphere
+- Emotional progression across chapters
+
+**Chapter Music Arc:**
+
+- **Chapters 1-2 (Early):** Gentle, slightly uncertain tones, sparse arrangements
+- **Chapters 3-4 (Mid):** Building confidence, richer instrumentation, warmth
+- **Chapters 5-6 (Late):** Complete, satisfying, emotionally resonant
+- **Chapter 6 "At Last":** Simple, beautiful piano or solo instrument, resolution
+
+**Sound Design:**
+
+- **Tactile, Premium Sounds:** Physical watch mechanism feel
+- **Winding:** Satisfying clicks and smooth mechanical sounds
+- **Mini-Games:** Gentle feedback tones, never harsh
+- **Unlocks:** Subtle chimes or pleasant notification sounds
+- **Haptic Feedback:** Mobile vibration for interactions (optional)
+
+**Audio References:**
+
+- **Stardew Valley** - Peaceful, looping, never annoying
+- **Jazz Café playlists** - Sophisticated background ambiance
+- **ASMR/Lo-Fi** - Calm, focus-supporting
+- **Luxury product videos** - Subtle, premium audio design
+
+**Voice/Dialogue:**
+
+- **No Full Voice Acting** - Text-based only (more intimate, like letters)
+- **Ryan's Messages:** Appear as written text, personal touch
+- **Therapy Sessions:** Text dialogue choices, patient vignettes
+- **Home Life:** Silent visual storytelling through photos/artwork
+
+### Aesthetic Goals
+
+**How Art and Audio Support Game Pillars:**
+
+1. **Personal Resonance:**
+   - Warm color palette creates welcoming atmosphere
+   - Rose gold accents reflect Emily's preferences
+   - Premium feel matches her sophisticated taste
+
+2. **Emotional Connection:**
+   - Music evolves with story progression
+   - Gentle, supportive audio never frustrates
+   - Visual home evolution mirrors emotional journey
+
+3. **Completable Journey:**
+   - Clean UI prevents overwhelm
+   - Consistent aesthetic across 6 hours
+   - Visual progression keeps engagement
+
+4. **Active Engagement:**
+   - Satisfying tactile sounds reward interaction
+   - Smooth animations make actions feel good
+   - Premium feel elevates simple interactions
+
+5. **Dual Identity Celebration:**
+   - Elegant watches (collector identity)
+   - Professional office spaces (psychologist identity)
+   - Trans pride color nods (identity celebration)
 
 ---
 
