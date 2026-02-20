@@ -2,7 +2,7 @@ import React from "react";
 
 import { ExplainButton } from "../help/ExplainButton";
 import { HELP_SECTION_IDS } from "../help/helpContent";
-import { CurrencyIcon } from "../icons/coreIcons";
+import { CurrencyIcon, EnjoymentIcon } from "../icons/coreIcons";
 import { ValueTicker } from "./ValueTicker";
 import { formatMoneyFromCents, formatRateFromCentsPerSec } from "../../game/format";
 
@@ -153,7 +153,6 @@ export function StatsHeader({
                   formatValue={formatRateFromCentsPerSec}
                   testId="value-ticker-income"
                 />
-                <span className="stats-header__rate-badge">/sec</span>
                 {eventMultiplier && eventMultiplier > 1 && (
                   <span className="stats-header__event-badge">
                     +{Math.round((eventMultiplier - 1) * 100)}% event
@@ -163,8 +162,9 @@ export function StatsHeader({
             </div>
             <div>
               <dt className="inline-icon-button stats-header__metric-label">
-                <CurrencyIcon className="inline-icon" />
-                Enjoyment
+                <EnjoymentIcon className="inline-icon" />
+                <span>Enjoyment</span>
+                <span className="currency-hint">(career)</span>
                 <ExplainButton sectionId={HELP_SECTION_IDS.currencies} label="Explain currencies" />
               </dt>
               <dd id="enjoyment" className="stats-header__metric-value">
@@ -186,7 +186,6 @@ export function StatsHeader({
                   formatValue={formatRateFromCentsPerSec}
                   testId="value-ticker-enjoyment-rate"
                 />
-                <span className="stats-header__rate-badge">/sec</span>
               </dd>
             </div>
             <div>

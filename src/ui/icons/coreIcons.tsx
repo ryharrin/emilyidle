@@ -1,6 +1,6 @@
 import type * as React from "react";
 
-import { ArrowUp, CircleQuestionMark, DollarSign, Lock, RotateCcw } from "lucide-react";
+import { ArrowUp, CircleQuestionMark, DollarSign, Heart, Lock, RotateCcw } from "lucide-react";
 
 export function HelpIcon(props: React.ComponentProps<typeof CircleQuestionMark>): JSX.Element {
   return <CircleQuestionMark {...props} aria-hidden={true} focusable={false} />;
@@ -20,4 +20,8 @@ export function CurrencyIcon(props: React.ComponentProps<typeof DollarSign>): JS
 
 export function UpgradeIcon(props: React.ComponentProps<typeof ArrowUp>): JSX.Element {
   return <ArrowUp {...props} aria-hidden={true} focusable={false} />;
+}
+
+export function EnjoymentIcon(props: React.ComponentProps<typeof Heart>): JSX.Element {
+  return <Heart {...props} aria-hidden={true} focusable={false} />;
 }

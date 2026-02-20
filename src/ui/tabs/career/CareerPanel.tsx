@@ -275,14 +275,33 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
       };
     }
 
-    if (
-      nextActionCue.id === "choose-track" ||
-      nextActionCue.id === "choose-modality" ||
-      nextActionCue.id === "choose-operating-style" ||
-      nextActionCue.id === "choose-expansion-focus"
-    ) {
+    if (nextActionCue.id === "choose-track") {
       return {
-        label: "Open progression choices",
+        label: "Choose track",
+        disabled: false,
+        onClick: openProgressDetails,
+      };
+    }
+
+    if (nextActionCue.id === "choose-modality") {
+      return {
+        label: "Choose modality",
+        disabled: false,
+        onClick: openProgressDetails,
+      };
+    }
+
+    if (nextActionCue.id === "choose-operating-style") {
+      return {
+        label: "Choose style",
+        disabled: false,
+        onClick: openProgressDetails,
+      };
+    }
+
+    if (nextActionCue.id === "choose-expansion-focus") {
+      return {
+        label: "Choose focus",
         disabled: false,
         onClick: openProgressDetails,
       };
@@ -455,14 +474,68 @@ export function CareerPanel({ state, nowMs, onPurchase }: CareerPanelProps) {
               <CooldownRing progress01={cooldownProgress} label={cooldownLabel} />
             </div>
           )}
-          <button
-            type="button"
-            data-testid="career-action"
-            disabled={runSessionDisabled}
-            onClick={runSessionAction}
-          >
-            Run session
-          </button>
+          {(() => {
+            // Adaptive button based on career state
+            if (nextActionCue.id === "choose-track") {
+              return (
+                <button
+                  type="button"
+                  data-testid="career-action"
+                  className="career-action--choice"
+                  onClick={openProgressDetails}
+                >
+                  Choose track
+                </button>
+              );
+            }
+            if (nextActionCue.id === "choose-modality") {
+              return (
+                <button
+                  type="button"
+                  data-testid="career-action"
+                  className="career-action--choice"
+                  onClick={openProgressDetails}
+                >
+                  Choose modality
+                </button>
+              );
+            }
+            if (nextActionCue.id === "choose-operating-style") {
+              return (
+                <button
+                  type="button"
+                  data-testid="career-action"
+                  className="career-action--choice"
+                  onClick={openProgressDetails}
+                >
+                  Choose style
+                </button>
+              );
+            }
+            if (nextActionCue.id === "choose-expansion-focus") {
+              return (
+                <button
+                  type="button"
+                  data-testid="career-action"
+                  className="career-action--choice"
+                  onClick={openProgressDetails}
+                >
+                  Choose focus
+                </button>
+              );
+            }
+            // Default: Run session button
+            return (
+              <button
+                type="button"
+                data-testid="career-action"
+                disabled={runSessionDisabled}
+                onClick={runSessionAction}
+              >
+                {canPerform ? "Run session" : "Need enjoyment"}
+              </button>
+            );
+          })()}
         </div>
       </div>
     </div>

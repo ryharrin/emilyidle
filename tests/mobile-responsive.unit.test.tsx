@@ -248,7 +248,7 @@ describe("Mobile responsive layout helpers", () => {
     );
 
     const openButton = screen.getByTestId("career-mobile-now-rail-action");
-    expect(openButton).toHaveTextContent("Open progression");
+    expect(openButton).toHaveTextContent("Choose track");
     fireEvent.click(openButton);
 
     await waitFor(() => {

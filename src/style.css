@@ -685,6 +685,18 @@ strong {
   font-size: inherit;
 }
 
+.currency-hint {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-weight: 400;
+  margin-left: 0.25rem;
+  color: #a0aec0;
+}
+
+[data-theme="light"] .currency-hint {
+  color: #718096;
+}
+
 .stats-header__toggle-icon {
   font-size: 0.9rem;
   transition: transform 0.2s ease;
@@ -7817,6 +7829,29 @@ button[data-testid^="catalog-buy-"]:disabled {
 .career-salary-alert-soon {
   border-color: rgba(240, 183, 91, 0.6);
   background: rgba(240, 183, 91, 0.15);
+}
+
+/* Choice button styling for career actions */
+.career-action--choice {
+  background: linear-gradient(135deg, #4a9eff 0%, #6b5ce7 100%);
+  border-color: rgba(107, 92, 231, 0.6);
+  color: #ffffff;
+  font-weight: 600;
+  animation: pulse-choice 2s ease-in-out infinite;
+}
+
+.career-action--choice:hover {
+  background: linear-gradient(135deg, #5aabff 0%, #7d6df0 100%);
+  border-color: rgba(107, 92, 231, 0.8);
+}
+
+@keyframes pulse-choice {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(107, 92, 231, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(107, 92, 231, 0);
+  }
 }
 
 .career-salary-alert-urgent {
