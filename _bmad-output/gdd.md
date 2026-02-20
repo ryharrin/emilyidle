@@ -427,11 +427,147 @@ Emily "completes" the game by:
 
 ### Primary Mechanics
 
-{{primary_mechanics}}
+**Core Design Philosophy:** Every mechanic serves emotional connection and personal resonance.
+
+#### Mini-Games (Active Engagement)
+
+**1. Manual Winding - Timing**
+
+- **Input:** Hold to wind, release at optimal point
+- **Skill:** Timing-based precision
+- **Feel:** Tactile, satisfying, meditative
+- **Reward:** Currency based on precision
+
+**2. Quartz Alignment - Precision**
+
+- **Input:** Drag to align hands/markers
+- **Skill:** Steady hand, careful placement
+- **Feel:** Clean, focused, zen-like
+- **Challenge:** Different difficulty per watch tier
+
+**3. Automatic Movement - Rhythm** _(replaces shake/tilt)_
+
+- **Input:** Tap in rhythm (like a metronome)
+- **Skill:** Finding optimal tempo
+- **Visual:** Rotor spins, power reserve fills
+- **Benefit:** No awkward phone shaking in professional settings
+
+**4. Therapy Session - Simple Presence**
+
+- **Input:** Patient speaks, single tap to continue
+- **Response:** "That's interesting, tell me more"
+- **Philosophy:** Focus on being present, not solving puzzles
+- **Authentic:** Matches actual therapeutic stance - listening without judgment
+- **Reward:** Career XP + cash payout
+
+#### Currency Systems
+
+**Primary Currencies:**
+
+1. **Cash (cents)** - Primary buying power for watches and upgrades
+2. **Enjoyment** - Secondary for prestige/unlocks and home life
+3. **Career XP** - Progression through career stages
+
+**Prestige Currencies:**
+
+- **Blueprints** (Workshop prestige)
+- **Heritage** (Maison prestige)
+- **Nostalgia Points** (Nostalgia prestige - permanent)
+
+#### Watch Collection Mechanics
+
+**Four Tiers:**
+
+- **Quartz** - Lowest income, easiest mini-game (alignment)
+- **Manual** - Low income, winding mini-game (requires daily engagement)
+- **Automatic** - Medium income, rhythm mini-game (self-winding sophistication)
+- **Tourbillon** - High income, complex mini-game (masterpiece tier)
+
+**Unlock Progression:**
+
+- Start with basic quartz
+- Unlock manual winding at early career stage
+- Automatic watches at mid-career (higher tier, more sophisticated)
+- Tourbillon at late career
+- **JLC Q1252501** (34mm rose gold) at PhD completion milestone
+
+#### Career System (Simplified)
+
+**One Track: Emily's Career Journey** (Inspired by Increlution's life progression)
+
+**Stages:**
+
+1. **PhD Student** - Learning, first clients, dissertation stress
+2. **Externship** - Supervised practice, finding her voice
+3. **VA Hospital** - Serving veterans, institutional setting
+4. **Private Practice** - Independence, building clientele
+5. **Group Practice** - Collaboration, mentorship, growth
+6. **Retirement** - Legacy, wisdom, freedom
+
+**Each Stage Unlocks:**
+
+- New watch tiers
+- Higher income rates
+- Home life content (photos from that era)
+- Personal messages from Ryan about that time
+- Career-specific patient scenarios
+
+**Session Mechanics:**
+
+- Cooldown between sessions (short)
+- Simple "presence" gameplay (not complex dialogue)
+- Authentic to therapeutic relationship
+- Rewards based on stage progression
+
+#### Home Life System
+
+**Progressive Unlocks (6-Hour Arc):**
+
+- **Hour 1:** First family photo (kids as babies)
+- **Hour 2:** Kid drawings from early years
+- **Hour 3:** Home customization opens, watch display case
+- **Hour 4:** "PhD Celebration" scene with JLC Q1252501 unlock
+- **Hour 5:** Full family gallery, career milestone photos
+- **Hour 6:** Personalized ending with Ryan's message
+
+**Home Life Content:**
+
+- **Family Photos:** Unlock at career milestones showing kids at different ages
+- **Kid Drawings:** Children's artwork displayed (watches, family, etc.)
+- **Watch Display:** Collection visualization
+- **Messages from Ryan:** Notes about each career stage
+- **Visual Evolution:** Home grows from simple apartment to beautiful space
+
+**Interactivity:**
+
+- Tap photos to view full size with context
+- Read messages from Ryan
+- See watch collection displayed
+- Visual progression reflects Emily's journey
 
 ### Controls and Input
 
-{{controls}}
+**Touch-First Design:**
+
+- **Tap:** Select, activate, continue, simple interactions
+- **Hold + Release:** Winding mini-game
+- **Drag:** Alignment mini-game
+- **Rhythm Taps:** Automatic movement mini-game
+- **Swipe/Scroll:** Navigation, lists
+
+**No Complex Inputs:**
+
+- No multi-touch gestures
+- No shake/tilt (to avoid awkwardness)
+- No precise drawing
+- Simple, accessible, comfortable
+
+**Accessibility:**
+
+- Large tap targets (44pt minimum)
+- Clear visual feedback
+- Forgiving timing windows
+- No required keyboard shortcuts
 
 ---
 
