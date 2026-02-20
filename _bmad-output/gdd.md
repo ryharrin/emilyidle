@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7]
 inputDocuments:
   - docs/index.md
   - docs/project-overview.md
@@ -15,7 +15,7 @@ documentCounts:
   brainstorming: 0
   projectDocs: 8
 workflowType: "gdd"
-lastStep: 5
+lastStep: 7
 project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
@@ -571,7 +571,150 @@ Emily "completes" the game by:
 
 ---
 
-{{GAME_TYPE_SPECIFIC_SECTIONS}}
+## Idle/Incremental Specific Design
+
+### Core Interaction
+
+**Economy Flow:**
+
+1. **Watches recharge** → Mini-games generate **Enjoyment** (hobbies restore us)
+2. **Career sessions consume** → Spend Enjoyment to earn **Cash** (work takes energy)
+3. **Cash buys watches** → More/better watches → More Enjoyment generation
+4. **Family adds Love** → Love boosts Enjoyment (family support helps recharge)
+
+**Primary Interactions:**
+
+**Mini-Games (Active):**
+
+- Winding, alignment, rhythm games
+- Higher skill = more Enjoyment
+- Quality of watch affects Enjoyment yield (better watches = more Enjoyment)
+
+**Family Interactions (Quick Check-in):**
+
+- Simple "tap to check in" with family
+- Generates Love which converts to Enjoyment boost
+- Perfect for quick sessions
+
+**Fallback Interaction:**
+
+- "Collect passive income" tap for quick check-ins
+- Collects accumulated passive Enjoyment from currently worn watch
+- Smaller than active mini-game earnings
+
+**Feedback:**
+
+- Haptic feedback on mobile
+- Smooth animations
+- Satisfying completion sounds
+- Visual celebration for perfect mini-games
+
+### Upgrade Trees
+
+**Cash Purchases:**
+
+- Better watches (higher Enjoyment generation)
+- Career tools (higher Cash per session)
+- Home improvements (Love generation boost)
+
+**Enjoyment Upgrades:**
+
+- Watch maintenance (better mini-game rewards)
+- Family time efficiency (more Love per interaction)
+
+**Structure:**
+
+- Mostly linear progression
+- Key choice points: Focus on watch collection vs career advancement
+- Example: "Invest in Royal Oak specialization" vs "Expand private practice"
+
+### Automation Systems
+
+**Passive Enjoyment Generation:**
+
+- **Currently worn watch:** Base passive Enjoyment (small but steady)
+- **Collection bonus:** Tiny passive from all owned watches
+- **Quality matters:** Higher tier watches generate more passive + mini-game potential
+- **Emily's favorites:** Royal Oaks, Rolexes, rose gold pieces = bonus passive Enjoyment
+
+**Career Stage Scaling:**
+
+| Stage                | Cash/Session | Enjoyment Cost | Passive Enjoyment |
+| -------------------- | ------------ | -------------- | ----------------- |
+| **PhD**              | Low          | Low            | Very Low          |
+| **Externship**       | Low-Mod      | Low-Mod        | Low               |
+| **VA**               | Moderate     | Moderate       | Moderate          |
+| **Private Practice** | High         | High           | Good              |
+| **Group Practice**   | Very High    | Very High      | High              |
+| **Retirement**       | Low          | Zero           | Very High         |
+
+This mirrors real career arc - early grinding, mid-career peak demands/earnings, late career coasting.
+
+### Prestige and Reset Mechanics
+
+**Soft Prestige (No Reset):**
+Sequential unlocks without losing progress:
+
+**Workshop (Hour 2):**
+
+- Unlocks manual and automatic watches
+- Basic income multipliers
+- First home life expansion
+
+**Maison (Hour 4):**
+
+- Unlocks tourbillon watches
+- Better multipliers
+- Premium home features
+
+**Nostalgia (Hour 6/Endgame):**
+
+- Permanent bonuses unlocked
+- "Museum quality" collection status
+- Final home life gallery complete
+
+**Why Soft Prestige:**
+A gift shouldn't feel like work. Emily always moves forward, never backward.
+
+### Number Balancing
+
+**6-Hour Pacing:**
+
+- **Hour 1:** PhD stage, basic quartz, first family photo
+- **Hour 2:** Externship, manual watches, Workshop prestige
+- **Hour 3:** VA, automatic watches, **JLC Q1252501 milestone** (PhD completion celebration)
+- **Hour 4:** Private Practice, tourbillon, Maison prestige
+- **Hour 5:** Group Practice, nearing completion
+- **Hour 6:** Retirement, Nostalgia prestige, ending sequence
+
+**Key Milestones:**
+
+- **JLC Q1252501:** Awarded (not purchased) at Hour 3 - celebrating PhD completion
+- **First Royal Oak:** Mid-game unlock (Hours 3-4)
+- **Complete Collection:** Endgame achievement (Hour 6)
+
+**Economy Targets:**
+
+- Early game: Grind with basic watches, many career sessions needed
+- Mid game: Better watches = more Enjoyment = fewer sessions needed for same Cash
+- Late game: High-tier watches generate massive Enjoyment, career sessions very rewarding
+
+### Meta-Progression
+
+**Primary Experience:**
+
+- One perfect 6-hour playthrough
+- Designed for emotional impact
+- No pressure to replay
+
+**Optional Replay:**
+
+- Keep home life gallery unlocked (emotional rewards persist)
+- Can make different career choices
+- Faster progression on subsequent plays
+- **Not required:** The gift is complete after one playthrough
+
+**This is a gift, not a service.** The goal is one perfect experience that makes Emily feel deeply loved.
 
 ---
 
