@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 inputDocuments:
   - docs/index.md
   - docs/project-overview.md
@@ -15,7 +15,7 @@ documentCounts:
   brainstorming: 0
   projectDocs: 8
 workflowType: "gdd"
-lastStep: 12
+lastStep: 13
 project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
@@ -1409,11 +1409,92 @@ Detailed technical architecture (component structure, state patterns, build conf
 
 ### Technical Metrics
 
-{{technical_metrics}}
+**Target Device: Emily's iPhone 17**
+
+Since this is a gift for a single recipient, technical success is binary - it works perfectly on Emily's device or it doesn't.
+
+| Metric           | Target             | Measurement Method                  |
+| ---------------- | ------------------ | ----------------------------------- |
+| Frame Rate       | 60fps consistent   | Safari DevTools performance monitor |
+| Load Time        | <2 seconds initial | Lighthouse audit                    |
+| Battery Usage    | <5% per hour       | iOS Battery settings                |
+| Crash Rate       | 0%                 | Manual testing                      |
+| Save Reliability | 100% persistence   | Manual testing                      |
+| Memory Usage     | <100MB             | Safari DevTools                     |
+
+**Testing Approach:**
+
+- Extensive testing on iPhone 17 before gifting
+- No crash tolerance (gift must work perfectly)
+- Save/load tested repeatedly
+- Performance validated across 6-hour play session
 
 ### Gameplay Metrics
 
-{{gameplay_metrics}}
+**For a Single-Player Gift Game:**
+
+Traditional metrics (downloads, retention, revenue) don't apply. Instead, success is measured by emotional impact.
+
+**Core Success Indicators:**
+
+| Indicator        | Target    | Measurement                                                 |
+| ---------------- | --------- | ----------------------------------------------------------- |
+| Completion       | 100%      | Emily finishes full 6-hour experience                       |
+| Recognition      | Immediate | Emily notices personal references (watches, family, career) |
+| Emotional Impact | High      | Emily feels deeply moved (ideally: tears of joy)            |
+| Sharing          | Likely    | Emily wants to show family/friends                          |
+| Replay           | Optional  | Emily may replay, but one perfect experience is success     |
+
+**Playtesting Metrics (Before Gifting):**
+
+| Metric                       | Target            | Method                                         |
+| ---------------------------- | ----------------- | ---------------------------------------------- |
+| Completion without confusion | 100%              | Beta tester completes without questions        |
+| Mini-game satisfaction       | Positive feedback | Testers enjoy interactions                     |
+| Progression clarity          | Understood        | Testers understand economy without explanation |
+| Pacing appropriateness       | Feels right       | 6-hour arc doesn't drag or rush                |
+
+### Qualitative Success Criteria
+
+**The Ultimate Metric:**
+
+- **Emily cries (happy tears)** when she realizes the depth of personalization and love embedded in every system
+
+**Secondary Indicators:**
+
+- Emily mentions specific personal details ("You remembered I love Royal Oaks!")
+- Emily shares discoveries with Ryan ("I found the drawing from Freddy!")
+- Emily feels profoundly seen and deeply loved
+- The game becomes a treasured memory and emotional touchstone
+- Emily understands the "Emily At Last" title significance
+
+**Signs of Success:**
+
+- Extended play sessions (losing track of time)
+- Laughter at playful references
+- Awe at the JLC Q1252501 milestone
+- Joy at family photo unlocks
+- Pride at career achievements
+- Satisfaction at collection completion
+
+**Non-Goals (Irrelevant for Private Gift):**
+
+- Download numbers or install count
+- Revenue or monetization metrics
+- Daily active users (DAU)
+- Retention rates (Day 1, Day 7, Day 30)
+- Social media mentions or viral spread
+- App store ratings or reviews
+- Competitive rankings
+
+**Success Review:**
+
+- Primary review: Emily's emotional reaction upon receiving
+- Secondary review: Her feedback after completing
+- Tertiary review: Long-term emotional impact (weeks/months later)
+
+**Success Statement:**
+"Emily At Last is successful when Emily feels deeply and completely loved, recognizing herself in every watch, career milestone, and family reference, culminating in tears of joy at the realization that someone built an entire world just for her."
 
 ---
 
