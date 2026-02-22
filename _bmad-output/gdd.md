@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 inputDocuments:
   - docs/index.md
   - docs/project-overview.md
@@ -15,7 +15,7 @@ documentCounts:
   brainstorming: 0
   projectDocs: 8
 workflowType: "gdd"
-lastStep: 11
+lastStep: 12
 project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
@@ -1364,7 +1364,44 @@ Detailed technical architecture (component structure, state patterns, build conf
 
 ### Epic Structure
 
-{{epics}}
+#### Epic Overview
+
+| #   | Epic Name             | Scope                                       | Dependencies | Est. Stories |
+| --- | --------------------- | ------------------------------------------- | ------------ | ------------ |
+| 1   | Foundation            | Core economy, UI framework, save system     | None         | 8-12         |
+| 2   | Core Loop             | First mini-game, PhD career, basic purchase | Epic 1       | 10-15        |
+| 3   | Mini-Game Suite       | All 4 mini-games with feedback              | Epic 2       | 12-18        |
+| 4   | Career Journey        | All 6 career stages, JLC milestone          | Epic 3       | 15-20        |
+| 5   | Collection & Prestige | All watch tiers, prestige layers            | Epic 4       | 15-20        |
+| 6   | Home Life             | Family photos, kid drawings, messages       | Epic 5       | 12-16        |
+| 7   | Polish & Audio        | All art, music, SFX, animations             | Epics 1-6    | 15-25        |
+
+#### Recommended Sequence
+
+1. **Epic 1: Foundation** - Core systems and infrastructure
+2. **Epic 2: Core Loop** - Prove gameplay with vertical slice (Chapter 1)
+3. **Epic 3: Mini-Game Suite** - Expand interactions
+4. **Epic 4: Career Journey** - Full career progression
+5. **Epic 5: Collection & Prestige** - Complete collection mechanics
+6. **Epic 6: Home Life** - Emotional content and personal touches
+7. **Epic 7: Polish & Audio** - Premium presentation and final polish
+
+**Rationale:** Prove core loop early (Epics 1-2), then expand content breadth (3-6), finally polish to premium quality (7).
+
+#### Vertical Slice
+
+**First Playable Milestone (End of Epic 2):**
+
+- Working economy (Enjoyment/Cash)
+- One mini-game (quartz alignment)
+- PhD career stage with basic sessions
+- Can buy first watch
+- Chapter 1 home scene
+- Save/load working
+
+**Goal:** Validate that the core "watches generate Enjoyment → career sessions earn Cash → buy better watches" loop is fun and satisfying.
+
+**Detailed Epics:** See `epics.md` for complete story breakdowns.
 
 ---
 
