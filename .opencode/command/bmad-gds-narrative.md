@@ -1,5 +1,5 @@
 ---
-name: 'narrative'
+name: 'bmad-gds-narrative'
 description: 'Narrative design workflow for story-driven games. Creates comprehensive narrative documentation including story structure, character arcs, world-building, dialogue systems, and production planning.'
 ---
 

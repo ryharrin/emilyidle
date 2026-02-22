@@ -1,5 +1,5 @@
 ---
-name: 'gametest-performance'
+name: 'bmad-gds-gametest-performance'
 description: 'Design performance testing strategy for frame rate, memory, and loading times'
 ---
 

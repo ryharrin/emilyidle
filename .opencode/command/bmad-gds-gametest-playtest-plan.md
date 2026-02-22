@@ -1,5 +1,5 @@
 ---
-name: 'gametest-playtest-plan'
+name: 'bmad-gds-gametest-playtest-plan'
 description: 'Create structured playtesting sessions for gameplay validation and user feedback'
 ---
 

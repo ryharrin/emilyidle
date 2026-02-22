@@ -1,5 +1,5 @@
 ---
-name: 'create-gdd'
+name: 'bmad-gds-create-gdd'
 description: 'Creates a comprehensive Game Design Document through collaborative step-by-step discovery between game designer and user.'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: 'gametest-test-review'
+name: 'bmad-gds-gametest-test-review'
 description: 'Review test quality, coverage, and identify gaps in game testing'
 ---
 

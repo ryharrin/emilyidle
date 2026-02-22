@@ -1,5 +1,5 @@
 ---
-name: 'validate-prd'
+name: 'bmad-bmm-validate-prd'
 description: 'Validate an existing PRD against BMAD standards - comprehensive review for completeness, clarity, and quality'
 ---
 

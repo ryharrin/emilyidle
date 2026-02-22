@@ -1,5 +1,5 @@
 ---
-name: 'testarch-framework'
+name: 'bmad-tea-testarch-framework'
 description: 'Initialize production-ready test framework architecture (Playwright or Cypress) with fixtures, helpers, and configuration'
 ---
 

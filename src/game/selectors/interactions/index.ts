@@ -1,5 +1,5 @@
-import { WATCH_ITEMS } from "../data/items";
-import type { GameState, WatchItemId, WatchMovement } from "../model/types";
+import { WATCH_ITEMS } from "../../data/items";
+import type { GameState, WatchItemId, WatchMovement } from "../../model/types";
 
 export type InteractionOutcomeTier = "miss" | "good" | "perfect";
 
@@ -168,7 +168,7 @@ export type PowerReserveDetail = {
 const POWER_RESERVE_LABEL = "Power reserve";
 const AUTOMATIC_RESERVE_EXPLANATION =
   "Automatic watches store reserve as they run; a fuller reserve boosts enjoyment while you wait.";
-const MANUAL_RESERVE_EXPLANATION = "Manual watches wind via the crown and don’t rely on a reserve.";
+const MANUAL_RESERVE_EXPLANATION = "Manual watches wind via the crown and don't rely on a reserve.";
 
 export function getPowerReserveDetail(state: GameState, itemId: WatchItemId): PowerReserveDetail {
   const reserve01 = getPowerReserveForItem(state, itemId);

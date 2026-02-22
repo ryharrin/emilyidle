@@ -1,5 +1,5 @@
 ---
-name: 'testarch-test-review'
+name: 'bmad-tea-testarch-test-review'
 description: 'Review test quality using comprehensive knowledge base and best practices validation'
 ---
 

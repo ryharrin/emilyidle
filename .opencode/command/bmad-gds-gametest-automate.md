@@ -1,5 +1,5 @@
 ---
-name: 'gametest-automate'
+name: 'bmad-gds-gametest-automate'
 description: 'Generate automated game tests for Unity, Unreal, or Godot based on test design scenarios'
 ---
 

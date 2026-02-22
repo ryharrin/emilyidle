@@ -1,5 +1,5 @@
 ---
-name: 'edit-prd'
+name: 'bmad-bmm-edit-prd'
 description: 'Edit and improve an existing PRD - enhance clarity, completeness, and quality'
 ---
 

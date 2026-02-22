@@ -1,5 +1,5 @@
 ---
-name: 'review-adversarial-general'
+name: 'bmad-review-adversarial-general'
 description: 'Cynically review content and produce findings'
 ---
 

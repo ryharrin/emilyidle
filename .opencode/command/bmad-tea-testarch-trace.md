@@ -1,5 +1,5 @@
 ---
-name: 'testarch-trace'
+name: 'bmad-tea-testarch-trace'
 description: 'Generate requirements-to-tests traceability matrix, analyze coverage, and make quality gate decision (PASS/CONCERNS/FAIL/WAIVED)'
 ---
 

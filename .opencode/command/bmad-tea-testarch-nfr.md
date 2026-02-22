@@ -1,5 +1,5 @@
 ---
-name: 'testarch-nfr'
+name: 'bmad-tea-testarch-nfr'
 description: 'Assess non-functional requirements (performance, security, reliability, maintainability) before release with evidence-based validation'
 ---
 

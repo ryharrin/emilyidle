@@ -1,5 +1,5 @@
 ---
-name: 'domain-research'
+name: 'bmad-bmm-domain-research'
 description: 'Conduct domain research covering industry analysis, regulations, technology trends, and ecosystem dynamics using current web data and verified sources.'
 ---
 

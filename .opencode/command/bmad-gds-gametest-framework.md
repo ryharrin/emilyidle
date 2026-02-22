@@ -1,5 +1,5 @@
 ---
-name: 'gametest-framework'
+name: 'bmad-gds-gametest-framework'
 description: 'Initialize game test framework architecture for Unity, Unreal Engine, or Godot projects'
 ---
 

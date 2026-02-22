@@ -1,5 +1,5 @@
 ---
-name: 'testarch-automate'
+name: 'bmad-tea-testarch-automate'
 description: 'Expand test automation coverage after implementation or analyze existing codebase to generate comprehensive test suite'
 ---
 

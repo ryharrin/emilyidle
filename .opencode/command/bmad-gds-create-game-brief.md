@@ -1,5 +1,5 @@
 ---
-name: 'create-game-brief'
+name: 'bmad-gds-create-game-brief'
 description: 'Creates a comprehensive Game Brief through collaborative step-by-step discovery to capture game vision before detailed design.'
 ---
 

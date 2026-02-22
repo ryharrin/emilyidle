@@ -1,5 +1,5 @@
 ---
-name: 'game-brief'
+name: 'bmad-gds-game-brief'
 description: 'Interactive game brief creation workflow that guides users through defining their game vision with multiple input sources and conversational collaboration'
 ---
 

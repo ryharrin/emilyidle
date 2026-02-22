@@ -1,5 +1,5 @@
 ---
-name: 'correct-course'
+name: 'bmad-gds-correct-course'
 description: 'Navigate significant changes during sprint execution by analyzing impact, proposing solutions, and routing for implementation'
 ---
 

@@ -10,6 +10,13 @@ export type CareerModalityId = "cbt" | "psychodynamic" | "act";
 export type CareerOperatingStyleId = "boutique" | "high-volume" | "group-practice";
 export type CareerExpansionFocusId = "referrals" | "media" | "supervision";
 export type CareerNodeId = string;
+export type CareerStageId =
+  | "grad-student"
+  | "licensed-associate"
+  | "specialist-certification"
+  | "practice-builder"
+  | "private-practice-owner"
+  | "retirement";
 
 export type TherapistCareerEffectMultipliers = {
   salaryMultiplier: number;
@@ -133,7 +140,21 @@ export type AchievementId =
   | "career-clinician"
   | "session-maestro"
   | "perfect-pulse"
-  | "nostalgia-returnee";
+  | "nostalgia-returnee"
+  // Career achievements - Story 3.1
+  | "career-first-session"
+  | "career-10-sessions"
+  | "career-50-sessions"
+  | "career-100-sessions"
+  | "career-500-sessions"
+  | "career-stage-trainee"
+  | "career-stage-apprentice"
+  | "career-stage-specialist"
+  | "career-stage-practice-builder"
+  | "career-stage-practice-owner"
+  | "career-stage-retirement"
+  | "career-first-specialization"
+  | "career-track-master";
 
 export type AchievementRequirement =
   | { type: "totalItems"; threshold: number }
@@ -143,7 +164,12 @@ export type AchievementRequirement =
   | { type: "careerLevel"; threshold: number }
   | { type: "interactionPerfects"; threshold: number }
   | { type: "perfectStreak"; threshold: number }
-  | { type: "nostalgiaResets"; threshold: number };
+  | { type: "nostalgiaResets"; threshold: number }
+  // Career achievements - Story 3.1
+  | { type: "careerSessions"; threshold: number }
+  | { type: "careerStageReached"; stageId: CareerStageId }
+  | { type: "careerSpecializationUnlocked"; count: number }
+  | { type: "careerTrackCompleted"; trackId: CareerTrackId };
 
 export type AchievementDefinition = {
   id: AchievementId;
@@ -198,6 +224,7 @@ export type TherapistCareerState = {
   freeSessionAvailable: boolean;
   sessionPremiumCount: number;
   lastSessionAtMs: number;
+  totalSessions: number; // Career achievements - Story 3.1
 };
 
 export type CatalogTierBonusDefinition = {
@@ -283,6 +310,7 @@ export type PersistedGameState = {
     freeSessionAvailable?: boolean;
     sessionPremiumCount?: number;
     lastSessionAtMs?: number;
+    totalSessions?: number;
   };
   items?: Record<string, number>;
   watchModels?: Record<string, number>;

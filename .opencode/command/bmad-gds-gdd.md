@@ -1,5 +1,5 @@
 ---
-name: 'gdd'
+name: 'bmad-gds-gdd'
 description: 'Game Design Document workflow for all game project levels - from small prototypes to full AAA games. Generates comprehensive GDD with game mechanics, systems, progression, and implementation guidance.'
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: 'testarch-test-design'
+name: 'bmad-tea-testarch-test-design'
 description: 'Dual-mode workflow: (1) System-level testability review in Solutioning phase, or (2) Epic-level test planning in Implementation phase. Auto-detects mode based on project phase.'
 ---
 

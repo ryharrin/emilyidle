@@ -1,5 +1,5 @@
 ---
-name: 'game-architecture'
+name: 'bmad-gds-game-architecture'
 description: 'Collaborative game architecture workflow for AI-agent consistency. Intelligent, adaptive conversation that produces a decision-focused game architecture document covering engine, systems, networking, and technical design optimized for game development.'
 ---
 

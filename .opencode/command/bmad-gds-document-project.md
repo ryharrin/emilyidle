@@ -1,5 +1,5 @@
 ---
-name: 'document-project'
+name: 'bmad-gds-document-project'
 description: 'Analyzes and documents brownfield projects by scanning codebase, architecture, and patterns to create comprehensive reference documentation for AI-assisted development'
 ---
 

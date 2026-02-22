@@ -1,5 +1,5 @@
 ---
-name: 'generate-project-context'
+name: 'bmad-gds-generate-project-context'
 description: 'Creates a concise project-context.md file with critical rules and patterns that AI agents must follow when implementing game code. Optimized for LLM context efficiency.'
 ---
 

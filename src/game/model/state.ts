@@ -266,6 +266,98 @@ export const ACHIEVEMENTS: ReadonlyArray<AchievementDefinition> = [
     category: "prestige",
     requirement: { type: "nostalgiaResets", threshold: 2 },
   },
+  // Career achievements - Story 3.1
+  {
+    id: "career-first-session",
+    name: "First Steps",
+    description: "Complete your first therapy session.",
+    category: "career",
+    requirement: { type: "careerSessions", threshold: 1 },
+  },
+  {
+    id: "career-10-sessions",
+    name: "Decade of Sessions",
+    description: "Complete 10 therapy sessions.",
+    category: "career",
+    requirement: { type: "careerSessions", threshold: 10 },
+  },
+  {
+    id: "career-50-sessions",
+    name: "Fifty Fold",
+    description: "Complete 50 therapy sessions.",
+    category: "career",
+    requirement: { type: "careerSessions", threshold: 50 },
+  },
+  {
+    id: "career-100-sessions",
+    name: "Century Sessions",
+    description: "Complete 100 therapy sessions.",
+    category: "career",
+    requirement: { type: "careerSessions", threshold: 100 },
+  },
+  {
+    id: "career-500-sessions",
+    name: "Master Therapist",
+    description: "Complete 500 therapy sessions.",
+    category: "career",
+    requirement: { type: "careerSessions", threshold: 500 },
+  },
+  {
+    id: "career-stage-trainee",
+    name: "Grad Student",
+    description: "Begin your journey as a grad student.",
+    category: "career",
+    requirement: { type: "careerStageReached", stageId: "grad-student" },
+  },
+  {
+    id: "career-stage-apprentice",
+    name: "Licensed Associate",
+    description: "Advance to licensed associate status.",
+    category: "career",
+    requirement: { type: "careerStageReached", stageId: "licensed-associate" },
+  },
+  {
+    id: "career-stage-specialist",
+    name: "Specialist Certification",
+    description: "Achieve specialist certification.",
+    category: "career",
+    requirement: { type: "careerStageReached", stageId: "specialist-certification" },
+  },
+  {
+    id: "career-stage-practice-builder",
+    name: "Practice Builder",
+    description: "Become a practice builder.",
+    category: "career",
+    requirement: { type: "careerStageReached", stageId: "practice-builder" },
+  },
+  {
+    id: "career-stage-practice-owner",
+    name: "Practice Owner",
+    description: "Own your own private practice.",
+    category: "career",
+    requirement: { type: "careerStageReached", stageId: "private-practice-owner" },
+  },
+  {
+    id: "career-stage-retirement",
+    name: "Retirement",
+    description: "Reach retirement age in your career.",
+    category: "career",
+    requirement: { type: "careerStageReached", stageId: "retirement" },
+  },
+  {
+    id: "career-first-specialization",
+    name: "Specialist",
+    description: "Unlock your first specialization.",
+    category: "career",
+    requirement: { type: "careerSpecializationUnlocked", count: 1 },
+  },
+  {
+    id: "career-track-master",
+    name: "Track Master",
+    description: "Complete all nodes in a career track.",
+    category: "career",
+    requirement: { type: "careerTrackCompleted", trackId: "private-practice" },
+  },
 ];
 
 export const EVENTS: ReadonlyArray<EventDefinition> = [
@@ -443,6 +535,7 @@ export function createInitialState(): GameState {
       freeSessionAvailable: true,
       sessionPremiumCount: 0,
       lastSessionAtMs: 0,
+      totalSessions: 0,
     },
     wornWatchId: null,
     interactionNextAvailableAtMsByItem: {},
@@ -605,6 +698,11 @@ export function createStateFromSave(saved: PersistedGameState): GameState {
       typeof therapistRecord?.lastSessionAtMs === "number" &&
       Number.isFinite(therapistRecord.lastSessionAtMs)
         ? Math.max(0, Math.floor(therapistRecord.lastSessionAtMs))
+        : 0,
+    totalSessions:
+      typeof therapistRecord?.totalSessions === "number" &&
+      Number.isFinite(therapistRecord.totalSessions)
+        ? Math.max(0, Math.floor(therapistRecord.totalSessions))
         : 0,
   };
 

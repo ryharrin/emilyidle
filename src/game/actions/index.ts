@@ -1,3 +1,4 @@
+import { CAREER_NODES } from "../data/career";
 import { NOSTALGIA_UNLOCK_ORDER } from "../data/items";
 import {
   ACHIEVEMENTS,
@@ -15,6 +16,7 @@ import {
 } from "../model/state";
 import type {
   AchievementDefinition,
+  CareerStageId,
   CraftedBoostId,
   EventId,
   EventState,
@@ -200,6 +202,7 @@ export function prestigeNostalgia(state: GameState, nowMs: number): GameState {
       freeSessionAvailable: true,
       sessionPremiumCount: 0,
       lastSessionAtMs: 0,
+      totalSessions: 0,
     },
     upgrades: createUpgradeLevels(),
     workshopBlueprints: 0,
@@ -476,6 +479,7 @@ export function performTherapistSession(state: GameState, nowMs: number): GameSt
       salaryActiveUntilMs,
       sessionPremiumCount: nextPremiumCount,
       lastSessionAtMs: clampedNowMs,
+      totalSessions: career.totalSessions + 1,
     },
   };
 }
@@ -776,7 +780,43 @@ function isAchievementMet(state: GameState, achievement: AchievementDefinition):
     return state.nostalgiaResets >= requirement.threshold;
   }
 
-  return state.workshopPrestigeCount >= requirement.threshold;
+  if (requirement.type === "workshopPrestigeCount") {
+    return state.workshopPrestigeCount >= requirement.threshold;
+  }
+
+  // Career achievements - Story 3.1
+  if (requirement.type === "careerSessions") {
+    return state.therapistCareer.totalSessions >= requirement.threshold;
+  }
+
+  if (requirement.type === "careerStageReached") {
+    const stageUnlockLevels: Record<CareerStageId, number> = {
+      "grad-student": 1,
+      "licensed-associate": 3,
+      "specialist-certification": 6,
+      "practice-builder": 10,
+      "private-practice-owner": 15,
+      retirement: 20,
+    };
+    return state.therapistCareer.level >= stageUnlockLevels[requirement.stageId];
+  }
+
+  if (requirement.type === "careerSpecializationUnlocked") {
+    const career = state.therapistCareer;
+    const specializationCount =
+      (career.modalityId ? 1 : 0) +
+      (career.operatingStyleId ? 1 : 0) +
+      (career.expansionFocusId ? 1 : 0);
+    return specializationCount >= requirement.count;
+  }
+
+  if (requirement.type === "careerTrackCompleted") {
+    const trackNodes = CAREER_NODES.filter((node) => node.trackId === requirement.trackId);
+    const career = state.therapistCareer;
+    return trackNodes.length > 0 && trackNodes.every((node) => career.spentNodes[node.id]);
+  }
+
+  return false;
 }
 
 export * from "./interactions";

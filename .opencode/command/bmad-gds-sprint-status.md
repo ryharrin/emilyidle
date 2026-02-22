@@ -1,5 +1,5 @@
 ---
-name: 'sprint-status'
+name: 'bmad-gds-sprint-status'
 description: 'Summarize sprint-status.yaml for game project, surface risks, and route to the right implementation workflow.'
 ---
 

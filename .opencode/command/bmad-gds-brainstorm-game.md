@@ -1,5 +1,5 @@
 ---
-name: 'brainstorm-game'
+name: 'bmad-gds-brainstorm-game'
 description: 'Facilitate game brainstorming sessions with game-specific context, guidance, and game design techniques.'
 ---
 

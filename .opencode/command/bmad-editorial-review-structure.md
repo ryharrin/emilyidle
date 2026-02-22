@@ -1,5 +1,5 @@
 ---
-name: 'editorial-review-structure'
+name: 'bmad-editorial-review-structure'
 description: 'Structural editor that proposes cuts, reorganization, and simplification while preserving comprehension'
 ---
 

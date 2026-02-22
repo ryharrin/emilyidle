@@ -1,5 +1,5 @@
 ---
-name: 'gametest-test-design'
+name: 'bmad-gds-gametest-test-design'
 description: 'Create comprehensive game test scenarios covering gameplay, progression, and quality requirements'
 ---
 
