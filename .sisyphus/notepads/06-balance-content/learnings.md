@@ -1,5 +1,0 @@
-- Tuned Collection bonus steps and income softcap constants for smoother pacing.
-- Adjusted watch item price growth/income/value while preserving tier progression.
-- Synced workshop/maison reset threshold labels with updated prestige scaling.
-- Added achievement and event definitions tied to collection value/items/prestige.
-- Event timing uses per-event state with active + cooldown windows.

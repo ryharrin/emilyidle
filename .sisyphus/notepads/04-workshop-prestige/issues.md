@@ -1,1 +1,0 @@
-- Playwright `pnpm run test:e2e` can time out waiting for the dev server (`config.webServer`), retrying may be needed.
