@@ -1,5 +1,5 @@
 ---
-name: 'bmad-gds-quick-spec'
+name: 'quick-spec'
 description: 'Conversational spec engineering - ask questions, investigate code, produce implementation-ready tech-spec.'
 ---
 

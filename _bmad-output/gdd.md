@@ -19,14 +19,14 @@ lastStep: 13
 project_name: "watch-idle"
 user_name: "Ryan"
 date: "2026-02-20"
-game_type: "idle-incremental"
+game_type: "active-incremental"
 game_name: "Emily At Last"
 ---
 
 # Emily At Last - Game Design Document
 
 **Author:** Ryan
-**Game Type:** Idle/Incremental
+**Game Type:** Active Incremental
 **Target Platform(s):** Mobile Web Browser (Primary), Desktop Web Browser (Secondary)
 
 ---
@@ -91,7 +91,7 @@ While the game is optimized for mobile, full desktop browser support is maintain
 
 ### Demographics
 
-**Primary Player:**
+**Primary Player (Single Recipient): Emily**
 
 - **Age:** 25-45 (matching Emily's demographic)
 - **Occupation:** Working professional (psychology field or similar)
@@ -99,24 +99,17 @@ While the game is optimized for mobile, full desktop browser support is maintain
 - **Device:** Smartphone primary computing device
 - **Income:** Middle to upper-middle class (can afford watch collecting hobby)
 
-**Secondary Audiences:**
-
-- Idle/incremental game enthusiasts
-- Watch collectors and enthusiasts
-- People interested in psychology/therapy themes
-- Gift recipients seeking meaningful personalization
-
 ### Gaming Experience
 
 **Casual to Mid-Core** - "The Thoughtful Collector"
 
 Players have some gaming experience but don't identify as "gamers." They appreciate:
 
-- Games that respect their time (progress while away)
-- Meaningful progression without requiring constant attention
+- Games that respect their time (short sessions still feel meaningful)
+- Meaningful progression without requiring constant attention or grind
 - Aesthetic polish and thematic coherence
 - Emotional resonance and personalization
-- Short session compatibility (2-5 minute check-ins)
+- Short session compatibility (2-5 minute active sessions)
 
 Not looking for:
 
@@ -129,9 +122,9 @@ Not looking for:
 
 **Genre Aware but Not Expert**
 
-Target players likely have passing familiarity with idle/incremental games (Cookie Clicker, Clicker Heroes) through cultural osmosis or brief experimentation. They understand:
+Target players likely have passing familiarity with incremental games (Cookie Clicker, Clicker Heroes) through cultural osmosis or brief experimentation. They understand:
 
-- Passive resource generation concept
+- Background progression concept (optional, not the primary play style)
 - Upgrade purchasing
 - Prestige/reset mechanics
 
@@ -151,7 +144,7 @@ The game teaches through gentle onboarding rather than assuming expertise.
 - **Medium session:** 10-15 minutes (engaging with mini-games, planning prestige)
 - **Deep session:** 30+ minutes (rare, for significant milestones or new features)
 
-Designed for "check-in" gameplay that respects busy schedules. The game progresses meaningfully even with minimal daily engagement.
+Designed for short, active sessions that respect busy schedules. Progress stays meaningful even when play sessions are brief.
 
 ### Player Motivations
 
@@ -182,14 +175,14 @@ Emily At Last (working title: emily-at-last)
 
 ### Core Concept
 
-Emily At Last is a browser-based idle/incremental game that combines watch collection mechanics with a therapist career progression system. Players collect watches across four tiers (quartz, automatic, manual, tourbillon), each generating passive income and enjoyment currency. The unique dual-progression system requires players to balance their growing watch collection with an active therapist career, creating engaging gameplay loops that cater to both idle and active play styles.
+Emily At Last is a browser-based active incremental game that combines watch collection mechanics with a therapist career progression system. Players collect watches across four tiers (quartz, automatic, manual, tourbillon), each generating enjoyment and currency. The dual-progression system asks players to balance their growing watch collection with an active therapist career through frequent interaction and mini-games.
 
 The game features a three-layer prestige system (Workshop, Maison, Nostalgia) that provides long-term progression through permanent bonuses and unlocks. Real-world watch models from the catalog create an authentic collection experience, while mini-game interactions (winding, automatic movement, quartz alignment) add active engagement during play sessions.
 
 ### Game Type
 
-**Type:** Idle/Incremental  
-**Framework:** This GDD uses the idle-incremental template with type-specific sections for core interaction, upgrade trees, automation systems, prestige mechanics, number balancing, and meta-progression.
+**Type:** Active Incremental  
+**Framework:** This GDD uses an incremental template with type-specific sections for core interaction, upgrade trees, prestige mechanics, number balancing, and meta-progression.
 
 ### Target Experience
 
@@ -197,7 +190,7 @@ Players should experience:
 
 - Satisfying progression curves with exponential growth
 - Meaningful choices in upgrade paths and career specializations
-- Balanced active/idle gameplay (mini-games for engagement, automation for idle)
+- Active-first gameplay (mini-games for engagement; any background progression is secondary)
 - Long-term goals through multi-layer prestige system
 - Collection satisfaction from acquiring rare/timepiece watches
 - Integration of career narrative with collection mechanics
@@ -255,7 +248,7 @@ Every system in the game reflects real aspects of Emily's life:
 - The home life feature includes her actual family members
 - Subtle references acknowledge her journey and identity
 
-This isn't just a game about idle mechanics - it's a love letter expressed through code, art, and game design.
+This isn't just a game about mechanics - it's a love letter expressed through code, art, and game design.
 
 ---
 
@@ -307,7 +300,7 @@ This isn't just a game about idle mechanics - it's a love letter expressed throu
 
 **This game has no competition.**
 
-Not because it's better than other idle games, but because it's not competing. Cookie Clicker, AdVenture Capitalist, and Melvor Idle serve different purposes - they're products for mass consumption.
+Not because it's better than other incremental games, but because it's not competing. Cookie Clicker, AdVenture Capitalist, and similar incrementals serve different purposes - they're products for mass consumption.
 
 Emily At Last is a gift. It doesn't need to compete because it serves an audience of one, and that one person will love it not despite its specificity, but because of it.
 
@@ -571,7 +564,7 @@ Emily "completes" the game by:
 
 ---
 
-## Idle/Incremental Specific Design
+## Incremental Game Specific Design
 
 ### Core Interaction
 

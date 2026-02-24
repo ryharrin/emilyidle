@@ -1,6 +1,6 @@
 ---
-name: 'bmad-gds-gdd'
-description: 'Game Design Document workflow for all game project levels - from small prototypes to full AAA games. Generates comprehensive GDD with game mechanics, systems, progression, and implementation guidance.'
+name: 'gdd'
+description: 'Comprehensive game design document creator. Use when the user says 'lets create a game design document' or 'I want to create a comprehensive GDD''
 ---
 
 Execute the BMAD 'gdd' workflow.

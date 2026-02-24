@@ -1,0 +1,66 @@
+:root {
+  /* Palette: warm cream background + rose gold accents + navy text (Story 1.7). */
+  --color-bg: #fbf5ea;
+  --color-surface: #fffdf9;
+  --color-text: #102a43;
+  --color-text-muted: #334e68;
+  --color-border: rgba(16, 42, 67, 0.14);
+  --color-accent: #c9927a; /* rose gold */
+  --color-accent-ink: #3b1f18;
+
+  --shadow-soft: 0 10px 30px rgba(16, 42, 67, 0.12);
+
+  /* iOS safe-area tokens (default to 0 on other platforms). */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  color-scheme: light;
+  color: var(--color-text);
+  background: var(--color-bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: radial-gradient(
+      1000px 600px at 30% -10%,
+      rgba(201, 146, 122, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 700px at 90% 10%,
+      rgba(16, 42, 67, 0.10),
+      transparent 55%
+    ),
+    var(--color-bg);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Skeleton shimmer animation for lazy loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

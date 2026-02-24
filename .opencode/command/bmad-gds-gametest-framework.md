@@ -1,6 +1,6 @@
 ---
-name: 'bmad-gds-gametest-framework'
-description: 'Initialize game test framework architecture for Unity, Unreal Engine, or Godot projects'
+name: 'gametest-framework'
+description: 'Game test framework initializer. Use when the user says 'lets create a test framework' or 'initialize game testing infrastructure''
 ---
 
 Execute the BMAD 'gametest-framework' workflow.

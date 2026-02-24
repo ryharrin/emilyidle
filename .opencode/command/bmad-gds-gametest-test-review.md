@@ -1,6 +1,6 @@
 ---
-name: 'bmad-gds-gametest-test-review'
-description: 'Review test quality, coverage, and identify gaps in game testing'
+name: 'gametest-test-review'
+description: 'Game test coverage reviewer. Use when the user says 'lets review game tests' or 'I want to evaluate test coverage''
 ---
 
 Execute the BMAD 'gametest-test-review' workflow.

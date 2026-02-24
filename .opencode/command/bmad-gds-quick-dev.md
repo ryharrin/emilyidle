@@ -1,5 +1,5 @@
 ---
-name: 'bmad-gds-quick-dev'
+name: 'quick-dev'
 description: 'Flexible development - execute tech-specs OR direct instructions with optional planning.'
 ---
 

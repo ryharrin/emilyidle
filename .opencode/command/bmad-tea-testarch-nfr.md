@@ -1,6 +1,6 @@
 ---
-name: 'bmad-tea-testarch-nfr'
-description: 'Assess non-functional requirements (performance, security, reliability, maintainability) before release with evidence-based validation'
+name: 'testarch-nfr'
+description: 'Assess NFRs like performance security and reliability. Use when the user says 'lets assess NFRs' or 'I want to evaluate non-functional requirements''
 ---
 
 Execute the BMAD 'testarch-nfr' workflow.

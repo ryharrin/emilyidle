@@ -29,6 +29,8 @@ brief: null
 - **Game Loop:** RAF + fixed 100ms simulation ticks (deterministic progression)
 - **Project Structure:** Domain-driven (`src/game/**` pure, `src/ui/**` React) with principles-based emergence
 - **Mini-Games:** DOM-first + Motion for spring physics; local state + callback dispatch pattern
+- **Mini-Game Clarity:** Each mini-game starts with plain-language Goal/How/Reward guidance and consistent result screens
+- **Mailbox Delivery:** Orders and letters use deterministic clock-based scheduling (`clockMs`) with queued claim flow
 - **Content Discovery:** Data-driven unlock registry (prevents emotional pacing accidents)
 - **Persistence:** localStorage JSON (versioned) + autosave + import/export
 - **Error Handling:** Result<T> types in domain + error boundaries in UI
@@ -108,7 +110,7 @@ Context7 MCP is pre-configured. It provides documentation for React 19, Vite 7, 
 ### Technical Scope
 
 **Platform:** iOS Safari (iPhone 17) — PWA
-**Genre:** Active Incremental / Idle with Mini-Games
+**Genre:** Active Incremental with Mini-Games
 **Project Level:** Medium complexity (rich content, straightforward stack)
 **Stack:** React 19 + Vite 7 + TypeScript 5.8 (ground-up redesign)
 
@@ -117,8 +119,9 @@ Context7 MCP is pre-configured. It provides documentation for React 19, Vite 7, 
 | System                                | Complexity | Notes                                                                                                             |
 | ------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------- |
 | Economy Engine                        | Low-Medium | Enjoyment → Career → Cash → Watches loop; cents-based math                                                        |
-| Mini-Game Suite                       | **High**   | 4 distinct games (winding, alignment, rhythm, therapy); haptics; feel/spring physics is the real complexity       |
-| Career Progression                    | Low        | 6-stage state machine with gates                                                                                  |
+| Mini-Game Suite                       | **High**   | 4 distinct games (winding, quartz calibration, rhythm, therapy); clarity + feel/spring physics are core complexity |
+| Career Progression                    | Low        | 6-stage state machine with gates, entered from one-time pre-PhD onboarding                                       |
+| Mailbox and Deliveries                | Low-Medium | Unified queue for acceptance letters and watch packages; claim-based ownership                                   |
 | Watch Collection + Catalog            | Low-Medium | 100+ real watches, 4 tiers; progressive image loading                                                             |
 | Prestige System                       | Low        | Soft prestige (no reset), 3 sequential layers; content unlocks, not mechanical complexity                         |
 | Home Life                             | Low        | Gallery of unlockable content; unlock logic lives in Discovery system                                             |
@@ -174,6 +177,7 @@ Context7 MCP is pre-configured. It provides documentation for React 19, Vite 7, 
 | Haptic API inconsistency         | Missing tactile feedback    | Graceful degradation, optional feature                         |
 | 6-hour session battery drain     | Dead phone mid-gift         | RAF pause on inactive, efficient rendering                     |
 | State shape evolution during dev | Migration bugs on save load | Composable migrations, tested migration path                   |
+| Clock-driven delivery edge cases | Late/early package behavior | Deterministic `clockMs` scheduling + unit tests on delay bands |
 | White screen crash               | Ruined gift                 | react-error-boundary at app root, autosave on every transition |
 
 ---

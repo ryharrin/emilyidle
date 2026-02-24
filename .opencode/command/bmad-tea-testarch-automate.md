@@ -1,6 +1,6 @@
 ---
-name: 'bmad-tea-testarch-automate'
-description: 'Expand test automation coverage after implementation or analyze existing codebase to generate comprehensive test suite'
+name: 'testarch-automate'
+description: 'Expand test automation coverage for codebase. Use when the user says 'lets expand test coverage' or 'I want to automate tests''
 ---
 
 Execute the BMAD 'testarch-automate' workflow.

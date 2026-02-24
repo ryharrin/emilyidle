@@ -2,11 +2,11 @@
 
 ## Overview
 
-Expands active engagement from a single mini-game (Quartz Alignment, built in Epic 2) to the complete suite of 4 distinct interaction types. Each mini-game has unique input mechanics, visual feel (powered by motion spring physics), and ties into the economy loop. Also adds the Family Check-in interaction for Love generation.
+Expands active engagement from a single mini-game (Quartz Calibration, built in Epic 2) to the complete suite of 4 distinct interaction types. Each mini-game has unique input mechanics, visual feel (powered by motion spring physics), and ties into the economy loop. Also adds the Family Check-in interaction for Love generation.
 
 ## Epic Goal
 
-Deliver all 4 watch-based mini-games (Quartz Alignment enhancement, Manual Winding, Automatic Movement, Therapy Session enhancement) plus Family Check-in, with polish, visual feedback, and balanced rewards.
+Deliver all 4 watch-based mini-games (Quartz Calibration enhancement, Manual Winding, Automatic Movement, Therapy Session enhancement) plus Family Check-in, with polish, visual feedback, and balanced rewards.
 
 ## Dependencies
 
@@ -120,21 +120,29 @@ Deliver all 4 watch-based mini-games (Quartz Alignment enhancement, Manual Windi
 
 ---
 
-## Story 3.5: Enhanced Quartz Alignment
+## Story 3.5: Enhanced Quartz Calibration
 
 **As a** player,
-**I want** the Quartz Alignment game to have progressive difficulty and polished feel,
+**I want** the Quartz Calibration game to have progressive difficulty, clear flavor, and polished feel,
 **So that** it remains engaging as I acquire better watches.
 
 **Acceptance Criteria:**
 
 **Given** a higher-tier quartz watch,
-**When** I play the alignment game,
-**Then** the difficulty is slightly higher (tighter alignment windows).
+**When** I play the calibration game,
+**Then** the timing windows are slightly tighter.
 
-**Given** a successful alignment,
+**Given** the game opens,
+**When** I read the intro,
+**Then** I understand what is happening: I am calming a drifting quartz beat back to center.
+
+**Given** the game is active,
+**When** the beat dot crosses center and I tap "Calibrate",
+**Then** Miss/Good/Perfect is evaluated by distance from center.
+
+**Given** repeated successful calibrations,
 **When** Perfect is achieved,
-**Then** a celebration animation with spring physics plays.
+**Then** the beat visibly steadies and a celebration animation with spring physics plays.
 
 **Given** the game balance,
 **When** difficulty scales,
@@ -157,6 +165,10 @@ Deliver all 4 watch-based mini-games (Quartz Alignment enhancement, Manual Windi
 **Given** the result screen,
 **When** rewards are displayed,
 **Then** it clearly shows Enjoyment earned, tier bonus, and any special bonuses.
+
+**Given** enjoyment rewards are shown,
+**When** values render,
+**Then** they are whole numbers only.
 
 **Given** tier-based scaling,
 **When** rewards are calculated,

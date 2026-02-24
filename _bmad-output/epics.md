@@ -5,9 +5,9 @@
 | #   | Epic Name             | Scope                                       | Dependencies | Est. Stories |
 | --- | --------------------- | ------------------------------------------- | ------------ | ------------ |
 | 1   | Foundation            | Core economy, UI framework, save system     | None         | 8-12         |
-| 2   | Core Loop             | First mini-game, PhD career, basic purchase | Epic 1       | 10-15        |
+| 2   | Core Loop             | Onboarding, first mini-game, mailbox purchase | Epic 1       | 10-15        |
 | 3   | Mini-Game Suite       | All 4 mini-games with feedback              | Epic 2       | 12-18        |
-| 4   | Career Journey        | All 6 career stages, JLC milestone          | Epic 3       | 15-20        |
+| 4   | Career Journey        | 6 career stages + pre-PhD integration, JLC milestone | Epic 3       | 15-20        |
 | 5   | Collection & Prestige | All watch tiers, prestige layers            | Epic 4       | 15-20        |
 | 6   | Home Life             | Family photos, kid drawings, messages       | Epic 5       | 12-16        |
 | 7   | Polish & Audio        | All art, music, SFX, animations             | Epics 1-6    | 15-25        |
@@ -71,9 +71,9 @@ Prove the core gameplay loop is fun with a complete vertical slice of Chapter 1.
 
 **Includes:**
 
-- First mini-game: Quartz Alignment (simplest)
-- PhD career stage implementation
-- Basic watch purchase system
+- First mini-game: Quartz Calibration (simplest)
+- Pre-PhD onboarding and PhD career stage implementation
+- Mailbox-driven watch purchase and delivery system
 - Chapter 1 home scene (sparse apartment)
 - First family photo unlock
 - Core loop validation: Mini-game → Enjoyment → Career → Cash → Purchase
@@ -92,11 +92,11 @@ Epic 1: Foundation
 
 ### Deliverable
 
-A complete vertical slice: Player can play the alignment mini-game, earn Enjoyment, spend it on a career session, earn Cash, and buy their first watch. Chapter 1 home scene shows sparse apartment with first family photo.
+A complete vertical slice: Player can play Quartz Calibration, earn Enjoyment, enter grad school from a one-time acceptance letter, run therapy sessions for Cash, order a watch from Market, and claim delivery from Mailbox.
 
 ### Stories
 
-1. As a player, I can play the Quartz Alignment mini-game
+1. As a player, I can play the Quartz Calibration mini-game
 2. As a player, perfect mini-game performance earns more Enjoyment
 3. As a player, I can spend Enjoyment to start a therapy career session
 4. As a player, career sessions earn Cash based on performance
@@ -120,7 +120,7 @@ Implement all four mini-games with satisfying feedback and progression.
 **Includes:**
 
 - Manual Winding mini-game (timing-based)
-- Quartz Alignment mini-game (precision-based)
+- Quartz Calibration mini-game (beat-centering)
 - Automatic Movement mini-game (rhythm-based)
 - Therapy Session mini-game (simple presence)
 - Visual and haptic feedback for all games
@@ -169,7 +169,7 @@ Implement the full career progression from PhD to Retirement.
 
 **Includes:**
 
-- All 6 career stages: PhD, Externship, VA, Private Practice, Group Practice, Retirement
+- All 6 career stages: PhD, Externship, VA, Private Practice, Group Practice, Retirement (entered from a pre-PhD onboarding state)
 - Stage progression mechanics and requirements
 - Unique patient scenarios per stage
 - JLC Q1252501 milestone at PhD completion

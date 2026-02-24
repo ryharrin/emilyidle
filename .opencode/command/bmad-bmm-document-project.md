@@ -1,6 +1,6 @@
 ---
-name: 'bmad-bmm-document-project'
-description: 'Analyzes and documents brownfield projects by scanning codebase, architecture, and patterns to create comprehensive reference documentation for AI-assisted development'
+name: 'document-project'
+description: 'Document brownfield projects for AI context. Use when the user says 'document this project' or 'generate project docs''
 ---
 
 Execute the BMAD 'document-project' workflow.

@@ -1,6 +1,6 @@
 ---
-name: 'bmad-shard-doc'
-description: 'Splits large markdown documents into smaller, organized files based on level 2 (default) sections'
+name: 'shard-doc'
+description: 'Splits large markdown documents into smaller, organized files based on level 2 (default) sections. Use if the user says 'Shard Document [document]''
 ---
 
 Execute the BMAD 'shard-doc' task.

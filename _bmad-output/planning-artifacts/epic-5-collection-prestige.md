@@ -73,6 +73,89 @@ Deliver the complete watch catalog with tier-based progression, the 3 sequential
 
 ---
 
+### Bug Fix: Market Images 304 Response Issue
+
+**Issue:** Watch images in the Market tab show broken images with 304 responses in Chrome.
+
+**Root Cause:** Cache-control headers or image path resolution causing browser to receive 304 Not Modified but fail to render cached image.
+
+**Fix Requirements:**
+
+**Given** I browse the Market tab,
+**When** watch images load,
+**Then** they display correctly without broken image icons.
+
+**Given** the browser cache,
+**When** images are requested,
+**Then** proper cache headers are set (or caching is disabled for development).
+
+**Given** image paths,
+**When** resolved,
+**Then** they correctly point to `/public/catalog/watches/` directory.
+
+**Given** image loading errors,
+**When** they occur,
+**Then** a fallback placeholder is shown instead of broken image icon.
+
+**Technical Investigation:**
+- Check Vite dev server cache headers configuration
+- Verify image paths in watch data match actual file locations
+- Add error handling with fallback image (`onError` handler)
+- Add `loading="lazy"` for performance
+- Check if 304 responses are causing React to not update image src
+- Add cache-busting query params if needed (`?v=1`)
+
+**Files to Review:**
+- `src/game/data/watches.ts` - Verify imageUrl paths
+- `src/ui/tabs/MarketTab.tsx` - Check image rendering
+- `src/ui/components/WatchCard.tsx` - Add error handling
+- `vite.config.ts` - Check static asset handling
+- Browser DevTools Network tab - Analyze request/response headers
+
+**E2E Test Requirements:**
+
+```gherkin
+Scenario: Market images load successfully
+  Given I navigate to the Market tab
+  When the page loads
+  Then all watch cards display their images
+  And no broken image icons are visible
+
+Scenario: Images handle 304 responses correctly
+  Given I have previously loaded the Market tab
+  When I refresh the page
+  Then images load from cache (304 response)
+  And display correctly without errors
+
+Scenario: Image fallback on error
+  Given a watch has an invalid image URL
+  When the Market tab renders
+  Then a fallback placeholder is displayed
+  And the card remains functional
+
+Scenario: Image lazy loading
+  Given the catalog has many watches
+  When I scroll through the Market
+  Then images load as they enter viewport
+  And performance remains smooth
+
+Scenario: Image cache persistence
+  Given I reload the game
+  When I open the Market tab
+  Then previously loaded images display immediately
+  And new images load progressively
+```
+
+**Test Implementation:**
+- Add to `src/ui/components/WatchCard.unit.test.tsx` - Test error handling
+- Create E2E test file `test/e2e/market-images.spec.ts`
+- Test with Playwright or Cypress if available
+- Mock 304 responses in tests
+- Verify fallback placeholder rendering
+- Test scrolling performance with 100+ watches
+
+---
+
 ## Story 5.3: Tier Unlock Progression
 
 **As a** player,

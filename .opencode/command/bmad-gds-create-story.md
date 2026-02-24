@@ -1,6 +1,6 @@
 ---
-name: 'bmad-gds-create-story'
-description: 'Create the next user story from epics+stories with enhanced context analysis and direct ready-for-dev marking'
+name: 'create-story'
+description: 'User story creation from epics. Use when the user says 'lets create a user story' or 'I want to create a user story''
 ---
 
 Execute the BMAD 'create-story' workflow.

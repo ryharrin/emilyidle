@@ -9,9 +9,9 @@ This document indexes all epics for the Emily At Last complete rebuild. Each epi
 | Epic       | Name                                                     | Focus                                      | Stories | Status  |
 | ---------- | -------------------------------------------------------- | ------------------------------------------ | ------- | ------- |
 | **Epic 1** | [Foundation](./epic-1-foundation.md)                     | Project scaffolding & architecture seams   | 9       | Backlog |
-| **Epic 2** | [Core Loop](./epic-2-core-loop.md)                       | Economy, first mini-game, first playable   | 8       | Backlog |
+| **Epic 2** | [Core Loop](./epic-2-core-loop.md)                       | Economy, onboarding, first mini-game, first playable   | 8       | Backlog |
 | **Epic 3** | [Mini-Game Suite](./epic-3-mini-game-suite.md)           | All 4 watch mini-games + Family Check-in   | 6       | Backlog |
-| **Epic 4** | [Career Journey](./epic-4-career-journey.md)             | 6 career stages, narrative arc, milestones | 7       | Backlog |
+| **Epic 4** | [Career Journey](./epic-4-career-journey.md)             | 6 career stages + pre-PhD integration, narrative arc, milestones | 7       | Backlog |
 | **Epic 5** | [Collection & Prestige](./epic-5-collection-prestige.md) | 100+ watches, 4 tiers, 3 prestige layers   | 7       | Backlog |
 | **Epic 6** | [Home Life](./epic-6-home-life.md)                       | Family photos, drawings, Ryan's messages   | 6       | Backlog |
 | **Epic 7** | [Polish & Audio](./epic-7-polish-audio.md)               | Audio, animations, achievements, endgame   | 8       | Backlog |
@@ -36,8 +36,8 @@ This document indexes all epics for the Emily At Last complete rebuild. Each epi
 
 - 2.1 Currency System & Economy Types
 - 2.2 Watch Data & Collection Model
-- 2.3 Quartz Alignment Mini-Game
-- 2.4 PhD Career Stage & Therapy Sessions
+- 2.3 Quartz Calibration Mini-Game
+- 2.4 Pre-PhD Onboarding and PhD Therapy Sessions
 - 2.5 Watch Market & Purchase Flow
 - 2.6 Collection Display & Watch Details
 - 2.7 Passive Income & Sim Integration
@@ -49,7 +49,7 @@ This document indexes all epics for the Emily At Last complete rebuild. Each epi
 - 3.2 Automatic Movement Mini-Game
 - 3.3 Enhanced Therapy Session Mini-Game
 - 3.4 Family Check-in Interaction
-- 3.5 Enhanced Quartz Alignment
+- 3.5 Enhanced Quartz Calibration
 - 3.6 Mini-Game Result Screen & Rewards
 
 ### Epic 4: Career Journey (7 stories)

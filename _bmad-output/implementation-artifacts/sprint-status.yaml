@@ -1,0 +1,112 @@
+# generated: 2026-02-23T08:43:22.381Z
+# project: watch-idle
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-23T08:43:22.381Z
+project: watch-idle
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: done
+  1-1-project-initialization-and-tooling: done
+  1-2-gamestate-type-and-reducer: done
+  1-3-game-loop-and-simulation-tick: done
+  1-4-persistence-and-save-system: done
+  1-5-error-boundaries-and-reliability: done
+  1-6-pwa-configuration-and-offline-support: done
+  1-7-ui-shell-and-navigation: done
+  1-8-content-discovery-system-skeleton: done
+  1-9-logging-and-debug-infrastructure: done
+  epic-1-retrospective: optional
+  epic-2: in-progress
+  2-1-currency-system-and-economy-types: done
+  2-2-watch-data-and-collection-model: done
+  2-3-quartz-calibration-mini-game: done
+  2-4-pre-phd-onboarding-and-phd-therapy-sessions: done
+  2-5-watch-market-and-purchase-flow: done
+  2-6-collection-display-watch-effects-and-watch-details: done
+  2-7-passive-income-and-sim-integration: done
+  2-8-import-export-save-backup: done
+  2-x-initial-enjoyment-buffer: done
+  2-9-cooldown-calculation-bug-fix: done
+  2-10-mail-notification-system: done
+  2-11-package-tracking-system: done
+  2-12-consecutive-sessions-with-scaling-cost: done
+  epic-2-retrospective: optional
+  epic-3: done
+  3-1-manual-winding-mini-game: done
+  3-2-automatic-movement-mini-game: done
+  3-3-enhanced-therapy-session-mini-game: done
+  3-4-family-check-in-interaction: done
+  3-5-enhanced-quartz-calibration: done
+  3-6-mini-game-result-screen-and-rewards: done
+  epic-3-retrospective: optional
+  epic-4: done
+  4-1-career-stage-state-machine: done
+  4-2-externship-stage-chapter-2: done
+  4-3-va-hospital-stage-chapter-3-and-jlc-milestone: done
+  4-4-private-practice-stage-chapter-4: done
+  4-5-group-practice-stage-chapter-5: done
+  4-6-retirement-stage-chapter-6: done
+  4-7-career-ui-and-progress-display: done
+  epic-4-retrospective: optional
+  epic-5: done
+  5-1-complete-watch-catalog-data: done
+  5-2-progressive-catalog-loading-and-images: done
+  5-3-tier-unlock-progression: done
+  5-4-workshop-prestige-layer: done
+  5-5-maison-prestige-layer: done
+  5-6-nostalgia-prestige-layer: done
+  5-7-collection-completion-tracking: done
+  epic-5-retrospective: optional
+  epic-6: done
+  6-1-home-gallery-ui-and-layout: done
+  6-2-family-photo-unlocks: done
+  6-3-childrens-drawings: done
+  6-4-messages-from-ryan: done
+  6-5-visual-home-evolution: done
+  6-6-watch-display-case: done
+  epic-6-retrospective: optional
+  epic-7: backlog
+  7-1-audio-system-and-music: backlog
+  7-2-sound-effects: backlog
+  7-3-animation-polish-pass: backlog
+  7-4-achievement-system: backlog
+  7-5-endgame-and-victory-sequence: backlog
+  7-6-credits-and-personal-touches: backlog
+  7-7-performance-and-battery-optimization: backlog
+  7-8-final-integration-testing: backlog
+  epic-7-retrospective: optional

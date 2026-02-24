@@ -1,6 +1,6 @@
 ---
-name: 'bmad-tea-testarch-atdd'
-description: 'Generate failing acceptance tests before implementation using TDD red-green-refactor cycle'
+name: 'testarch-atdd'
+description: 'Generate failing acceptance tests using TDD cycle. Use when the user says 'lets write acceptance tests' or 'I want to do ATDD''
 ---
 
 Execute the BMAD 'testarch-atdd' workflow.

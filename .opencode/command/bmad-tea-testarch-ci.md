@@ -1,6 +1,6 @@
 ---
-name: 'bmad-tea-testarch-ci'
-description: 'Scaffold CI/CD quality pipeline with test execution, burn-in loops, and artifact collection'
+name: 'testarch-ci'
+description: 'Scaffold CI/CD quality pipeline with test execution. Use when the user says 'lets setup CI pipeline' or 'I want to create quality gates''
 ---
 
 Execute the BMAD 'testarch-ci' workflow.

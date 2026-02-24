@@ -2,11 +2,11 @@
 
 ## Overview
 
-Implements Emily's full career progression from PhD Student through Retirement — the narrative backbone of the 6-hour arc. Each career stage unlocks new watch tiers, higher income, home life content, and personal messages from Ryan. Includes the JLC Q1252501 milestone celebration at PhD completion.
+Implements Emily's full career progression from PhD Student through Retirement — the narrative backbone of the 6-hour arc, preceded by the pre-PhD acceptance-letter onboarding introduced in Epic 2. Each career stage unlocks new watch tiers, higher income, home life content, and personal messages from Ryan. Includes the JLC Q1252501 milestone celebration at PhD completion.
 
 ## Epic Goal
 
-Deliver all 6 career stages (PhD → Externship → VA Hospital → Private Practice → Group Practice → Retirement) with stage-specific therapy scenarios, income scaling, watch tier unlocks, and milestone celebrations.
+Deliver all 6 career stages (PhD → Externship → VA Hospital → Private Practice → Group Practice → Retirement), integrating cleanly with pre-PhD onboarding from Epic 2, with stage-specific therapy scenarios, income scaling, watch tier unlocks, and milestone celebrations.
 
 ## Dependencies
 
@@ -25,7 +25,7 @@ Deliver all 6 career stages (PhD → Externship → VA Hospital → Private Prac
 ## Story 4.1: Career Stage State Machine
 
 **As a** developer,
-**I want** the complete 6-stage career state machine with XP thresholds,
+**I want** the complete 6-stage career state machine with XP thresholds and pre-PhD entry integration,
 **So that** career progression drives the narrative arc.
 
 **Acceptance Criteria:**
@@ -33,6 +33,10 @@ Deliver all 6 career stages (PhD → Externship → VA Hospital → Private Prac
 **Given** the career data,
 **When** I inspect `game/data/careers.ts`,
 **Then** all 6 stages are defined: PhD Student, Externship, VA Hospital, Private Practice, Group Practice, Retirement.
+
+**Given** onboarding integration,
+**When** I inspect career state entry rules,
+**Then** a pre-PhD state is supported as the only allowed entry path into PhD Student.
 
 **Given** each stage,
 **When** I inspect its properties,

@@ -1,6 +1,6 @@
 ---
-name: 'bmad-tea-testarch-test-design'
-description: 'Dual-mode workflow: (1) System-level testability review in Solutioning phase, or (2) Epic-level test planning in Implementation phase. Auto-detects mode based on project phase.'
+name: 'testarch-test-design'
+description: 'Create system-level or epic-level test plans. Use when the user says 'lets design test plan' or 'I want to create test strategy''
 ---
 
 Execute the BMAD 'testarch-test-design' workflow.
