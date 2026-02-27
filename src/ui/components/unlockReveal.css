@@ -1,0 +1,169 @@
+/**
+ * Unlock Reveal Component Styles
+ */
+
+.unlock-reveal-container {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.unlock-reveal-card-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.unlock-reveal-card {
+  position: relative;
+  width: 240px;
+  height: 160px;
+  transform-style: preserve-3d;
+}
+
+.unlock-reveal-front,
+.unlock-reveal-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.unlock-reveal-front {
+  background: linear-gradient(135deg, rgba(16, 42, 67, 0.1), rgba(16, 42, 67, 0.05));
+  border: 2px solid rgba(16, 42, 67, 0.15);
+}
+
+.unlock-reveal-back {
+  background: linear-gradient(135deg, rgba(201, 146, 122, 0.15), rgba(201, 146, 122, 0.05));
+  border: 2px solid rgba(201, 146, 122, 0.4);
+}
+
+/* Mystery front content */
+.unlock-reveal-mystery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.unlock-reveal-question {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  line-height: 1;
+}
+
+.unlock-reveal-hint {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+
+/* Particle burst */
+.particle-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+
+/* Simple unlock styles */
+.simple-unlock-front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.simple-unlock-icon {
+  font-size: 2.5rem;
+  opacity: 0.6;
+}
+
+.simple-unlock-icon.revealed {
+  opacity: 1;
+  animation: unlock-pulse 0.6s ease-out;
+}
+
+.simple-unlock-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.simple-unlock-back {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.simple-unlock-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.simple-unlock-description {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+@keyframes unlock-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .unlock-reveal-card {
+    transition: none !important;
+  }
+
+  .unlock-reveal-front,
+  .unlock-reveal-back {
+    transition: none;
+  }
+
+  .particle-burst {
+    display: none;
+  }
+
+  .unlock-reveal-question {
+    animation: none;
+  }
+}

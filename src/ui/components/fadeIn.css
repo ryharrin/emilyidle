@@ -1,0 +1,97 @@
+/**
+ * Fade In Component Styles - Performance Optimized
+ * Story 7.7: Added CSS containment and will-change management
+ */
+
+/* Use will-change to hint browser about animated properties */
+/* Removed after animation completes via JavaScript where possible */
+.fade-in {
+  will-change: opacity, transform;
+  contain: layout style paint;
+}
+
+/* Disable will-change for static states to free GPU resources */
+.fade-in[data-animated="true"] {
+  will-change: auto;
+}
+
+.stagger-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  contain: layout style;
+}
+
+.stagger-item {
+  will-change: opacity, transform;
+  contain: layout style paint;
+}
+
+.stagger-item[data-animated="true"] {
+  will-change: auto;
+}
+
+.tab-transition {
+  will-change: opacity, transform;
+  contain: layout style paint;
+}
+
+.tab-transition[data-animated="true"] {
+  will-change: auto;
+}
+
+/* Skeleton loader - reduced animation for battery save */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(167, 184, 208, 0.1) 25%,
+    rgba(167, 184, 208, 0.2) 50%,
+    rgba(167, 184, 208, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton.circle {
+  border-radius: 50%;
+}
+
+/* Reduced motion - Story 7.7: Battery save mode support */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .stagger-item,
+  .tab-transition {
+    transition: opacity 0.1s ease !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  .skeleton {
+    animation: none !important;
+    opacity: 0.5;
+  }
+}
+
+/* Battery save class - can be applied dynamically via JS */
+.battery-save-mode .fade-in,
+.battery-save-mode .stagger-item,
+.battery-save-mode .tab-transition {
+  transition: opacity 0.1s ease !important;
+  animation: none !important;
+  will-change: auto !important;
+}
+
+.battery-save-mode .skeleton {
+  animation: none !important;
+  opacity: 0.5;
+}

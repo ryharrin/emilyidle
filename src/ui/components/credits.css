@@ -1,0 +1,367 @@
+/**
+ * Credits Component Styles
+ * Elegant, warm styling with handmade touches
+ */
+
+/* Base container - full screen button */
+.credits-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #0a0f1a 0%, #1a1f2e 50%, #0d1117 100%);
+  color: #f5f0e8;
+  overflow: hidden;
+  font-family: 'Crimson Text', Georgia, serif;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.credits-container:focus-visible {
+  outline: 2px solid rgba(167, 184, 208, 0.5);
+  outline-offset: -4px;
+}
+
+/* Vignette overlay */
+.credits-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  z-index: 2;
+}
+
+/* Parallax background */
+.credits-parallax {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.parallax-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200%;
+  will-change: transform;
+}
+
+.parallax-layer-1 {
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(167, 184, 208, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(201, 146, 122, 0.02) 0%, transparent 40%);
+}
+
+.parallax-layer-2 {
+  background: 
+    radial-gradient(circle at 60% 20%, rgba(167, 184, 208, 0.02) 0%, transparent 30%),
+    radial-gradient(circle at 30% 80%, rgba(201, 146, 208, 0.015) 0%, transparent 35%);
+}
+
+.parallax-layer-3 {
+  background: 
+    radial-gradient(circle at 70% 40%, rgba(255, 255, 255, 0.01) 0%, transparent 25%);
+}
+
+/* Credits content */
+.credits-content {
+  position: absolute;
+  width: 100%;
+  padding: 100vh 2rem 50vh;
+  text-align: center;
+  z-index: 1;
+  will-change: transform;
+}
+
+/* Section styling */
+.credits-section {
+  margin-bottom: 5rem;
+  position: relative;
+}
+
+/* Line styling */
+.credits-line {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  margin: 0.75rem 0;
+  color: #a7b8d0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
+}
+
+.credits-line.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #f5f0e8;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+}
+
+/* Personal notes - handmade feel */
+.credits-personal-note {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: #c9927a;
+  margin-top: 1rem;
+  opacity: 0.7;
+  letter-spacing: 0.01em;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Section-specific styling */
+.credits-section.dedication .credits-line.title {
+  font-size: 3.5rem;
+  color: #e2e8f0;
+  text-shadow: 0 2px 8px rgba(167, 184, 208, 0.3);
+  margin-bottom: 0.5rem;
+}
+
+.credits-section.dedication .credits-line:not(.title) {
+  font-size: 2rem;
+  color: #f5f0e8;
+  letter-spacing: 0.1em;
+}
+
+.credits-section.signature {
+  margin-top: 8rem;
+}
+
+.credits-section.signature .credits-line.title {
+  font-size: 1.5rem;
+  font-style: italic;
+}
+
+.credits-section.signature .credits-line:not(.title) {
+  font-size: 1.75rem;
+  color: #e2e8f0;
+}
+
+.credits-section.meaning .credits-line.title {
+  font-size: 2.5rem;
+  color: #c9927a;
+  text-shadow: 0 2px 8px rgba(201, 146, 122, 0.3);
+}
+
+.credits-section.end {
+  margin-top: 10rem;
+}
+
+.credits-section.end .credits-line {
+  font-size: 1.5rem;
+  color: #a7b8d0;
+  letter-spacing: 0.08em;
+}
+
+/* Skip button */
+.credits-skip {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(167, 184, 208, 0.15);
+  border: 1px solid rgba(167, 184, 208, 0.4);
+  color: #a7b8d0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  font-size: 0.9rem;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.credits-skip:hover {
+  background: rgba(167, 184, 208, 0.25);
+  border-color: rgba(167, 184, 208, 0.6);
+  transform: translateY(-2px);
+}
+
+.credits-skip:active {
+  transform: translateY(0);
+}
+
+/* Pause indicator */
+.credits-pause-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1.5rem 2rem;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(167, 184, 208, 0.3);
+  border-radius: 8px;
+  font-size: 1.1rem;
+  color: #f5f0e8;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  backdrop-filter: blur(8px);
+}
+
+.pause-icon {
+  font-size: 2rem;
+  opacity: 0.8;
+}
+
+.pause-hint {
+  font-size: 0.8rem;
+  color: #a7b8d0;
+  opacity: 0.7;
+}
+
+/* Handmade accent elements */
+.credits-handmade-accent {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 1px solid rgba(167, 184, 208, 0.15);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.credits-handmade-accent.top-left {
+  top: 10%;
+  left: 5%;
+  transform: rotate(-15deg);
+}
+
+.credits-handmade-accent.bottom-right {
+  bottom: 15%;
+  right: 5%;
+  transform: rotate(15deg);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .credits-content {
+    transition: none;
+    animation: none;
+  }
+  
+  .parallax-layer {
+    display: none;
+  }
+  
+  .credits-container {
+    cursor: default;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .credits-content {
+    padding: 80vh 1.5rem 40vh;
+  }
+  
+  .credits-line {
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+  
+  .credits-line.title {
+    font-size: 1.6rem;
+  }
+  
+  .credits-section.dedication .credits-line.title {
+    font-size: 2.5rem;
+  }
+  
+  .credits-section.dedication .credits-line:not(.title) {
+    font-size: 1.5rem;
+  }
+  
+  .credits-section.meaning .credits-line.title {
+    font-size: 2rem;
+  }
+  
+  .credits-section.signature .credits-line:not(.title) {
+    font-size: 1.4rem;
+  }
+  
+  .credits-skip {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  .credits-personal-note {
+    font-size: 0.85rem;
+    max-width: 300px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .credits-content {
+    padding: 60vh 1rem 30vh;
+  }
+  
+  .credits-section {
+    margin-bottom: 3rem;
+  }
+  
+  .credits-handmade-accent {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Landscape mode on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .credits-content {
+    padding: 50vh 2rem 25vh;
+  }
+  
+  .credits-section {
+    margin-bottom: 3rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .credits-line {
+    color: #ffffff;
+  }
+  
+  .credits-line.title {
+    color: #ffffff;
+    text-shadow: none;
+  }
+}
+
+/* Print styles (hide credits when printing) */
+@media print {
+  .credits-container {
+    display: none;
+  }
+}

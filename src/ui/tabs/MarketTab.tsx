@@ -3,12 +3,25 @@ import { availableMarketWatches } from '../../game/watchSelectors'
 import { isTierUnlocked, getTierRequiredStage } from '../../game/data/tierUnlocks'
 import { CAREER_STAGES } from '../../game/data/careers'
 import { useGameDispatch, useGameState } from '../hooks/useGameState'
+import { getWatchImageUrl } from '../../game/catalog'
 
 export function MarketTab() {
   const state = useGameState()
   const dispatch = useGameDispatch()
+  const tiers = ['quartz', 'manual', 'automatic', 'tourbillon'] as const
   const owned = new Set(state.ownedWatchIds)
   const marketWatches = availableMarketWatches(state)
+  const trackingState = state.packageTracking
+  const inTransitWatchIds = new Set<string>([
+    ...state.pendingPackages.map((pkg) => pkg.watchId),
+    ...(trackingState?.inTransit.map((pkg) => pkg.watchId) ?? []),
+  ])
+  const deliveredPackageIdsByWatch = new Map<string, string>()
+  for (const pkg of trackingState?.delivered ?? []) {
+    if (!deliveredPackageIdsByWatch.has(pkg.watchId)) {
+      deliveredPackageIdsByWatch.set(pkg.watchId, pkg.id)
+    }
+  }
 
   // Group watches by tier
   const watchesByTier = marketWatches.reduce(
@@ -22,12 +35,37 @@ export function MarketTab() {
     {} as Record<string, typeof marketWatches>,
   )
 
-  const tiers = ['quartz', 'manual', 'automatic', 'tourbillon'] as const
+  const hasUnlockedTiers = tiers.some((tier) =>
+    isTierUnlocked(tier, state.careerStage),
+  )
+  const showPreOnboardingGuidance =
+    !hasUnlockedTiers &&
+    (state.careerStage === 'pre-phd' || state.onboardingComplete === false)
 
   return (
     <section className="app-body" aria-label="Market tab">
       <h2 className="tab-section-title">Market</h2>
       <p className="app-subtitle">Browse watches and buy with Cash.</p>
+      {showPreOnboardingGuidance ? (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            marginTop: 12,
+            padding: 12,
+            borderRadius: 12,
+            border: '1px solid var(--color-border)',
+            background: 'rgba(16, 42, 67, 0.06)',
+          }}
+        >
+          <div style={{ fontWeight: 700 }}>Market purchases unlock after onboarding.</div>
+          <p className="app-subtitle" style={{ marginTop: 6 }}>
+            You are still in pre-onboarding, so buy controls are hidden. Read your
+            acceptance letter in Mail and complete onboarding to reach PhD Student,
+            then quartz market watches and Buy actions will appear.
+          </p>
+        </div>
+      ) : null}
 
       {tiers.map((tier) => {
         const isUnlocked = isTierUnlocked(tier, state.careerStage)
@@ -115,6 +153,9 @@ export function MarketTab() {
               ) : (
                 tierWatches.map((w) => {
                   const isOwned = owned.has(w.id)
+                  const deliveredPackageId = deliveredPackageIdsByWatch.get(w.id)
+                  const isInTransit = inTransitWatchIds.has(w.id)
+                  const canBuy = !isOwned && !deliveredPackageId && !isInTransit
                   const canAfford = state.currencyCents >= w.priceCents
                   const remaining = Math.max(0, w.priceCents - state.currencyCents)
 
@@ -133,7 +174,7 @@ export function MarketTab() {
                       }}
                     >
                       <img
-                        src={w.imageUrl}
+                        src={getWatchImageUrl(w)}
                         alt={w.name}
                         width={88}
                         height={66}
@@ -166,7 +207,7 @@ export function MarketTab() {
                             <div style={{ fontWeight: 700 }}>
                               {formatCurrencyCents(w.priceCents)}
                             </div>
-                            {!isOwned && !canAfford ? (
+                            {canBuy && !canAfford ? (
                               <div
                                 className="app-subtitle"
                                 style={{ marginTop: 4 }}
@@ -189,11 +230,28 @@ export function MarketTab() {
                             <span className="pill" aria-label="Owned">
                               Owned
                             </span>
+                          ) : deliveredPackageId ? (
+                            <button
+                              type="button"
+                              className="pill"
+                              onClick={() =>
+                                dispatch({
+                                  type: 'OPEN_PACKAGE',
+                                  packageId: deliveredPackageId,
+                                })
+                              }
+                            >
+                              Open Package
+                            </button>
+                          ) : isInTransit ? (
+                            <span className="pill" aria-label="In Transit">
+                              In Transit
+                            </span>
                           ) : (
                             <button
                               type="button"
                               className="pill"
-                              disabled={!canAfford}
+                              disabled={!canBuy || !canAfford}
                               onClick={() =>
                                 dispatch({ type: 'PURCHASE_WATCH', watchId: w.id })
                               }

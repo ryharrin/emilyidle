@@ -2,9 +2,9 @@
 export const INITIAL_JITTER = 60
 export const MIN_JITTER = 10
 export const JITTER_DECREMENT = 10
-export const TOTAL_ROUNDS = 5
-export const ANIMATION_SPEED = 2.5 // Hz (beats per second)
-export const PERFECT_STREAK_THRESHOLD = 3 // Number of perfects to trigger celebration
+export const TOTAL_ROUNDS = 1
+export const ANIMATION_SPEED = 1.5 // Hz (beats per second) - Slower for easier gameplay
+export const PERFECT_STREAK_THRESHOLD = 1 // Number of perfects to trigger celebration
 
 // Clear instructions for the player (AC 3.5.2)
 export const CALIBRATION_INSTRUCTIONS = {

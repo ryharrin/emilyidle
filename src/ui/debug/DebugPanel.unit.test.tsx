@@ -13,7 +13,6 @@ describe('DebugPanel', () => {
 
   it('renders a heading when enabled={true}', () => {
     render(<DebugPanel enabled state={initialGameState} dispatch={() => {}} />)
-    expect(screen.getByRole('heading', { name: 'Debug Panel' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Debug Panel (DEV)' })).toBeInTheDocument()
   })
 })
-

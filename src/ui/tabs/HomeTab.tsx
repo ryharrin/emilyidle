@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { getCurrencyDisplay } from '../../game/economy'
+import { motion } from 'motion/react'
+import { AnimatedCurrency } from '../components/AnimatedNumber'
 import { getPassiveEnjoymentRatePerSecond } from '../../game/passiveIncome'
 import {
   canCompleteTherapySession,
@@ -18,6 +19,7 @@ import { FamilyCheckIn } from '../components/FamilyCheckIn'
 import { AcceptanceLetter } from '../components/AcceptanceLetter'
 import { TherapySessionGame } from '../minigames/TherapySessionGame'
 import { HomeGallery } from '../components/HomeGallery'
+import { AchievementGallery } from '../achievements/AchievementGallery'
 import { getConsecutiveSessionProgress } from '../../game/selectors/consecutiveSessions'
 import { ConsecutiveSessionIndicator } from '../components/ConsecutiveSessionIndicator'
 
@@ -175,7 +177,7 @@ export function HomeTab() {
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <span className="pill">
-          {getCurrencyDisplay(state)}
+          <AnimatedCurrency cents={state.currencyCents} />
         </span>
         <span className="pill">
           Enjoyment: {state.enjoyment}
@@ -302,7 +304,7 @@ export function HomeTab() {
             🛋️ Therapy Session
           </h3>
           <p className="app-subtitle" style={{ marginTop: 0 }}>
-            Cost: {therapySessionCost?.scaledCost ?? '-'} Enjoyment | Reward: Cash + Career XP
+            Complete a session to spend {therapySessionCost?.scaledCost ?? '-'} Enjoyment and earn Cash + Career XP. Ending early gives no cost and no rewards.
           </p>
           {therapySessionCost ? (
             <ConsecutiveSessionIndicator
@@ -345,10 +347,44 @@ export function HomeTab() {
       {/* Home Gallery - Story 6-1 */}
       <HomeGallery />
 
+      {/* Achievement Gallery - Story 7.4 */}
+      <section style={{ marginTop: 24 }}>
+        <h3 className="tab-section-title" style={{ fontSize: '1.05rem' }}>
+          🏆 Achievements
+        </h3>
+        <AchievementGallery state={state} />
+      </section>
+
+      {/* "At Last" Context - Story 7.6 */}
+      {state.careerStage === 'Retirement' && (
+        <motion.section 
+          style={{ marginTop: 24, padding: 16, background: 'rgba(201, 146, 122, 0.1)', borderRadius: 8, border: '1px solid rgba(201, 146, 122, 0.3)' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <h3 className="tab-section-title" style={{ fontSize: '1.05rem', color: '#c9927a' }}>
+            At Last
+          </h3>
+          <p className="app-subtitle" style={{ marginTop: 8, fontStyle: 'italic' }}>
+            Chapter 6: At Last
+          </p>
+          <p className="app-subtitle" style={{ marginTop: 8 }}>
+            At last, she's complete.
+          </p>
+          <p className="app-subtitle" style={{ marginTop: 4, fontSize: '0.9rem', opacity: 0.8 }}>
+            At last, the gift is ready.
+          </p>
+          <p className="app-subtitle" style={{ marginTop: 4, fontSize: '0.85rem', opacity: 0.7 }}>
+            At last, I can tell you what you mean to me.
+          </p>
+        </motion.section>
+      )}
+
       {import.meta.env.DEV ? (
         <section style={{ marginTop: 16 }}>
           <h3 className="tab-section-title" style={{ fontSize: '1.05rem' }}>
-            Dev Quick Actions
+            Dev Quick Actions (DEV)
           </h3>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button

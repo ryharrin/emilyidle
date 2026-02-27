@@ -46,6 +46,7 @@ function baseState(packages: TrackingPackage[]): GameState {
       nostalgia: { unlocked: false, points: 0, upgrades: [], museumQuality: false },
     },
     unlockedHomeItems: [],
+    unlockedAchievementIds: [],
     consecutiveSessions: { count: 0, lastSessionTime: 0 },
     packageTracking: {
       inTransit: packages,

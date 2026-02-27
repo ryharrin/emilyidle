@@ -27,6 +27,31 @@ describe('gameReducer', () => {
     expect(state.currencyCents).toBe(0)
   })
 
+  it('does not auto-unlock achievements immediately on LOAD_SAVE', () => {
+    const loadedState: GameState = {
+      ...initialGameState,
+      unlockedAchievementIds: [],
+      interactionHistory: [],
+    }
+
+    const next = gameReducer(initialGameState, { type: 'LOAD_SAVE', state: loadedState })
+
+    expect(next.unlockedAchievementIds).toEqual([])
+  })
+
+  it('does not unlock secret-first-click from passive ticks after LOAD_SAVE', () => {
+    const loadedState: GameState = {
+      ...initialGameState,
+      unlockedAchievementIds: [],
+      interactionHistory: [],
+    }
+
+    const afterLoad = gameReducer(initialGameState, { type: 'LOAD_SAVE', state: loadedState })
+    const afterTick = gameReducer(afterLoad, { type: 'SIM_TICK', dtMs: 16 })
+
+    expect(afterTick.unlockedAchievementIds).not.toContain('secret-first-click')
+  })
+
   it('does not mutate input state or nested arrays', () => {
     const state: GameState = {
       ...initialGameState,
@@ -172,6 +197,39 @@ describe('gameReducer', () => {
     expect(next.mail.length).toBeGreaterThan(state.mail.length)
     const shippingMail = next.mail.find((m) => m.type === 'shipping-notification')
     expect(shippingMail).toBeDefined()
+  })
+
+  it('blocks duplicate purchase while watch is pending delivery', () => {
+    const state: GameState = {
+      ...initialGameState,
+      currencyCents: 10_000,
+    }
+
+    const afterFirstPurchase = gameReducer(state, { type: 'PURCHASE_WATCH', watchId: 'timex-weekender' })
+    const afterDuplicateAttempt = gameReducer(afterFirstPurchase, { type: 'PURCHASE_WATCH', watchId: 'timex-weekender' })
+
+    expect(afterDuplicateAttempt).toBe(afterFirstPurchase)
+    expect(afterDuplicateAttempt.pendingPackages).toHaveLength(1)
+    expect(afterDuplicateAttempt.packageTracking?.inTransit).toHaveLength(1)
+    expect(afterDuplicateAttempt.ownedWatchIds).not.toContain('timex-weekender')
+  })
+
+  it('blocks duplicate purchase while watch is delivered but not opened', () => {
+    const state: GameState = {
+      ...initialGameState,
+      currencyCents: 10_000,
+      pendingToasts: [],
+    }
+
+    const afterPurchase = gameReducer(state, { type: 'PURCHASE_WATCH', watchId: 'timex-weekender' })
+    const deliveryTime = (afterPurchase.pendingPackages[0]?.arrivalAtMs ?? 0) + 1
+    const afterDelivery = gameReducer(afterPurchase, { type: 'CHECK_PACKAGES', nowMs: deliveryTime })
+    const afterDuplicateAttempt = gameReducer(afterDelivery, { type: 'PURCHASE_WATCH', watchId: 'timex-weekender' })
+
+    expect(afterDelivery.ownedWatchIds).not.toContain('timex-weekender')
+    expect(afterDelivery.packageTracking?.delivered).toHaveLength(1)
+    expect(afterDuplicateAttempt).toBe(afterDelivery)
+    expect(afterDuplicateAttempt.currencyCents).toBe(afterDelivery.currencyCents)
   })
 
   it('creates a package toast with dealer when delivery arrives', () => {

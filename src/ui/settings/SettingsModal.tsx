@@ -1,7 +1,14 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import type { Action, GameState } from '../../game/types'
 import { exportSaveString, importSaveString } from '../../game/saveBackup'
 import { Modal } from '../components/Modal'
+import { Credits } from '../components/Credits'
+import {
+  getAudioState,
+  setEnabled as setAudioEnabled,
+  setMusicVolume,
+  setSfxVolume,
+} from '../../audio/audioService'
 
 export function SettingsModal(props: {
   state: GameState
@@ -12,6 +19,25 @@ export function SettingsModal(props: {
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [importText, setImportText] = useState('')
+  const [audioState, setAudioState] = useState(getAudioState())
+  const [showCredits, setShowCredits] = useState(false)
+
+  const handleAudioToggle = useCallback(() => {
+    setAudioEnabled(!audioState.enabled)
+    setAudioState(getAudioState())
+  }, [audioState.enabled])
+
+  const handleMusicVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const volume = parseInt(e.target.value, 10) / 100
+    setMusicVolume(volume)
+    setAudioState(getAudioState())
+  }, [])
+
+  const handleSfxVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const volume = parseInt(e.target.value, 10) / 100
+    setSfxVolume(volume)
+    setAudioState(getAudioState())
+  }, [])
 
   async function onExport() {
     setError(null)
@@ -40,6 +66,63 @@ export function SettingsModal(props: {
 
   return (
     <Modal title="Settings" onClose={props.onClose}>
+      <section style={{ marginBottom: 24 }}>
+        <h3 className="tab-section-title" style={{ fontSize: '1.05rem' }}>
+          Audio
+        </h3>
+        <p className="app-subtitle" style={{ marginTop: 0 }}>
+          Control music and sound effects volume
+        </p>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+          <button
+            type="button"
+            className="pill"
+            onClick={handleAudioToggle}
+            aria-label={audioState.enabled ? 'Disable audio' : 'Enable audio'}
+          >
+            {audioState.enabled ? 'Disable Audio' : 'Enable Audio'}
+          </button>
+          <span className="app-subtitle">
+            {audioState.enabled ? 'Audio enabled' : 'Audio disabled'}
+          </span>
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <label className="app-subtitle" htmlFor="music-volume">
+            Music Volume: {Math.round(audioState.musicVolume * 100)}%
+          </label>
+          <input
+            id="music-volume"
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(audioState.musicVolume * 100)}
+            onChange={handleMusicVolumeChange}
+            disabled={!audioState.enabled}
+            style={{ width: '100%', marginTop: 6 }}
+            aria-label="Music volume"
+          />
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <label className="app-subtitle" htmlFor="sfx-volume">
+            Sound Effects Volume: {Math.round(audioState.sfxVolume * 100)}%
+          </label>
+          <input
+            id="sfx-volume"
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(audioState.sfxVolume * 100)}
+            onChange={handleSfxVolumeChange}
+            disabled={!audioState.enabled}
+            style={{ width: '100%', marginTop: 6 }}
+            aria-label="Sound effects volume"
+          />
+        </div>
+      </section>
+
       <section>
         <h3 className="tab-section-title" style={{ fontSize: '1.05rem' }}>
           Backup
@@ -89,6 +172,34 @@ export function SettingsModal(props: {
           </details>
         ) : null}
       </section>
+
+      <section style={{ marginTop: 24 }}>
+        <h3 className="tab-section-title" style={{ fontSize: '1.05rem' }}>
+          Credits
+        </h3>
+        <p className="app-subtitle" style={{ marginTop: 0 }}>
+          View the credits and personal acknowledgments.
+        </p>
+        <button
+          type="button"
+          className="pill"
+          onClick={() => setShowCredits(true)}
+          style={{
+            background: 'rgba(167, 184, 208, 0.2)',
+            borderColor: 'rgba(167, 184, 208, 0.5)',
+          }}
+        >
+          View Credits
+        </button>
+      </section>
+
+      {/* Credits Modal */}
+      {showCredits && (
+        <Credits
+          onComplete={() => setShowCredits(false)}
+          onSkip={() => setShowCredits(false)}
+        />
+      )}
     </Modal>
   )
 }

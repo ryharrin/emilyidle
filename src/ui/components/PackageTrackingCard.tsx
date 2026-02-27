@@ -1,4 +1,5 @@
 import { getWatchById } from '../../game/data/watches'
+import { getWatchImageUrl } from '../../game/catalog'
 import type { TrackingPackage } from '../../game/types'
 import { estimatedDeliveryTime, trackingProgressPercent } from '../../game/selectors/tracking'
 import { TrackingProgressBar } from './TrackingProgressBar'
@@ -9,6 +10,7 @@ export function PackageTrackingCard(props: {
   onOpen: () => void
 }) {
   const watch = getWatchById(props.tracking.watchId)
+  const imageUrl = watch ? getWatchImageUrl(watch) : '/catalog/placeholder.png'
   const countdown = estimatedDeliveryTime(props.tracking, props.nowMs)
   const progress = trackingProgressPercent(props.tracking, props.nowMs)
   const currentCheckpoint = props.tracking.route[props.tracking.currentCheckpointIndex]
@@ -28,7 +30,7 @@ export function PackageTrackingCard(props: {
     >
       <div style={{ display: 'grid', gridTemplateColumns: '72px 1fr auto', gap: 10, alignItems: 'center' }}>
         <img
-          src={watch?.imageUrl ?? '/catalog/placeholder.png'}
+          src={imageUrl}
           alt={watch?.name ?? 'Watch'}
           width={72}
           height={54}

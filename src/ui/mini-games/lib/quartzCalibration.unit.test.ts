@@ -26,9 +26,9 @@ describe('quartzCalibration lib', () => {
       expect(INITIAL_JITTER).toBe(60)
       expect(MIN_JITTER).toBe(10)
       expect(JITTER_DECREMENT).toBe(10)
-      expect(TOTAL_ROUNDS).toBe(5)
-      expect(ANIMATION_SPEED).toBe(2.5)
-      expect(PERFECT_STREAK_THRESHOLD).toBe(3)
+      expect(TOTAL_ROUNDS).toBe(1)
+      expect(ANIMATION_SPEED).toBe(1.5)
+      expect(PERFECT_STREAK_THRESHOLD).toBe(1)
     })
   })
 

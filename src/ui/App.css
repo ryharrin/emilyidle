@@ -137,12 +137,38 @@
 
 @keyframes mail-toast-in {
   from {
-    transform: translateY(-100%);
+    transform: translateX(100%);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateX(0);
     opacity: 1;
+  }
+}
+
+@keyframes mail-toast-bounce {
+  0% {
+    transform: translateX(100%) scale(0.95);
+  }
+  60% {
+    transform: translateX(-5%) scale(1.02);
+  }
+  80% {
+    transform: translateX(2%) scale(0.99);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes mail-toast-exit {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(50px);
+    opacity: 0;
   }
 }
 
@@ -184,6 +210,27 @@
   border: 1px solid rgba(16, 42, 67, 0.16);
   background: rgba(255, 253, 249, 0.75);
   color: var(--color-text);
+}
+
+.pill:disabled {
+  opacity: 0.5;
+  background: rgba(16, 42, 67, 0.08);
+  border-color: rgba(16, 42, 67, 0.08);
+  cursor: not-allowed;
+}
+
+.pill:disabled {
+  opacity: 0.5;
+  background: rgba(16, 42, 67, 0.08);
+  border-color: rgba(16, 42, 67, 0.08);
+  cursor: not-allowed;
+}
+
+.pill:disabled {
+  opacity: 0.5;
+  background: rgba(16, 42, 67, 0.08);
+  border-color: rgba(16, 42, 67, 0.08);
+  cursor: not-allowed;
 }
 
 .unlock-toasts {

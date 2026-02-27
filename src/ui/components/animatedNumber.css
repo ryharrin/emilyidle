@@ -1,0 +1,44 @@
+/**
+ * Animated Number Component Styles
+ */
+
+.animated-number {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+
+.currency-display {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.1em;
+}
+
+.xp-display {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25em;
+  font-weight: 500;
+}
+
+.number-change-indicator {
+  position: absolute;
+  font-weight: 600;
+  font-size: 0.875em;
+  pointer-events: none;
+}
+
+.number-change-indicator.positive {
+  color: #4ade80;
+}
+
+.number-change-indicator.negative {
+  color: #f87171;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animated-number {
+    transition: none;
+  }
+}

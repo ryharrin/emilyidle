@@ -1,28 +1,55 @@
 import { useEffect } from 'react'
+import { motion } from 'motion/react'
 import { getWatchById } from '../../game/data/watches'
 import type { Toast } from '../../game/types'
 
-export function MailToast(props: { toast: Toast; onDismiss: () => void }) {
-  const durationMs = props.toast.durationMs ?? 4000
+interface MailToastProps {
+  toast: Toast
+  onDismiss: () => void
+}
+
+export function MailToast({ toast, onDismiss }: MailToastProps) {
+  const durationMs = toast.durationMs ?? 4000
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      props.onDismiss()
+      onDismiss()
     }, durationMs)
 
     return () => window.clearTimeout(timer)
-  }, [durationMs, props.onDismiss])
+  }, [durationMs, onDismiss])
 
-  const icon = props.toast.kind === 'letter' ? '✉️' : props.toast.kind === 'package' ? '📦' : '🔔'
-  const title = props.toast.title ?? 'Notification'
-  const tone = props.toast.kind ?? 'system'
-  const watch = props.toast.watchId ? getWatchById(props.toast.watchId) : null
+  const icon = toast.kind === 'letter' ? '✉️' : toast.kind === 'package' ? '📦' : '🔔'
+  const title = toast.title ?? 'Notification'
+  const tone = toast.kind ?? 'system'
+  const watch = toast.watchId ? getWatchById(toast.watchId) : null
 
   return (
-    <article
+    <motion.article
       role="alert"
       className={`mail-toast mail-toast--${tone}`}
       aria-label={title}
+      initial={{
+        opacity: 0,
+        x: 100,
+        scale: 0.95,
+      }}
+      animate={{
+        opacity: 1,
+        x: 0,
+        scale: 1,
+      }}
+      exit={{
+        opacity: 0,
+        x: 50,
+        scale: 0.95,
+      }}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 25,
+        mass: 0.8,
+      }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
         <strong>
@@ -33,7 +60,7 @@ export function MailToast(props: { toast: Toast; onDismiss: () => void }) {
           className="pill"
           onClick={(event) => {
             event.stopPropagation()
-            props.onDismiss()
+            onDismiss()
           }}
           aria-label="Dismiss mail notification"
           style={{ minWidth: 34, minHeight: 34 }}
@@ -47,8 +74,8 @@ export function MailToast(props: { toast: Toast; onDismiss: () => void }) {
           <div style={{ opacity: 0.85 }}>{watch.name}</div>
         </div>
       ) : null}
-      <div style={{ opacity: 0.88, marginTop: 6 }}>{props.toast.message}</div>
-      {props.toast.sender ? <div style={{ opacity: 0.75, marginTop: 2 }}>From: {props.toast.sender}</div> : null}
+      <div style={{ opacity: 0.88, marginTop: 6 }}>{toast.message}</div>
+      {toast.sender ? <div style={{ opacity: 0.75, marginTop: 2 }}>From: {toast.sender}</div> : null}
       <div
         style={{
           height: 3,
@@ -59,6 +86,6 @@ export function MailToast(props: { toast: Toast; onDismiss: () => void }) {
           animation: `mail-toast-progress ${durationMs}ms linear forwards`,
         }}
       />
-    </article>
+    </motion.article>
   )
 }

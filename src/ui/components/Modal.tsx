@@ -1,14 +1,23 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 export function Modal(props: {
   title: string
   onClose: () => void
   children: ReactNode
 }) {
+  const dialogRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    dialogRef.current?.focus({ preventScroll: true })
+  }, [])
+
   return (
     <div
+      ref={dialogRef}
       role="dialog"
+      aria-modal="true"
       aria-label={props.title}
+      tabIndex={-1}
       style={{
         position: 'fixed',
         inset: 0,
@@ -19,11 +28,14 @@ export function Modal(props: {
         background: 'rgba(16, 42, 67, 0.36)',
         display: 'grid',
         placeItems: 'center',
-        zIndex: 50,
+        zIndex: 2000,
       }}
       onMouseDown={(e) => {
         // Click outside closes.
         if (e.target === e.currentTarget) props.onClose()
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') props.onClose()
       }}
     >
       <div
@@ -56,4 +68,3 @@ export function Modal(props: {
     </div>
   )
 }
-

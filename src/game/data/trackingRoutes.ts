@@ -68,12 +68,16 @@ const GENERIC_ROUTES: Record<USRegion, TrackingLocation[]> = {
 }
 
 export function getDefaultPlayerLocation(stage: CareerStage): PlayerLocation {
-  if (stage === 'PrivatePractice' || stage === 'GroupPractice') {
+  // Emily moved to Ann Arbor in 2015 (VA Hospital stage) when she met Ryan
+  // Before 2015: PhD Student and Externship in Oakland
+  // 2015+: VA Hospital, Private Practice, Group Practice in Ann Arbor
+  if (stage === 'VAHospital' || stage === 'PrivatePractice' || stage === 'GroupPractice') {
     return { type: 'ann-arbor-mi', displayName: 'Ann Arbor, MI' }
   }
   if (stage === 'Retirement') {
     return { type: 'custom', customRegion: 'west', displayName: 'Retirement Home' }
   }
+  // PhDStudent, Externship - pre-2015, Oakland
   return { type: 'oakland-ca', displayName: 'Oakland, CA' }
 }
 

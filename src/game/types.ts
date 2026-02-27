@@ -169,62 +169,20 @@ export type GameState = {
   // Story 2.11 package tracking system
   packageTracking?: PackageTrackingState
   // Story 2.12 consecutive session scaling
-  consecutiveSessions: ConsecutiveSessionState
-}
-
-export const initialGameState: GameState = {
-  version: 1,
-  clockMs: 0,
-  currencyCents: 0,
-  enjoyment: 10, // Enough to run 2 therapy sessions after onboarding
-  uncollectedEnjoyment: 0,
-  love: 0,
-  lastFamilyCheckIn: 0,
-  careerXp: 0,
-  careerStage: 'pre-phd',
-  therapyCooldownUntilMs: 0,
-  ownedWatchIds: [],
-  pendingToasts: [],
-  pendingUnlocks: [],
-  triggeredUnlockIds: {},
-  interactionHistory: [],
-  onboardingComplete: false,
-  mail: [
-    {
-      id: 'acceptance-letter-initial',
-      type: 'acceptance-letter',
-      subject: 'Your Admission Decision',
-      from: 'Graduate Division',
-      body: '',
-      receivedAtMs: 0,
-      read: false,
-    },
-  ],
-  pendingPackages: [],
-  // Prestige system (Stories 5-4, 5-5, 5-6)
-  prestige: {
-    workshop: { unlocked: false, blueprints: 0, upgrades: [] },
-    maison: { unlocked: false, heritage: 0, upgrades: [] },
-    nostalgia: { unlocked: false, points: 0, upgrades: [], museumQuality: false },
-  },
-  // Home Life system (Stories 6-1 through 6-6)
-  unlockedHomeItems: [],
-  packageTracking: {
-    inTransit: [],
-    delivered: [],
-    playerLocation: {
-      type: 'oakland-ca',
-      displayName: 'Oakland, CA',
-    },
-  },
   consecutiveSessions: {
-    count: 0,
-    lastSessionTime: 0,
-    decayStartedAt: undefined,
-  },
+    count: number
+    lastSessionTime: number
+    decayStartedAt?: number
+  }
+  // Story 7.4: Achievement system
+  unlockedAchievementIds: string[]
+  // Story 7.5: Victory system
+  victoryComplete?: boolean
+  victoryTriggeredAt?: number
 }
 
 export type Action =
+  | { type: 'TRIGGER_VICTORY' }
   | { type: 'EARN_CURRENCY_CENTS'; amountCents: number }
   | { type: 'SPEND_CURRENCY_CENTS'; amountCents: number }
   | { type: 'GAIN_ENJOYMENT'; delta: number }
@@ -268,3 +226,50 @@ export type Action =
   | { type: 'GAIN_BLUEPRINTS'; amount: number }
   | { type: 'GAIN_HERITAGE'; amount: number }
   | { type: 'GAIN_NOSTALGIA_POINTS'; amount: number }
+  // Story 7.4: Achievement system actions
+  | { type: 'UNLOCK_ACHIEVEMENT'; achievementId: string }
+  | { type: 'RESET_ACHIEVEMENTS' }
+
+// Initial game state - used for new games and reset
+export const initialGameState: GameState = {
+  version: 1,
+  clockMs: 0,
+  currencyCents: 0,
+  enjoyment: 0,
+  uncollectedEnjoyment: 0,
+  love: 0,
+  lastFamilyCheckIn: 0,
+  careerXp: 0,
+  careerStage: 'pre-phd',
+  therapyCooldownUntilMs: 0,
+  ownedWatchIds: [],
+  pendingToasts: [],
+  pendingUnlocks: [],
+  triggeredUnlockIds: {},
+  interactionHistory: [],
+  onboardingComplete: false,
+  mail: [
+    {
+      id: 'acceptance-letter-initial',
+      type: 'acceptance-letter',
+      subject: 'Your Admission Decision',
+      from: 'Graduate Division',
+      body: 'We are pleased to inform you that you have been accepted to the PhD program...',
+      receivedAtMs: 0,
+      read: false,
+    },
+  ],
+  pendingPackages: [],
+  prestige: {
+    workshop: { unlocked: false, blueprints: 0, upgrades: [] },
+    maison: { unlocked: false, heritage: 0, upgrades: [] },
+    nostalgia: { unlocked: false, points: 0, upgrades: [], museumQuality: false },
+  },
+  unlockedHomeItems: [],
+  consecutiveSessions: {
+    count: 0,
+    lastSessionTime: 0,
+    decayStartedAt: undefined,
+  },
+  unlockedAchievementIds: [],
+}

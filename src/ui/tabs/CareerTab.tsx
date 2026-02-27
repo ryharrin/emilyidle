@@ -6,7 +6,7 @@ import {
   getTherapyCooldownRemaining,
   getConsecutiveSessionCostState,
 } from '../../game/career'
-import { getCurrencyDisplay } from '../../game/economy'
+import { AnimatedCurrency } from '../components/AnimatedNumber'
 import { useGameDispatch, useGameState } from '../hooks/useGameState'
 import { Modal } from '../components/Modal'
 import { TherapySessionGame } from '../minigames/TherapySessionGame'
@@ -25,6 +25,20 @@ export function CareerTab() {
   const incomePerSec = getTherapySessionBaseIncomeCents(state)
   const sessionCostState = getConsecutiveSessionCostState(state)
   const consecutiveProgress = getConsecutiveSessionProgress(state)
+  const onboardingLockMessage = !state.onboardingComplete
+    ? 'Complete onboarding to unlock therapy sessions.'
+    : state.careerStage === 'pre-phd'
+      ? 'Reach PhD Student stage to unlock therapy sessions.'
+      : null
+  const disabledReasonMessage = !canStart
+    ? onboardingLockMessage
+      ? null
+      : (sessionCostState?.isAtMaxConsecutive
+        ? 'Maximum consecutive sessions reached. Wait for decay.'
+        : sessionCostState && !sessionCostState.canAfford
+          ? `You need ${sessionCostState.scaledCost} Enjoyment to start.`
+          : 'Therapy sessions are currently unavailable.')
+    : null
 
   function openSession() {
     setShowSession(true)
@@ -75,7 +89,7 @@ export function CareerTab() {
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <span className="pill" aria-label="Cash">
-          {getCurrencyDisplay(state)}
+          <AnimatedCurrency cents={state.currencyCents} />
         </span>
         <span className="pill" aria-label="Enjoyment">
           Enjoyment: {state.enjoyment}
@@ -119,7 +133,11 @@ export function CareerTab() {
         <h3 className="tab-section-title" style={{ fontSize: '1.05rem' }}>
           Therapy Session
         </h3>
-        {remainingMs > 0 ? (
+        {onboardingLockMessage ? (
+          <p className="app-subtitle" style={{ marginTop: 0 }}>
+            {onboardingLockMessage}
+          </p>
+        ) : remainingMs > 0 ? (
           <p className="app-subtitle" style={{ marginTop: 0 }}>
             Cooldown: {Math.ceil(remainingMs / 1000)}s (consecutive mode can bypass)
           </p>
@@ -146,11 +164,9 @@ export function CareerTab() {
             ? 'Max consecutive reached'
             : `Start Session${sessionCostState ? ` (${sessionCostState.scaledCost})` : ''}`}
         </button>
-        {!canStart ? (
+        {disabledReasonMessage ? (
           <p className="app-subtitle" style={{ marginTop: 8 }}>
-            {sessionCostState?.isAtMaxConsecutive
-              ? 'Maximum consecutive sessions reached. Wait for decay.'
-              : 'You need more Enjoyment to start.'}
+            {disabledReasonMessage}
           </p>
         ) : null}
       </section>
@@ -217,6 +233,16 @@ export function CareerTab() {
                     }}
                   >
                     {stage.title}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      fontSize: '0.8rem',
+                      color: 'var(--color-text-secondary, #666)',
+                      marginLeft: 8,
+                    }}
+                  >
+                    -
                   </span>
                   <span
                     style={{

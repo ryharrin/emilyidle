@@ -134,7 +134,7 @@ export default function DebugPanel(props: DebugPanelProps) {
         userSelect: isDragging ? 'none' : 'auto',
       }}
     >
-      <h2 style={{ margin: 0, cursor: 'grab' }}>Debug Panel</h2>
+      <h2 style={{ margin: 0, cursor: 'grab' }}>Debug Panel (DEV)</h2>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
         <button type="button" onClick={onClearSave} style={{ minWidth: 44, minHeight: 44 }}>

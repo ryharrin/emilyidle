@@ -4,6 +4,7 @@ import {
   AUTOMATIC_MOVEMENT,
   MS_PER_BEAT,
 } from '../../game/constants'
+import { playSfx } from '../../audio/audioService'
 
 export type TimingGrade = 'Perfect' | 'Good' | 'Miss'
 
@@ -76,6 +77,14 @@ export function AutomaticMovementGame(props: {
 
     if (g === 'Perfect') {
       setPerfects((p) => p + 1)
+      // Play perfect tap sound
+      playSfx('auto.click')
+    } else if (g === 'Good') {
+      // Play good tap sound
+      playSfx('auto.click')
+    } else {
+      // Play miss sound
+      playSfx('auto.miss')
     }
 
     // Update power level (capped at MAX)
@@ -87,6 +96,8 @@ export function AutomaticMovementGame(props: {
 
     // Check if power is full
     if (powerLevel + gain >= AUTOMATIC_MOVEMENT.POWER_MAX) {
+      // Play completion sound for perfect session
+      playSfx('auto.complete')
       // Small delay to show the final fill animation
       setTimeout(() => {
         props.onComplete({

@@ -20,7 +20,10 @@ export function JLCAwardCelebration() {
 
   useEffect(() => {
     if (hasJLCAward && !isVisible) {
-      setIsVisible(true)
+      const timer = window.setTimeout(() => {
+        setIsVisible(true)
+      }, 0)
+      return () => window.clearTimeout(timer)
     }
   }, [hasJLCAward, isVisible])
 

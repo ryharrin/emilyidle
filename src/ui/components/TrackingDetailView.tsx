@@ -1,4 +1,5 @@
 import { getWatchById } from '../../game/data/watches'
+import { getWatchImageUrl } from '../../game/catalog'
 import type { TrackingPackage } from '../../game/types'
 import { estimatedDeliveryTime, trackingProgressPercent } from '../../game/selectors/tracking'
 import { TrackingProgressBar } from './TrackingProgressBar'
@@ -8,16 +9,23 @@ function formatTimestamp(value?: number): string {
   return new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
-export function TrackingDetailView(props: { tracking: TrackingPackage; nowMs: number }) {
+export function TrackingDetailView(props: { 
+  tracking: TrackingPackage
+  nowMs: number
+  onOpenPackage?: () => void
+  isDelivered?: boolean
+}) {
   const watch = getWatchById(props.tracking.watchId)
+  const imageUrl = watch ? getWatchImageUrl(watch) : '/catalog/placeholder.png'
   const countdown = estimatedDeliveryTime(props.tracking, props.nowMs)
   const progress = trackingProgressPercent(props.tracking, props.nowMs)
+  const hasArrived = countdown === 'Arriving now' || props.isDelivered
 
   return (
     <div>
       <div style={{ textAlign: 'center' }}>
         <img
-          src={watch?.imageUrl ?? '/catalog/placeholder.png'}
+          src={imageUrl}
           alt={watch?.name ?? 'Watch'}
           width={130}
           height={98}
@@ -31,6 +39,26 @@ export function TrackingDetailView(props: { tracking: TrackingPackage; nowMs: nu
       <div style={{ marginTop: 14 }}>
         <TrackingProgressBar percent={progress} />
       </div>
+
+      {/* Collect Package Button - shown when package has arrived */}
+      {hasArrived && props.onOpenPackage && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <button
+            type="button"
+            className="pill"
+            onClick={props.onOpenPackage}
+            style={{
+              background: 'var(--color-accent)',
+              color: 'white',
+              border: 'none',
+              fontSize: '1rem',
+              padding: '12px 24px',
+            }}
+          >
+            🎁 Collect Package
+          </button>
+        </div>
+      )}
 
       <div style={{ marginTop: 14, display: 'grid', gap: 8 }}>
         {props.tracking.route.map((checkpoint, index) => {

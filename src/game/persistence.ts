@@ -346,6 +346,8 @@ export function migrateSave(rawObject: unknown): Result<GameState> {
     // Home Life system (Stories 6-1 through 6-6)
     unlockedHomeItems: asStringArray(rawObject.unlockedHomeItems),
     packageTracking,
+    // Story 7.4: Achievement system
+    unlockedAchievementIds: asStringArray(rawObject.unlockedAchievementIds),
   }
 
   return { ok: true, value: migrated }

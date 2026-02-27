@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import type { CareerStage } from '../../game/types'
 import { getRandomVignetteForStage, getRandomTherapistResponses, type TherapyVignette } from '../../game/data/therapyVignettes'
+import { playSfx } from '../../audio/audioService'
 
 export type TherapySessionResult = {
   cashCents: number
@@ -27,11 +28,14 @@ export function TherapySessionGame(props: {
     startedAtMsRef.current = Date.now()
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time init pattern per React docs
     setVignette(getRandomVignetteForStage(props.stage))
+    // Play vignette sound when session starts
+    playSfx('therapy.vignette')
   }, [props.stage])
 
   // Initialize response options when vignette changes
   useEffect(() => {
     if (vignette) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- regenerate randomized responses when vignette changes
       setResponseOptions(getRandomTherapistResponses())
     }
   }, [vignette])
@@ -58,6 +62,8 @@ export function TherapySessionGame(props: {
     if (!vignette) return
 
     if (isFinalExchange) {
+      // Play session complete sound
+      playSfx('therapy.complete')
       // Complete the session
       setIsComplete(true)
       const durationMs = Math.max(0, Date.now() - (startedAtMsRef.current || Date.now()))
@@ -70,6 +76,8 @@ export function TherapySessionGame(props: {
       return
     }
 
+    // Play progress sound for advancing in session
+    playSfx('therapy.progress')
     // Advance to next exchange
     setExchangeIndex((idx) => idx + 1)
     // Get new response options for next exchange
@@ -258,7 +266,7 @@ export function TherapySessionGame(props: {
               textAlign: 'left',
             }}
           >
-            "{response}"
+            {response}
           </motion.button>
         ))}
       </div>
@@ -281,7 +289,7 @@ export function TherapySessionGame(props: {
             marginRight: 'auto',
           }}
         >
-          End session early
+          End session early (no rewards)
         </button>
       )}
     </div>

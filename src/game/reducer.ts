@@ -1,6 +1,7 @@
 import type { Action, GameState, InteractionRecord, MailItem, PendingPackage, Toast, UnlockId } from './types'
 import { step } from './sim'
 import { evaluateUnlocks } from './discovery/evaluateUnlocks'
+import { evaluateAndUnlockAchievements } from './achievements/evaluate'
 import { clampCurrencyCents } from './economy'
 import { getUnlockIdsForStage } from './data/homeLife'
 import {
@@ -14,6 +15,8 @@ import { CONSECUTIVE_CONFIG } from './constants'
 import { getWatchById } from './data/watches'
 import { getCareerStageById } from './data/careers'
 import { pickDealer } from './data/dealers'
+import { setMusic } from '../audio/audioService'
+import { getMusicForCareerStage } from '../audio/careerMusic'
 import {
   createTrackingForPurchase,
   getDefaultPlayerLocation,
@@ -129,8 +132,27 @@ function pickDeliveryDelayMs(): { delayMs: number; reason: string | null } {
   }
 }
 
+// Story 7.7: Memory Optimization - Limit interaction history to last 100 entries
+const MAX_INTERACTION_HISTORY = 100
+// Story 7.7: Memory Optimization - Keep last 50 mail items
+const MAX_MAIL_ITEMS = 50
+
 function addInteraction(arr: readonly InteractionRecord[], record: InteractionRecord): InteractionRecord[] {
-  return [...arr, record]
+  const newArr = [...arr, record]
+  // Trim to max size from the beginning (oldest first)
+  if (newArr.length > MAX_INTERACTION_HISTORY) {
+    return newArr.slice(newArr.length - MAX_INTERACTION_HISTORY)
+  }
+  return newArr
+}
+
+// Story 7.7: Memory Optimization - Prune old mail items
+function pruneMail(arr: readonly MailItem[]): MailItem[] {
+  if (arr.length <= MAX_MAIL_ITEMS) return [...arr]
+  // Keep last 50 items, sorted by receivedAtMs
+  return [...arr]
+    .sort((a, b) => a.receivedAtMs - b.receivedAtMs)
+    .slice(-MAX_MAIL_ITEMS)
 }
 
 function getDecayedConsecutiveSessions(state: GameState, nowMs: number): GameState['consecutiveSessions'] {
@@ -197,6 +219,8 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
         unlockedHomeItems: newUnlockedHomeItems,
         packageTracking: { ...tracking, playerLocation: nextLocation },
       }
+      // Update music for new career stage
+      setMusic(getMusicForCareerStage(stage))
       break
     }
     case 'ADVANCE_CAREER': {
@@ -218,6 +242,8 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
         unlockedHomeItems: newUnlockedHomeItems,
         packageTracking: { ...tracking, playerLocation: nextLocation },
       }
+      // Update music for new career stage
+      setMusic(getMusicForCareerStage(nextCareerStage))
       break
     }
     case 'ADD_OWNED_WATCH': {
@@ -267,7 +293,7 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
         ticked = {
           ...ticked,
           pendingPackages: remainingPackages,
-          mail: [...ticked.mail, ...arrivedMail],
+          mail: pruneMail([...ticked.mail, ...arrivedMail]),
           pendingToasts: [...ticked.pendingToasts, ...arrivedToasts],
           packageTracking: {
             ...trackingState,
@@ -363,6 +389,10 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
     case 'PURCHASE_WATCH': {
       const { watchId } = action as ActionOf<'PURCHASE_WATCH'>
       if (state.ownedWatchIds.includes(watchId)) return state
+      const trackingState = getTrackingState(state)
+      if (state.pendingPackages.some((pkg) => pkg.watchId === watchId)) return state
+      if (trackingState.inTransit.some((pkg) => pkg.watchId === watchId)) return state
+      if (trackingState.delivered.some((pkg) => pkg.watchId === watchId)) return state
       const watch = getWatchById(watchId)
       if (!watch) return state
       if (watch.priceCents > state.currencyCents) return state
@@ -372,7 +402,7 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
       const currencyCents = clampCurrencyCents(state.currencyCents - watch.priceCents)
 
       // Generate tracking number and create pending package
-      const nowMs = Date.now()
+      const nowMs = state.clockMs
       const dealer = pickDealer()
       const trackingNumber = `W${Date.now().toString(36).toUpperCase()}`
       const { delayMs, reason: delayReason } = pickDeliveryDelayMs()
@@ -384,7 +414,6 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
         shippedAtMs: nowMs,
         arrivalAtMs: nowMs + delayMs,
       }
-      const trackingState = getTrackingState(state)
       const tracking = createTrackingForPurchase({
         packageId: pendingPackage.id,
         watchId,
@@ -411,7 +440,7 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
         ...state,
         currencyCents,
         pendingPackages: [...state.pendingPackages, pendingPackage],
-        mail: [...state.mail, shippingMail],
+        mail: pruneMail([...state.mail, shippingMail]),
         packageTracking: {
           ...trackingState,
           inTransit: [...trackingState.inTransit, tracking],
@@ -513,7 +542,7 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
       const toast = createMailToast(mail)
       next = {
         ...state,
-        mail: [...state.mail, mail],
+        mail: pruneMail([...state.mail, mail]),
         pendingToasts: toast ? [...state.pendingToasts, toast] : state.pendingToasts,
       }
       break
@@ -592,7 +621,7 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
       next = {
         ...state,
         pendingPackages: remainingPackages,
-        mail: [...state.mail, ...arrivedMail],
+        mail: pruneMail([...state.mail, ...arrivedMail]),
         pendingToasts: [...state.pendingToasts, ...arrivedToasts],
         packageTracking: {
           ...trackingState,
@@ -844,10 +873,34 @@ export function gameReducer(state: GameState, action: Action | UnknownAction): G
       }
       break
     }
+    case 'UNLOCK_ACHIEVEMENT': {
+      const { achievementId } = action as ActionOf<'UNLOCK_ACHIEVEMENT'>
+      const currentIds = state.unlockedAchievementIds ?? []
+      if (currentIds.includes(achievementId)) return state
+      next = {
+        ...state,
+        unlockedAchievementIds: [...currentIds, achievementId],
+      }
+      break
+    }
+    case 'RESET_ACHIEVEMENTS': {
+      next = {
+        ...state,
+        unlockedAchievementIds: [],
+      }
+      break
+    }
     default:
       return state
   }
 
   if (next === state) return state
-  return evaluateUnlocks(next)
+
+  // LOAD_SAVE should restore persisted achievement state as-is.
+  if (action.type === 'LOAD_SAVE') {
+    return evaluateUnlocks(next)
+  }
+
+  const afterUnlocks = evaluateUnlocks(next)
+  return evaluateAndUnlockAchievements(afterUnlocks)
 }

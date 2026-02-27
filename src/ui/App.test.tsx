@@ -13,11 +13,17 @@ describe('App', () => {
   it('renders 5 tabs and switches panels', async () => {
     render(<App />)
 
-    const home = screen.getByRole('button', { name: 'Home' })
-    const mail = screen.getByRole('button', { name: /Mail/ })
-    const collection = screen.getByRole('button', { name: 'Collection' })
-    const career = screen.getByRole('button', { name: 'Career' })
-    const market = screen.getByRole('button', { name: 'Market' })
+    // Use getAllByRole and filter by nav-button class to get navigation buttons specifically
+    const homeButtons = screen.getAllByRole('button', { name: 'Home' })
+    const home = homeButtons.find(btn => btn.classList.contains('nav-button'))!
+    const mailButtons = screen.getAllByRole('button', { name: /Mail/ })
+    const mail = mailButtons.find(btn => btn.classList.contains('nav-button'))!
+    const collectionButtons = screen.getAllByRole('button', { name: 'Collection' })
+    const collection = collectionButtons.find(btn => btn.classList.contains('nav-button'))!
+    const careerButtons = screen.getAllByRole('button', { name: 'Career' })
+    const career = careerButtons.find(btn => btn.classList.contains('nav-button'))!
+    const marketButtons = screen.getAllByRole('button', { name: 'Market' })
+    const market = marketButtons.find(btn => btn.classList.contains('nav-button'))!
 
     expect(home).toHaveAttribute('aria-current', 'page')
     // Mail tab should show unread count

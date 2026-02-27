@@ -17,7 +17,7 @@ export const FAMILY_PHOTOS: FamilyPhoto[] = [
     id: 'photo-babies',
     title: 'First Days',
     imageUrl: '/photos/family/babies.jpg',
-    unlockAtStage: 'PhDStudent',
+    unlockAtStage: 'PrivatePractice', // After moving to Michigan (2015+)
     year: '2018',
     description: 'Freddy, Sam, and Simi as babies. The beginning of everything.',
   },
@@ -25,7 +25,7 @@ export const FAMILY_PHOTOS: FamilyPhoto[] = [
     id: 'photo-first-steps',
     title: 'First Steps',
     imageUrl: '/photos/family/first-steps.jpg',
-    unlockAtStage: 'Externship',
+    unlockAtStage: 'PrivatePractice', // After moving to Michigan
     year: '2020',
     description: 'The kids taking their first steps. Chaos and joy in equal measure.',
   },
@@ -33,7 +33,7 @@ export const FAMILY_PHOTOS: FamilyPhoto[] = [
     id: 'photo-beach',
     title: 'Beach Day',
     imageUrl: '/photos/family/beach.jpg',
-    unlockAtStage: 'VAHospital',
+    unlockAtStage: 'PrivatePractice', // After moving to Michigan
     year: '2022',
     description: 'A summer day at the beach. Sand everywhere, but happy.',
   },
@@ -41,7 +41,7 @@ export const FAMILY_PHOTOS: FamilyPhoto[] = [
     id: 'photo-family-portrait',
     title: 'Family Portrait',
     imageUrl: '/photos/family/portrait.jpg',
-    unlockAtStage: 'PrivatePractice',
+    unlockAtStage: 'GroupPractice',
     year: '2024',
     description: 'The family all dressed up. Simi refused to smile.',
   },
@@ -82,7 +82,7 @@ export const CHILDREN_DRAWINGS: ChildDrawing[] = [
     id: 'drawing-freddy-watch',
     title: "Freddy's Watch",
     imageUrl: '/photos/drawings/freddy-watch.png',
-    unlockAtStage: 'PhDStudent',
+    unlockAtStage: 'PrivatePractice', // After moving to Michigan (2015+)
     artist: 'Freddy',
     age: 6,
     caption: 'Freddy drew this for you',
@@ -90,9 +90,9 @@ export const CHILDREN_DRAWINGS: ChildDrawing[] = [
   },
   {
     id: 'drawing-sam-family',
-    title: 'Sam’s Family',
+    title: 'Sam\'s Family',
     imageUrl: '/photos/drawings/sam-family.png',
-    unlockAtStage: 'VAHospital',
+    unlockAtStage: 'PrivatePractice', // After moving to Michigan
     artist: 'Sam',
     age: 5,
     caption: 'Sam made this at preschool',
@@ -100,9 +100,9 @@ export const CHILDREN_DRAWINGS: ChildDrawing[] = [
   },
   {
     id: 'drawing-simi-scribble',
-    title: 'Simi’s Masterpiece',
+    title: 'Simi\'s Masterpiece',
     imageUrl: '/photos/drawings/simi-scribble.png',
-    unlockAtStage: 'PrivatePractice',
+    unlockAtStage: 'GroupPractice',
     artist: 'Simi',
     age: 3,
     caption: 'Simi calls it "watch"',
@@ -141,7 +141,7 @@ export const RYAN_MESSAGES: RyanMessage[] = [
 
 I knew you could do it. I've watched you work so hard for this.
 
-The kids keep asking when "Doctor Emily" will be home. I told them it'll be a while, but they're already proud of you.
+The program is going to challenge you, but you have what it takes. Looking forward to seeing where this journey takes you.
 
 Can't wait to see you in that cap and gown.
 
@@ -156,7 +156,7 @@ Can't wait to see you in that cap and gown.
 
 Externship, huh? Look at you go.
 
-The house feels emptier without you, but we're managing. The kids made you a card. I'll hide it somewhere you'll find it.
+I know the hours are long and the work is hard, but you're doing something meaningful. Keep pushing.
 
 You're doing something hard, and you're doing it beautifully.
 
@@ -171,9 +171,9 @@ You're doing something hard, and you're doing it beautifully.
 
 Working with veterans? I shouldn't be surprised. You always find the people who need you most.
 
-The kids and I were talking about what you do—helping people who served our country. They think you're a superhero.
+I'm so proud of the work you're doing. The world needs more people like you.
 
-Maybe you are.
+Maybe you are a superhero.
 
 — R`,
   },
@@ -189,6 +189,8 @@ Private practice. You did it. All those years of school, all those late nights s
 You made it. I'm sitting here watching you sleep (you fell asleep on the couch again) and I can't believe you're mine.
 
 So incredibly proud of you.
+
+The kids keep asking when "Doctor Emily" will be home. I told them it'll be a while, but they're already proud of you.
 
 — R`,
   },

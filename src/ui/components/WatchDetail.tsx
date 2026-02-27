@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getPassiveEnjoymentRate, type Watch, type WatchTier } from '../../game/data/watches'
+import { getWatchImageUrl } from '../../game/catalog'
 import { Modal } from './Modal'
 
 export type WatchDetailProps = {
@@ -47,10 +48,11 @@ export function WatchDetail(props: WatchDetailProps) {
   const [imageError, setImageError] = useState(false)
   const passiveRate = getPassiveEnjoymentRate(watch)
   const wholeEnjoyment = Math.floor(passiveRate)
+  const imageUrl = getWatchImageUrl(watch)
 
   // Generate WebP URL with JPEG fallback
-  const imageSrc = watch.imageUrl.replace(/\.(jpg|jpeg|png)$/i, '.webp')
-  const fallbackSrc = watch.imageUrl
+  const imageSrc = imageUrl.replace(/\.(jpg|jpeg|png)$/i, '.webp')
+  const fallbackSrc = imageUrl
 
   return (
     <Modal title={watch.name} onClose={onClose}>

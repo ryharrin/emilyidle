@@ -1,3 +1,5 @@
+import { playSfx } from '../../audio/audioService'
+
 export type TabId = 'home' | 'mail' | 'collection' | 'career' | 'market'
 
 export type TabDefinition = {
@@ -21,6 +23,14 @@ export function BottomNav(props: {
 }) {
   const tabs = props.tabs ?? DEFAULT_TABS
 
+  const handleTabSelect = (tabId: TabId) => {
+    // Only play sound if selecting a different tab
+    if (tabId !== props.activeTab) {
+      playSfx('ui.tab')
+    }
+    props.onSelectTab(tabId)
+  }
+
   return (
     <nav className="bottom-nav" aria-label="Primary">
       <div className="bottom-nav-inner">
@@ -35,10 +45,10 @@ export function BottomNav(props: {
               aria-current={active ? 'page' : undefined}
               aria-label={
                 t.badge !== undefined && t.badge !== null && t.badge > 0
-                  ? `${t.label} (${t.badge} unread mail)`
+                  ? `${t.label} (${t.badge} unread ${t.badge === 1 ? 'message' : 'messages'})`
                   : t.label
               }
-              onClick={() => props.onSelectTab(t.id)}
+              onClick={() => handleTabSelect(t.id)}
             >
               <span>{t.label}</span>
               {t.badge !== undefined && t.badge !== null && t.badge > 0 && (

@@ -14,13 +14,17 @@ export function inTransitPackages(state: GameState): TrackingPackage[] {
   return [...getTrackingState(state).inTransit].sort((a, b) => a.estimatedDelivery - b.estimatedDelivery)
 }
 
+export function deliveredPackages(state: GameState): TrackingPackage[] {
+  return [...getTrackingState(state).delivered]
+}
+
 export function currentLocation(state: GameState): PlayerLocation {
   return getTrackingState(state).playerLocation
 }
 
 export function getTrackingForPackage(state: GameState, packageId: string): TrackingPackage | undefined {
   const tracking = getTrackingState(state)
-  return tracking.inTransit.find((item) => item.id === packageId)
+  return tracking.inTransit.find((item) => item.id === packageId) ?? tracking.delivered.find((item) => item.id === packageId)
 }
 
 export function estimatedDeliveryTime(pkg: TrackingPackage, nowMs: number): string {

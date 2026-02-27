@@ -2,9 +2,17 @@ import { useMemo, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ownedWatches, getCollectionStats } from '../../game/selectors/collection'
 import type { Watch, WatchTier } from '../../game/data/watches'
+import { getWatchById } from '../../game/data/watches'
+import { getWatchImageUrl } from '../../game/catalog'
+import {
+  estimatedDeliveryTime,
+  inTransitPackages,
+  trackingProgressPercent,
+} from '../../game/selectors/tracking'
 import { useGameDispatch, useGameState } from '../hooks/useGameState'
 import { WatchCard } from '../components/WatchCard'
 import { WatchDetail } from '../components/WatchDetail'
+import { TrackingProgressBar } from '../components/TrackingProgressBar'
 import { Modal } from '../components/Modal'
 import { QuartzCalibrationGame, type QuartzCalibrationResult } from '../mini-games/QuartzCalibrationGame'
 import { ManualWindingGame, type ManualWindingResult } from '../minigames/ManualWindingGame'
@@ -20,6 +28,13 @@ export function CollectionTab() {
   const dispatch = useGameDispatch()
   const watches = useMemo(() => ownedWatches(state), [state])
   const collectionStats = useMemo(() => getCollectionStats(state), [state])
+  const inTransit = useMemo(() => inTransitPackages(state), [state])
+  const delivered = useMemo(() => {
+    const ownedWatchIds = new Set(state.ownedWatchIds)
+    return (state.packageTracking?.delivered ?? []).filter(
+      (pkg) => !ownedWatchIds.has(pkg.watchId),
+    )
+  }, [state.ownedWatchIds, state.packageTracking?.delivered])
 
   const parentRef = useRef<HTMLDivElement | null>(null)
   // TanStack Virtual is a deliberate dependency for large collections; safe here.
@@ -237,6 +252,165 @@ export function CollectionTab() {
           </div>
         )}
       </div>
+
+      <section
+        aria-label="Packages"
+        style={{
+          padding: 16,
+          marginBottom: 16,
+          borderRadius: 16,
+          border: '1px solid var(--color-border)',
+          background: 'rgba(255, 253, 249, 0.78)',
+        }}
+      >
+        <h3 style={{ margin: 0, fontSize: '1.05rem' }}>Packages</h3>
+
+        <div style={{ marginTop: 14 }}>
+          <div
+            style={{
+              marginBottom: 8,
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              color: 'var(--color-text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            In Transit ({inTransit.length})
+          </div>
+          {inTransit.length === 0 ? (
+            <p className="app-subtitle" style={{ margin: 0 }}>
+              No packages in transit.
+            </p>
+          ) : (
+            <div style={{ display: 'grid', gap: 10 }}>
+              {inTransit.map((pkg) => {
+                const watch = getWatchById(pkg.watchId)
+                const imageUrl = watch ? getWatchImageUrl(watch) : '/catalog/placeholder.png'
+                return (
+                  <article
+                    key={pkg.id}
+                    style={{
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 12,
+                      padding: 12,
+                      background: 'rgba(255, 253, 249, 0.9)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '64px 1fr auto',
+                        alignItems: 'center',
+                        gap: 10,
+                      }}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={watch?.name ?? 'Watch'}
+                        width={64}
+                        height={48}
+                        style={{ borderRadius: 8, objectFit: 'cover' }}
+                        loading="lazy"
+                      />
+                      <div>
+                        <div style={{ fontWeight: 700 }}>
+                          {watch?.name ?? pkg.watchId}
+                        </div>
+                        <div className="app-subtitle" style={{ marginTop: 2 }}>
+                          From {pkg.dealerName}
+                        </div>
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                        ETA: {estimatedDeliveryTime(pkg, state.clockMs)}
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 10 }}>
+                      <TrackingProgressBar
+                        percent={trackingProgressPercent(pkg, state.clockMs)}
+                      />
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginTop: 16 }}>
+          <div
+            style={{
+              marginBottom: 8,
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              color: 'var(--color-text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Delivered ({delivered.length})
+          </div>
+          {delivered.length === 0 ? (
+            <p className="app-subtitle" style={{ margin: 0 }}>
+              No delivered packages to open.
+            </p>
+          ) : (
+            <div style={{ display: 'grid', gap: 10 }}>
+              {delivered.map((pkg) => {
+                const watch = getWatchById(pkg.watchId)
+                const imageUrl = watch ? getWatchImageUrl(watch) : '/catalog/placeholder.png'
+                return (
+                  <article
+                    key={pkg.id}
+                    style={{
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 12,
+                      padding: 12,
+                      background: 'rgba(255, 253, 249, 0.9)',
+                      display: 'grid',
+                      gridTemplateColumns: '64px 1fr auto',
+                      gap: 10,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={watch?.name ?? 'Watch'}
+                      width={64}
+                      height={48}
+                      style={{ borderRadius: 8, objectFit: 'cover' }}
+                      loading="lazy"
+                    />
+                    <div>
+                      <div style={{ fontWeight: 700 }}>
+                        {watch?.name ?? pkg.watchId}
+                      </div>
+                      <div className="app-subtitle" style={{ marginTop: 2 }}>
+                        Delivered
+                        {pkg.deliveredAt
+                          ? ` at ${new Date(pkg.deliveredAt).toLocaleTimeString([], {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}`
+                          : ''}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="pill"
+                      onClick={() =>
+                        dispatch({ type: 'OPEN_PACKAGE', packageId: pkg.id })
+                      }
+                    >
+                      Open Package
+                    </button>
+                  </article>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
 
       <div
         ref={parentRef}

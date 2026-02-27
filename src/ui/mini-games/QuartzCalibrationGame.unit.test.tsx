@@ -110,12 +110,12 @@ describe('QuartzCalibrationGame', () => {
       const onComplete = vi.fn()
       render(<QuartzCalibrationGame onComplete={onComplete} />)
 
-      expect(screen.getByText('Round 1/5')).toBeInTheDocument()
+      expect(screen.getByText('Round 1/1')).toBeInTheDocument()
       expect(
         screen.getByText('Tap Calibrate when the dot crosses the center line.'),
       ).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Calibrate' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Finish' })).toBeInTheDocument()
     })
 
     it('accepts watchTier prop for difficulty scaling', () => {
@@ -153,18 +153,18 @@ describe('QuartzCalibrationGame', () => {
       render(<QuartzCalibrationGame onComplete={onComplete} />)
 
       fireEvent.click(screen.getByRole('button', { name: 'Calibrate' }))
-      fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+        fireEvent.click(screen.getByRole('button', { name: 'Finish' }))
 
-      expect(screen.getByText('Round 2/5')).toBeInTheDocument()
+      expect(screen.getByText('Round 1/1')).toBeInTheDocument()
     })
 
     it('calls onComplete after all rounds with result data', () => {
       const onComplete = vi.fn()
       render(<QuartzCalibrationGame onComplete={onComplete} />)
 
-      for (let round = 1; round <= 5; round++) {
+      for (let round = 1; round <= 1; round++) {
         fireEvent.click(screen.getByRole('button', { name: 'Calibrate' }))
-        fireEvent.click(screen.getByRole('button', { name: round === 5 ? 'Finish' : 'Next' }))
+        fireEvent.click(screen.getByRole('button', { name: round === 1 ? 'Finish' : 'Next' }))
       }
 
       expect(onComplete).toHaveBeenCalledTimes(1)
@@ -183,9 +183,9 @@ describe('QuartzCalibrationGame', () => {
 
       expect(screen.getByText('Perfects: 0')).toBeInTheDocument()
 
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 1; i++) {
         fireEvent.click(screen.getByRole('button', { name: 'Calibrate' }))
-        fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Finish' }))
       }
 
       expect(screen.getByText(/Perfects: \d+/)).toBeInTheDocument()
@@ -198,14 +198,14 @@ describe('QuartzCalibrationGame', () => {
       render(<QuartzCalibrationGame onComplete={onComplete} />)
 
       expect(screen.getByRole('button', { name: 'Calibrate' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Finish' })).toBeInTheDocument()
     })
 
     it('displays round information', () => {
       const onComplete = vi.fn()
       render(<QuartzCalibrationGame onComplete={onComplete} />)
 
-      expect(screen.getByText(/Round \d+\/5/)).toBeInTheDocument()
+      expect(screen.getByText(/Round \d+\/1/)).toBeInTheDocument()
     })
   })
 })

@@ -6,6 +6,7 @@ import type { Watch } from '../../game/data/watches'
 const mockQuartzWatch: Watch = {
   id: 'quartz-watch-1',
   name: 'Quartz Test Watch',
+  brand: 'Test Brand',
   priceCents: 100_00,
   tier: 'quartz',
   imageUrl: '/test/quartz.jpg',
@@ -16,6 +17,7 @@ const mockQuartzWatch: Watch = {
 const mockFavoriteWatch: Watch = {
   id: 'favorite-watch-1',
   name: 'Favorite Watch',
+  brand: 'Test Brand',
   priceCents: 250_00,
   tier: 'automatic',
   imageUrl: '/test/auto.jpg',

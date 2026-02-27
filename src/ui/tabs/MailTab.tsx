@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useGameDispatch, useGameState } from '../hooks/useGameState'
 import { getWatchById } from '../../game/data/watches'
 import { Modal } from '../components/Modal'
@@ -16,7 +16,7 @@ export function MailTab() {
   }, [state.mail])
   
   const unreadCount = state.mail.filter((m) => !m.read).length
-  const [nowMs, setNowMs] = useState(() => Date.now())
+  const nowMs = state.clockMs
   const trackingPackages = inTransitPackages(state)
 
   const [selectedMailId, setSelectedMailId] = useState<string | null>(null)
@@ -27,13 +27,6 @@ export function MailTab() {
   const selectedTracking = selectedTrackingId
     ? trackingPackages.find((item) => item.id === selectedTrackingId) ?? null
     : null
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setNowMs(Date.now())
-    }, 1000)
-    return () => window.clearInterval(timer)
-  }, [])
 
   // Handle marking mail as read
   const handleMailClick = (mailId: string) => {
@@ -348,7 +341,21 @@ export function MailTab() {
 
       {selectedTracking ? (
         <Modal title="Tracking Details" onClose={() => setSelectedTrackingId(null)}>
-          <TrackingDetailView tracking={selectedTracking} nowMs={nowMs} />
+          <TrackingDetailView 
+            tracking={selectedTracking} 
+            nowMs={nowMs} 
+            isDelivered={state.packageTracking?.delivered.some((p) => p.id === selectedTracking.id)}
+            onOpenPackage={() => {
+              const packageId = selectedTracking.id
+              const isDelivered = state.packageTracking?.delivered.some((p) => p.id === packageId)
+              const isInTransit = state.packageTracking?.inTransit.some((p) => p.id === packageId)
+              
+              if (isDelivered || isInTransit) {
+                dispatch({ type: 'OPEN_PACKAGE', packageId })
+                setSelectedTrackingId(null)
+              }
+            }}
+          />
         </Modal>
       ) : null}
     </section>

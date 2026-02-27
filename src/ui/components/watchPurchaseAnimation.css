@@ -1,0 +1,166 @@
+/**
+ * Watch Purchase Animation Styles
+ */
+
+.watch-purchase-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.watch-purchase-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(16, 42, 67, 0.85);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.watch-purchase-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  z-index: 1;
+}
+
+.watch-purchase-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+}
+
+.watch-purchase-card {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.watch-purchase-image-container {
+  position: relative;
+  z-index: 2;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 253, 249, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.watch-purchase-image {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.watch-purchase-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 180px;
+  height: 180px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 146, 122, 0.6) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sparkles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 3;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 1.5rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.pulse-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 0;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(201, 146, 122, 0.5);
+  pointer-events: none;
+}
+
+.watch-purchase-details {
+  margin-top: 24px;
+  text-align: center;
+  color: #fff;
+}
+
+.watch-purchase-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.watch-purchase-brand {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.watch-purchase-tier {
+  font-size: 0.875rem;
+  opacity: 0.75;
+  color: rgba(201, 146, 122, 0.9);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .watch-purchase-overlay {
+    transition: none;
+  }
+
+  .watch-purchase-card {
+    transform: none;
+  }
+
+  .sparkle {
+    animation: none;
+  }
+
+  .pulse-ring {
+    display: none;
+  }
+}

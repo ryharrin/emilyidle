@@ -18,6 +18,7 @@ export { unopenedMailCount, activeToasts, inboxItems } from './mail'
 
 export {
   inTransitPackages,
+  deliveredPackages,
   currentLocation,
   getTrackingForPackage,
   estimatedDeliveryTime,

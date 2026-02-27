@@ -1,15 +1,22 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { Watch } from '../../game/data/watches'
+import { getWatchImageUrl } from '../../game/catalog'
 
 export type WatchCardProps = {
   watch: Watch
   onClick: () => void
 }
 
-export function WatchCard(props: WatchCardProps) {
+/**
+ * WatchCard Component - Memoized for Performance (Story 7.7)
+ * Uses React.memo to prevent unnecessary re-renders when props haven't changed.
+ * Includes lazy image loading and skeleton states.
+ */
+function WatchCardComponent(props: WatchCardProps) {
   const { watch, onClick } = props
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const imageUrl = getWatchImageUrl(watch)
 
   return (
     <button
@@ -74,7 +81,7 @@ export function WatchCard(props: WatchCardProps) {
             </div>
           )}
           <img
-            src={watch.imageUrl}
+            src={imageUrl}
             alt={watch.name}
             width={88}
             height={66}
@@ -100,3 +107,10 @@ export function WatchCard(props: WatchCardProps) {
     </button>
   )
 }
+
+/**
+ * Memoized WatchCard
+ * Prevents re-render when watch reference and onClick function are unchanged.
+ * Story 7.7: Performance optimization - Rendering Optimization phase.
+ */
+export const WatchCard = memo(WatchCardComponent)

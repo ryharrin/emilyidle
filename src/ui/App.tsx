@@ -4,11 +4,12 @@ import { useGameRuntime } from './hooks/useGameRuntime'
 import { usePersistence } from './hooks/usePersistence'
 import { FeatureErrorBoundary } from './errors/FeatureErrorBoundary'
 import { RootErrorBoundary } from './errors/RootErrorBoundary'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BottomNav, type TabId, type TabDefinition } from './components/BottomNav'
 import { UnlockToasts } from './components/UnlockToasts'
 import { JLCAwardCelebration } from './components/JLCAwardCelebration'
 import { MailToastManager } from './components/MailToastManager'
+import { AchievementToastManager } from './achievements/AchievementToastManager'
 import { Modal } from './components/Modal'
 import { RetirementLocationSelector } from './components/RetirementLocationSelector'
 import { HomeTab } from './tabs/HomeTab'
@@ -21,6 +22,9 @@ import DebugPanel from './debug/DebugPanel'
 import { SAVE_KEY } from '../game/constants'
 import { initialGameState } from '../game/types'
 import { unopenedMailCount } from '../game/selectors/mail'
+import { AudioUnlock } from '../audio/AudioUnlock'
+import { setMusic, stopAllAudio } from '../audio/audioService'
+import { getMusicForCareerStage } from '../audio/careerMusic'
 
 function renderTab(tab: TabId) {
   switch (tab) {
@@ -44,6 +48,7 @@ function GameRoot() {
   usePersistence()
   const [activeTab, setActiveTab] = useState<TabId>('home')
   const [showRetirementLocationSelector, setShowRetirementLocationSelector] = useState(false)
+  const [audioUnlocked, setAudioUnlocked] = useState(false)
   const state = useGameState()
   const dispatch = useGameDispatch()
 
@@ -58,11 +63,29 @@ function GameRoot() {
     { id: 'market', label: 'Market' },
   ], [unreadCount])
 
+  // Update music when career stage changes
+  useEffect(() => {
+    if (audioUnlocked) {
+      const musicTrack = getMusicForCareerStage(state.careerStage)
+      setMusic(musicTrack)
+    }
+  }, [state.careerStage, audioUnlocked])
+
   useEffect(() => {
     if (state.careerStage !== 'Retirement') return
     if (state.packageTracking?.playerLocation.type === 'custom') return
-    setShowRetirementLocationSelector(true)
+    const timer = window.setTimeout(() => {
+      setShowRetirementLocationSelector(true)
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [state.careerStage, state.packageTracking?.playerLocation.type])
+
+  const handleAudioUnlock = useCallback(() => {
+    setAudioUnlocked(true)
+    // Start playing music for current career stage
+    const musicTrack = getMusicForCareerStage(state.careerStage)
+    setMusic(musicTrack)
+  }, [state.careerStage])
 
   return (
     <div className="app-root">
@@ -81,6 +104,7 @@ function GameRoot() {
 
       <BottomNav activeTab={activeTab} onSelectTab={setActiveTab} tabs={tabs} />
       <MailToastManager />
+      <AchievementToastManager />
       <UnlockToasts />
       <JLCAwardCelebration />
       {showRetirementLocationSelector ? (
@@ -100,10 +124,12 @@ function GameRoot() {
           dispatch={dispatch}
           onClearSave={() => {
             localStorage.removeItem(SAVE_KEY)
+            stopAllAudio()
             dispatch({ type: 'LOAD_SAVE', state: initialGameState })
           }}
         />
       ) : null}
+      <AudioUnlock onUnlock={handleAudioUnlock} />
     </div>
   )
 }

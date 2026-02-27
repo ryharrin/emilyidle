@@ -129,7 +129,7 @@ test.describe('Watch Purchase Flow: Buy → Ship → Arrive → Open', () => {
     await marketPage.goto();
     
     // Initially no articles (locked)
-    let articles = await marketPage.getWatchArticles().count();
+    const articles = await marketPage.getWatchArticles().count();
     expect(articles).toBe(0);
     
     // Note: To actually see watches, player needs to:

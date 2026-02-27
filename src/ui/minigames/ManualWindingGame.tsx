@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { MANUAL_WINDING } from '../../game/constants'
 import { gradeFromHoldDuration, calculateRotation, type Grade } from './manualWindingEval'
+import { playSfx } from '../../audio/audioService'
 
 export type ManualWindingResult = {
   perfects: number
@@ -63,6 +64,8 @@ export function ManualWindingGame(props: {
     holdStartMsRef.current = Date.now()
     setIsHolding(true)
     setHoldDuration(0)
+    // Play winding tick sound when starting to wind
+    playSfx('winding.tick')
   }
 
   function onPointerUp() {
@@ -73,9 +76,18 @@ export function ManualWindingGame(props: {
     const g = gradeFromHoldDuration(duration)
     setGrade(g)
 
+    // Check if near full wind (resistance zone)
+    const diffFromOptimal = Math.abs(duration - MANUAL_WINDING.OPTIMAL_HOLD_MS)
+    const isNearResistance = diffFromOptimal <= MANUAL_WINDING.GOOD_WINDOW_MS && g !== 'Perfect'
+
     if (g === 'Perfect') {
       setPerfects((p) => p + 1)
       setPulseKey((k) => k + 1)
+      // Play perfect wind complete sound
+      playSfx('winding.complete')
+    } else if (isNearResistance) {
+      // Play resistance feedback sound when near optimal but not perfect
+      playSfx('winding.resistance')
     }
 
     // Add rotation for successful winds

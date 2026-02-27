@@ -13,6 +13,7 @@ import {
   getThresholds,
   type CalibrationGrade,
 } from './lib/quartzCalibration'
+import { playSfx } from '../../audio/audioService'
 
 export type QuartzCalibrationResult = {
   perfects: number
@@ -92,6 +93,9 @@ export function QuartzCalibrationGame({ onComplete, watchTier = 'quartz' }: Quar
       // Progressive calming effect (AC 3.5.4) - reduce jitter more on success
       setJitterAmount((j) => Math.max(j - JITTER_DECREMENT, MIN_JITTER))
 
+      // Play success sound
+      playSfx('quartz.click')
+
       // Celebration animation on Perfect streaks (AC 3.5.4)
       if (newPerfects >= PERFECT_STREAK_THRESHOLD) {
         setShowCelebration(true)
@@ -100,6 +104,11 @@ export function QuartzCalibrationGame({ onComplete, watchTier = 'quartz' }: Quar
     } else if (grade === 'Good') {
       // Slight reduction on good - still calming
       setJitterAmount((j) => Math.max(j - JITTER_DECREMENT / 2, MIN_JITTER))
+      // Play good sound
+      playSfx('quartz.click')
+    } else {
+      // Play miss sound
+      playSfx('quartz.miss')
     }
   }
 
@@ -108,6 +117,8 @@ export function QuartzCalibrationGame({ onComplete, watchTier = 'quartz' }: Quar
 
     if (round >= TOTAL_ROUNDS) {
       setIsAnimating(false)
+      // Play completion sound
+      playSfx('quartz.complete')
       onComplete({
         perfects,
         durationMs: Math.max(0, Date.now() - startTimeRef.current),

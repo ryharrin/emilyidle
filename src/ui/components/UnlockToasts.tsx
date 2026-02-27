@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react'
 import { useGameDispatch, useGameState } from '../hooks/useGameState'
+import { playSfx } from '../../audio/audioService'
 
 function getUnlockPresentation(unlockId: string): { title: string; detail: string } {
   switch (unlockId) {
@@ -59,6 +61,28 @@ function getUnlockPresentation(unlockId: string): { title: string; detail: strin
 export function UnlockToasts() {
   const state = useGameState()
   const dispatch = useGameDispatch()
+  const playedUnlocksRef = useRef<Set<string>>(new Set())
+
+  // Play sound effects for new unlocks
+  useEffect(() => {
+    state.pendingUnlocks.forEach((unlockId) => {
+      if (!playedUnlocksRef.current.has(unlockId)) {
+        playedUnlocksRef.current.add(unlockId)
+        // Determine which unlock sound to play based on unlock type
+        if (unlockId.includes('photo')) {
+          playSfx('unlock.photo')
+        } else if (unlockId.includes('message')) {
+          playSfx('unlock.message')
+        } else if (unlockId.includes('award')) {
+          playSfx('unlock.prestige')
+        } else if (unlockId.includes('career')) {
+          playSfx('unlock.watch')
+        } else {
+          playSfx('unlock.achievement')
+        }
+      }
+    })
+  }, [state.pendingUnlocks])
 
   if (state.pendingUnlocks.length === 0) return null
 

@@ -6,6 +6,7 @@ import type { Watch } from '../../game/data/watches'
 const mockWatch: Watch = {
   id: 'test-watch-1',
   name: 'Test Watch',
+  brand: 'Test Brand',
   priceCents: 100_00,
   tier: 'quartz',
   imageUrl: '/test/image.jpg',
